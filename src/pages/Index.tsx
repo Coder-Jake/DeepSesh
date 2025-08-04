@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { Globe, Lock } from "lucide-react";
 
 const Index = () => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
+  const [isPublic, setIsPublic] = useState(true);
 
   const formatTime = (minutes: number) => {
     return `${minutes}:00`;
@@ -25,7 +27,29 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Timer Section */}
           <div className="space-y-6">
-            <div className="bg-card rounded-lg border border-border p-8 text-center">
+            <div className={`rounded-lg border border-border p-8 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex-1"></div>
+                <div className="flex-1 flex justify-end">
+                  <button
+                    onClick={() => setIsPublic(!isPublic)}
+                    className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                  >
+                    {isPublic ? (
+                      <>
+                        <Globe size={16} />
+                        <span className="text-sm font-medium">Public</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={16} />
+                        <span className="text-sm font-medium">Private</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+              
               <div className="text-6xl font-mono font-bold text-foreground mb-4">
                 {formatTime(focusMinutes)}
               </div>
