@@ -1,6 +1,15 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 const Index = () => {
+  const [focusMinutes, setFocusMinutes] = useState(25);
+  const [breakMinutes, setBreakMinutes] = useState(5);
+
+  const formatTime = (minutes: number) => {
+    return `${minutes}:00`;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -18,7 +27,7 @@ const Index = () => {
           <div className="space-y-6">
             <div className="bg-card rounded-lg border border-border p-8 text-center">
               <div className="text-6xl font-mono font-bold text-foreground mb-4">
-                25:00
+                {formatTime(focusMinutes)}
               </div>
               <p className="text-muted-foreground mb-6">Focus Time</p>
               
@@ -31,9 +40,31 @@ const Index = () => {
                 </Button>
               </div>
 
-              <div className="flex justify-center gap-2 text-sm text-muted-foreground">
-                <span className="bg-accent px-3 py-1 rounded-full">Focus: 25min</span>
-                <span className="bg-accent px-3 py-1 rounded-full">Break: 5min</span>
+              <div className="flex justify-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <label className="text-muted-foreground">Focus:</label>
+                  <Input 
+                    type="number" 
+                    value={focusMinutes} 
+                    onChange={(e) => setFocusMinutes(parseInt(e.target.value) || 1)}
+                    className="w-16 h-8 text-center"
+                    min="1"
+                    max="60"
+                  />
+                  <span className="text-muted-foreground">min</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-muted-foreground">Break:</label>
+                  <Input 
+                    type="number" 
+                    value={breakMinutes} 
+                    onChange={(e) => setBreakMinutes(parseInt(e.target.value) || 1)}
+                    className="w-16 h-8 text-center"
+                    min="1"
+                    max="30"
+                  />
+                  <span className="text-muted-foreground">min</span>
+                </div>
               </div>
             </div>
 
