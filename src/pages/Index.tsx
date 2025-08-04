@@ -1,16 +1,110 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Globe, Lock } from "lucide-react";
 
 const Index = () => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [isPublic, setIsPublic] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(25 * 60); // in seconds
+  const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
+  const [isFlashing, setIsFlashing] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const formatTime = (minutes: number) => {
-    return `${minutes}:00`;
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const playStartSound = () => {
+    // Create a simple beep sound using Web Audio API
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  };
+
+  const startTimer = () => {
+    if (!isRunning) {
+      playStartSound();
+      setIsRunning(true);
+      setIsFlashing(false);
+    }
+  };
+
+  const resetTimer = () => {
+    setIsRunning(false);
+    setIsFlashing(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+    setTimeLeft(initialTime);
+  };
+
+  const switchToBreak = () => {
+    setTimerType('break');
+    setTimeLeft(breakMinutes * 60);
+    setIsFlashing(false);
+    setIsRunning(true);
+    playStartSound();
+  };
+
+  const switchToFocus = () => {
+    setTimerType('focus');
+    setTimeLeft(focusMinutes * 60);
+    setIsFlashing(false);
+    setIsRunning(true);
+    playStartSound();
+  };
+
+  // Timer countdown effect
+  useEffect(() => {
+    if (isRunning && timeLeft > 0) {
+      intervalRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setIsRunning(false);
+            setIsFlashing(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isRunning, timeLeft]);
+
+  // Update timeLeft when focus/break minutes change and timer is not running
+  useEffect(() => {
+    if (!isRunning && !isFlashing) {
+      const newTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+      setTimeLeft(newTime);
+    }
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isFlashing]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,18 +144,44 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className="text-6xl font-mono font-bold text-foreground mb-4">
-                {formatTime(focusMinutes)}
+              <div className={`text-6xl font-mono font-bold text-foreground mb-4 transition-all duration-300 ${isFlashing ? 'animate-pulse scale-110' : ''}`}>
+                {formatTime(timeLeft)}
               </div>
-              <p className="text-muted-foreground mb-6">Focus Time</p>
+              <p className="text-muted-foreground mb-6">
+                {isFlashing 
+                  ? `${timerType === 'focus' ? 'Focus' : 'Break'} Complete! Click to start ${timerType === 'focus' ? 'break' : 'focus'}`
+                  : `${timerType === 'focus' ? 'Focus' : 'Break'} Time`
+                }
+              </p>
               
               <div className="flex gap-3 justify-center mb-6">
-                <Button size="lg" className="px-8">
-                  Start
-                </Button>
-                <Button variant="outline" size="lg">
-                  Reset
-                </Button>
+                {isFlashing ? (
+                  <Button 
+                    size="lg" 
+                    className="px-8"
+                    onClick={timerType === 'focus' ? switchToBreak : switchToFocus}
+                  >
+                    Start {timerType === 'focus' ? 'Break' : 'Focus'}
+                  </Button>
+                ) : (
+                  <>
+                    <Button 
+                      size="lg" 
+                      className="px-8"
+                      onClick={startTimer}
+                      disabled={isRunning}
+                    >
+                      {isRunning ? 'Running...' : 'Start'}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="lg"
+                      onClick={resetTimer}
+                    >
+                      Reset
+                    </Button>
+                  </>
+                )}
               </div>
 
               <div className="flex justify-center gap-4 text-sm">
