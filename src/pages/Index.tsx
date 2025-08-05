@@ -130,15 +130,29 @@ const Index = () => {
                 {isFlashing ? `${timerType === 'focus' ? 'Focus' : 'Break'} Complete! Click to start ${timerType === 'focus' ? 'break' : 'focus'}` : `${timerType === 'focus' ? 'Focus' : 'Break'} Time`}
               </p>
               
-              <div className="flex gap-3 justify-center mb-6">
+              <div className="flex gap-3 justify-center mb-6 relative">
+                {!isRunning && !isFlashing && (
+                  <button
+                    onClick={() => {
+                      if (confirm('Are you sure you want to reset the timer?')) {
+                        resetTimer();
+                      }
+                    }}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
+                  >
+                    Reset
+                  </button>
+                )}
                 {isFlashing ? <Button size="lg" className="px-8" onClick={timerType === 'focus' ? switchToBreak : switchToFocus}>
                     Start {timerType === 'focus' ? 'Break' : 'Focus'}
                   </Button> : <>
-                    <Button size="lg" className="px-8" onClick={startTimer} disabled={isRunning}>
-                      {isRunning ? 'Running...' : 'Start'}
-                    </Button>
-                    <Button variant="outline" size="lg" onClick={resetTimer}>
-                      Reset
+                    <Button 
+                      size="lg" 
+                      className="px-8" 
+                      onClick={isRunning ? () => setIsRunning(false) : startTimer}
+                      variant={isRunning ? "destructive" : "default"}
+                    >
+                      {isRunning ? 'Stop' : 'Start'}
                     </Button>
                   </>}
               </div>
