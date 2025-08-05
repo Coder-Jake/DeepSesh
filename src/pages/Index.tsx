@@ -154,13 +154,13 @@ const Index = () => {
     };
   }, [isRunning, timeLeft]);
 
-  // Update timeLeft when focus/break minutes change and timer is not running
+  // Update timeLeft when focus/break minutes change and timer is not running (but not paused)
   useEffect(() => {
-    if (!isRunning && !isFlashing) {
+    if (!isRunning && !isFlashing && !isPaused) {
       const newTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
       setTimeLeft(newTime);
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isFlashing]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isFlashing, isPaused]);
   return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border p-6">
