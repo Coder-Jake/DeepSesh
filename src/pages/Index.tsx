@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect, useRef } from "react";
 import { Globe, Lock } from "lucide-react";
+import Navigation from "@/components/Navigation";
 const Index = () => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
@@ -11,6 +14,7 @@ const Index = () => {
   const [timeLeft, setTimeLeft] = useState(25 * 60); // in seconds
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
+  const [notes, setNotes] = useState("");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
@@ -164,9 +168,12 @@ const Index = () => {
   return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border p-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
-          <p className="text-muted-foreground mt-2">Sync your focus with nearby coworkers</p>
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
+            <p className="text-muted-foreground mt-2">Sync your focus with nearby coworkers</p>
+          </div>
+          <Navigation />
         </div>
       </header>
 
@@ -270,8 +277,26 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Sessions List */}
+          {/* Right Column */}
           <div className="space-y-6">
+            {/* Notes Section - Only show when running */}
+            {isRunning && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Notes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    placeholder="Jot down your thoughts, to-do items, or reflections..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="min-h-[120px] resize-none"
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sessions List */}
             <div>
               <h2 className="text-xl font-semibold text-foreground mb-4">Active Sessions</h2>
               <div className="space-y-3">

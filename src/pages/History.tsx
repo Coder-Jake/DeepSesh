@@ -1,0 +1,162 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, Users, Calendar, FileText } from "lucide-react";
+
+const History = () => {
+  // Sample data - in a real app this would come from a database
+  const sessions = [
+    {
+      id: 1,
+      title: "Deep Work Sprint",
+      date: "2024-01-15",
+      duration: "45 minutes",
+      participants: 3,
+      type: "focus",
+      notes: "Great session focusing on project documentation. Made significant progress on the API specs."
+    },
+    {
+      id: 2,
+      title: "Study Group Alpha",
+      date: "2024-01-14",
+      duration: "90 minutes",
+      participants: 5,
+      type: "focus",
+      notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
+    },
+    {
+      id: 3,
+      title: "Solo Focus",
+      date: "2024-01-13",
+      duration: "30 minutes",
+      participants: 1,
+      type: "focus",
+      notes: "Quick focused session to review quarterly goals and plan next steps."
+    },
+    {
+      id: 4,
+      title: "Coding Session",
+      date: "2024-01-12",
+      duration: "120 minutes",
+      participants: 2,
+      type: "focus",
+      notes: "Pair programming session working on the new user interface components. Fixed several bugs."
+    },
+    {
+      id: 5,
+      title: "Research Deep Dive",
+      date: "2024-01-11",
+      duration: "60 minutes",
+      participants: 4,
+      type: "focus",
+      notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
+    }
+  ];
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border p-6">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold text-foreground">Session History</h1>
+          <p className="text-muted-foreground mt-2">Review your past focus sessions</p>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto p-6">
+        <div className="space-y-6">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Clock className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold">5h 45m</p>
+                    <p className="text-sm text-muted-foreground">Total Focus Time</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold">{sessions.length}</p>
+                    <p className="text-sm text-muted-foreground">Sessions Completed</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Users className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold">15</p>
+                    <p className="text-sm text-muted-foreground">People Collaborated With</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Session List */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-foreground">Recent Sessions</h2>
+            
+            {sessions.map((session) => (
+              <Card key={session.id}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{session.title}</CardTitle>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={14} />
+                          {formatDate(session.date)}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock size={14} />
+                          {session.duration}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users size={14} />
+                          {session.participants} participant{session.participants !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{session.type}</Badge>
+                  </div>
+                </CardHeader>
+                
+                {session.notes && (
+                  <CardContent>
+                    <div className="flex items-start gap-2">
+                      <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-muted-foreground">{session.notes}</p>
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default History;
