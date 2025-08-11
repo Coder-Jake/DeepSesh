@@ -2,27 +2,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Globe, Lock } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import { useTimer } from "@/contexts/TimerContext";
 const Index = () => {
-  const [focusMinutes, setFocusMinutes] = useState(25);
-  const [breakMinutes, setBreakMinutes] = useState(5);
+  const {
+    focusMinutes,
+    setFocusMinutes,
+    breakMinutes,
+    setBreakMinutes,
+    isRunning,
+    setIsRunning,
+    isPaused,
+    setIsPaused,
+    timeLeft,
+    setTimeLeft,
+    timerType,
+    setTimerType,
+    isFlashing,
+    setIsFlashing,
+    formatTime,
+  } = useTimer();
+  
   const [isPublic, setIsPublic] = useState(true);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // in seconds
-  const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
-  const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
   const playStartSound = () => {
     // Create a simple beep sound using Web Audio API
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -80,17 +85,11 @@ const Index = () => {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
     } else {
       if (confirm('Are you sure you want to stop the timer?')) {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
       }
     }
   };
@@ -100,9 +99,6 @@ const Index = () => {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
       const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
       setTimeLeft(initialTime);
     } else {
@@ -110,9 +106,6 @@ const Index = () => {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
         const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
         setTimeLeft(initialTime);
       }
@@ -132,53 +125,10 @@ const Index = () => {
     setIsRunning(true);
     playStartSound();
   };
-
-  // Timer countdown effect
-  useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            setIsFlashing(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    }
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isRunning, timeLeft]);
-
-  // Update timeLeft when focus/break minutes change and timer is not running (but not paused)
-  useEffect(() => {
-    if (!isRunning && !isFlashing && !isPaused) {
-      const newTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
-      setTimeLeft(newTime);
-    }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isFlashing, isPaused]);
-  return <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border p-6">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
-            <p className="text-muted-foreground mt-2">Sync your focus with nearby coworkers</p>
-          </div>
-          <Navigation />
+  return <main className="max-w-4xl mx-auto p-6">
+        <div className="mb-6">
+          <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Timer Section */}
           <div className="space-y-6">
@@ -346,7 +296,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </main>
-    </div>;
+      </main>;
 };
 export default Index;

@@ -16,17 +16,11 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border p-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-          <p className="text-muted-foreground mt-2">Customize your DeepSesh experience</p>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto p-6">
+    <main className="max-w-4xl mx-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+        <p className="text-muted-foreground mt-2">Customize your FlowSesh experience</p>
+      </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Bio Section */}
           <Card>
@@ -104,7 +98,6 @@ const Profile = () => {
           <Button>Save Profile</Button>
         </div>
       </main>
-    </div>
   );
 };
 
