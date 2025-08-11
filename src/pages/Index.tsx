@@ -21,11 +21,12 @@ const Index = () => {
     setTimerType,
     isFlashing,
     setIsFlashing,
+    notes,
+    setNotes,
     formatTime,
   } = useTimer();
   
   const [isPublic, setIsPublic] = useState(true);
-  const [notes, setNotes] = useState("");
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const playStartSound = () => {
@@ -229,8 +230,8 @@ const Index = () => {
 
           {/* Right Column */}
           <div className="space-y-6">
-            {/* Notes Section - Only show when running */}
-            {isRunning && (
+            {/* Notes Section - Show when running or paused */}
+            {(isRunning || isPaused) && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Notes</CardTitle>

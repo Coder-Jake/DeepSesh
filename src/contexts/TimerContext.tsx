@@ -15,6 +15,8 @@ interface TimerContextType {
   setTimerType: (type: 'focus' | 'break') => void;
   isFlashing: boolean;
   setIsFlashing: (flashing: boolean) => void;
+  notes: string;
+  setNotes: (notes: string) => void;
   formatTime: (seconds: number) => string;
 }
 
@@ -40,6 +42,7 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
+  const [notes, setNotes] = useState("");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const formatTime = (seconds: number) => {
@@ -96,6 +99,8 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
     setTimerType,
     isFlashing,
     setIsFlashing,
+    notes,
+    setNotes,
     formatTime,
   };
 

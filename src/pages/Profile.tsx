@@ -10,9 +10,39 @@ const Profile = () => {
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState(3);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [originalValues, setOriginalValues] = useState({
+    bio: "",
+    intention: "",
+    sociability: 3
+  });
+
+  const handleBioChange = (value: string) => {
+    setBio(value);
+    checkForChanges(value, intention, sociability);
+  };
+
+  const handleIntentionChange = (value: string) => {
+    setIntention(value);
+    checkForChanges(bio, value, sociability);
+  };
 
   const handleSociabilityChange = (rating: number) => {
     setSociability(rating);
+    checkForChanges(bio, intention, rating);
+  };
+
+  const checkForChanges = (newBio: string, newIntention: string, newSociability: number) => {
+    const changed = newBio !== originalValues.bio || 
+                   newIntention !== originalValues.intention || 
+                   newSociability !== originalValues.sociability;
+    setHasChanges(changed);
+  };
+
+  const handleSave = () => {
+    // Save logic would go here
+    setOriginalValues({ bio, intention, sociability });
+    setHasChanges(false);
   };
 
   return (
@@ -34,7 +64,7 @@ const Profile = () => {
                   id="bio"
                   placeholder="Tell us a bit about yourself..."
                   value={bio}
-                  onChange={(e) => setBio(e.target.value)}
+                  onChange={(e) => handleBioChange(e.target.value)}
                   className="mt-2"
                 />
               </div>
@@ -45,7 +75,7 @@ const Profile = () => {
                   id="intention"
                   placeholder="What are your goals and intentions for focus sessions?"
                   value={intention}
-                  onChange={(e) => setIntention(e.target.value)}
+                  onChange={(e) => handleIntentionChange(e.target.value)}
                   className="mt-2"
                 />
               </div>
@@ -95,7 +125,13 @@ const Profile = () => {
 
         {/* Save Button */}
         <div className="mt-8 flex justify-end">
-          <Button>Save Profile</Button>
+          <Button 
+            onClick={handleSave}
+            disabled={!hasChanges}
+            className={!hasChanges ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            Save Profile
+          </Button>
         </div>
       </main>
   );
