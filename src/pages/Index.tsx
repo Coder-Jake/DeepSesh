@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useRef } from "react";
-import { Globe, Lock, Star } from "lucide-react";
+import { Globe, Lock } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 const Index = () => {
   const {
@@ -281,41 +281,42 @@ const Index = () => {
                             3 participants
                           </TooltipTrigger>
                           <TooltipContent>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <span>Alex</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 3 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Alex</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Sam</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 3 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Sam</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Taylor</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Taylor</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '70%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">70</span>
                                 </div>
                               </div>
                             </div>
                           </TooltipContent>
                         </Tooltip>
-                        <div className="flex items-center gap-1">
-                          <div className="flex">
-                            {[1,2,3,4,5].map((star) => (
-                              <Star key={star} size={12} className={star <= 3 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                            ))}
+                        <div className="flex items-center gap-2">
+                          <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div>
                           </div>
-                          <span className="text-xs text-muted-foreground">3.3</span>
+                          <span className="text-xs text-muted-foreground">63</span>
                         </div>
                       </div>
                       <Button size="sm">Join</Button>
@@ -349,57 +350,60 @@ const Index = () => {
                             5 participants
                           </TooltipTrigger>
                           <TooltipContent>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <span>Morgan</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 2 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Morgan</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">20</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Jordan</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 1 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Jordan</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '10%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">10</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Casey</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 2 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Casey</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">20</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Riley</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 2 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Riley</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">20</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Avery</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 3 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Avery</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '30%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">30</span>
                                 </div>
                               </div>
                             </div>
                           </TooltipContent>
                         </Tooltip>
-                        <div className="flex items-center gap-1">
-                          <div className="flex">
-                            {[1,2,3,4,5].map((star) => (
-                              <Star key={star} size={12} className={star <= 2 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                            ))}
+                        <div className="flex items-center gap-2">
+                          <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
                           </div>
-                          <span className="text-xs text-muted-foreground">2.0</span>
+                          <span className="text-xs text-muted-foreground">20</span>
                         </div>
                       </div>
                       <Button size="sm">Join</Button>
@@ -439,50 +443,52 @@ const Index = () => {
                             Jamie + 7 participants
                           </TooltipTrigger>
                           <TooltipContent>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 border-b border-border pb-1">
-                                <span className="font-medium">Jamie (Friend)</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 3 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between gap-4 border-b border-border pb-2">
+                                <span className="font-medium min-w-0">Jamie (Friend)</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Quinn</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 3 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Quinn</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Blake</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Blake</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '70%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">70</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span>Drew</span>
-                                <div className="flex">
-                                  {[1,2,3,4,5].map((star) => (
-                                    <Star key={star} size={12} className={star <= 3 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                                  ))}
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="min-w-0">Drew</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
                               <div className="text-xs text-muted-foreground mt-1">+4 more participants</div>
                             </div>
                           </TooltipContent>
                         </Tooltip>
-                        <div className="flex items-center gap-1">
-                          <div className="flex">
-                            {[1,2,3,4,5].map((star) => (
-                              <Star key={star} size={12} className={star <= 3 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
-                            ))}
+                        <div className="flex items-center gap-2">
+                          <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div>
                           </div>
-                          <span className="text-xs text-muted-foreground">3.3</span>
+                          <span className="text-xs text-muted-foreground">63</span>
                         </div>
                       </div>
                       <Button size="sm">Join</Button>

@@ -3,18 +3,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
-import { Star } from "lucide-react";
 
 const Profile = () => {
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
-  const [sociability, setSociability] = useState(3);
+  const [sociability, setSociability] = useState([50]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
     bio: "",
     intention: "",
-    sociability: 3
+    sociability: [50]
   });
 
   const handleBioChange = (value: string) => {
@@ -27,15 +27,15 @@ const Profile = () => {
     checkForChanges(bio, value, sociability);
   };
 
-  const handleSociabilityChange = (rating: number) => {
-    setSociability(rating);
-    checkForChanges(bio, intention, rating);
+  const handleSociabilityChange = (value: number[]) => {
+    setSociability(value);
+    checkForChanges(bio, intention, value);
   };
 
-  const checkForChanges = (newBio: string, newIntention: string, newSociability: number) => {
+  const checkForChanges = (newBio: string, newIntention: string, newSociability: number[]) => {
     const changed = newBio !== originalValues.bio || 
                    newIntention !== originalValues.intention || 
-                   newSociability !== originalValues.sociability;
+                   newSociability[0] !== originalValues.sociability[0];
     setHasChanges(changed);
   };
 
@@ -89,34 +89,30 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Sociability Rating</Label>
-                <p className="text-sm text-muted-foreground mb-3">
+                <Label>Social Preferences</Label>
+                <p className="text-sm text-muted-foreground mb-6">
                   How social do you prefer your focus sessions to be?
                 </p>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((rating) => (
-                    <button
-                      key={rating}
-                      onClick={() => handleSociabilityChange(rating)}
-                      className={`p-2 rounded-md transition-colors ${
-                        rating <= sociability
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <Star
-                        size={24}
-                        fill={rating <= sociability ? "currentColor" : "none"}
-                      />
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-2 text-sm text-muted-foreground">
-                  {sociability === 1 && "Prefer solo focus"}
-                  {sociability === 2 && "Mostly solo, occasional groups"}
-                  {sociability === 3 && "Balanced"}
-                  {sociability === 4 && "Enjoy group sessions"}
-                  {sociability === 5 && "Love collaborative focus"}
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Anti-social coworking</span>
+                    <span>Banter</span>
+                  </div>
+                  <Slider
+                    value={sociability}
+                    onValueChange={handleSociabilityChange}
+                    max={100}
+                    min={0}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="text-center mt-3 text-sm text-muted-foreground">
+                    {sociability[0] <= 20 && "Prefer solo focus with minimal interaction"}
+                    {sociability[0] > 20 && sociability[0] <= 40 && "Mostly solo work, occasional quiet collaboration"}
+                    {sociability[0] > 40 && sociability[0] <= 60 && "Balanced mix of solo and group work"}
+                    {sociability[0] > 60 && sociability[0] <= 80 && "Enjoy collaborative sessions with discussion"}
+                    {sociability[0] > 80 && "Love highly interactive and social focus sessions"}
+                  </div>
                 </div>
               </div>
             </CardContent>
