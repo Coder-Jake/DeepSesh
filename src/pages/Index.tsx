@@ -288,7 +288,6 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -297,7 +296,6 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -306,7 +304,6 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '70%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">70</span>
                                 </div>
                               </div>
                             </div>
@@ -316,7 +313,6 @@ const Index = () => {
                           <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
                             <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div>
                           </div>
-                          <span className="text-xs text-muted-foreground">63</span>
                         </div>
                       </div>
                       <Button size="sm">Join</Button>
@@ -357,7 +353,6 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">20</span>
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -366,7 +361,7 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '10%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">10</span>
+                                  
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -375,7 +370,6 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">20</span>
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -384,7 +378,7 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">20</span>
+                                  
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -393,17 +387,16 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '30%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">30</span>
+                                  
                                 </div>
                               </div>
                             </div>
                           </TooltipContent>
                         </Tooltip>
                         <div className="flex items-center gap-2">
-                          <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
-                          </div>
-                          <span className="text-xs text-muted-foreground">20</span>
+                                  <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
+                                  </div>
                         </div>
                       </div>
                       <Button size="sm">Join</Button>
@@ -450,7 +443,6 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -459,7 +451,6 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">60</span>
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -468,7 +459,7 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '70%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">70</span>
+                                  
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -477,7 +468,7 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">60</span>
+                                  
                                 </div>
                               </div>
                               <div className="text-xs text-muted-foreground mt-1">+4 more participants</div>
@@ -488,7 +479,6 @@ const Index = () => {
                           <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
                             <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div>
                           </div>
-                          <span className="text-xs text-muted-foreground">63</span>
                         </div>
                       </div>
                       <Button size="sm">Join</Button>
