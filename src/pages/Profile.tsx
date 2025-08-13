@@ -98,17 +98,22 @@ const Profile = () => {
                     <span>Anti-social coworking</span>
                     <span>Banter</span>
                   </div>
-                  <Slider
-                    value={sociability}
-                    onValueChange={handleSociabilityChange}
-                    max={100}
-                    min={0}
-                    step={1}
-                    className="w-full"
-                  />
+                  <div className="relative group">
+                    <Slider
+                      value={sociability}
+                      onValueChange={handleSociabilityChange}
+                      max={100}
+                      min={0}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      {sociability[0]}
+                    </div>
+                  </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground">
-                    {sociability[0] <= 20 && "Prefer solo focus with minimal interaction"}
-                    {sociability[0] > 20 && sociability[0] <= 40 && "Mostly solo work, occasional quiet collaboration"}
+                    {sociability[0] <= 20 && "Solo focus with minimal interaction"}
+                    {sociability[0] > 20 && sociability[0] <= 40 && "Solo work, interact only during breaks"}
                     {sociability[0] > 40 && sociability[0] <= 60 && "Balanced mix of solo and group work"}
                     {sociability[0] > 60 && sociability[0] <= 80 && "Enjoy collaborative sessions with discussion"}
                     {sociability[0] > 80 && "Love highly interactive and social focus sessions"}
