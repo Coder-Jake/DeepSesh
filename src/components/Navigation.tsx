@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, User, History as HistoryIcon, Home } from "lucide-react";
+import { Menu, X, User, History as HistoryIcon, Home, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +11,7 @@ const Navigation = () => {
     { name: "Home", href: "/", icon: Home },
     { name: "Profile", href: "/profile", icon: User },
     { name: "History", href: "/history", icon: HistoryIcon },
+    { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   const toggleMenu = () => {
