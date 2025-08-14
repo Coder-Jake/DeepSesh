@@ -1,29 +1,33 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState } from "react";
 
 const Settings = () => {
-  const [notifications, setNotifications] = useState(true);
   const [autoJoin, setAutoJoin] = useState(false);
   const [defaultDuration, setDefaultDuration] = useState("25");
   const [breakDuration, setBreakDuration] = useState("5");
   const [maxDistance, setMaxDistance] = useState([500]);
   
-  // New notification preferences
-  const [focusNotifications, setFocusNotifications] = useState(true);
-  const [breakNotifications, setBreakNotifications] = useState(true);
-  const [sessionInvites, setSessionInvites] = useState(true);
-  const [friendActivity, setFriendActivity] = useState(false);
+  // Notification preferences with detailed options
+  const [focusNotifications, setFocusNotifications] = useState({ enabled: false, push: false, vibrate: false, sound: false });
+  const [breakNotifications, setBreakNotifications] = useState({ enabled: false, push: false, vibrate: false, sound: false });
+  const [sessionInvites, setSessionInvites] = useState({ enabled: false, push: false, vibrate: false, sound: false });
+  const [friendActivity, setFriendActivity] = useState({ enabled: false, push: false, vibrate: false, sound: false });
   
   // Transition preferences
   const [autoTransition, setAutoTransition] = useState(false);
   
   // Verification standards
   const [verificationStandard, setVerificationStandard] = useState("anyone");
+  
+  // Privacy settings
+  const [profileVisibility, setProfileVisibility] = useState("friends");
+  const [locationSharing, setLocationSharing] = useState("approximate");
   
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -36,96 +40,160 @@ const Settings = () => {
     setHasChanges(true);
   };
 
+  const updateNotificationSetting = (type: 'focus' | 'break' | 'invites' | 'activity', updates: Partial<typeof focusNotifications>) => {
+    const setters = {
+      focus: setFocusNotifications,
+      break: setBreakNotifications,
+      invites: setSessionInvites,
+      activity: setFriendActivity
+    };
+    
+    const currentValues = {
+      focus: focusNotifications,
+      break: breakNotifications,
+      invites: sessionInvites,
+      activity: friendActivity
+    };
+    
+    setters[type]({ ...currentValues[type], ...updates });
+    checkForChanges();
+  };
+
+  const NotificationControl = ({ 
+    type, 
+    title, 
+    description, 
+    value 
+  }: { 
+    type: 'focus' | 'break' | 'invites' | 'activity';
+    title: string;
+    description: string;
+    value: typeof focusNotifications;
+  }) => (
+    <div className="space-y-4">
+      <div>
+        <Label className="text-base font-medium">{title}</Label>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={`${type}-off`}
+              checked={!value.enabled}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  updateNotificationSetting(type, { enabled: false, push: false, vibrate: false, sound: false });
+                }
+              }}
+            />
+            <Label htmlFor={`${type}-off`} className="text-sm">Off</Label>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={`${type}-enabled`}
+              checked={value.enabled}
+              onCheckedChange={(checked) => {
+                updateNotificationSetting(type, { enabled: !!checked });
+              }}
+            />
+            <Label htmlFor={`${type}-enabled`} className="text-sm">Enable notifications</Label>
+          </div>
+          
+          {value.enabled && (
+            <div className="ml-6 space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${type}-push`}
+                  checked={value.push}
+                  onCheckedChange={(checked) => {
+                    updateNotificationSetting(type, { push: !!checked });
+                  }}
+                />
+                <Label htmlFor={`${type}-push`} className="text-sm">Push</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${type}-vibrate`}
+                  checked={value.vibrate}
+                  onCheckedChange={(checked) => {
+                    updateNotificationSetting(type, { vibrate: !!checked });
+                  }}
+                />
+                <Label htmlFor={`${type}-vibrate`} className="text-sm">Vibrate</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${type}-sound`}
+                  checked={value.sound}
+                  onCheckedChange={(checked) => {
+                    updateNotificationSetting(type, { sound: !!checked });
+                  }}
+                />
+                <Label htmlFor={`${type}-sound`} className="text-sm">Sound</Label>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-2">Configure your FlowSesh preferences</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Notification Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="focus-notifications">Focus Session Alerts</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get notified when focus sessions start and end
-                </p>
-              </div>
-              <Switch
-                id="focus-notifications"
-                checked={focusNotifications}
-                onCheckedChange={(checked) => {
-                  setFocusNotifications(checked);
-                  checkForChanges();
-                }}
-              />
-            </div>
+      <Accordion type="multiple" className="space-y-4">
+        {/* Notifications */}
+        <AccordionItem value="notifications" className="border rounded-lg px-6">
+          <AccordionTrigger className="text-xl font-semibold">
+            Notifications
+          </AccordionTrigger>
+          <AccordionContent className="space-y-8 pt-4">
+            <NotificationControl
+              type="focus"
+              title="Focus Session Alerts"
+              description="Get notified when focus sessions start and end"
+              value={focusNotifications}
+            />
+            
+            <NotificationControl
+              type="break"
+              title="Break Reminders"
+              description="Get notified when breaks start and end"
+              value={breakNotifications}
+            />
+            
+            <NotificationControl
+              type="invites"
+              title="Session Invites"
+              description="Receive invitations to join sessions from others"
+              value={sessionInvites}
+            />
+            
+            <NotificationControl
+              type="activity"
+              title="Friend Activity"
+              description="Get notified about your friends' session activity"
+              value={friendActivity}
+            />
+          </AccordionContent>
+        </AccordionItem>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="break-notifications">Break Reminders</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get notified when breaks start and end
-                </p>
-              </div>
-              <Switch
-                id="break-notifications"
-                checked={breakNotifications}
-                onCheckedChange={(checked) => {
-                  setBreakNotifications(checked);
-                  checkForChanges();
-                }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="session-invites">Session Invites</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive invitations to join sessions from others
-                </p>
-              </div>
-              <Switch
-                id="session-invites"
-                checked={sessionInvites}
-                onCheckedChange={(checked) => {
-                  setSessionInvites(checked);
-                  checkForChanges();
-                }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="friend-activity">Friend Activity</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get notified about your friends' session activity
-                </p>
-              </div>
-              <Switch
-                id="friend-activity"
-                checked={friendActivity}
-                onCheckedChange={(checked) => {
-                  setFriendActivity(checked);
-                  checkForChanges();
-                }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Behavior Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Behavior Preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        {/* Behavior */}
+        <AccordionItem value="behavior" className="border rounded-lg px-6">
+          <AccordionTrigger className="text-xl font-semibold">
+            Behavior
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6 pt-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="auto-transition">Auto-transition Sessions</Label>
@@ -159,15 +227,15 @@ const Settings = () => {
                 }}
               />
             </div>
-          </CardContent>
-        </Card>
+          </AccordionContent>
+        </AccordionItem>
 
         {/* Session Defaults */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Session Defaults</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <AccordionItem value="session-defaults" className="border rounded-lg px-6">
+          <AccordionTrigger className="text-xl font-semibold">
+            Session Defaults
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label htmlFor="focus-duration">Default Focus Duration</Label>
               <Select value={defaultDuration} onValueChange={(value) => {
@@ -204,15 +272,15 @@ const Settings = () => {
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+          </AccordionContent>
+        </AccordionItem>
 
         {/* Location & Discovery */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Location & Discovery</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <AccordionItem value="location" className="border rounded-lg px-6">
+          <AccordionTrigger className="text-xl font-semibold">
+            Location & Discovery
+          </AccordionTrigger>
+          <AccordionContent className="space-y-4 pt-4">
             <div>
               <Label>Maximum Distance for Nearby Sessions</Label>
               <p className="text-sm text-muted-foreground mb-4">
@@ -247,17 +315,52 @@ const Settings = () => {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </AccordionContent>
+        </AccordionItem>
 
-        {/* Verification Standards */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Verification Standards</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        {/* Privacy & Safety */}
+        <AccordionItem value="privacy" className="border rounded-lg px-6">
+          <AccordionTrigger className="text-xl font-semibold">
+            Privacy & Safety
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
-              <Label>Minimum verification status for engagement</Label>
+              <Label>Profile Visibility</Label>
+              <Select value={profileVisibility} onValueChange={(value) => {
+                setProfileVisibility(value);
+                checkForChanges();
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
+                  <SelectItem value="friends">Friends Only - Only friends can see details</SelectItem>
+                  <SelectItem value="private">Private - Minimal information shared</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Location Sharing</Label>
+              <Select value={locationSharing} onValueChange={(value) => {
+                setLocationSharing(value);
+                checkForChanges();
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select location sharing" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="exact">Exact Location</SelectItem>
+                  <SelectItem value="approximate">Approximate Area</SelectItem>
+                  <SelectItem value="city">City Only</SelectItem>
+                  <SelectItem value="none">No Location Sharing</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Minimum Verification Status for Engagement</Label>
               <p className="text-sm text-muted-foreground">
                 Set the minimum verification level required for users to interact with you
               </p>
@@ -275,46 +378,9 @@ const Settings = () => {
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Privacy & Safety */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Privacy & Safety</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label>Profile Visibility</Label>
-              <Select defaultValue="friends">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select visibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
-                  <SelectItem value="friends">Friends Only - Only friends can see details</SelectItem>
-                  <SelectItem value="private">Private - Minimal information shared</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Location Sharing</Label>
-              <Select defaultValue="approximate">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select location sharing" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="exact">Exact Location</SelectItem>
-                  <SelectItem value="approximate">Approximate Area</SelectItem>
-                  <SelectItem value="city">City Only</SelectItem>
-                  <SelectItem value="none">No Location Sharing</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       {/* Save Button */}
       <div className="mt-8 flex justify-end">
