@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef } from "react";
 import { Globe, Lock } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
@@ -127,6 +128,22 @@ const Index = () => {
     setIsRunning(true);
     playStartSound();
   };
+
+  const handleCircularProgressChange = (progress: number) => {
+    if (isRunning || isPaused) return; // Don't allow changes during active timer
+    
+    if (timerType === 'focus') {
+      const minutes = Math.round((progress / 100) * 120); // Max 120 minutes for focus
+      const actualMinutes = Math.max(1, minutes); // Minimum 1 minute
+      setFocusMinutes(actualMinutes);
+      setTimeLeft(actualMinutes * 60);
+    } else {
+      const minutes = Math.round((progress / 100) * 30); // Max 30 minutes for break
+      const actualMinutes = Math.max(1, minutes); // Minimum 1 minute
+      setBreakMinutes(actualMinutes);
+      setTimeLeft(actualMinutes * 60);
+    }
+  };
   return <main className="max-w-4xl mx-auto p-6">
         <div className="mb-6">
           <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
@@ -158,8 +175,22 @@ const Index = () => {
                 </div>
               </div>
               
-              <div className={`text-6xl font-mono font-bold text-foreground mb-4 transition-all duration-300 ${isFlashing ? 'animate-pulse scale-110' : ''}`}>
-                {formatTime(timeLeft)}
+              <div className="flex justify-center mb-4">
+                <CircularProgress
+                  size={280}
+                  strokeWidth={12}
+                  progress={timerType === 'focus' 
+                    ? (timeLeft / (focusMinutes * 60)) * 100 
+                    : (timeLeft / (breakMinutes * 60)) * 100
+                  }
+                  interactive={!isRunning && !isPaused && !isFlashing}
+                  onInteract={handleCircularProgressChange}
+                  className={isFlashing ? 'animate-pulse' : ''}
+                >
+                  <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''}`}>
+                    {formatTime(timeLeft)}
+                  </div>
+                </CircularProgress>
               </div>
               <p className="text-muted-foreground mb-6">
                 {isFlashing ? `${timerType === 'focus' ? 'Focus' : 'Break'} Complete! Click to start ${timerType === 'focus' ? 'break' : 'focus'}` : `${timerType === 'focus' ? 'Focus' : 'Break'} Time`}

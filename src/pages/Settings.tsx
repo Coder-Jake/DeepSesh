@@ -12,6 +12,19 @@ const Settings = () => {
   const [defaultDuration, setDefaultDuration] = useState("25");
   const [breakDuration, setBreakDuration] = useState("5");
   const [maxDistance, setMaxDistance] = useState([500]);
+  
+  // New notification preferences
+  const [focusNotifications, setFocusNotifications] = useState(true);
+  const [breakNotifications, setBreakNotifications] = useState(true);
+  const [sessionInvites, setSessionInvites] = useState(true);
+  const [friendActivity, setFriendActivity] = useState(false);
+  
+  // Transition preferences
+  const [autoTransition, setAutoTransition] = useState(false);
+  
+  // Verification standards
+  const [verificationStandard, setVerificationStandard] = useState("anyone");
+  
   const [hasChanges, setHasChanges] = useState(false);
 
   const handleSave = () => {
@@ -31,24 +44,100 @@ const Settings = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Notifications & Behavior */}
+        {/* Notification Preferences */}
         <Card>
           <CardHeader>
-            <CardTitle>Notifications & Behavior</CardTitle>
+            <CardTitle>Notification Preferences</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="notifications">Push Notifications</Label>
+                <Label htmlFor="focus-notifications">Focus Session Alerts</Label>
                 <p className="text-sm text-muted-foreground">
-                  Get notified about session invites and updates
+                  Get notified when focus sessions start and end
                 </p>
               </div>
               <Switch
-                id="notifications"
-                checked={notifications}
+                id="focus-notifications"
+                checked={focusNotifications}
                 onCheckedChange={(checked) => {
-                  setNotifications(checked);
+                  setFocusNotifications(checked);
+                  checkForChanges();
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="break-notifications">Break Reminders</Label>
+                <p className="text-sm text-muted-foreground">
+                  Get notified when breaks start and end
+                </p>
+              </div>
+              <Switch
+                id="break-notifications"
+                checked={breakNotifications}
+                onCheckedChange={(checked) => {
+                  setBreakNotifications(checked);
+                  checkForChanges();
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="session-invites">Session Invites</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive invitations to join sessions from others
+                </p>
+              </div>
+              <Switch
+                id="session-invites"
+                checked={sessionInvites}
+                onCheckedChange={(checked) => {
+                  setSessionInvites(checked);
+                  checkForChanges();
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="friend-activity">Friend Activity</Label>
+                <p className="text-sm text-muted-foreground">
+                  Get notified about your friends' session activity
+                </p>
+              </div>
+              <Switch
+                id="friend-activity"
+                checked={friendActivity}
+                onCheckedChange={(checked) => {
+                  setFriendActivity(checked);
+                  checkForChanges();
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Behavior Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Behavior Preferences</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="auto-transition">Auto-transition Sessions</Label>
+                <p className="text-sm text-muted-foreground">
+                  Automatically switch between focus and break periods
+                </p>
+              </div>
+              <Switch
+                id="auto-transition"
+                checked={autoTransition}
+                onCheckedChange={(checked) => {
+                  setAutoTransition(checked);
                   checkForChanges();
                 }}
               />
@@ -157,6 +246,34 @@ const Settings = () => {
                   {maxDistance[0] > 2000 && "Wider area search"}
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Verification Standards */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Verification Standards</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label>Minimum verification status for engagement</Label>
+              <p className="text-sm text-muted-foreground">
+                Set the minimum verification level required for users to interact with you
+              </p>
+              <Select value={verificationStandard} onValueChange={(value) => {
+                setVerificationStandard(value);
+                checkForChanges();
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select verification standard" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="anyone">Anyone - No verification required</SelectItem>
+                  <SelectItem value="organisation">Organisation Verified - Must have verified organisation</SelectItem>
+                  <SelectItem value="id">ID Verified - Must have verified government ID</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
