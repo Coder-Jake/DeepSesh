@@ -89,7 +89,7 @@ const Profile = () => {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-6">
-                  How social do you prefer your focus sessions to be?
+                  How would you prefer to balance focus vs socialising?
                 </p>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm text-muted-foreground">
