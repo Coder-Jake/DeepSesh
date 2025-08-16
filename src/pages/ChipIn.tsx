@@ -148,7 +148,7 @@ const ChipIn = () => {
                 <Heart className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium text-foreground">Funding Already Received:</p>
-                  <p>$2,500 (from early supporters)</p>
+                  <p>$2,508 (from early supporters)</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
