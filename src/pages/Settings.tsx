@@ -357,7 +357,7 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Minimum Verification Status for Engagement</Label>
+              <Label>Minimum Verification Status</Label>
               <p className="text-sm text-muted-foreground">
                 Set the minimum verification level required for users to interact with you
               </p>
