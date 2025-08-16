@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
 import ChipIn from "./pages/ChipIn";
+import Leaderboard from "./pages/Leaderboard"; // Import the new Leaderboard page
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/history" element={<History />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/chip-in" element={<ChipIn />} />
+              <Route path="/leaderboard" element={<Leaderboard />} /> {/* Add the new route */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

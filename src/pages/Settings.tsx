@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState } from "react";
+import { Bell, SmartphoneVibrate, Volume2 } from "lucide-react"; // Import new icons
 
 const Settings = () => {
   const [autoJoin, setAutoJoin] = useState(false);
@@ -114,7 +115,10 @@ const Settings = () => {
                     updateNotificationSetting(type, { push: !!checked });
                   }}
                 />
-                <Label htmlFor={`${type}-push`} className="text-sm">Push</Label>
+                <Label htmlFor={`${type}-push`} className="flex items-center gap-1 text-sm">
+                  <Bell size={16} className={value.push ? "text-olive" : "text-muted-foreground"} />
+                  Push
+                </Label>
               </div>
               
               <div className="flex items-center space-x-2">
@@ -125,7 +129,10 @@ const Settings = () => {
                     updateNotificationSetting(type, { vibrate: !!checked });
                   }}
                 />
-                <Label htmlFor={`${type}-vibrate`} className="text-sm">Vibrate</Label>
+                <Label htmlFor={`${type}-vibrate`} className="flex items-center gap-1 text-sm">
+                  <SmartphoneVibrate size={16} className={value.vibrate ? "text-olive" : "text-muted-foreground"} />
+                  Vibrate
+                </Label>
               </div>
               
               <div className="flex items-center space-x-2">
@@ -136,7 +143,10 @@ const Settings = () => {
                     updateNotificationSetting(type, { sound: !!checked });
                   }}
                 />
-                <Label htmlFor={`${type}-sound`} className="text-sm">Sound</Label>
+                <Label htmlFor={`${type}-sound`} className="flex items-center gap-1 text-sm">
+                  <Volume2 size={16} className={value.sound ? "text-olive" : "text-muted-foreground"} />
+                  Sound
+                </Label>
               </div>
             </div>
           )}

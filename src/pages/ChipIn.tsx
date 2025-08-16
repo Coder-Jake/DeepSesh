@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Coffee, Users, Code } from "lucide-react";
+import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react"; // Added new icons
 import { useToast } from "@/hooks/use-toast";
 
 const ChipIn = () => {
@@ -153,6 +153,50 @@ const ChipIn = () => {
                     <p className="font-medium">$50+</p>
                     <p className="text-sm text-muted-foreground">Helps fund new features</p>
                   </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Financial Background */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Financial Background
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium text-foreground">Development Costs:</p>
+                  <p>$15,000 (initial development & design)</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Users className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium text-foreground">Annual Expenses per User:</p>
+                  <p>$0.50 (hosting, database, third-party services)</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Heart className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium text-foreground">Funding Already Received:</p>
+                  <p>$2,500 (from early supporters)</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Lightbulb className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium text-foreground">Upcoming Developments:</p>
+                  <ul className="list-disc list-inside ml-2">
+                    <li>Real-time collaboration features ($5,000)</li>
+                    <li>Advanced analytics dashboard ($3,000)</li>
+                    <li>Mobile app development ($10,000)</li>
+                  </ul>
                 </div>
               </div>
             </CardContent>

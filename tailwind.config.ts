@@ -61,6 +61,10 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				olive: {
+					DEFAULT: 'hsl(80 60% 40%)', // A shade of olive green
+					foreground: 'hsl(0 0% 100%)', // White text for contrast
 				}
 			},
 			borderRadius: {

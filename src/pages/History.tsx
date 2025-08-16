@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Calendar, FileText } from "lucide-react";
+import { Link } from "react-router-dom"; // Import Link
 
 const History = () => {
   // Sample data - in a real app this would come from a database
@@ -70,17 +71,19 @@ const History = () => {
         <div className="space-y-6">
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Clock className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-2xl font-bold">5h 45m</p>
-                    <p className="text-sm text-muted-foreground">Total Focus Time</p>
+            <Link to="/leaderboard#focus-hours-leaderboard" className="block hover:opacity-80 transition-opacity">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-8 w-8 text-primary" />
+                    <div>
+                      <p className="text-2xl font-bold">5h 45m</p>
+                      <p className="text-sm text-muted-foreground">Total Focus Time</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
             
             <Card>
               <CardContent className="p-4">
@@ -94,17 +97,19 @@ const History = () => {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Users className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-2xl font-bold">15</p>
-                    <p className="text-sm text-muted-foreground">People Collaborated With</p>
+            <Link to="/leaderboard#collaborated-users-leaderboard" className="block hover:opacity-80 transition-opacity">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Users className="h-8 w-8 text-primary" />
+                    <div>
+                      <p className="text-2xl font-bold">15</p>
+                      <p className="text-sm text-muted-foreground">People Collaborated With</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* Session List */}
