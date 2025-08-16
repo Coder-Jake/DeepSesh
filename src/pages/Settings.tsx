@@ -3,10 +3,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useState } from "react";
-import { Bell, Smartphone, Volume2 } from "lucide-react"; // Changed SmartphoneVibrate to Smartphone
+import { useState, useRef } from "react";
+import { Bell, Smartphone, Volume2 } from "lucide-react";
 
 const Settings = () => {
   const [autoJoin, setAutoJoin] = useState(false);
@@ -15,10 +14,10 @@ const Settings = () => {
   const [maxDistance, setMaxDistance] = useState([500]);
   
   // Notification preferences with detailed options
-  const [focusNotifications, setFocusNotifications] = useState({ enabled: false, push: false, vibrate: false, sound: false });
-  const [breakNotifications, setBreakNotifications] = useState({ enabled: false, push: false, vibrate: false, sound: false });
-  const [sessionInvites, setSessionInvites] = useState({ enabled: false, push: false, vibrate: false, sound: false });
-  const [friendActivity, setFriendActivity] = useState({ enabled: false, push: false, vibrate: false, sound: false });
+  const [focusNotifications, setFocusNotifications] = useState({ push: false, vibrate: false, sound: false });
+  const [breakNotifications, setBreakNotifications] = useState({ push: false, vibrate: false, sound: false });
+  const [sessionInvites, setSessionInvites] = useState({ push: false, vibrate: false, sound: false });
+  const [friendActivity, setFriendActivity] = useState({ push: false, vibrate: false, sound: false });
   
   // Transition preferences
   const [autoTransition, setAutoTransition] = useState(false);
@@ -32,6 +31,19 @@ const Settings = () => {
   
   const [hasChanges, setHasChanges] = useState(false);
 
+  const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
+
+  const showMomentaryText = (key: string, text: string) => {
+    setMomentaryText(prev => ({ ...prev, [key]: text }));
+    if (timeoutRefs.current[key]) {
+      clearTimeout(timeoutRefs.current[key]);
+    }
+    timeoutRefs.current[key] = setTimeout(() => {
+      setMomentaryText(prev => ({ ...prev, [key]: null }));
+    }, 1500); // Text visible for 1.5 seconds
+  };
+
   const handleSave = () => {
     // Save settings logic would go here
     setHasChanges(false);
@@ -41,7 +53,7 @@ const Settings = () => {
     setHasChanges(true);
   };
 
-  const updateNotificationSetting = (type: 'focus' | 'break' | 'invites' | 'activity', updates: Partial<typeof focusNotifications>) => {
+  const updateNotificationSetting = (type: 'focus' | 'break' | 'invites' | 'activity', key: 'push' | 'vibrate' | 'sound', value: boolean) => {
     const setters = {
       focus: setFocusNotifications,
       break: setBreakNotifications,
@@ -56,8 +68,9 @@ const Settings = () => {
       activity: friendActivity
     };
     
-    setters[type]({ ...currentValues[type], ...updates });
+    setters[type]({ ...currentValues[type], [key]: value });
     checkForChanges();
+    showMomentaryText(`${type}-${key}`, value ? 'On' : 'Off');
   };
 
   const NotificationControl = ({ 
@@ -77,78 +90,52 @@ const Settings = () => {
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`${type}-off`}
-              checked={!value.enabled}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  updateNotificationSetting(type, { enabled: false, push: false, vibrate: false, sound: false });
-                }
-              }}
-            />
-            <Label htmlFor={`${type}-off`} className="text-sm">Off</Label>
-          </div>
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="icon"
+            className={`w-10 h-10 rounded-full transition-colors ${value.push ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+            onClick={() => updateNotificationSetting(type, 'push', !value.push)}
+          >
+            <Bell size={20} />
+          </Button>
+          {momentaryText[`${type}-push`] && (
+            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300">
+              Push {momentaryText[`${type}-push`]}
+            </span>
+          )}
         </div>
-        
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`${type}-enabled`}
-              checked={value.enabled}
-              onCheckedChange={(checked) => {
-                updateNotificationSetting(type, { enabled: !!checked });
-              }}
-            />
-            <Label htmlFor={`${type}-enabled`} className="text-sm">Enable notifications</Label>
-          </div>
-          
-          {value.enabled && (
-            <div className="ml-6 space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${type}-push`}
-                  checked={value.push}
-                  onCheckedChange={(checked) => {
-                    updateNotificationSetting(type, { push: !!checked });
-                  }}
-                />
-                <Label htmlFor={`${type}-push`} className="flex items-center gap-1 text-sm">
-                  <Bell size={16} className={value.push ? "text-olive" : "text-muted-foreground"} />
-                  Push
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${type}-vibrate`}
-                  checked={value.vibrate}
-                  onCheckedChange={(checked) => {
-                    updateNotificationSetting(type, { vibrate: !!checked });
-                  }}
-                />
-                <Label htmlFor={`${type}-vibrate`} className="flex items-center gap-1 text-sm">
-                  <Smartphone size={16} className={value.vibrate ? "text-olive" : "text-muted-foreground"} />
-                  Vibrate
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${type}-sound`}
-                  checked={value.sound}
-                  onCheckedChange={(checked) => {
-                    updateNotificationSetting(type, { sound: !!checked });
-                  }}
-                />
-                <Label htmlFor={`${type}-sound`} className="flex items-center gap-1 text-sm">
-                  <Volume2 size={16} className={value.sound ? "text-olive" : "text-muted-foreground"} />
-                  Sound
-                </Label>
-              </div>
-            </div>
+
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="icon"
+            className={`w-10 h-10 rounded-full transition-colors ${value.vibrate ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+            onClick={() => updateNotificationSetting(type, 'vibrate', !value.vibrate)}
+          >
+            <Smartphone size={20} />
+          </Button>
+          {momentaryText[`${type}-vibrate`] && (
+            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300">
+              Vibrate {momentaryText[`${type}-vibrate`]}
+            </span>
+          )}
+        </div>
+
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="icon"
+            className={`w-10 h-10 rounded-full transition-colors ${value.sound ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+            onClick={() => updateNotificationSetting(type, 'sound', !value.sound)}
+          >
+            <Volume2 size={20} />
+          </Button>
+          {momentaryText[`${type}-sound`] && (
+            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300">
+              Sound {momentaryText[`${type}-sound`]}
+            </span>
           )}
         </div>
       </div>

@@ -120,45 +120,8 @@ const ChipIn = () => {
           </CardContent>
         </Card>
 
-        {/* Impact Info */}
+        {/* Financial Background */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Your Impact
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                  <Coffee className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">$5</p>
-                    <p className="text-sm text-muted-foreground">Buys a coffee for late-night coding</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                  <Code className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">$25</p>
-                    <p className="text-sm text-muted-foreground">Covers hosting costs for a month</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                  <Heart className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">$50+</p>
-                    <p className="text-sm text-muted-foreground">Helps fund new features</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Financial Background */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
