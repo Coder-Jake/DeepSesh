@@ -244,7 +244,6 @@ const Index = () => {
                 <div className="flex items-center gap-2">
                   <label className="text-muted-foreground">Break:</label>
                   <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="30" />
-                  <span className="text-muted-foreground">min</span>
                 </div>
               </div>
             </div>
