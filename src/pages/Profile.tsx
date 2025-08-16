@@ -72,7 +72,7 @@ const Profile = () => {
                 <Label htmlFor="intention">Statement of Intention</Label>
                 <Textarea
                   id="intention"
-                  placeholder="What are your goals and intentions for focus sessions?"
+                  placeholder="What are you working on? What are your goals and intentions for upcoming sessions?"
                   value={intention}
                   onChange={(e) => handleIntentionChange(e.target.value)}
                   className="mt-2"
