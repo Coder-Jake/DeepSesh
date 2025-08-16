@@ -49,7 +49,6 @@ const Profile = () => {
     <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-        <p className="text-muted-foreground mt-2">Customize your FlowSesh experience</p>
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Bio Section */}
