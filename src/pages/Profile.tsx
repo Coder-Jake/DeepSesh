@@ -105,9 +105,6 @@ const Profile = () => {
                       step={1}
                       className="w-full"
                     />
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                      {sociability[0]}
-                    </div>
                   </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground">
                     {sociability[0] <= 20 && "Minimal interaction even during breaks"}
