@@ -339,24 +339,6 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Location Sharing</Label>
-              <Select value={locationSharing} onValueChange={(value) => {
-                setLocationSharing(value);
-                checkForChanges();
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select location sharing" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="exact">Exact Location</SelectItem>
-                  <SelectItem value="approximate">Approximate Area</SelectItem>
-                  <SelectItem value="city">City Only</SelectItem>
-                  <SelectItem value="none">No Location Sharing</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
               <Label>Minimum Verification Status</Label>
               <p className="text-sm text-muted-foreground">
                 Set the minimum verification level required for users to interact with you
