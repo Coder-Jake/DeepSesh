@@ -185,10 +185,10 @@ const Settings = () => {
           </AccordionContent>
         </AccordionItem>
 
-        {/* Behavior */}
-        <AccordionItem value="behavior" className="border rounded-lg px-6">
+        {/* Behaviour */}
+        <AccordionItem value="behaviour" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
-            Behavior
+            Behaviour
           </AccordionTrigger>
           <AccordionContent className="space-y-6 pt-4">
             <div className="flex items-center justify-between">
