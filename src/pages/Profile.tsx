@@ -93,7 +93,7 @@ const Profile = () => {
                 </p>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Anti-social coworking</span>
+                    <span>Deep Focus</span>
                     <span>Banter</span>
                   </div>
                   <div className="relative group">
