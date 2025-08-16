@@ -88,7 +88,6 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Social Preferences</Label>
                 <p className="text-sm text-muted-foreground mb-6">
                   How social do you prefer your focus sessions to be?
                 </p>
