@@ -192,9 +192,6 @@ const Index = () => {
                   </div>
                 </CircularProgress>
               </div>
-              <p className="text-muted-foreground mb-6">
-                {isFlashing ? `${timerType === 'focus' ? 'Focus' : 'Break'} Complete! Click to start ${timerType === 'focus' ? 'break' : 'focus'}` : `${timerType === 'focus' ? 'Focus' : 'Break'} Time`}
-              </p>
               
               <div className="flex gap-3 justify-center mb-6 relative">
                 <div className="absolute left-0 bottom-0 flex flex-col gap-1">
