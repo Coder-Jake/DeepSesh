@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState } from "react";
-import { Bell, SmartphoneVibrate, Volume2 } from "lucide-react"; // Import new icons
+import { Bell, Smartphone, Volume2 } from "lucide-react"; // Changed SmartphoneVibrate to Smartphone
 
 const Settings = () => {
   const [autoJoin, setAutoJoin] = useState(false);
@@ -130,7 +130,7 @@ const Settings = () => {
                   }}
                 />
                 <Label htmlFor={`${type}-vibrate`} className="flex items-center gap-1 text-sm">
-                  <SmartphoneVibrate size={16} className={value.vibrate ? "text-olive" : "text-muted-foreground"} />
+                  <Smartphone size={16} className={value.vibrate ? "text-olive" : "text-muted-foreground"} />
                   Vibrate
                 </Label>
               </div>
