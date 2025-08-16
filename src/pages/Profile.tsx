@@ -61,7 +61,7 @@ const Profile = () => {
                 <Label htmlFor="bio">Brief Bio</Label>
                 <Textarea
                   id="bio"
-                  placeholder="Tell us a bit about yourself..."
+                  placeholder="Share a bit about yourself..."
                   value={bio}
                   onChange={(e) => handleBioChange(e.target.value)}
                   className="mt-2"
