@@ -193,7 +193,7 @@ const Settings = () => {
           <AccordionContent className="space-y-6 pt-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="auto-transition"> Transitions</Label>
+                <Label htmlFor="auto-transition"> Auto/Manual Transitions</Label>
                 <p className="text-sm text-muted-foreground">
                   Prompt at the end of sessions?
                 </p>
