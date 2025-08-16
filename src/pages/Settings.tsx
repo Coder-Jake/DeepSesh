@@ -341,7 +341,7 @@ const Settings = () => {
             <div className="space-y-2">
               <Label>Minimum Verification Status</Label>
               <p className="text-sm text-muted-foreground">
-                Set the minimum verification level required for users to interact with sessions you host
+                for users to interact with sessions you host
               </p>
               <Select value={verificationStandard} onValueChange={(value) => {
                 setVerificationStandard(value);
