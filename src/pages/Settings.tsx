@@ -177,7 +177,7 @@ const Settings = () => {
               <div className="space-y-0.5">
                 <Label htmlFor="auto-join">Auto-join Compatible Sessions</Label>
                 <p className="text-sm text-muted-foreground">
-                  Automatically join sessions that match your preferences
+                  Size of time chunks
                 </p>
               </div>
               <Switch
