@@ -149,7 +149,42 @@ const Settings = () => {
       </div>
 
       <Accordion type="multiple" className="space-y-4">
-       
+        {/* Notifications */}
+        <AccordionItem value="notifications" className="border rounded-lg px-6">
+          <AccordionTrigger className="text-xl font-semibold">
+            Notifications
+          </AccordionTrigger>
+          <AccordionContent className="space-y-8 pt-4">
+            <NotificationControl
+              type="focus"
+              title="Focus Session Alerts"
+              description="Get notified when focus sessions start and end"
+              value={focusNotifications}
+            />
+            
+            <NotificationControl
+              type="break"
+              title="Break Reminders"
+              description="Get notified when breaks start and end"
+              value={breakNotifications}
+            />
+            
+            <NotificationControl
+              type="invites"
+              title="Session Invites"
+              description="Receive invitations to join sessions from others"
+              value={sessionInvites}
+            />
+            
+            <NotificationControl
+              type="activity"
+              title="Friend Activity"
+              description="Get notified about your friends' session activity"
+              value={friendActivity}
+            />
+          </AccordionContent>
+        </AccordionItem>
+
         {/* Behaviour */}
         <AccordionItem value="behaviour" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
@@ -175,9 +210,9 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="auto-join">Time Increments</Label>
+                <Label htmlFor="auto-join">Auto-join Compatible Sessions</Label>
                 <p className="text-sm text-muted-foreground">
-                   1 or 5 mins
+                  Automatically join sessions that match your preferences
                 </p>
               </div>
               <Switch
@@ -195,11 +230,11 @@ const Settings = () => {
         {/* Session Defaults */}
         <AccordionItem value="session-defaults" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
-            Defaults
+            Session Defaults
           </AccordionTrigger>
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="focus-duration">Focus Duration</Label>
+              <Label htmlFor="focus-duration">Default Focus Duration</Label>
               <Select value={defaultDuration} onValueChange={(value) => {
                 setDefaultDuration(value);
                 checkForChanges();
@@ -218,7 +253,7 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="break-duration">Break Duration</Label>
+              <Label htmlFor="break-duration">Default Break Duration</Label>
               <Select value={breakDuration} onValueChange={(value) => {
                 setBreakDuration(value);
                 checkForChanges();
@@ -230,7 +265,7 @@ const Settings = () => {
                   <SelectItem value="5">5 minutes</SelectItem>
                   <SelectItem value="10">10 minutes</SelectItem>
                   <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="30">20 minutes</SelectItem>
+                  <SelectItem value="20">20 minutes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -240,7 +275,7 @@ const Settings = () => {
         {/* Location & Discovery */}
         <AccordionItem value="location" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
-            Discovery
+            Location & Discovery
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pt-4">
             <div>
@@ -324,36 +359,8 @@ const Settings = () => {
             </div>
           </AccordionContent>
         </AccordionItem>
-      
-        {/* Notifications */}
-        <AccordionItem value="notifications" className="border rounded-lg px-6">
-          <AccordionTrigger className="text-xl font-semibold">
-            Notifications
-          </AccordionTrigger>
-          <AccordionContent className="space-y-8 pt-4">
-            <NotificationControl
-              type="focus"
-              title="Focus Session Alerts"
-              description="Get notified when focus sessions start and end"
-              value={focusNotifications}
-            />
-            
-            <NotificationControl
-              type="invites"
-              title="Session Invites"
-              description="Receive invitations to join sessions from others"
-              value={sessionInvites}
-            />
-            
-            <NotificationControl
-              type="activity"
-              title="Friend Activity"
-              description="Get notified about your friends' session activity"
-              value={friendActivity}
-            />
-          </AccordionContent>
-        </AccordionItem>
-        </Accordion>
+      </Accordion>
+
       {/* Save Button */}
       <div className="mt-8 flex justify-end">
         <Button 
