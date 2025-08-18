@@ -234,7 +234,7 @@ const Settings = () => {
           </AccordionTrigger>
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="focus-duration">Default Focus Duration</Label>
+              <Label htmlFor="focus-duration">Focus Duration</Label>
               <Select value={defaultDuration} onValueChange={(value) => {
                 setDefaultDuration(value);
                 checkForChanges();
