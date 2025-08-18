@@ -230,7 +230,7 @@ const Settings = () => {
                   <SelectItem value="5">5 minutes</SelectItem>
                   <SelectItem value="10">10 minutes</SelectItem>
                   <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="20">20 minutes</SelectItem>
+                  <SelectItem value="30">20 minutes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
