@@ -58,7 +58,7 @@ const Leaderboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Most Collaborated Users
+              Most Collaborations
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
