@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Calendar, FileText } from "lucide-react";
-import { Link } from "react-router-dom"; // Import Link
+import { Link } from "react-router-dom";
+import TimeFilterToggle from "@/components/TimeFilterToggle";
+import { useState } from "react";
 
 const History = () => {
   // Sample data - in a real app this would come from a database
@@ -62,11 +64,19 @@ const History = () => {
     });
   };
 
+  const [historyTimePeriod, setHistoryTimePeriod] = useState<'week' | 'month' | 'all'>('all');
+
+  // In a real app, you would filter the sessions data based on historyTimePeriod
+  console.log("History Period:", historyTimePeriod);
+
   return (
     <main className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Session History</h1>
-        <p className="text-muted-foreground mt-2">Review your past focus sessions</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Session History</h1>
+          <p className="text-muted-foreground mt-2">Review your past focus sessions</p>
+        </div>
+        <TimeFilterToggle onValueChange={setHistoryTimePeriod} />
       </div>
         <div className="space-y-6">
           {/* Stats Overview */}

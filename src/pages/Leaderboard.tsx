@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users, Clock } from "lucide-react";
+import TimeFilterToggle from "@/components/TimeFilterToggle";
+import { useState } from "react";
 
 const Leaderboard = () => {
   // Sample data - in a real app this would come from a database
@@ -19,6 +21,13 @@ const Leaderboard = () => {
     { id: 5, name: "Heidi", collaboratedUsers: 12 },
   ];
 
+  const [focusTimePeriod, setFocusTimePeriod] = useState<'week' | 'month' | 'all'>('all');
+  const [collaborationTimePeriod, setCollaborationTimePeriod] = useState<'week' | 'month' | 'all'>('all');
+
+  // In a real app, you would filter the data based on focusTimePeriod and collaborationTimePeriod
+  console.log("Focus Leaderboard Period:", focusTimePeriod);
+  console.log("Collaboration Leaderboard Period:", collaborationTimePeriod);
+
   return (
     <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6 text-center">
@@ -34,20 +43,20 @@ const Leaderboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Focus Hours Leaderboard */}
         <Card id="focus-hours-leaderboard">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
               Top Focus Hours
             </CardTitle>
+            <TimeFilterToggle onValueChange={setFocusTimePeriod} />
           </CardHeader>
           <CardContent className="space-y-3">
             {focusHoursLeaderboard.map((user, index) => (
               <div key={user.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-lg text-primary">{index + 1}.</span>
-                  <p className="font-medium text-foreground">{user.name}</p>
+                  <p className="text-muted-foreground">{user.focusHours} hours</p>
                 </div>
-                <p className="text-muted-foreground">{user.focusHours} hours</p>
               </div>
             ))}
           </CardContent>
@@ -55,11 +64,12 @@ const Leaderboard = () => {
 
         {/* Collaborated Users Leaderboard */}
         <Card id="collaborated-users-leaderboard">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
               Most Collaborations
             </CardTitle>
+            <TimeFilterToggle onValueChange={setCollaborationTimePeriod} />
           </CardHeader>
           <CardContent className="space-y-3">
             {collaboratedUsersLeaderboard.map((user, index) => (
