@@ -323,8 +323,8 @@ const Settings = () => {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-<Accordion type="multiple" className="space-y-4">
 
+<Accordion type="multiple" className="space-y-4">
         {/* Notifications */}
         <AccordionItem value="notifications" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
@@ -360,7 +360,6 @@ const Settings = () => {
             />
           </AccordionContent>
         </AccordionItem>
-
       {/* Save Button */}
       <div className="mt-8 flex justify-end">
         <Button 
