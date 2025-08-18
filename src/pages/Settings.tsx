@@ -148,43 +148,6 @@ const Settings = () => {
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
       </div>
 
-      <Accordion type="multiple" className="space-y-4">
-        {/* Notifications */}
-        <AccordionItem value="notifications" className="border rounded-lg px-6">
-          <AccordionTrigger className="text-xl font-semibold">
-            Notifications
-          </AccordionTrigger>
-          <AccordionContent className="space-y-8 pt-4">
-            <NotificationControl
-              type="focus"
-              title="Focus Session Alerts"
-              description="Get notified when focus sessions start and end"
-              value={focusNotifications}
-            />
-            
-            <NotificationControl
-              type="break"
-              title="Break Reminders"
-              description="Get notified when breaks start and end"
-              value={breakNotifications}
-            />
-            
-            <NotificationControl
-              type="invites"
-              title="Session Invites"
-              description="Receive invitations to join sessions from others"
-              value={sessionInvites}
-            />
-            
-            <NotificationControl
-              type="activity"
-              title="Friend Activity"
-              description="Get notified about your friends' session activity"
-              value={friendActivity}
-            />
-          </AccordionContent>
-        </AccordionItem>
-
         {/* Behaviour */}
         <AccordionItem value="behaviour" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
