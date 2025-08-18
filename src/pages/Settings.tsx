@@ -275,7 +275,7 @@ const Settings = () => {
         {/* Location & Discovery */}
         <AccordionItem value="location" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
-            Location & Discovery
+            Discovery
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pt-4">
             <div>
