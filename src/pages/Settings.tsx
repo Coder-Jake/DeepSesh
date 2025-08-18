@@ -175,16 +175,16 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="increments">Auto-join Compatible Sessions</Label>
+                <Label htmlFor="increments">Time Increments</Label>
                 <p className="text-sm text-muted-foreground">
-                  Automatically join sessions that match your preferences
+                  1 or 5 minutes chunks
                 </p>
               </div>
               <Switch
                 id="increments"
-                checked={autoJoin}
+                checked={Increments}
                 onCheckedChange={(checked) => {
-                  setAutoJoin(checked);
+                  setIncrements(checked);
                   checkForChanges();
                 }}
               />
