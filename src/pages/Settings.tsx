@@ -175,9 +175,9 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="increments">Time Increments</Label>
+                <Label htmlFor="increments">Time Chunk Size</Label>
                 <p className="text-sm text-muted-foreground">
-                  1 or 5 minutes chunks
+                  Automatically join sessions that match your preferences
                 </p>
               </div>
               <Switch
