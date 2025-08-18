@@ -29,8 +29,9 @@ const Index = () => {
   } = useTimer();
   
   const [isPublic, setIsPublic] = useState(true);
-  const longPressRef = useRef<NodeJS.Timeout | null>(null);
-  const isLongPress = useRef(false);
+  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressDetected = useRef(false);
+
   const playStartSound = () => {
     // Create a simple beep sound using Web Audio API
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -45,28 +46,56 @@ const Index = () => {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
   };
-  const handleLongPressStart = (callback: () => void) => {
-    isLongPress.current = false;
-    longPressRef.current = setTimeout(() => {
-      isLongPress.current = true;
-      callback();
-    }, 500);
+
+  const handlePressStart = (action: 'togglePublicPrivate' | 'stopTimer' | 'resetTimer') => {
+    isLongPressDetected.current = false;
+    longPressTimeoutRef.current = setTimeout(() => {
+      isLongPressDetected.current = true;
+      if (action === 'togglePublicPrivate') {
+        setIsPublic(prev => !prev);
+      } else if (action === 'stopTimer') {
+        setIsRunning(false);
+        setIsPaused(false);
+        setIsFlashing(false);
+      } else if (action === 'resetTimer') {
+        setIsRunning(false);
+        setIsPaused(false);
+        setIsFlashing(false);
+        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+        setTimeLeft(initialTime);
+      }
+    }, 500); // 500ms for long press
   };
   
-  const handleLongPressEnd = () => {
-    if (longPressRef.current) {
-      clearTimeout(longPressRef.current);
+  const handlePressEnd = (action: 'togglePublicPrivate' | 'stopTimer' | 'resetTimer') => {
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
     }
-  };
-  
-  const handlePublicPrivateToggle = () => {
-    if (isLongPress.current) {
-      setIsPublic(!isPublic);
-    } else {
-      if (confirm(`Switch to ${isPublic ? 'Private' : 'Public'} mode?`)) {
-        setIsPublic(!isPublic);
+    
+    if (!isLongPressDetected.current) {
+      // This was a short press
+      if (action === 'togglePublicPrivate') {
+        if (confirm(`Switch to ${isPublic ? 'Private' : 'Public'} mode?`)) {
+          setIsPublic(prev => !prev);
+        }
+      } else if (action === 'stopTimer') {
+        if (confirm('Are you sure you want to stop the timer?')) {
+          setIsRunning(false);
+          setIsPaused(false);
+          setIsFlashing(false);
+        }
+      } else if (action === 'resetTimer') {
+        if (confirm('Are you sure you want to reset the timer?')) {
+          setIsRunning(false);
+          setIsPaused(false);
+          setIsFlashing(false);
+          const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+          setTimeLeft(initialTime);
+        }
       }
     }
+    // Reset for next interaction
+    isLongPressDetected.current = false;
   };
   
   const startTimer = () => {
@@ -83,37 +112,6 @@ const Index = () => {
     setIsRunning(false);
   };
   
-  const stopTimer = () => {
-    if (isLongPress.current) {
-      setIsRunning(false);
-      setIsPaused(false);
-      setIsFlashing(false);
-    } else {
-      if (confirm('Are you sure you want to stop the timer?')) {
-        setIsRunning(false);
-        setIsPaused(false);
-        setIsFlashing(false);
-      }
-    }
-  };
-  
-  const resetTimer = () => {
-    if (isLongPress.current) {
-      setIsRunning(false);
-      setIsPaused(false);
-      setIsFlashing(false);
-      const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
-      setTimeLeft(initialTime);
-    } else {
-      if (confirm('Are you sure you want to reset the timer?')) {
-        setIsRunning(false);
-        setIsPaused(false);
-        setIsFlashing(false);
-        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
-        setTimeLeft(initialTime);
-      }
-    }
-  };
   const switchToBreak = () => {
     setTimerType('break');
     setTimeLeft(breakMinutes * 60);
@@ -156,12 +154,11 @@ const Index = () => {
                 <div className="flex-1"></div>
                 <div className="flex-1 flex justify-end">
                   <button 
-                    onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
-                    onTouchEnd={handleLongPressEnd}
-                    onClick={handlePublicPrivateToggle}
+                    onMouseDown={() => handlePressStart('togglePublicPrivate')}
+                    onMouseUp={() => handlePressEnd('togglePublicPrivate')}
+                    onMouseLeave={() => handlePressEnd('togglePublicPrivate')}
+                    onTouchStart={() => handlePressStart('togglePublicPrivate')}
+                    onTouchEnd={() => handlePressEnd('togglePublicPrivate')}
                     className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
                   >
                     {isPublic ? <>
@@ -197,12 +194,11 @@ const Index = () => {
                 <div className="absolute left-0 bottom-0 flex flex-col gap-1">
                   {(isPaused || isRunning) && (
                     <button
-                      onMouseDown={() => handleLongPressStart(stopTimer)}
-                      onMouseUp={handleLongPressEnd}
-                      onMouseLeave={handleLongPressEnd}
-                      onTouchStart={() => handleLongPressStart(stopTimer)}
-                      onTouchEnd={handleLongPressEnd}
-                      onClick={stopTimer}
+                      onMouseDown={() => handlePressStart('stopTimer')}
+                      onMouseUp={() => handlePressEnd('stopTimer')}
+                      onMouseLeave={() => handlePressEnd('stopTimer')}
+                      onTouchStart={() => handlePressStart('stopTimer')}
+                      onTouchEnd={() => handlePressEnd('stopTimer')}
                       className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
                     >
                       Stop
@@ -210,12 +206,11 @@ const Index = () => {
                   )}
                   {(!isRunning && !isFlashing) && (
                     <button
-                      onMouseDown={() => handleLongPressStart(resetTimer)}
-                      onMouseUp={handleLongPressEnd}
-                      onMouseLeave={handleLongPressEnd}
-                      onTouchStart={() => handleLongPressStart(resetTimer)}
-                      onTouchEnd={handleLongPressEnd}
-                      onClick={resetTimer}
+                      onMouseDown={() => handlePressStart('resetTimer')}
+                      onMouseUp={() => handlePressEnd('resetTimer')}
+                      onMouseLeave={() => handlePressEnd('resetTimer')}
+                      onTouchStart={() => handlePressStart('resetTimer')}
+                      onTouchEnd={() => handlePressEnd('resetTimer')}
                       className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
                     >
                       Reset
