@@ -324,6 +324,7 @@ const Settings = () => {
         </AccordionItem>
       </Accordion>
 <Accordion type="multiple" className="space-y-4">
+
         {/* Notifications */}
         <AccordionItem value="notifications" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
