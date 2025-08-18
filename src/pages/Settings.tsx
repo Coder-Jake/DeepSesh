@@ -253,7 +253,7 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="break-duration">Default Break Duration</Label>
+              <Label htmlFor="break-duration">Break Duration</Label>
               <Select value={breakDuration} onValueChange={(value) => {
                 setBreakDuration(value);
                 checkForChanges();
