@@ -230,7 +230,7 @@ const Settings = () => {
         {/* Session Defaults */}
         <AccordionItem value="session-defaults" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
-            Session Defaults
+            Defaults
           </AccordionTrigger>
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
