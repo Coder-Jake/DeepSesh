@@ -28,7 +28,7 @@ export const CircularProgress = ({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!interactive) return;
     setIsDragging(true);
-    // No need to call handleMouseMove here, it will be called by the global listener
+    handleMouseMove(e);
   };
 
   const handleMouseMove = (e: React.MouseEvent | MouseEvent) => {
@@ -42,30 +42,9 @@ export const CircularProgress = ({
     
     // Calculate angle from mouse position
     let angle = Math.atan2(y, x) * (180 / Math.PI);
-    angle = (angle + 450) % 360; // Normalize to 0-360 starting from top (0 degrees at 12 o'clock)
+    angle = (angle + 450) % 360; // Normalize to 0-360 starting from top
     
-    // Calculate radial distance from center
-    const distance = Math.sqrt(x * x + y * y);
-    
-    // Calculate nominal radius (the radius of the progress circle)
-    const nominalRadius = (size - strokeWidth) / 2;
-
-    // Calculate radial adjustment to progress
-    // A linear scaling factor: 100% progress change over the full radius range (from center to outer edge)
-    // This means dragging from the center to the outer edge of the component (size/2)
-    // or from the outer edge to the center will result in a significant change.
-    // Let's make it less aggressive, e.g., 50% change over the full radius range.
-    const radialSensitivity = 50 / (size / 2); // 50% change over size/2 pixels
-
-    const radialAdjustment = (distance - nominalRadius) * radialSensitivity;
-
-    // Calculate base progress from angle
-    const angularProgress = (angle / 360) * 100;
-
-    // Combine angular and radial progress, then clamp to 0-100
-    let newProgress = angularProgress + radialAdjustment;
-    newProgress = Math.max(0, Math.min(100, newProgress));
-
+    const newProgress = (angle / 360) * 100;
     onInteract?.(newProgress);
   };
 
@@ -90,7 +69,7 @@ export const CircularProgress = ({
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, size, strokeWidth, onInteract]); // Added dependencies for useEffect
+  }, [isDragging]);
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
@@ -99,7 +78,7 @@ export const CircularProgress = ({
         height={size}
         className={`circular-progress-container transform -rotate-90 ${interactive ? 'cursor-pointer' : ''}`}
         onMouseDown={handleMouseDown}
-        // onMouseMove is handled by global listener when dragging
+        onMouseMove={handleMouseMove}
       >
         {/* Background ring */}
         <circle
@@ -131,7 +110,6 @@ export const CircularProgress = ({
         {/* Interactive handle */}
         {interactive && (
           <circle
-            // Position the handle based on the current 'progress' prop, which now includes radial adjustment
             cx={size / 2 + radius * Math.cos((progress / 100) * 2 * Math.PI - Math.PI / 2)}
             cy={size / 2 + radius * Math.sin((progress / 100) * 2 * Math.PI - Math.PI / 2)}
             r={strokeWidth / 2 + 2}
