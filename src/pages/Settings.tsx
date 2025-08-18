@@ -339,13 +339,6 @@ const Settings = () => {
             />
             
             <NotificationControl
-              type="break"
-              title="Break Reminders"
-              description="Get notified when breaks start and end"
-              value={breakNotifications}
-            />
-            
-            <NotificationControl
               type="invites"
               title="Session Invites"
               description="Receive invitations to join sessions from others"
