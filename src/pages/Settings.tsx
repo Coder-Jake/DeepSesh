@@ -148,6 +148,8 @@ const Settings = () => {
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
       </div>
 
+      <Accordion type="multiple" className="space-y-4">
+       
         {/* Behaviour */}
         <AccordionItem value="behaviour" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
@@ -323,9 +325,8 @@ const Settings = () => {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-
-<Accordion type="multiple" className="space-y-4">
-        {/* Notifications */}
+      
+       {/* Notifications */}
         <AccordionItem value="notifications" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
             Notifications
@@ -360,6 +361,7 @@ const Settings = () => {
             />
           </AccordionContent>
         </AccordionItem>
+
       {/* Save Button */}
       <div className="mt-8 flex justify-end">
         <Button 
