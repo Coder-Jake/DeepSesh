@@ -73,8 +73,8 @@ const History = () => {
     <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Session History</h1>
-          <p className="text-muted-foreground mt-2">Review your past focus sessions</p>
+          <h1 className="text-3xl font-bold text-foreground">History</h1>
+          <p className="text-muted-foreground mt-2">Review stats from past Seshs</p>
         </div>
         <TimeFilterToggle onValueChange={setHistoryTimePeriod} />
       </div>
