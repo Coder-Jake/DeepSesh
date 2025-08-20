@@ -36,7 +36,7 @@ const Leaderboard = () => {
           <h1 className="text-3xl font-bold text-foreground">Leaderboard</h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          See how your focus and collaboration compare to others in the FlowSesh community!
+          Compare your focus and collaboration  with the FlowSesh community!
         </p>
       </div>
 
