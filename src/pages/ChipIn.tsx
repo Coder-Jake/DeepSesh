@@ -55,7 +55,7 @@ const ChipIn = () => {
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Here you can support the developers, contribute toward the ongoing costs of running this platform, 
-          give feedback or make suggestions to the developers.
+          give feedback or make suggestions.
         </p>
       </div>
 
