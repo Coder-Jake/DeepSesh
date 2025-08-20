@@ -7,6 +7,7 @@ import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef } from "react";
 import { Globe, Lock } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
+
 const Index = () => {
   const {
     focusMinutes,
@@ -26,11 +27,20 @@ const Index = () => {
     notes,
     setNotes,
     formatTime,
+    hideSessionsDuringTimer, // Get the new setting
   } = useTimer();
   
   const [isPublic, setIsPublic] = useState(true);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
+
+  // Mock data for joined participants
+  const joinedParticipants = isRunning ? [
+    { id: 1, name: "Alice", sociability: 70, bio: "Software engineer passionate about open-source projects.", intention: "Working on a new React component library." },
+    { id: 2, name: "Bob", sociability: 30, bio: "Freelance writer focusing on sci-fi novels.", intention: "Finishing chapter 5 of my current manuscript." },
+    { id: 3, name: "Charlie", sociability: 90, bio: "Student studying graphic design and animation.", intention: "Brainstorming ideas for a new client logo." },
+  ] : [];
+
   const playStartSound = () => {
     // Create a simple beep sound using Web Audio API
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -144,139 +154,177 @@ const Index = () => {
       setTimeLeft(actualMinutes * 60);
     }
   };
-  return <main className="max-w-4xl mx-auto p-6">
-        <div className="mb-6">
-          <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Timer Section */}
-          <div className="space-y-6">
-            <div className={`rounded-lg border border-border p-8 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex-1"></div>
-                <div className="flex-1 flex justify-end">
-                  <button 
-                    onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
-                    onTouchEnd={handleLongPressEnd}
-                    onClick={handlePublicPrivateToggle}
-                    className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                  >
-                    {isPublic ? <>
-                        <Globe size={16} />
-                        <span className="text-sm font-medium">Public</span>
-                      </> : <>
-                        <Lock size={16} />
-                        <span className="text-sm font-medium">Private</span>
-                      </>}
-                  </button>
-                </div>
-              </div>
-              
-              <div className="flex justify-center mb-4">
-                <CircularProgress
-                  size={280}
-                  strokeWidth={12}
-                  progress={timerType === 'focus' 
-                    ? (timeLeft / (focusMinutes * 60)) * 100 
-                    : (timeLeft / (breakMinutes * 60)) * 100
-                  }
-                  interactive={!isRunning && !isPaused && !isFlashing}
-                  onInteract={handleCircularProgressChange}
-                  className={isFlashing ? 'animate-pulse' : ''}
-                >
-                  <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''}`}>
-                    {formatTime(timeLeft)}
-                  </div>
-                </CircularProgress>
-              </div>
-              
-              <div className="flex gap-3 justify-center mb-6 relative">
-                <div className="absolute left-0 bottom-0 flex flex-col gap-1">
-                  {(isPaused || isRunning) && (
-                    <button
-                      onMouseDown={() => handleLongPressStart(stopTimer)}
-                      onMouseUp={handleLongPressEnd}
-                      onMouseLeave={handleLongPressEnd}
-                      onTouchStart={() => handleLongPressStart(stopTimer)}
-                      onTouchEnd={handleLongPressEnd}
-                      onClick={stopTimer}
-                      className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
-                    >
-                      Stop
-                    </button>
-                  )}
-                  {(!isRunning && !isFlashing) && (
-                    <button
-                      onMouseDown={() => handleLongPressStart(resetTimer)}
-                      onMouseUp={handleLongPressEnd}
-                      onMouseLeave={handleLongPressEnd}
-                      onTouchStart={() => handleLongPressStart(resetTimer)}
-                      onTouchEnd={handleLongPressEnd}
-                      onClick={resetTimer}
-                      className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-                
-                {isFlashing ? <Button size="lg" className="px-8" onClick={timerType === 'focus' ? switchToBreak : switchToFocus}>
-                    Start {timerType === 'focus' ? 'Break' : 'Focus'}
-                  </Button> : <>
-                    <Button 
-                      size="lg" 
-                      className="px-8" 
-                      onClick={isRunning ? pauseTimer : (isPaused ? () => { setIsRunning(true); setIsPaused(false); } : startTimer)}
-                    >
-                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
-                    </Button>
-                  </>}
-              </div>
 
-              <div className="flex justify-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <label className="text-muted-foreground">Focus:</label>
-                  <Input type="number" value={focusMinutes} onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-muted-foreground">Break:</label>
-                  <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="30" />
-                </div>
+  const shouldHideSessionLists = hideSessionsDuringTimer && (isRunning || isPaused);
+
+  return (
+    <main className="max-w-4xl mx-auto p-6">
+      <div className="mb-6">
+        <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Timer Section */}
+        <div className="space-y-6">
+          <div className={`rounded-lg border border-border p-8 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex-1"></div>
+              <div className="flex-1 flex justify-end">
+                <button 
+                  onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
+                  onMouseUp={handleLongPressEnd}
+                  onMouseLeave={handleLongPressEnd}
+                  onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
+                  onTouchEnd={handleLongPressEnd}
+                  onClick={handlePublicPrivateToggle}
+                  className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                >
+                  {isPublic ? <>
+                      <Globe size={16} />
+                      <span className="text-sm font-medium">Public</span>
+                    </> : <>
+                      <Lock size={16} />
+                      <span className="text-sm font-medium">Private</span>
+                    </>}
+                </button>
               </div>
             </div>
+            
+            <div className="flex justify-center mb-4">
+              <CircularProgress
+                size={280}
+                strokeWidth={12}
+                progress={timerType === 'focus' 
+                  ? (timeLeft / (focusMinutes * 60)) * 100 
+                  : (timeLeft / (breakMinutes * 60)) * 100
+                }
+                interactive={!isRunning && !isPaused && !isFlashing}
+                onInteract={handleCircularProgressChange}
+                className={isFlashing ? 'animate-pulse' : ''}
+              >
+                <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''}`}>
+                  {formatTime(timeLeft)}
+                </div>
+              </CircularProgress>
+            </div>
+            
+            <div className="flex gap-3 justify-center mb-6 relative">
+              <div className="absolute left-0 bottom-0 flex flex-col gap-1">
+                {(isPaused || isRunning) && (
+                  <button
+                    onMouseDown={() => handleLongPressStart(stopTimer)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                    onTouchStart={() => handleLongPressStart(stopTimer)}
+                    onTouchEnd={handleLongPressEnd}
+                    onClick={stopTimer}
+                    className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
+                  >
+                    Stop
+                  </button>
+                )}
+                {(!isRunning && !isFlashing) && (
+                  <button
+                    onMouseDown={() => handleLongPressStart(resetTimer)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                    onTouchStart={() => handleLongPressStart(resetTimer)}
+                    onTouchEnd={handleLongPressEnd}
+                    onClick={resetTimer}
+                    className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+              
+              {isFlashing ? <Button size="lg" className="px-8" onClick={timerType === 'focus' ? switchToBreak : switchToFocus}>
+                  Start {timerType === 'focus' ? 'Break' : 'Focus'}
+                </Button> : <>
+                  <Button 
+                    size="lg" 
+                    className="px-8" 
+                    onClick={isRunning ? pauseTimer : (isPaused ? () => { setIsRunning(true); setIsPaused(false); } : startTimer)}
+                  >
+                    {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
+                  </Button>
+                </>}
+            </div>
 
-            {/* Session Controls */}
-            <div className="grid grid-cols-2 gap-4">
-              
-              
+            <div className="flex justify-center gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <label className="text-muted-foreground">Focus:</label>
+                <Input type="number" value={focusMinutes} onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-muted-foreground">Break:</label>
+                <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="30" />
+              </div>
             </div>
           </div>
 
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Notes Section - Show when running or paused */}
-            {(isRunning || isPaused) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Notes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    placeholder="Jot down your thoughts, to-do items, or reflections..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="min-h-[120px] resize-none"
-                  />
-                </CardContent>
-              </Card>
-            )}
+          {/* Session Controls */}
+          <div className="grid grid-cols-2 gap-4">
+            
+            
+          </div>
+        </div>
 
-            {/* Sessions List */}
-            <TooltipProvider>
-              {/* Nearby Sessions */}
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Notes Section - Show when running or paused */}
+          {(isRunning || isPaused) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  placeholder="Jot down your thoughts, to-do items, or reflections..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="min-h-[120px] resize-none"
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Joined Participants Section - Show when running */}
+          {isRunning && joinedParticipants.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Joined Participants</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {joinedParticipants.map(participant => (
+                  <Tooltip key={participant.id}>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-default">
+                        <span className="font-medium text-foreground">{participant.name}</span>
+                        <span className="text-sm text-muted-foreground">Sociability: {participant.sociability}%</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="text-center max-w-xs">
+                        <p className="font-medium mb-1">{participant.name}</p>
+                        <p className="text-sm text-muted-foreground">Sociability: {participant.sociability}%</p>
+                        {timerType === 'break' && (
+                          <>
+                            <p className="text-xs text-muted-foreground mt-2">Bio: {participant.bio}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Intention: {participant.intention}</p>
+                          </>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Sessions List */}
+          <TooltipProvider>
+            {/* Nearby Sessions */}
+            {!shouldHideSessionLists && isPublic && ( // Hide if private or if timer is running and setting is enabled
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-3">Nearby</h3>
                 <div className="space-y-3">
@@ -322,6 +370,7 @@ const Index = () => {
                                   <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
                                   </div>
+                                  
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-4">
@@ -430,8 +479,10 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* Friends Sessions */}
+            {/* Friends Sessions */}
+            {!shouldHideSessionLists && ( // Hide if timer is running and setting is enabled
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-3">Friends</h3>
                 <div className="space-y-3">
@@ -512,9 +563,11 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-            </TooltipProvider>
-          </div>
+            )}
+          </TooltipProvider>
         </div>
-      </main>;
+      </div>
+    </main>
+  );
 };
 export default Index;

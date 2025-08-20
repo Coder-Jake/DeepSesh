@@ -6,8 +6,11 @@ import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef } from "react";
 import { Bell, Smartphone, Volume2 } from "lucide-react";
+import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 
 const Settings = () => {
+  const { hideSessionsDuringTimer, setHideSessionsDuringTimer } = useTimer(); // Use from context
+
   const [autoJoin, setAutoJoin] = useState(false);
   const [defaultDuration, setDefaultDuration] = useState("25");
   const [breakDuration, setBreakDuration] = useState("5");
@@ -192,6 +195,22 @@ const Settings = () => {
             Behaviour
           </AccordionTrigger>
           <AccordionContent className="space-y-6 pt-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="hide-sessions-during-timer">Hide Sessions During Timer</Label>
+                <p className="text-sm text-muted-foreground">
+                  Hide Nearby and Friends sessions when your timer is active.
+                </p>
+              </div>
+              <Switch
+                id="hide-sessions-during-timer"
+                checked={hideSessionsDuringTimer}
+                onCheckedChange={(checked) => {
+                  setHideSessionsDuringTimer(checked);
+                  checkForChanges();
+                }}
+              />
+            </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="auto-transition"> Auto/Manual Transitions</Label>

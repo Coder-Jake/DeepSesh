@@ -18,6 +18,8 @@ interface TimerContextType {
   notes: string;
   setNotes: (notes: string) => void;
   formatTime: (seconds: number) => string;
+  hideSessionsDuringTimer: boolean; // New setting
+  setHideSessionsDuringTimer: (hide: boolean) => void; // New setter
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -43,6 +45,7 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
+  const [hideSessionsDuringTimer, setHideSessionsDuringTimer] = useState(true); // Default to true
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const formatTime = (seconds: number) => {
@@ -102,6 +105,8 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
     notes,
     setNotes,
     formatTime,
+    hideSessionsDuringTimer, // New
+    setHideSessionsDuringTimer, // New
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
