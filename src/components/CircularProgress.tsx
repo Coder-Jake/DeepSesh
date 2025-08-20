@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 interface CircularProgressProps {
   size?: number;
@@ -20,32 +20,41 @@ export const CircularProgress = ({
   className = ""
 }: CircularProgressProps) => {
   const [isDragging, setIsDragging] = useState(false);
+  const svgRef = useRef<SVGSVGElement>(null);
+
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
+  // Calculate handle position
+  const handleAngle = (progress / 100) * 2 * Math.PI - Math.PI / 2; // Angle in radians, starting from top (12 o'clock)
+  const handleX = size / 2 + radius * Math.cos(handleAngle);
+  const handleY = size / 2 + radius * Math.sin(handleAngle);
+
+  const calculateProgress = useCallback((clientX: number, clientY: number) => {
+    if (!svgRef.current) return;
+
+    const rect = svgRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const x = clientX - centerX;
+    const y = clientY - centerY;
+
+    let angle = Math.atan2(y, x); // radians from -PI to PI
+    
+    // Adjust angle to be 0 at 12 o'clock and increase clockwise (0 to 2*PI)
+    angle = (angle + 2 * Math.PI + Math.PI / 2) % (2 * Math.PI);
+    
+    const newProgress = (angle / (2 * Math.PI)) * 100;
+    onInteract?.(newProgress);
+  }, [onInteract]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!interactive) return;
     setIsDragging(true);
-    handleMouseMove(e);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent | MouseEvent) => {
-    if (!interactive || (!isDragging && e.type === 'mousemove')) return;
-    
-    const rect = (e.currentTarget as Element).getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const x = e.clientX - centerX;
-    const y = e.clientY - centerY;
-    
-    // Calculate angle from mouse position
-    let angle = Math.atan2(y, x) * (180 / Math.PI);
-    angle = (angle + 450) % 360; // Normalize to 0-360 starting from top
-    
-    const newProgress = (angle / 360) * 100;
-    onInteract?.(newProgress);
+    calculateProgress(e.clientX, e.clientY); // Set initial position on click
   };
 
   const handleMouseUp = () => {
@@ -53,32 +62,34 @@ export const CircularProgress = ({
   };
 
   useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        calculateProgress(e.clientX, e.clientY);
+      }
+    };
+
     if (isDragging) {
-      const handleGlobalMouseMove = (e: MouseEvent) => {
-        const target = document.querySelector('.circular-progress-container');
-        if (target) {
-          handleMouseMove(e as any);
-        }
-      };
-      
       document.addEventListener('mousemove', handleGlobalMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      
-      return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
+    } else {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     }
-  }, [isDragging]);
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, calculateProgress]);
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
       <svg
         width={size}
         height={size}
+        ref={svgRef}
         className={`circular-progress-container transform -rotate-90 ${interactive ? 'cursor-pointer' : ''}`}
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
       >
         {/* Background ring */}
         <circle
@@ -110,8 +121,8 @@ export const CircularProgress = ({
         {/* Interactive handle */}
         {interactive && (
           <circle
-            cx={size / 2 + radius * Math.cos((progress / 100) * 2 * Math.PI - Math.PI / 2)}
-            cy={size / 2 + radius * Math.sin((progress / 100) * 2 * Math.PI - Math.PI / 2)}
+            cx={handleX}
+            cy={handleY}
             r={strokeWidth / 2 + 2}
             fill="hsl(var(--primary))"
             className="cursor-grab active:cursor-grabbing"
