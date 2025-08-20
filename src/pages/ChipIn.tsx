@@ -54,7 +54,7 @@ const ChipIn = () => {
           <h1 className="text-3xl font-bold text-foreground">Chip In</h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Here you can support the developers, contribute toward the ongoing costs of running this platform, 
+          Support the developers, contribute toward the ongoing costs,
           give feedback or make suggestions.
         </p>
       </div>
