@@ -230,9 +230,9 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="auto-join">Auto-join Compatible Sessions</Label>
+                <Label htmlFor="auto-join">Delay External Notifications</Label>
                 <p className="text-sm text-muted-foreground">
-                  Automatically join sessions that match your preferences
+                  Delay notifications until next break
                 </p>
               </div>
               <Switch
