@@ -257,7 +257,7 @@ const Settings = () => {
                 id="lock-in"
                 checked={lock-in}
                 onCheckedChange={(checked) => {
-                  setAutoJoin(checked);
+                  setlock-in(checked);
                   checkForChanges();
                 }}
               />
