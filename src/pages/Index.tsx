@@ -119,7 +119,7 @@ const Index = () => {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
-        const initialTime = timerType === 'DeepWork' ? focusMinutes * 60 : breakMinutes * 60;
+        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
         setTimeLeft(initialTime);
       }
     }
