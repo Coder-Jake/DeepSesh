@@ -100,7 +100,7 @@ const History = () => {
                   <div className="flex items-center gap-3">
                     <Clock className="h-8 w-8 text-primary" />
                     <div>
-                      <p className="text-2xl font-bold">5h 45m</p>
+                      <p className="text-2xl font-bold">16h 45m</p>
                       <p className="text-sm text-muted-foreground">Total Focus Time</p>
                     </div>
                   </div>
