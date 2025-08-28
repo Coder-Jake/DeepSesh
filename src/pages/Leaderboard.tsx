@@ -46,7 +46,7 @@ const Leaderboard = () => {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Top Focus Hours
+              Total Focus Hours
             </CardTitle>
             <TimeFilterToggle onValueChange={setFocusTimePeriod} />
           </CardHeader>
