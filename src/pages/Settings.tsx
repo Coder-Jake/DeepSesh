@@ -14,7 +14,7 @@ const Settings = () => {
   const [autoJoin, setAutoJoin] = useState(false);
   const [defaultDuration, setDefaultDuration] = useState("90");
   const [breakDuration, setBreakDuration] = useState("15");
-  const [maxDistance, setMaxDistance] = useState([2500]);
+  const [maxDistance, setMaxDistance] = useState([2000]);
   
   // Notification preferences with detailed options
   const [focusNotifications, setFocusNotifications] = useState({ push: false, vibrate: false, sound: false });
