@@ -261,6 +261,26 @@ const Settings = () => {
                 }}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="focus-duration">Focus Duration (minutes)</Label>
+              <Select value={defaultDuration} onValueChange={(value) => {
+                setDefaultDuration(value);
+                checkForChanges();
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">15</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="45">45</SelectItem>
+                  <SelectItem value="60">60</SelectItem>
+                  <SelectItem value="75">75</SelectItem>
+                  <SelectItem value="90">90</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </AccordionContent>
         </AccordionItem>
 
