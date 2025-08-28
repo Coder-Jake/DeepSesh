@@ -4,15 +4,22 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Bell, Smartphone, Volume2 } from "lucide-react";
-import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
+import { useTimer } from "@/contexts/TimerContext";
+import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 
 const Settings = () => {
-  const { hideSessionsDuringTimer, setHideSessionsDuringTimer } = useTimer(); // Use from context
+  const { hideSessionsDuringTimer, setHideSessionsDuringTimer } = useTimer();
 
   const [delay, setdelay] = useState(false);
   const [lock, setlock] = useState(false);
+  const [exemptionsEnabled, setExemptionsEnabled] = useState(false); // New state for exemptions switch
+  const [phoneCalls, setPhoneCalls] = useState(false); // New state for phone calls checkbox
+  const [favourites, setFavourites] = useState(false); // New state for favourites checkbox
+  const [workApps, setWorkApps] = useState(false); // New state for work apps checkbox
+  const [intentionalBreaches, setIntentionalBreaches] = useState(false); // New state for intentional breaches checkbox
+
   const [defaultDuration, setDefaultDuration] = useState("90");
   const [breakDuration, setBreakDuration] = useState("15");
   const [maxDistance, setMaxDistance] = useState([2000]);
@@ -38,6 +45,69 @@ const Settings = () => {
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
   const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
+  // Initial state for comparison to detect changes
+  const initialSettings = useRef({
+    hideSessionsDuringTimer,
+    delay,
+    lock,
+    exemptionsEnabled,
+    phoneCalls,
+    favourites,
+    workApps,
+    intentionalBreaches,
+    autoTransition,
+    defaultDuration,
+    breakDuration,
+    maxDistance: maxDistance[0],
+    focusNotifications,
+    breakNotifications,
+    sessionInvites,
+    friendActivity,
+    verificationStandard,
+    profileVisibility,
+    locationSharing,
+  });
+
+  useEffect(() => {
+    const currentSettings = {
+      hideSessionsDuringTimer,
+      delay,
+      lock,
+      exemptionsEnabled,
+      phoneCalls,
+      favourites,
+      workApps,
+      intentionalBreaches,
+      autoTransition,
+      defaultDuration,
+      breakDuration,
+      maxDistance: maxDistance[0],
+      focusNotifications,
+      breakNotifications,
+      sessionInvites,
+      friendActivity,
+      verificationStandard,
+      profileVisibility,
+      locationSharing,
+    };
+
+    const changed = Object.keys(currentSettings).some(key => {
+      const currentVal = currentSettings[key as keyof typeof currentSettings];
+      const initialVal = initialSettings.current[key as keyof typeof initialSettings.current];
+
+      if (typeof currentVal === 'object' && currentVal !== null && !Array.isArray(currentVal)) {
+        return JSON.stringify(currentVal) !== JSON.stringify(initialVal);
+      }
+      return currentVal !== initialVal;
+    });
+    setHasChanges(changed);
+  }, [
+    hideSessionsDuringTimer, delay, lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
+    autoTransition, defaultDuration, breakDuration, maxDistance,
+    focusNotifications, breakNotifications, sessionInvites, friendActivity,
+    verificationStandard, profileVisibility, locationSharing
+  ]);
+
   const showMomentaryText = (key: string, text: string) => {
     setMomentaryText(prev => ({ ...prev, [key]: text }));
     if (timeoutRefs.current[key]) {
@@ -50,11 +120,29 @@ const Settings = () => {
 
   const handleSave = () => {
     // Save settings logic would go here
+    // For now, just reset the initial settings to current values
+    initialSettings.current = {
+      hideSessionsDuringTimer,
+      delay,
+      lock,
+      exemptionsEnabled,
+      phoneCalls,
+      favourites,
+      workApps,
+      intentionalBreaches,
+      autoTransition,
+      defaultDuration,
+      breakDuration,
+      maxDistance: maxDistance[0],
+      focusNotifications,
+      breakNotifications,
+      sessionInvites,
+      friendActivity,
+      verificationStandard,
+      profileVisibility,
+      locationSharing,
+    };
     setHasChanges(false);
-  };
-
-  const checkForChanges = () => {
-    setHasChanges(true);
   };
 
   const updateNotificationSetting = (type: 'focus' | 'break' | 'invites' | 'activity', key: 'push' | 'vibrate' | 'sound', value: boolean) => {
@@ -73,7 +161,6 @@ const Settings = () => {
     };
     
     setters[type]({ ...currentValues[type], [key]: value });
-    checkForChanges();
     showMomentaryText(`${type}-${key}`, value ? 'On' : 'Off');
   };
 
@@ -206,10 +293,7 @@ const Settings = () => {
               <Switch
                 id="hide-sessions-during-timer"
                 checked={hideSessionsDuringTimer}
-                onCheckedChange={(checked) => {
-                  setHideSessionsDuringTimer(checked);
-                  checkForChanges();
-                }}
+                onCheckedChange={setHideSessionsDuringTimer}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -222,10 +306,7 @@ const Settings = () => {
               <Switch
                 id="auto-transition"
                 checked={autoTransition}
-                onCheckedChange={(checked) => {
-                  setAutoTransition(checked);
-                  checkForChanges();
-                }}
+                onCheckedChange={setAutoTransition}
               />
             </div>
 
@@ -239,10 +320,7 @@ const Settings = () => {
               <Switch
                 id="delay"
                 checked={delay}
-                onCheckedChange={(checked) => {
-                  setdelay(checked);
-                  checkForChanges();
-                }}
+                onCheckedChange={setdelay}
               />
             </div>
 
@@ -256,13 +334,72 @@ const Settings = () => {
               <Switch
                 id="lock"
                 checked={lock}
-                onCheckedChange={(checked) => {
-                  setlock(checked);
-                  checkForChanges();
-                }}
+                onCheckedChange={setlock}
               />
             </div>
 
+            {/* New Exemptions Switch */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="exemptions">Exemptions</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow specific interruptions during locked-in sessions.
+                  </p>
+                </div>
+                <Switch
+                  id="exemptions"
+                  checked={exemptionsEnabled}
+                  onCheckedChange={setExemptionsEnabled}
+                />
+              </div>
+
+              {/* Checkboxes for Exemptions (conditionally rendered) */}
+              {exemptionsEnabled && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-4 pt-2 border-l border-border ml-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="phonecalls"
+                      checked={phoneCalls}
+                      onCheckedChange={(checked) => setPhoneCalls(!!checked)}
+                    />
+                    <Label htmlFor="phonecalls" className="text-sm font-normal">
+                      Phone Calls
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="favourites"
+                      checked={favourites}
+                      onCheckedChange={(checked) => setFavourites(!!checked)}
+                    />
+                    <Label htmlFor="favourites" className="text-sm font-normal">
+                      Favourites
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="work-apps"
+                      checked={workApps}
+                      onCheckedChange={(checked) => setWorkApps(!!checked)}
+                    />
+                    <Label htmlFor="work-apps" className="text-sm font-normal">
+                      Work Apps
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="intentional-breaches"
+                      checked={intentionalBreaches}
+                      onCheckedChange={(checked) => setIntentionalBreaches(!!checked)}
+                    />
+                    <Label htmlFor="intentional-breaches" className="text-sm font-normal">
+                      Intentional Breaches
+                    </Label>
+                  </div>
+                </div>
+              )}
+            </div>
           </AccordionContent>
         </AccordionItem>
 
@@ -274,10 +411,7 @@ const Settings = () => {
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label htmlFor="focus-duration">Focus Duration (minutes)</Label>
-              <Select value={defaultDuration} onValueChange={(value) => {
-                setDefaultDuration(value);
-                checkForChanges();
-              }}>
+              <Select value={defaultDuration} onValueChange={setDefaultDuration}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
@@ -294,10 +428,7 @@ const Settings = () => {
 
             <div className="space-y-2">
               <Label htmlFor="break-duration">Break Duration (minutes)</Label>
-              <Select value={breakDuration} onValueChange={(value) => {
-                setBreakDuration(value);
-                checkForChanges();
-              }}>
+              <Select value={breakDuration} onValueChange={setBreakDuration}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
@@ -329,10 +460,7 @@ const Settings = () => {
                 <div className="relative group">
                   <Slider
                     value={maxDistance}
-                    onValueChange={(value) => {
-                      setMaxDistance(value);
-                      checkForChanges();
-                    }}
+                    onValueChange={setMaxDistance}
                     max={5000}
                     min={100}
                     step={100}
@@ -361,10 +489,7 @@ const Settings = () => {
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label>Profile Visibility</Label>
-              <Select value={profileVisibility} onValueChange={(value) => {
-                setProfileVisibility(value);
-                checkForChanges();
-              }}>
+              <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select visibility" />
                 </SelectTrigger>
@@ -381,10 +506,7 @@ const Settings = () => {
               <p className="text-sm text-muted-foreground">
                 for users to interact with sessions you host
               </p>
-              <Select value={verificationStandard} onValueChange={(value) => {
-                setVerificationStandard(value);
-                checkForChanges();
-              }}>
+              <Select value={verificationStandard} onValueChange={setVerificationStandard}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select verification standard" />
                 </SelectTrigger>
