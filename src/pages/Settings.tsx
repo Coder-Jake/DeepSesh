@@ -326,7 +326,7 @@ const Settings = () => {
                 <div className="text-center mt-3 text-sm text-muted-foreground">
                   {maxDistance[0] <= 300 && "Very close proximity only"}
                   {maxDistance[0] > 300 && maxDistance[0] <= 1000 && "Walking distance"}
-                  {maxDistance[0] > 1000 && maxDistance[0] <= 2000 && "Short bike ride or drive"}
+                  {maxDistance[0] > 1000 && maxDistance[0] <= 2000 && "Short bike ride"}
                   {maxDistance[0] > 2000 && "Wider area search"}
                 </div>
               </div>
