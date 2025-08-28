@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } = "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef } from "react";
 import { Globe, Lock } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
-import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useProfile } from "@/contexts/ProfileContext";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const {
@@ -32,15 +32,15 @@ const Index = () => {
     hideSessionsDuringTimer,
   } = useTimer();
   
-  const { profile, loading: profileLoading } = useProfile(); // Use profile context
-  const navigate = useNavigate(); // Initialize useNavigate
+  const { profile, loading: profileLoading } = useProfile();
+  const navigate = useNavigate();
 
   const [isPublic, setIsPublic] = useState(true);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
   // Mock data for joined participants, now including intention
-  const joinedParticipants = isRunning ? [
+  const joinedParticipants = (isRunning || isPaused) ? [ // Changed condition here
     { id: 1, name: "Alice", sociability: 70, bio: "Software engineer passionate about open-source projects.", intention: "Working on a new React component library." },
     { id: 2, name: "Bob", sociability: 30, bio: "Freelance writer focusing on sci-fi novels.", intention: "Finishing chapter 5 of my current manuscript." },
     { id: 3, name: "Charlie", sociability: 90, bio: "Student studying graphic design and animation.", intention: "Brainstorming ideas for a new client logo." },
@@ -309,25 +309,23 @@ const Index = () => {
             </Card>
           )}
 
-          {/* Notes Section - Show when running or paused */}
-          {(isRunning || isPaused) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  placeholder="Jot down your thoughts, to-do items, or reflections..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-[120px] resize-none"
-                />
-              </CardContent>
-            </Card>
-          )}
+          {/* Notes Section - Always visible */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                placeholder="Jot down your thoughts, to-do items, or reflections..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="min-h-[120px] resize-none"
+              />
+            </CardContent>
+          </Card>
 
-          {/* Joined Participants Section - Show when running */}
-          {isRunning && joinedParticipants.length > 0 && (
+          {/* Joined Participants Section - Show when running or paused */}
+          {(isRunning || isPaused) && joinedParticipants.length > 0 && ( // Changed condition here
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Joined Participants</CardTitle>
