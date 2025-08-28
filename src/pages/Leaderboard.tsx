@@ -96,15 +96,15 @@ const Leaderboard = () => {
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
           <p>
-            Compete weekly for small prizes! Points are awarded based on your productivity and collaboration:
+            Compete weekly for small prizes! Points awarded for productivity and collaboration:
           </p>
           <ul className="list-disc list-inside ml-4 space-y-1">
             <li><span className="font-medium text-foreground">Points =</span> (Focus Hours * Unique Coworkers) per session + Verified Active Invites</li>
-            <li>Top prize this week: <span className="font-medium text-foreground">$50 voucher!</span></li>
+            <li>Prize this week: <span className="font-medium text-foreground">$50 voucher!</span></li>
           </ul>
           <div className="flex items-center gap-2 text-sm">
             <Gift className="h-4 w-4 text-primary" />
-            <p>This week's competition is proudly sponsored by <span className="font-medium text-foreground">Airwallex</span>.</p>
+            <p>Sponsored by <span className="font-medium text-foreground">Airwallex</span>.</p>
           </div>
         </CardContent>
       </Card>
