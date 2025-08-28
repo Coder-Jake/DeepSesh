@@ -5,11 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
-import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { useProfile } from "@/contexts/ProfileContext";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Profile = () => {
-  const { profile, loading, updateProfile } = useProfile(); // Use profile context
+  const { profile, loading, updateProfile } = useProfile();
   const { toast } = useToast();
 
   const [bio, setBio] = useState("");
@@ -21,12 +30,15 @@ const Profile = () => {
     intention: "",
     sociability: [50]
   });
+  const [displayName, setDisplayName] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setBio(profile.bio || "");
       setIntention(profile.intention || "");
       setSociability([profile.sociability || 50]);
+      setDisplayName(profile.first_name || ""); // Set display name from profile
       setOriginalValues({
         bio: profile.bio || "",
         intention: profile.intention || "",
@@ -70,6 +82,19 @@ const Profile = () => {
     setHasChanges(false);
   };
 
+  const handleSaveDisplayName = async () => {
+    if (displayName.trim() === "") {
+      toast({
+        title: "Name required",
+        description: "Please enter a display name.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await updateProfile({ first_name: displayName.trim() });
+    setIsDialogOpen(false);
+  };
+
   if (loading) {
     return (
       <main className="max-w-4xl mx-auto p-6 text-center text-muted-foreground">
@@ -80,14 +105,43 @@ const Profile = () => {
 
   return (
     <main className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">Set Display Name</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Set Your Display Name</DialogTitle>
+              <DialogDescription>
+                This name will be visible to other users.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  First Name
+                </Label>
+                <Input
+                  id="name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleSaveDisplayName}>Save changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Bio Section */}
           <Card>
             <CardHeader>
-              <CardTitle>About Me</CardTitle>
+              <CardTitle>About {profile?.first_name || "Me"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
