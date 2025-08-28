@@ -239,7 +239,7 @@ const Settings = () => {
                 id="delay"
                 checked={delay}
                 onCheckedChange={(checked) => {
-                  setDelay(checked);
+                  setAutoJoin(checked);
                   checkForChanges();
                 }}
               />
