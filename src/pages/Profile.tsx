@@ -4,9 +4,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const Profile = () => {
+  const { profile, loading, updateProfile } = useProfile(); // Use profile context
+  const { toast } = useToast();
+
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([50]);
@@ -16,6 +21,27 @@ const Profile = () => {
     intention: "",
     sociability: [50]
   });
+
+  useEffect(() => {
+    if (profile) {
+      setBio(profile.bio || "");
+      setIntention(profile.intention || "");
+      setSociability([profile.sociability || 50]);
+      setOriginalValues({
+        bio: profile.bio || "",
+        intention: profile.intention || "",
+        sociability: [profile.sociability || 50]
+      });
+      setHasChanges(false);
+    }
+  }, [profile]);
+
+  const checkForChanges = (newBio: string, newIntention: string, newSociability: number[]) => {
+    const changed = newBio !== originalValues.bio || 
+                   newIntention !== originalValues.intention || 
+                   newSociability[0] !== originalValues.sociability[0];
+    setHasChanges(changed);
+  };
 
   const handleBioChange = (value: string) => {
     setBio(value);
@@ -32,18 +58,25 @@ const Profile = () => {
     checkForChanges(bio, intention, value);
   };
 
-  const checkForChanges = (newBio: string, newIntention: string, newSociability: number[]) => {
-    const changed = newBio !== originalValues.bio || 
-                   newIntention !== originalValues.intention || 
-                   newSociability[0] !== originalValues.sociability[0];
-    setHasChanges(changed);
-  };
-
-  const handleSave = () => {
-    // Save logic would go here
+  const handleSave = async () => {
+    await updateProfile({
+      bio,
+      intention,
+      sociability: sociability[0],
+      updated_at: new Date().toISOString(),
+    });
+    // After successful update, reset original values and hasChanges
     setOriginalValues({ bio, intention, sociability });
     setHasChanges(false);
   };
+
+  if (loading) {
+    return (
+      <main className="max-w-4xl mx-auto p-6 text-center text-muted-foreground">
+        Loading profile...
+      </main>
+    );
+  }
 
   return (
     <main className="max-w-4xl mx-auto p-6">
@@ -123,10 +156,10 @@ const Profile = () => {
         <div className="mt-8 flex justify-end">
           <Button 
             onClick={handleSave}
-            disabled={!hasChanges}
-            className={!hasChanges ? "opacity-50 cursor-not-allowed" : ""}
+            disabled={!hasChanges || loading}
+            className={!hasChanges || loading ? "opacity-50 cursor-not-allowed" : ""}
           >
-            Save Profile
+            {loading ? "Saving..." : "Save Profile"}
           </Button>
         </div>
       </main>
