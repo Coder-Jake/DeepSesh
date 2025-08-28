@@ -127,7 +127,7 @@ const History = () => {
                     <Users className="h-8 w-8 text-primary" />
                     <div>
                       <p className="text-2xl font-bold">15</p>
-                      <p className="text-sm text-muted-foreground">People Collaborated With</p>
+                      <p className="text-sm text-muted-foreground"> Unique coworkers</p>
                     </div>
                   </div>
                 </CardContent>
