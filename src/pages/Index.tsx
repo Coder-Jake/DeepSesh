@@ -391,7 +391,7 @@ const Index = () => {
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
-                            3 participants
+                            3 coworkers
                           </TooltipTrigger>
                           <TooltipContent>
                             <div className="space-y-3">
