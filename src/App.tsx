@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { TimerProvider } from "@/contexts/TimerContext";
-import { ProfileProvider } from "@/contexts/ProfileContext"; // Import ProfileProvider
+import { ProfileProvider, useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import Header from "@/components/Header";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -13,12 +13,14 @@ import Settings from "./pages/Settings";
 import ChipIn from "./pages/ChipIn";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
+import SimpleLogin from "@/components/SimpleLogin"; // Import SimpleLogin
 import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const navigate = useNavigate();
+  const { profile, loading } = useProfile(); // Use profile context
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -66,6 +68,18 @@ const AppContent = () => {
     };
   }, [navigate]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading application...</p>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return <SimpleLogin />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -87,7 +101,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <TimerProvider>
-        <ProfileProvider> {/* Wrap with ProfileProvider */}
+        <ProfileProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
