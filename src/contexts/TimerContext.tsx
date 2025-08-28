@@ -37,11 +37,11 @@ interface TimerProviderProps {
 }
 
 export const TimerProvider = ({ children }: TimerProviderProps) => {
-  const [focusMinutes, setFocusMinutes] = useState(25);
-  const [breakMinutes, setBreakMinutes] = useState(5);
+  const [focusMinutes, setFocusMinutes] = useState(90);
+  const [breakMinutes, setBreakMinutes] = useState(15);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const [timeLeft, setTimeLeft] = useState(90 * 60);
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");

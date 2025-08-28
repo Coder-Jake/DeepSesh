@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
-import { useSession } from "./SessionContext"; // Import useSession
 
 type Profile = Tables<'profiles'>;
 type ProfileInsert = TablesInsert<'profiles'>;
@@ -31,21 +30,21 @@ interface ProfileProviderProps {
 }
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
-  const { user, loading: sessionLoading } = useSession(); // Get user and session loading state
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchProfile = async () => {
+    setLoading(true);
+    setError(null);
+    const { data: { user } } = await supabase.auth.getUser();
+
     if (!user) {
       setProfile(null);
       setLoading(false);
       return;
     }
-
-    setLoading(true);
-    setError(null);
 
     const { data, error } = await supabase
       .from('profiles')
@@ -68,7 +67,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       // If no profile exists, create a basic one (this should ideally be handled by the trigger)
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
-        .insert({ id: user.id, first_name: user.user_metadata.first_name, last_name: user.user_meta_data.last_name })
+        .insert({ id: user.id, first_name: user.user_metadata.first_name, last_name: user.user_metadata.last_name })
         .select()
         .single();
       
@@ -88,8 +87,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   };
 
   const updateProfile = async (data: ProfileUpdate) => {
+    setLoading(true);
+    setError(null);
+    const { data: { user } } = await supabase.auth.getUser();
+
     if (!user) {
       setError("User not authenticated.");
+      setLoading(false);
       toast({
         title: "Authentication required",
         description: "Please log in to update your profile.",
@@ -97,9 +101,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       });
       return;
     }
-
-    setLoading(true);
-    setError(null);
 
     const { data: updatedData, error } = await supabase
       .from('profiles')
@@ -127,14 +128,24 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   };
 
   useEffect(() => {
-    if (!sessionLoading) { // Only fetch profile once session loading is complete
-      fetchProfile();
-    }
-  }, [user, sessionLoading]); // Re-fetch when user or session loading state changes
+    fetchProfile();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        fetchProfile();
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const value = {
     profile,
-    loading: loading || sessionLoading, // Profile loading also depends on session loading
+    loading,
     error,
     updateProfile,
     fetchProfile,

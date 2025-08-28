@@ -14,12 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          first_name: string | null
+          id: string
+          intention: string | null
+          last_name: string | null
+          sociability: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          first_name?: string | null
+          id: string
+          intention?: string | null
+          last_name?: string | null
+          sociability?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          first_name?: string | null
+          id?: string
+          intention?: string | null
+          last_name?: string | null
+          sociability?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      handle_new_user: {
+        Args: Record<PropertyKey, never>
+        Returns: Record<PropertyKey, never>
+      }
       [_ in never]: never
     }
     Enums: {
