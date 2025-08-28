@@ -230,16 +230,16 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="auto-join">Delay External Notifications</Label>
+                <Label htmlFor="delay">Delay External Notifications</Label>
                 <p className="text-sm text-muted-foreground">
                   Until next break
                 </p>
               </div>
               <Switch
-                id="auto-join"
-                checked={autoJoin}
+                id="delay"
+                checked={delay}
                 onCheckedChange={(checked) => {
-                  setAutoJoin(checked);
+                  setDelay(checked);
                   checkForChanges();
                 }}
               />
@@ -247,13 +247,13 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="auto-join">Lock in</Label>
+                <Label htmlFor="lock-in">Lock in</Label>
                 <p className="text-sm text-muted-foreground">
                   Prevent switching apps until break
                 </p>
               </div>
               <Switch
-                id="auto-join"
+                id="lock-in"
                 checked={autoJoin}
                 onCheckedChange={(checked) => {
                   setAutoJoin(checked);
