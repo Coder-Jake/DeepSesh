@@ -302,9 +302,6 @@ const Settings = () => {
           <AccordionContent className="space-y-4 pt-4">
             <div>
               <Label>Maximum Distance for Nearby Sessions</Label>
-              <p className="text-sm text-muted-foreground mb-4">
-                How far to search for local focus sessions
-              </p>
               <div className="space-y-4">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>100m</span>
