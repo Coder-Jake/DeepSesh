@@ -232,7 +232,7 @@ const Settings = () => {
               <div className="space-y-0.5">
                 <Label htmlFor="auto-join">Delay External Notifications</Label>
                 <p className="text-sm text-muted-foreground">
-                  Delay notifications until next break
+                  Until next break
                 </p>
               </div>
               <Switch
