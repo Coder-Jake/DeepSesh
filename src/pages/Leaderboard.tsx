@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Users, Clock } from "lucide-react";
+import { Trophy, Users, Clock, Award, Gift } from "lucide-react"; // Added Award and Gift icons
 import TimeFilterToggle from "@/components/TimeFilterToggle";
 import { useState } from "react";
 
@@ -36,11 +36,11 @@ const Leaderboard = () => {
           <h1 className="text-3xl font-bold text-foreground">Leaderboard</h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Compare your focus and collaboration  with the FlowSesh community!
+          Compare your focus and collaboration with the FlowSesh community!
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"> {/* Added mb-8 for spacing */}
         {/* Focus Hours Leaderboard */}
         <Card id="focus-hours-leaderboard">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -55,8 +55,9 @@ const Leaderboard = () => {
               <div key={user.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-lg text-primary">{index + 1}.</span>
-                  <p className="text-muted-foreground">{user.focusHours} hours</p>
+                  <p className="font-medium text-foreground">{user.name}</p> {/* Added user.name */}
                 </div>
+                <p className="text-muted-foreground">{user.focusHours} hours</p>
               </div>
             ))}
           </CardContent>
@@ -84,6 +85,29 @@ const Leaderboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Weekly Competition Section */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Award className="h-6 w-6 text-primary" />
+            Weekly Competition
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-muted-foreground">
+          <p>
+            Compete weekly for small prizes! Points are awarded based on your productivity and collaboration:
+          </p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li><span className="font-medium text-foreground">Points =</span> (Focus Hours * Unique Coworkers) per session + Verified Active Invites</li>
+            <li>Top prize this week: <span className="font-medium text-foreground">$50 voucher!</span></li>
+          </ul>
+          <div className="flex items-center gap-2 text-sm">
+            <Gift className="h-4 w-4 text-primary" />
+            <p>This week's competition is proudly sponsored by <span className="font-medium text-foreground">Airwallex</span>.</p>
+          </div>
+        </CardContent>
+      </Card>
     </main>
   );
 };
