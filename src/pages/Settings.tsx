@@ -263,7 +263,7 @@ const Settings = () => {
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="15">15 minutes</SelectItem>
+                  <SelectItem value="15">15 mins</SelectItem>
                   <SelectItem value="25">25 mins</SelectItem>
                   <SelectItem value="45">45 minutes</SelectItem>
                   <SelectItem value="60">60 minutes</SelectItem>
