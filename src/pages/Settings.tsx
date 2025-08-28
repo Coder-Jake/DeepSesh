@@ -274,7 +274,7 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="break-duration">Break Duration (mins)</Label>
+              <Label htmlFor="break-duration">Break Duration (minutes)</Label>
               <Select value={breakDuration} onValueChange={(value) => {
                 setBreakDuration(value);
                 checkForChanges();
@@ -284,10 +284,10 @@ const Settings = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10min</SelectItem>
-                  <SelectItem value="15">15min</SelectItem>
-                  <SelectItem value="20">20min</SelectItem>
-                  <SelectItem value="30">30min</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="15">15</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
                 </SelectContent>
               </Select>
             </div>
