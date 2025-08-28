@@ -67,7 +67,7 @@ const Leaderboard = () => {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Most Collaborations
+              Unique Coworkers
             </CardTitle>
             <TimeFilterToggle onValueChange={setCollaborationTimePeriod} />
           </CardHeader>
