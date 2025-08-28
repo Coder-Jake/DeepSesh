@@ -11,7 +11,7 @@ import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 const Settings = () => {
   const { hideSessionsDuringTimer, setHideSessionsDuringTimer } = useTimer(); // Use from context
 
-  const [autoJoin, setAutoJoin] = useState(false);
+  const [delay, setdelay] = useState(false);
   const [defaultDuration, setDefaultDuration] = useState("90");
   const [breakDuration, setBreakDuration] = useState("15");
   const [maxDistance, setMaxDistance] = useState([2000]);
