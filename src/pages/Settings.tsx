@@ -265,9 +265,9 @@ const Settings = () => {
                 <SelectContent>
                   <SelectItem value="15">15 mins</SelectItem>
                   <SelectItem value="25">25 mins</SelectItem>
-                  <SelectItem value="45">45 minutes</SelectItem>
-                  <SelectItem value="60">60 minutes</SelectItem>
-                  <SelectItem value="90">90 minutes</SelectItem>
+                  <SelectItem value="45">45 mins</SelectItem>
+                  <SelectItem value="60">60 mins</SelectItem>
+                  <SelectItem value="90">90 mins</SelectItem>
                 </SelectContent>
               </Select>
             </div>
