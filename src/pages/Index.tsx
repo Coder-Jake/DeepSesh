@@ -7,8 +7,6 @@ import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef } from "react";
 import { Globe, Lock } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
-import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
-import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Index = () => {
   const {
@@ -29,17 +27,14 @@ const Index = () => {
     notes,
     setNotes,
     formatTime,
-    hideSessionsDuringTimer,
+    hideSessionsDuringTimer, // Get the new setting
   } = useTimer();
   
-  const { profile, loading: profileLoading } = useProfile(); // Use profile context
-  const navigate = useNavigate(); // Initialize useNavigate
-
   const [isPublic, setIsPublic] = useState(true);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
-  // Mock data for joined participants, now including intention
+  // Mock data for joined participants
   const joinedParticipants = isRunning ? [
     { id: 1, name: "Alice", sociability: 70, bio: "Software engineer passionate about open-source projects.", intention: "Working on a new React component library." },
     { id: 2, name: "Bob", sociability: 30, bio: "Freelance writer focusing on sci-fi novels.", intention: "Finishing chapter 5 of my current manuscript." },
@@ -81,12 +76,6 @@ const Index = () => {
       if (confirm(`Switch to ${isPublic ? 'Private' : 'Public'} mode?`)) {
         setIsPublic(!isPublic);
       }
-    }
-  };
-
-  const handleIntentionLongPress = () => {
-    if (isLongPress.current) {
-      navigate('/profile');
     }
   };
   
@@ -282,33 +271,6 @@ const Index = () => {
 
         {/* Right Column */}
         <div className="space-y-6">
-          {/* User Intention Section */}
-          {!profileLoading && profile?.intention && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">My Intention</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p 
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                  onMouseDown={() => handleLongPressStart(handleIntentionLongPress)}
-                  onMouseUp={handleLongPressEnd}
-                  onMouseLeave={handleLongPressEnd}
-                  onTouchStart={() => handleLongPressStart(handleIntentionLongPress)}
-                  onTouchEnd={handleLongPressEnd}
-                  onClick={() => {
-                    if (!isLongPress.current) {
-                      // Optional: short press action, e.g., copy to clipboard or show full text
-                      // For now, we'll do nothing on short press to emphasize long press
-                    }
-                  }}
-                >
-                  {profile.intention}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Notes Section - Show when running or paused */}
           {(isRunning || isPaused) && (
             <Card>
@@ -345,13 +307,10 @@ const Index = () => {
                       <div className="text-center max-w-xs">
                         <p className="font-medium mb-1">{participant.name}</p>
                         <p className="text-sm text-muted-foreground">Sociability: {participant.sociability}%</p>
-                        {/* Display intention here */}
-                        {participant.intention && (
-                          <p className="text-xs text-muted-foreground mt-1">Intention: {participant.intention}</p>
-                        )}
                         {timerType === 'break' && (
                           <>
                             <p className="text-xs text-muted-foreground mt-2">Bio: {participant.bio}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Intention: {participant.intention}</p>
                           </>
                         )}
                       </div>

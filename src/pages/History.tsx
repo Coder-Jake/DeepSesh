@@ -1,11 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react"; // Import Search and X icons
+import { Clock, Users, Calendar, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo } from "react"; // Import useMemo
-import { Input } from "@/components/ui/input"; // Import Input component
-import { Button } from "@/components/ui/button"; // Import Button component
+import { useState } from "react";
 
 const History = () => {
   // Sample data - in a real app this would come from a database
@@ -67,20 +65,9 @@ const History = () => {
   };
 
   const [historyTimePeriod, setHistoryTimePeriod] = useState<'week' | 'month' | 'all'>('all');
-  const [showSearchBar, setShowSearchBar] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // Filtered sessions based on search query
-  const filteredSessions = useMemo(() => {
-    if (!searchQuery) {
-      return sessions;
-    }
-    const lowerCaseQuery = searchQuery.toLowerCase();
-    return sessions.filter(session => 
-      session.title.toLowerCase().includes(lowerCaseQuery) ||
-      session.notes.toLowerCase().includes(lowerCaseQuery)
-    );
-  }, [sessions, searchQuery]);
+  // In a real app, you would filter the sessions data based on historyTimePeriod
+  console.log("History Period:", historyTimePeriod);
 
   return (
     <main className="max-w-4xl mx-auto p-6">
@@ -137,69 +124,43 @@ const History = () => {
 
           {/* Session List */}
           <div className="space-y-4">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-xl font-semibold text-foreground">Recent Sessions</h2>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowSearchBar(!showSearchBar)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                {showSearchBar ? <X size={20} /> : <Search size={20} />}
-              </Button>
-            </div>
-
-            {showSearchBar && (
-              <div className="mb-4">
-                <Input
-                  type="text"
-                  placeholder="Search session notes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-            )}
+            <h2 className="text-xl font-semibold text-foreground">Recent Sessions</h2>
             
-            {filteredSessions.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No sessions found matching your search.</p>
-            ) : (
-              filteredSessions.map((session) => (
-                <Card key={session.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{session.title}</CardTitle>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-                          <div className="flex items-center gap-1">
-                            <Calendar size={14} />
-                            {formatDate(session.date)}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock size={14} />
-                            {session.duration}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users size={14} />
-                            {session.participants} participant{session.participants !== 1 ? 's' : ''}
-                          </div>
+            {sessions.map((session) => (
+              <Card key={session.id}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{session.title}</CardTitle>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={14} />
+                          {formatDate(session.date)}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock size={14} />
+                          {session.duration}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users size={14} />
+                          {session.participants} participant{session.participants !== 1 ? 's' : ''}
                         </div>
                       </div>
-                      <Badge variant="secondary">{session.type}</Badge>
                     </div>
-                  </CardHeader>
-                  
-                  {session.notes && (
-                    <CardContent>
-                      <div className="flex items-start gap-2">
-                        <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-muted-foreground">{session.notes}</p>
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              ))
-            )}
+                    <Badge variant="secondary">{session.type}</Badge>
+                  </div>
+                </CardHeader>
+                
+                {session.notes && (
+                  <CardContent>
+                    <div className="flex items-start gap-2">
+                      <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-muted-foreground">{session.notes}</p>
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            ))}
           </div>
         </div>
       </main>
