@@ -244,6 +244,23 @@ const Settings = () => {
                 }}
               />
             </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="auto-join">Lock in</Label>
+                <p className="text-sm text-muted-foreground">
+                  Prevent switching apps while focusing
+                </p>
+              </div>
+              <Switch
+                id="auto-join"
+                checked={autoJoin}
+                onCheckedChange={(checked) => {
+                  setAutoJoin(checked);
+                  checkForChanges();
+                }}
+              />
+            </div>
           </AccordionContent>
         </AccordionItem>
 
