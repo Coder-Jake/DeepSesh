@@ -249,7 +249,7 @@ const Settings = () => {
               <div className="space-y-0.5">
                 <Label htmlFor="auto-join">Lock in</Label>
                 <p className="text-sm text-muted-foreground">
-                  Prevent switching apps while focusing
+                  Prevent switching apps until break
                 </p>
               </div>
               <Switch
