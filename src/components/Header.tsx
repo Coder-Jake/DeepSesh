@@ -11,7 +11,7 @@ const Header = () => {
     <header className="border-b border-border p-6">
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <Link to="/" className="hover:opacity-80 transition-opacity">
-          <h1 className="text-3xl font-bold text-foreground">FlowSesh</h1>
+          <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
         </Link>
         
         {/* Timer display on non-home pages */}
