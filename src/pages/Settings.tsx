@@ -12,7 +12,7 @@ const Settings = () => {
   const { hideSessionsDuringTimer, setHideSessionsDuringTimer } = useTimer(); // Use from context
 
   const [delay, setdelay] = useState(false);
-  const [lock-in, setlock-in] = useState(false);
+  const [lock, setlock] = useState(false);
   const [defaultDuration, setDefaultDuration] = useState("90");
   const [breakDuration, setBreakDuration] = useState("15");
   const [maxDistance, setMaxDistance] = useState([2000]);
