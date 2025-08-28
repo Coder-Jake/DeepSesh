@@ -99,7 +99,6 @@ const Leaderboard = () => {
             Compete weekly for small prizes! Points awarded for productivity and collaboration:
           </p>
           <ul className="list-disc list-inside ml-4 space-y-1">
-            <li><span className="font-medium text-foreground">Points =</span> (Focus Hours * Unique Coworkers) per session + Verified Active Invites</li>
             <li>Prize: <span className="font-medium text-foreground">$50 voucher!</span></li>
           </ul>
           <div className="flex items-center gap-2 text-sm">
