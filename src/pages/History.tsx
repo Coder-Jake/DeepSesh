@@ -14,7 +14,7 @@ const History = () => {
       id: 1,
       title: "Deep Work Sprint",
       date: "2024-01-15",
-      duration: "45 minutes",
+      duration: "45 mins",
       participants: 3,
       type: "focus",
       notes: "Great session focusing on project documentation. Made significant progress on the API specs."
@@ -23,7 +23,7 @@ const History = () => {
       id: 2,
       title: "Study Group Alpha",
       date: "2024-01-14",
-      duration: "90 minutes",
+      duration: "90 mins",
       participants: 5,
       type: "focus",
       notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
@@ -32,7 +32,7 @@ const History = () => {
       id: 3,
       title: "Solo Focus",
       date: "2024-01-13",
-      duration: "30 minutes",
+      duration: "30 mins",
       participants: 1,
       type: "focus",
       notes: "Quick focused session to review quarterly goals and plan next steps."
@@ -41,7 +41,7 @@ const History = () => {
       id: 4,
       title: "Coding Session",
       date: "2024-01-12",
-      duration: "120 minutes",
+      duration: "120 mins",
       participants: 2,
       type: "focus",
       notes: "Pair programming session working on the new user interface components. Fixed several bugs."
@@ -50,7 +50,7 @@ const History = () => {
       id: 5,
       title: "Research Deep Dive",
       date: "2024-01-11",
-      duration: "60 minutes",
+      duration: "60 mins",
       participants: 4,
       type: "focus",
       notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
