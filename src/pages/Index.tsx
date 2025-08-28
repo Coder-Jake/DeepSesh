@@ -252,7 +252,7 @@ const Index = () => {
 
             <div className="flex justify-center gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <label className="text-muted-foreground">Deep Work:</label>
+                <label className="text-muted-foreground">Focus:</label>
                 <Input type="number" value={focusMinutes} onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
               </div>
               <div className="flex items-center gap-2">
