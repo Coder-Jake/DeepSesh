@@ -248,16 +248,16 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="lock-in">Lock in</Label>
+                <Label htmlFor="lock">Lock in</Label>
                 <p className="text-sm text-muted-foreground">
                   Prevent switching apps until break
                 </p>
               </div>
               <Switch
-                id="lock-in"
-                checked={lock-in}
+                id="lock"
+                checked={lock}
                 onCheckedChange={(checked) => {
-                  setlock-in(checked);
+                  setlock(checked);
                   checkForChanges();
                 }}
               />
