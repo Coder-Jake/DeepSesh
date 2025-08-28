@@ -237,7 +237,7 @@ const Settings = () => {
               </div>
               <Switch
                 id="delay"
-                checked={autoJoin}
+                checked={delay}
                 onCheckedChange={(checked) => {
                   setAutoJoin(checked);
                   checkForChanges();
