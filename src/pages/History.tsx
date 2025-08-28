@@ -181,7 +181,6 @@ const History = () => {
                           </div>
                           <div className="flex items-center gap-1">
                             <Users size={14} />
-                            {session.participants} participant{session.participants !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </div>
