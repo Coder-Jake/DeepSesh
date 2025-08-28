@@ -12,8 +12,8 @@ const Settings = () => {
   const { hideSessionsDuringTimer, setHideSessionsDuringTimer } = useTimer(); // Use from context
 
   const [autoJoin, setAutoJoin] = useState(false);
-  const [defaultDuration, setDefaultDuration] = useState("25");
-  const [breakDuration, setBreakDuration] = useState("5");
+  const [defaultDuration, setDefaultDuration] = useState("90");
+  const [breakDuration, setBreakDuration] = useState("15");
   const [maxDistance, setMaxDistance] = useState([500]);
   
   // Notification preferences with detailed options
