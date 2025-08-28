@@ -96,8 +96,7 @@ const Leaderboard = () => {
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
           <p>
-            Compete weekly for small prizes! 
-            <br>
+            Compete weekly for small prizes!</p><p>
             Points awarded for productivity and collaboration:
           </p>
           <ul className="list-disc list-inside ml-4 space-y-1">
