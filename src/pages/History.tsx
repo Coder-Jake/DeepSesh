@@ -126,7 +126,7 @@ const History = () => {
                   <div className="flex items-center gap-3">
                     <Users className="h-8 w-8 text-primary" />
                     <div>
-                      <p className="text-2xl font-bold">18</p>
+                      <p className="text-2xl font-bold">15</p>
                       <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
                     </div>
                   </div>
