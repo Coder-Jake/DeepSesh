@@ -187,7 +187,7 @@ const ChipIn = () => {
 
       <div className="mt-8 text-center">
         <Link to="/credits" className="text-sm text-muted-foreground hover:underline">
-          View Credits & Acknowledgements
+          Credits
         </Link>
       </div>
     </main>
