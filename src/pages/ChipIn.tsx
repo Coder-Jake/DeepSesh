@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react"; // Added new icons
+import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom"; // Import Link
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
@@ -182,6 +183,12 @@ const ChipIn = () => {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      <div className="mt-8 text-center">
+        <Link to="/credits" className="text-sm text-muted-foreground hover:underline">
+          View Credits & Acknowledgements
+        </Link>
       </div>
     </main>
   );

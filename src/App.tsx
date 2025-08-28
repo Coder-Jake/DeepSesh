@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { TimerProvider } from "@/contexts/TimerContext";
-import { ProfileProvider } from "@/contexts/ProfileContext"; // Import ProfileProvider
+import { ProfileProvider } from "@/contexts/ProfileContext";
 import Header from "@/components/Header";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -12,6 +12,7 @@ import History from "./pages/History";
 import Settings from "./pages/Settings";
 import ChipIn from "./pages/ChipIn";
 import Leaderboard from "./pages/Leaderboard";
+import Credits from "./pages/Credits"; // Import the new Credits page
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 
@@ -76,6 +77,7 @@ const AppContent = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/chip-in" element={<ChipIn />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/credits" element={<Credits />} /> {/* New Credits route */}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -87,7 +89,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <TimerProvider>
-        <ProfileProvider> {/* Wrap with ProfileProvider */}
+        <ProfileProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
