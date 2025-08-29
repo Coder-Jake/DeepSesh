@@ -33,7 +33,7 @@ const mockNearbySessions: DemoSession[] = [
     totalDurationMinutes: 90,
     currentPhase: "focus",
     currentPhaseDurationMinutes: 75, // 75 min focus, 15 min break
-    startTime: Date.now() - (10 * 60 * 1000), // Started 10 minutes ago
+    startTime: Date.now() - (5.5 * 60 * 1000), // Started 10 minutes ago
     location: "Engineering Library - Room 304",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Quiet study space with whiteboards",
