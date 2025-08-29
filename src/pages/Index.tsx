@@ -465,7 +465,7 @@ const Index = () => {
                 <div className="space-y-3">
                   {mockNearbySessions.map(session => {
                     const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
-                    const remainingSecondsInPhase = Math.max(600, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
+                    const remainingSecondsInPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
                     const remainingTimeDisplay = formatTime(remainingSecondsInPhase);
 
                     return (
