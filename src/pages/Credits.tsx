@@ -88,10 +88,10 @@ const Credits = () => {
             </div>
           </CardContent>
         </Card>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+      </div>
+      <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Thank you to everyone who contributed to making FlowSesh possible!
         </p>
-      </div>
     </main>
   );
 };
