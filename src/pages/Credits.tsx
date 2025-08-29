@@ -4,8 +4,8 @@ import { Users, Code, Heart, Star } from "lucide-react";
 const Credits = () => {
   const developers = [
     { name: "Jacob Vernon", role: "Founder", bio: "Passionate about building connections.", github: "coder-jake" },
-    { name: "Jane Smith", role: "UI/UX Designer", bio: "Focusing on intuitive and beautiful user experiences.", github: "janesmith" },
-    { name: "Alex Johnson", role: "Backend Engineer", bio: "Specializing in robust and efficient server-side logic.", github: "alexj" },
+    { name: "Amanda Hugnkiss", role: "UI/UX Designer", bio: "Focusing on intuitive and beautiful user experiences.", github: "AmandaHugnkiss" },
+    { name: "Theresa Green", role: "Backend Engineer", bio: "Specializing in robust and efficient server-side logic.", github: "TheresaGreen" },
   ];
 
   const supporters = [
