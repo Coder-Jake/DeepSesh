@@ -80,6 +80,7 @@ const Credits = () => {
             <div>
               <h3 className="font-medium text-foreground mb-2">Libraries & Tools</h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                <li>Carrd, Lovable, Dyad</li>
                 <li>React, Vite, TypeScript</li>
                 <li>shadcn/ui, Tailwind CSS</li>
                 <li>Supabase, TanStack Query</li>
