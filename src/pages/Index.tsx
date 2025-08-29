@@ -68,7 +68,7 @@ const mockFriendsSessions: DemoSession[] = [
     id: 201,
     title: "Psychology 101 Final Review",
     type: "focus",
-    totalDurationMinutes: 90,
+    totalDurationMinutes: 95,
     currentPhase: "break", // Currently on break
     currentPhaseDurationMinutes: 20, // 75 min focus, 20 min break
     startTime: Date.now() - (12 * 60 * 1000), // Started 12 minutes ago (75 focus + 3 break)
