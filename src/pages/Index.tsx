@@ -10,6 +10,84 @@ import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
 
+interface DemoSession {
+  id: number;
+  title: string;
+  type: 'focus' | 'break'; // The type of the session itself (e.g., "Deep Work Session")
+  totalDurationMinutes: number; // Total length of the session
+  currentPhase: 'focus' | 'break'; // What phase it's currently in
+  currentPhaseDurationMinutes: number; // Duration of the current phase
+  startTime: number; // Timestamp when the session "started" for demo purposes
+  location: string;
+  workspaceImage: string;
+  workspaceDescription: string;
+  participants: { id: number; name: string; sociability: number; intention?: string; bio?: string }[];
+}
+
+const mockNearbySessions: DemoSession[] = [
+  {
+    id: 101,
+    title: "Advanced Calculus Study Group",
+    type: "focus",
+    totalDurationMinutes: 90,
+    currentPhase: "focus",
+    currentPhaseDurationMinutes: 75, // 75 min focus, 15 min break
+    startTime: Date.now() - (10 * 60 * 1000), // Started 10 minutes ago
+    location: "Engineering Library - Room 304",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Quiet study space with whiteboards",
+    participants: [
+      { id: 1, name: "Alex", sociability: 60, intention: "Reviewing differential equations." },
+      { id: 2, name: "Sam", sociability: 60, intention: "Working on problem set 3." },
+      { id: 3, name: "Taylor", sociability: 70, intention: "Preparing for the midterm exam." },
+    ],
+  },
+  {
+    id: 102,
+    title: "Computer Science Lab",
+    type: "focus",
+    totalDurationMinutes: 120,
+    currentPhase: "focus",
+    currentPhaseDurationMinutes: 100, // 100 min focus, 20 min break
+    startTime: Date.now() - (95 * 60 * 1000), // Started 95 minutes ago
+    location: "Science Building - Computer Lab 2B",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Modern lab with dual monitors",
+    participants: [
+      { id: 4, name: "Morgan", sociability: 20, intention: "Debugging a Python script." },
+      { id: 5, name: "Jordan", sociability: 10, intention: "Writing documentation for API." },
+      { id: 6, name: "Casey", sociability: 20, intention: "Learning new framework." },
+      { id: 7, name: "Riley", sociability: 20, intention: "Code refactoring." },
+      { id: 8, name: "Avery", sociability: 30, intention: "Designing database schema." },
+    ],
+  },
+];
+
+const mockFriendsSessions: DemoSession[] = [
+  {
+    id: 201,
+    title: "Psychology 101 Final Review",
+    type: "focus",
+    totalDurationMinutes: 90,
+    currentPhase: "break", // Currently on break
+    currentPhaseDurationMinutes: 15, // 75 min focus, 15 min break
+    startTime: Date.now() - (78 * 60 * 1000), // Started 78 minutes ago (75 focus + 3 break)
+    location: "Main Library - Study Room 12",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Private group study room",
+    participants: [
+      { id: 9, name: "Jamie", sociability: 60, intention: "Reviewing cognitive psychology." },
+      { id: 10, name: "Quinn", sociability: 60, intention: "Memorizing key terms." },
+      { id: 11, name: "Blake", sociability: 70, intention: "Practicing essay questions." },
+      { id: 12, name: "Drew", sociability: 60, intention: "Summarizing research papers." },
+      { id: 13, name: "Chris", sociability: 50, intention: "Creating flashcards." },
+      { id: 14, name: "Pat", sociability: 55, intention: "Discussing theories." },
+      { id: 15, name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
+      { id: 16, name: "Jess", sociability: 70, intention: "Peer teaching." },
+    ],
+  },
+];
+
 const Index = () => {
   const {
     focusMinutes,
@@ -38,16 +116,9 @@ const Index = () => {
   const [isPublic, setIsPublic] = useState(true);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
-
-  // Mock data for joined participants, now including intention
-  const joinedParticipants = (isRunning || isPaused) ? [ // Changed condition here
-    { id: 1, name: "Alice", sociability: 70, bio: "Software engineer passionate about open-source projects.", intention: "Working on a new React component library." },
-    { id: 2, name: "Bob", sociability: 30, bio: "Freelance writer focusing on sci-fi novels.", intention: "Finishing chapter 5 of my current manuscript." },
-    { id: 3, name: "Charlie", sociability: 90, bio: "Student studying graphic design and animation.", intention: "Brainstorming ideas for a new client logo." },
-  ] : [];
+  const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
 
   const playStartSound = () => {
-    // Create a simple beep sound using Web Audio API
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -60,6 +131,7 @@ const Index = () => {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
   };
+
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
     longPressRef.current = setTimeout(() => {
@@ -109,11 +181,13 @@ const Index = () => {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
+      setActiveJoinedSession(null); // Clear joined session
     } else {
       if (confirm('Are you sure you want to stop the timer?')) {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
+        setActiveJoinedSession(null); // Clear joined session
       }
     }
   };
@@ -125,6 +199,7 @@ const Index = () => {
       setIsFlashing(false);
       const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
       setTimeLeft(initialTime);
+      setActiveJoinedSession(null); // Clear joined session
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
         setIsRunning(false);
@@ -132,9 +207,11 @@ const Index = () => {
         setIsFlashing(false);
         const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
         setTimeLeft(initialTime);
+        setActiveJoinedSession(null); // Clear joined session
       }
     }
   };
+
   const switchToBreak = () => {
     setTimerType('break');
     setTimeLeft(breakMinutes * 60);
@@ -142,6 +219,7 @@ const Index = () => {
     setIsRunning(true);
     playStartSound();
   };
+
   const switchToFocus = () => {
     setTimerType('focus');
     setTimeLeft(focusMinutes * 60);
@@ -166,12 +244,31 @@ const Index = () => {
     }
   };
 
+  const handleJoinSession = (session: DemoSession) => {
+    setActiveJoinedSession(session);
+    setFocusMinutes(session.totalDurationMinutes); // Assuming total duration is focus for simplicity
+    setBreakMinutes(session.totalDurationMinutes / 6); // A common ratio, adjust as needed
+    setTimerType(session.currentPhase);
+
+    const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
+    const remainingSecondsInPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
+    setTimeLeft(remainingSecondsInPhase);
+    
+    setIsRunning(true);
+    setIsPaused(false);
+    setIsFlashing(false);
+    playStartSound();
+  };
+
   const shouldHideSessionLists = hideSessionsDuringTimer && (isRunning || isPaused);
+
+  // Determine which participants to show in the "Coworkers" section
+  const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
 
   return (
     <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
-        <p className="text-muted-foreground">Sync focus with nearby coworkers</p>
+        <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Timer Section */}
@@ -324,14 +421,14 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Joined Participants Section - Show when running or paused */}
-          {(isRunning || isPaused) && joinedParticipants.length > 0 && ( // Changed condition here
+          {/* Coworkers Section - Show when running or paused */}
+          {(isRunning || isPaused) && currentCoworkers.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Joined Participants</CardTitle>
+                <CardTitle className="text-lg">Coworkers</CardTitle> {/* Renamed title */}
               </CardHeader>
               <CardContent className="space-y-2">
-                {joinedParticipants.map(participant => (
+                {currentCoworkers.map(participant => (
                   <Tooltip key={participant.id}>
                     <TooltipTrigger asChild>
                       <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-default">
@@ -343,7 +440,6 @@ const Index = () => {
                       <div className="text-center max-w-xs">
                         <p className="font-medium mb-1">{participant.name}</p>
                         <p className="text-sm text-muted-foreground">Sociability: {participant.sociability}%</p>
-                        {/* Display intention here */}
                         {participant.intention && (
                           <p className="text-xs text-muted-foreground mt-1">Intention: {participant.intention}</p>
                         )}
@@ -363,243 +459,158 @@ const Index = () => {
           {/* Sessions List */}
           <TooltipProvider>
             {/* Nearby Sessions */}
-            {!shouldHideSessionLists && isPublic && ( // Hide if private or if timer is running and setting is enabled
+            {!shouldHideSessionLists && isPublic && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-3">Nearby</h3>
                 <div className="space-y-3">
-                  <div className="bg-card border border-border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-medium text-foreground">Advanced Calculus Study Group</h4>
-                        <p className="text-sm text-muted-foreground">Deep Work Session</p>
-                      </div>
-                      <div className="text-sm text-muted-foreground">69:07 remaining</div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-4">
-                        <Tooltip>
-                          <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
-                            ~45m
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <div className="text-center">
-                              <p className="mb-2 font-medium">Engineering Library - Room 304</p>
-                              <img src="/api/placeholder/200/120" alt="Workspace" className="w-48 h-28 object-cover rounded" />
-                              <p className="text-xs text-muted-foreground mt-1">Quiet study space with whiteboards</p>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
-                            3 Coworkers
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Alex</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Sam</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
-                                  </div>
-                                  
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Taylor</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '70%'}}></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div>
-                          </div>
-                        </div>
-                      </div>
-                      <Button size="sm">Join</Button>
-                    </div>
-                  </div>
+                  {mockNearbySessions.map(session => {
+                    const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
+                    const remainingSecondsInPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
+                    const remainingTimeDisplay = formatTime(remainingSecondsInPhase);
 
-                  <div className="bg-card border border-border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-medium text-foreground">Computer Science Lab</h4>
-                        <p className="text-sm text-muted-foreground">Coding Session</p>
-                      </div>
-                      <div className="text-sm text-muted-foreground">28:34 remaining</div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-4">
-                        <Tooltip>
-                          <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
-                            ~120m
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <div className="text-center">
-                              <p className="mb-2 font-medium">Science Building - Computer Lab 2B</p>
-                              <img src="/api/placeholder/200/120" alt="Workspace" className="w-48 h-28 object-cover rounded" />
-                              <p className="text-xs text-muted-foreground mt-1">Modern lab with dual monitors</p>
+                    return (
+                      <Card key={session.id}>
+                        <CardHeader className="p-4 pb-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg">{session.title}</CardTitle>
+                              <p className="text-sm text-muted-foreground">{session.type === 'focus' ? 'Deep Work Session' : 'Break Session'}</p>
                             </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
-                            5 Coworkers
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Morgan</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
+                            <div className="text-sm text-muted-foreground">
+                              {session.currentPhase === 'break' ? 'Break - ' : ''}{remainingTimeDisplay} remaining
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                              <Tooltip>
+                                <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+                                  ~{session.totalDurationMinutes}m
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="text-center">
+                                    <p className="mb-2 font-medium">{session.location}</p>
+                                    <img src={session.workspaceImage} alt="Workspace" className="w-48 h-28 object-cover rounded" />
+                                    <p className="text-xs text-muted-foreground mt-1">{session.workspaceDescription}</p>
                                   </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Jordan</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '10%'}}></div>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
+                                  {session.participants.length} participants
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="space-y-3">
+                                    {session.participants.map(p => (
+                                      <div key={p.id} className="flex items-center justify-between gap-4">
+                                        <span className="min-w-0">{p.name}</span>
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                            <div className="h-full bg-primary rounded-full" style={{width: `${p.sociability}%`}}></div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
-                                  
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Casey</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Riley</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
-                                  </div>
-                                  
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Avery</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '30%'}}></div>
-                                  </div>
-                                  
+                                </TooltipContent>
+                              </Tooltip>
+                              <div className="flex items-center gap-2">
+                                <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
+                                  <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div> {/* Placeholder for average sociability */}
                                 </div>
                               </div>
                             </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        <div className="flex items-center gap-2">
-                                  <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '20%'}}></div>
-                                  </div>
-                        </div>
-                      </div>
-                      <Button size="sm">Join</Button>
-                    </div>
-                  </div>
+                            <Button size="sm" onClick={() => handleJoinSession(session)}>Join</Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Friends Sessions */}
-            {!shouldHideSessionLists && ( // Hide if timer is running and setting is enabled
+            {!shouldHideSessionLists && (
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-3">Friends</h3>
                 <div className="space-y-3">
-                  <div className="bg-card border border-border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-medium text-foreground">Psychology 101 Final Review</h4>
-                        <p className="text-sm text-muted-foreground">Silent Study</p>
-                      </div>
-                      <div className="text-sm text-muted-foreground">Break - 12:45 remaining</div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-4">
-                        <Tooltip>
-                          <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
-                            ~85m
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <div className="text-center">
-                              <p className="mb-2 font-medium">Main Library - Study Room 12</p>
-                              <img src="/api/placeholder/200/120" alt="Workspace" className="w-48 h-28 object-cover rounded" />
-                              <p className="text-xs text-muted-foreground mt-1">Private group study room</p>
+                  {mockFriendsSessions.map(session => {
+                    const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
+                    const remainingSecondsInPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
+                    const remainingTimeDisplay = formatTime(remainingSecondsInPhase);
+
+                    return (
+                      <Card key={session.id}>
+                        <CardHeader className="p-4 pb-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg">{session.title}</CardTitle>
+                              <p className="text-sm text-muted-foreground">{session.type === 'focus' ? 'Silent Study' : 'Break Session'}</p>
                             </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
-                            Jamie + 7 Coworkers
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between gap-4 border-b border-border pb-2">
-                                <span className="font-medium min-w-0">Jamie (Friend)</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Quinn</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Blake</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '70%'}}></div>
-                                  </div>
-                                  
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="min-w-0">Drew</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{width: '60%'}}></div>
-                                  </div>
-                                  
-                                </div>
-                              </div>
-                              <div className="text-xs text-muted-foreground mt-1">+4 more participants</div>
+                            <div className="text-sm text-muted-foreground">
+                              {session.currentPhase === 'break' ? 'Break - ' : ''}{remainingTimeDisplay} remaining
                             </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div>
                           </div>
-                        </div>
-                      </div>
-                      <Button size="sm">Join</Button>
-                    </div>
-                  </div>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                              <Tooltip>
+                                <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+                                  ~{session.totalDurationMinutes}m
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="text-center">
+                                    <p className="mb-2 font-medium">{session.location}</p>
+                                    <img src={session.workspaceImage} alt="Workspace" className="w-48 h-28 object-cover rounded" />
+                                    <p className="text-xs text-muted-foreground mt-1">{session.workspaceDescription}</p>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
+                                  {session.participants[0].name} + {session.participants.length - 1} participants
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="space-y-3">
+                                    <div className="flex items-center justify-between gap-4 border-b border-border pb-2">
+                                      <span className="font-medium min-w-0">{session.participants[0].name} (Friend)</span>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                          <div className="h-full bg-primary rounded-full" style={{width: `${session.participants[0].sociability}%`}}></div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {session.participants.slice(1, 4).map(p => ( // Show first few other participants
+                                      <div key={p.id} className="flex items-center justify-between gap-4">
+                                        <span className="min-w-0">{p.name}</span>
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                            <div className="h-full bg-primary rounded-full" style={{width: `${p.sociability}%`}}></div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {session.participants.length > 4 && (
+                                      <div className="text-xs text-muted-foreground mt-1">+{session.participants.length - 4} more participants</div>
+                                    )}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                              <div className="flex items-center gap-2">
+                                <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
+                                  <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div> {/* Placeholder for average sociability */}
+                                </div>
+                              </div>
+                            </div>
+                            <Button size="sm" onClick={() => handleJoinSession(session)}>Join</Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             )}
