@@ -86,6 +86,9 @@ const Credits = () => {
                 <li>...and many more open-source projects!</li>
               </ul>
             </div>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Thank you to everyone who contributed to making FlowSesh possible!
+        </p>
           </CardContent>
         </Card>
       </div>
