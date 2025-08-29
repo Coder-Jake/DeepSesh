@@ -14,12 +14,12 @@ const Profile = () => {
 
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
-  const [sociability, setSociability] = useState([50]);
+  const [sociability, setSociability] = useState([30]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
     bio: "",
     intention: "",
-    sociability: [50]
+    sociability: [30]
   });
 
   useEffect(() => {
