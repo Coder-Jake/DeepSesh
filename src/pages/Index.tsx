@@ -10,6 +10,7 @@ import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
 import SessionCard from "@/components/SessionCard"; // Import the new SessionCard component
+import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 interface DemoSession {
   id: number;
@@ -261,6 +262,18 @@ const Index = () => {
     playStartSound();
   };
 
+  const handleModeToggle = (mode: 'focus' | 'break') => {
+    if (isRunning || isPaused) return; // Do nothing if timer is active
+
+    if (mode === 'focus') {
+      setTimerType('focus');
+      setTimeLeft(focusMinutes * 60);
+    } else {
+      setTimerType('break');
+      setTimeLeft(breakMinutes * 60);
+    }
+  };
+
   const shouldHideSessionLists = hideSessionsDuringTimer && (isRunning || isPaused);
 
   // Determine which participants to show in the "Coworkers" section
@@ -361,11 +374,27 @@ const Index = () => {
 
             <div className="flex justify-center gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <label className="text-muted-foreground">Focus:</label>
+                <span 
+                  className={cn(
+                    "text-muted-foreground cursor-pointer",
+                    timerType === 'focus' && "font-bold text-foreground"
+                  )}
+                  onClick={() => handleModeToggle('focus')}
+                >
+                  Focus:
+                </span>
                 <Input type="number" value={focusMinutes} onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-muted-foreground">Break:</label>
+                <span 
+                  className={cn(
+                    "text-muted-foreground cursor-pointer",
+                    timerType === 'break' && "font-bold text-foreground"
+                  )}
+                  onClick={() => handleModeToggle('break')}
+                >
+                  Break:
+                </span>
                 <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="30" />
               </div>
             </div>
