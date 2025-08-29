@@ -24,12 +24,12 @@ const Profile = () => {
 
   useEffect(() => {
     if (profile) {
-      setBio(profile.bio || "bx");
-      setIntention(profile.intention || "zx");
+      setBio(profile.bio || "");
+      setIntention(profile.intention || "");
       setSociability([profile.sociability || 50]);
       setOriginalValues({
         bio: profile.bio || "",
-        intention: profile.intention || "",
+        intention: profile.intention || "iii",
         sociability: [profile.sociability || 50]
       });
       setHasChanges(false);
