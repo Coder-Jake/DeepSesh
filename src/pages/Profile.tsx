@@ -12,13 +12,13 @@ const Profile = () => {
   const { profile, loading, updateProfile } = useProfile(); // Use profile context
   const { toast } = useToast();
 
-  const [bio, setBio] = useState("bb");
-  const [intention, setIntention] = useState("zz");
+  const [bio, setBio] = useState("");
+  const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([50]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
-    bio: "bb",
-    intention: "zz",
+    bio: "",
+    intention: "",
     sociability: [50]
   });
 
@@ -29,7 +29,7 @@ const Profile = () => {
       setSociability([profile.sociability || 50]);
       setOriginalValues({
         bio: profile.bio || "",
-        intention: profile.intention || "iii",
+        intention: profile.intention || "",
         sociability: [profile.sociability || 50]
       });
       setHasChanges(false);
