@@ -135,7 +135,7 @@ const ChipIn = () => {
                 <TrendingUp className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium text-foreground">Development Costs:</p>
-                  <p>$15,000 (initial development & design)</p>
+                  <p>$6,000 (initial development & design)</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
