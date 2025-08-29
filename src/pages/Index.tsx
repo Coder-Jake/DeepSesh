@@ -72,7 +72,7 @@ const mockFriendsSessions: DemoSession[] = [
     totalDurationMinutes: 90,
     currentPhase: "break", // Currently on break
     currentPhaseDurationMinutes: 25, // 75 min focus, 15 min break
-    startTime: Date.now() - (8 * 60 * 1000), // Started 8 minutes ago
+    startTime: Date.now() - (6 * 60 * 1000), // Started 8 minutes ago
     location: "Main Library - Study Room 12",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
