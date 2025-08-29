@@ -12,20 +12,20 @@ const Profile = () => {
   const { profile, loading, updateProfile } = useProfile(); // Use profile context
   const { toast } = useToast();
 
-  const [bio, setBio] = useState("");
-  const [intention, setIntention] = useState("");
+  const [bio, setBio] = useState("bb");
+  const [intention, setIntention] = useState("zz");
   const [sociability, setSociability] = useState([50]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
-    bio: "",
+    bio: "bb",
     intention: "zz",
     sociability: [50]
   });
 
   useEffect(() => {
     if (profile) {
-      setBio(profile.bio || "");
-      setIntention(profile.intention || "");
+      setBio(profile.bio || "bx");
+      setIntention(profile.intention || "zx");
       setSociability([profile.sociability || 50]);
       setOriginalValues({
         bio: profile.bio || "",
