@@ -13,12 +13,12 @@ const Profile = () => {
   const { toast } = useToast();
 
   const [bio, setBio] = useState("");
-  const [intention, setIntention] = useState("zz");
+  const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([50]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
     bio: "",
-    intention: "",
+    intention: "zz",
     sociability: [50]
   });
 
