@@ -9,7 +9,6 @@ import { Globe, Lock } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
-import SessionCard from "@/components/SessionCard"; // Import the new SessionCard component
 
 interface DemoSession {
   id: number;
@@ -32,7 +31,7 @@ const mockNearbySessions: DemoSession[] = [
     type: "focus",
     totalDurationMinutes: 90,
     currentPhase: "focus",
-    currentPhaseDurationMinutes: 75, // 75 min focus, 15 min break
+    currentPhaseDurationMinutes: 90, // 75 min focus, 15 min break
     startTime: Date.now() - (10 * 60 * 1000), // Started 10 minutes ago
     location: "Engineering Library - Room 304",
     workspaceImage: "/api/placeholder/200/120",
@@ -49,8 +48,8 @@ const mockNearbySessions: DemoSession[] = [
     type: "focus",
     totalDurationMinutes: 120,
     currentPhase: "focus",
-    currentPhaseDurationMinutes: 100, // 100 min focus, 20 min break
-    startTime: Date.now() - (95 * 60 * 1000), // Started 95 minutes ago
+    currentPhaseDurationMinutes: 100.4, // 100 min focus, 20 min break
+    startTime: Date.now() - (100 * 60 * 1000), // Started 95 minutes ago
     location: "Science Building - Computer Lab 2B",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
@@ -69,10 +68,10 @@ const mockFriendsSessions: DemoSession[] = [
     id: 201,
     title: "Psychology 101 Final Review",
     type: "focus",
-    totalDurationMinutes: 90,
+    totalDurationMinutes: 95,
     currentPhase: "break", // Currently on break
-    currentPhaseDurationMinutes: 15, // 75 min focus, 15 min break
-    startTime: Date.now() - (78 * 60 * 1000), // Started 78 minutes ago (75 focus + 3 break)
+    currentPhaseDurationMinutes: 20, // 75 min focus, 20 min break
+    startTime: Date.now() - (7.44 * 60 * 1000), // Started 12 minutes ago (75 focus + 3 break)
     location: "Main Library - Study Room 12",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
@@ -362,11 +361,11 @@ const Index = () => {
             <div className="flex justify-center gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <label className="text-muted-foreground">Focus:</label>
-                <Input type="number" value={focusMinutes} onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
+                <Input type="number" value={focusMinutes} onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="180" />
               </div>
               <div className="flex items-center gap-2">
                 <label className="text-muted-foreground">Break:</label>
-                <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="30" />
+                <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
               </div>
             </div>
           </div>
@@ -464,13 +463,70 @@ const Index = () => {
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-3">Nearby</h3>
                 <div className="space-y-3">
-                  {mockNearbySessions.map(session => (
-                    <SessionCard 
-                      key={session.id} 
-                      session={session} 
-                      onJoinSession={handleJoinSession} 
-                    />
-                  ))}
+                  {mockNearbySessions.map(session => {
+                    const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
+                    const remainingSecondsInPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
+                    const remainingTimeDisplay = formatTime(remainingSecondsInPhase);
+
+                    return (
+                      <Card key={session.id}>
+                        <CardHeader className="p-4 pb-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg">{session.title}</CardTitle>
+                              <p className="text-sm text-muted-foreground">{session.type === 'focus' ? 'Deep Work Session' : 'Break Session'}</p>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {session.currentPhase === 'break' ? 'Break - ' : ''}{remainingTimeDisplay} remaining
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                              <Tooltip>
+                                <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+                                  ~{session.totalDurationMinutes}m
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="text-center">
+                                    <p className="mb-2 font-medium">{session.location}</p>
+                                    <img src={session.workspaceImage} alt="Workspace" className="w-48 h-28 object-cover rounded" />
+                                    <p className="text-xs text-muted-foreground mt-1">{session.workspaceDescription}</p>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
+                                  {session.participants.length} participants
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="space-y-3">
+                                    {session.participants.map(p => (
+                                      <div key={p.id} className="flex items-center justify-between gap-4">
+                                        <span className="min-w-0">{p.name}</span>
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                            <div className="h-full bg-primary rounded-full" style={{width: `${p.sociability}%`}}></div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                              <div className="flex items-center gap-2">
+                                <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
+                                  <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div> {/* Placeholder for average sociability */}
+                                </div>
+                              </div>
+                            </div>
+                            <Button size="sm" onClick={() => handleJoinSession(session)}>Join</Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -480,13 +536,81 @@ const Index = () => {
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-3">Friends</h3>
                 <div className="space-y-3">
-                  {mockFriendsSessions.map(session => (
-                    <SessionCard 
-                      key={session.id} 
-                      session={session} 
-                      onJoinSession={handleJoinSession} 
-                    />
-                  ))}
+                  {mockFriendsSessions.map(session => {
+                    const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
+                    const remainingSecondsInPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
+                    const remainingTimeDisplay = formatTime(remainingSecondsInPhase);
+
+                    return (
+                      <Card key={session.id}>
+                        <CardHeader className="p-4 pb-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg">{session.title}</CardTitle>
+                              <p className="text-sm text-muted-foreground">{session.type === 'focus' ? 'Silent Study' : 'Break Session'}</p>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {session.currentPhase === 'break' ? 'Break - ' : ''}{remainingTimeDisplay} remaining
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                              <Tooltip>
+                                <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+                                  ~{session.totalDurationMinutes}m
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="text-center">
+                                    <p className="mb-2 font-medium">{session.location}</p>
+                                    <img src={session.workspaceImage} alt="Workspace" className="w-48 h-28 object-cover rounded" />
+                                    <p className="text-xs text-muted-foreground mt-1">{session.workspaceDescription}</p>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
+                                  {session.participants[0].name} + {session.participants.length - 1} participants
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="space-y-3">
+                                    <div className="flex items-center justify-between gap-4 border-b border-border pb-2">
+                                      <span className="font-medium min-w-0">{session.participants[0].name} (Friend)</span>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                          <div className="h-full bg-primary rounded-full" style={{width: `${session.participants[0].sociability}%`}}></div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {session.participants.slice(1, 4).map(p => ( // Show first few other participants
+                                      <div key={p.id} className="flex items-center justify-between gap-4">
+                                        <span className="min-w-0">{p.name}</span>
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                            <div className="h-full bg-primary rounded-full" style={{width: `${p.sociability}%`}}></div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {session.participants.length > 4 && (
+                                      <div className="text-xs text-muted-foreground mt-1">+{session.participants.length - 4} more participants</div>
+                                    )}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                              <div className="flex items-center gap-2">
+                                <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
+                                  <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div> {/* Placeholder for average sociability */}
+                                </div>
+                              </div>
+                            </div>
+                            <Button size="sm" onClick={() => handleJoinSession(session)}>Join</Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             )}
