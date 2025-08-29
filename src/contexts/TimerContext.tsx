@@ -41,7 +41,7 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
   const [breakMinutes, setBreakMinutes] = useState(15);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(90 * 60);
+  const [timeLeft, setTimeLeft] = useState(80 * 60);
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
