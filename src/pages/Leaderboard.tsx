@@ -104,7 +104,7 @@ const Leaderboard = () => {
           </ul>
           <div className="flex items-center gap-2 text-sm">
             <Gift className="h-4 w-4 text-primary" />
-            <p>Sponsored by <span className="font-medium text-foreground">Airwallex</span>.</p>
+            <p>Sponsored by <span className="font-medium text-foreground">Airwall-x</span>.</p>
           </div>
         </CardContent>
       </Card>
