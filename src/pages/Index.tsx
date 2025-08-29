@@ -38,9 +38,9 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Quiet study space with whiteboards",
     participants: [
-      { id: 1, name: "Alex", sociability: 60, intention: "Reviewing differential equations." },
-      { id: 2, name: "Sam", sociability: 60, intention: "Working on problem set 3." },
-      { id: 3, name: "Taylor", sociability: 70, intention: "Preparing for the midterm exam." },
+      { id: 1, name: "Alex", sociability: 90, intention: "Reviewing differential equations." },
+      { id: 2, name: "Sam", sociability: 80, intention: "Working on problem set 3." },
+      { id: 3, name: "Taylor", sociability: 90, intention: "Preparing for the midterm exam." },
     ],
   },
   {
