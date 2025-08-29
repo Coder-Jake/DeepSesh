@@ -531,7 +531,7 @@ const Index = () => {
                         <h4 className="font-medium text-foreground">Psychology 101 Final Review</h4>
                         <p className="text-sm text-muted-foreground">Silent Study</p>
                       </div>
-                      <div className="text-sm text-muted-foreground">Break - 2:15 remaining</div>
+                      <div className="text-sm text-muted-foreground">Break - 12:45 remaining</div>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-4">
