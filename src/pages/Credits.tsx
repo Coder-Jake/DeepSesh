@@ -22,9 +22,6 @@ const Credits = () => {
           <Star className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold text-foreground">Credits & Acknowledgements</h1>
         </div>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Thank you to everyone who contributed to making FlowSesh possible!
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
