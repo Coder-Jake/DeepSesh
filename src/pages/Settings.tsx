@@ -250,7 +250,7 @@ const Settings = () => {
             <NotificationControl
               type="focus"
               title="Nearby Sessions"
-              description="Get notified when nearby sessions start and end"
+              description="Get notified of nearby sessions"
               value={focusNotifications}
             />
             
