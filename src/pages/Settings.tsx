@@ -578,10 +578,11 @@ const Settings = () => {
                 Get security clearance
               </p>
           <AccordionContent className="space-y-6 pt-4">
-          <li className="text-sm text-muted-foreground">Access competitions
+          
+            <div className="space-y-2">
+              <li className="text-sm text-muted-foreground">Access competitions
                 </li>
                 <li className="text-sm text-muted-foreground">build trust</li>
-            <div className="space-y-2">
               <Label>Verification</Label>
               <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
