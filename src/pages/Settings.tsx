@@ -570,6 +570,45 @@ const Settings = () => {
         </AccordionItem>
       </Accordion>
 
+      <AccordionItem value="privacy" className="border rounded-lg px-6">
+          <AccordionTrigger className="text-xl font-semibold">
+            Privacy & Safety
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6 pt-4">
+            <div className="space-y-2">
+              <Label>Profile Visibility</Label>
+              <Select value={profileVisibility} onValueChange={setProfileVisibility}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
+                  <SelectItem value="friends">Friends Only - Only friends can see details</SelectItem>
+                  <SelectItem value="private">Private - Minimal information shared</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Minimum Verification Status</Label>
+              <p className="text-sm text-muted-foreground">
+                for users to interact with sessions you host
+              </p>
+              <Select value={verificationStandard} onValueChange={setVerificationStandard}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select verification standard" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="anyone">Anyone - No verification required</SelectItem>
+                  <SelectItem value="organisation">Organisation Verified - Must have verified organisation</SelectItem>
+                  <SelectItem value="id">ID Verified - Must have verified government ID</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
       {/* Save Button */}
       <div className="mt-8 flex justify-end">
         <Button 
