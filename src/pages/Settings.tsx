@@ -575,11 +575,11 @@ const Settings = () => {
             Verification
           </AccordionTrigger>
           <p className="text-sm text-muted-foreground">
-                Get security clearance for trust, access, and prizes
+                Get security clearance
               </p>
                 <li className="text-sm text-muted-foreground">Access competitions
                 </li>
-                <li className="text-sm text-muted-foreground"></li>
+                <li className="text-sm text-muted-foreground">build trust</li>
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label>Verification</Label>
