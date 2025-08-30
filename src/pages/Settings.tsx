@@ -568,7 +568,6 @@ const Settings = () => {
             </div>
           </AccordionContent>
         </AccordionItem>
-      </Accordion>
 
       <AccordionItem value="privacy" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
