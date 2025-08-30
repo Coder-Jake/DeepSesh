@@ -577,9 +577,9 @@ const Settings = () => {
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label>Verification Level</Label>
-              <Select value={profileVisibility} onValueChange={setProfileVisibility}>
+              <Select value={profileVerification} onValueChange={setProfileVerification}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select visibility" />
+                  <SelectValue placeholder="Select verification" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
