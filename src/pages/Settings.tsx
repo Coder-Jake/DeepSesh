@@ -590,9 +590,10 @@ const Settings = () => {
                   <SelectValue placeholder="Select visibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Anon">Anonymous</SelectItem>
-                  <SelectItem value="friends">Friends Only - Only friends can see details</SelectItem>
-                  <SelectItem value="private">Private - Minimal information shared</SelectItem>
+                  <SelectItem value="Anon">None</SelectItem>
+                  <SelectItem value="phone">Phone</SelectItem>
+                  <SelectItem value="organisation">Enterprise</SelectItem>
+                  <SelectItem value="id">ID Verified</SelectItem>
                 </SelectContent>
               </Select>
             </div>
