@@ -583,7 +583,7 @@ const Settings = () => {
               <p className="text-sm text-muted-foreground">Access private spaces
                 </p>
                 <p className="text-sm text-muted-foreground">Build trust with peers</p>
-                <p className="text-sm text-muted-foreground">Compete! \n</p>
+                <p className="text-sm text-muted-foreground">Compete! <br \></p>
               <Label>Verification</Label>
               <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
