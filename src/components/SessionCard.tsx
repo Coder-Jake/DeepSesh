@@ -70,7 +70,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
             </Tooltip>
             <Tooltip>
               <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
-                {session.participants.length} participan
+                {session.participants.length} Coworkers
               </TooltipTrigger>
               <TooltipContent>
                 <div className="space-y-3">
