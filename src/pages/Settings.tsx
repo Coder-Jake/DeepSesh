@@ -8,20 +8,35 @@ import { useState, useRef, useEffect } from "react";
 import { Bell, Smartphone, Volume2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
+import { Input } from "@/components/ui/input"; // Import Input
 
 const Settings = () => {
-  const { hideSessionsDuringTimer, setHideSessionsDuringTimer } = useTimer();
+  const { 
+    hideSessionsDuringTimer, 
+    setHideSessionsDuringTimer,
+    focusMinutes, // Get current focusMinutes from context
+    setFocusMinutes, // Setter for focusMinutes
+    breakMinutes, // Get current breakMinutes from context
+    setBreakMinutes, // Setter for breakMinutes
+  } = useTimer();
 
   const [delay, setdelay] = useState(false);
   const [lock, setlock] = useState(false);
-  const [exemptionsEnabled, setExemptionsEnabled] = useState(false); // New state for exemptions switch
-  const [phoneCalls, setPhoneCalls] = useState(false); // New state for phone calls checkbox
-  const [favourites, setFavourites] = useState(false); // New state for favourites checkbox
-  const [workApps, setWorkApps] = useState(false); // New state for work apps checkbox
-  const [intentionalBreaches, setIntentionalBreaches] = useState(false); // New state for intentional breaches checkbox
+  const [exemptionsEnabled, setExemptionsEnabled] = useState(false);
+  const [phoneCalls, setPhoneCalls] = useState(false);
+  const [favourites, setFavourites] = useState(false);
+  const [workApps, setWorkApps] = useState(false);
+  const [intentionalBreaches, setIntentionalBreaches] = useState(false);
 
-  const [defaultDuration, setDefaultDuration] = useState("90");
-  const [breakDuration, setBreakDuration] = useState("15");
+  const [selectedFocusDuration, setSelectedFocusDuration] = useState<string>(focusMinutes.toString());
+  const [customFocusDuration, setCustomFocusDuration] = useState<string>(
+    !['15', '25', '45', '60', '75', '90'].includes(focusMinutes.toString()) ? focusMinutes.toString() : ''
+  );
+  const [selectedBreakDuration, setSelectedBreakDuration] = useState<string>(breakMinutes.toString());
+  const [customBreakDuration, setCustomBreakDuration] = useState<string>(
+    !['5', '10', '15', '20', '30'].includes(breakMinutes.toString()) ? breakMinutes.toString() : ''
+  );
+
   const [maxDistance, setMaxDistance] = useState([2000]);
   
   // Notification preferences with detailed options
@@ -56,8 +71,8 @@ const Settings = () => {
     workApps,
     intentionalBreaches,
     autoTransition,
-    defaultDuration,
-    breakDuration,
+    focusMinutes, // Use actual focusMinutes from context
+    breakMinutes, // Use actual breakMinutes from context
     maxDistance: maxDistance[0],
     focusNotifications,
     breakNotifications,
@@ -69,6 +84,9 @@ const Settings = () => {
   });
 
   useEffect(() => {
+    const currentFocusVal = selectedFocusDuration === 'custom' ? (parseInt(customFocusDuration) || 0) : parseInt(selectedFocusDuration);
+    const currentBreakVal = selectedBreakDuration === 'custom' ? (parseInt(customBreakDuration) || 0) : parseInt(selectedBreakDuration);
+
     const currentSettings = {
       hideSessionsDuringTimer,
       delay,
@@ -79,8 +97,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       autoTransition,
-      defaultDuration,
-      breakDuration,
+      focusMinutes: currentFocusVal,
+      breakMinutes: currentBreakVal,
       maxDistance: maxDistance[0],
       focusNotifications,
       breakNotifications,
@@ -103,7 +121,7 @@ const Settings = () => {
     setHasChanges(changed);
   }, [
     hideSessionsDuringTimer, delay, lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    autoTransition, defaultDuration, breakDuration, maxDistance,
+    autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
     focusNotifications, breakNotifications, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing
   ]);
@@ -119,8 +137,17 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    // Save settings logic would go here
-    // For now, just reset the initial settings to current values
+    const newFocusMinutes = selectedFocusDuration === 'custom' 
+      ? Math.max(1, parseInt(customFocusDuration) || 1) 
+      : parseInt(selectedFocusDuration);
+    const newBreakMinutes = selectedBreakDuration === 'custom' 
+      ? Math.max(1, parseInt(customBreakDuration) || 1) 
+      : parseInt(selectedBreakDuration);
+
+    setFocusMinutes(newFocusMinutes);
+    setBreakMinutes(newBreakMinutes);
+
+    // Update initial settings for change detection
     initialSettings.current = {
       hideSessionsDuringTimer,
       delay,
@@ -131,8 +158,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       autoTransition,
-      defaultDuration,
-      breakDuration,
+      focusMinutes: newFocusMinutes,
+      breakMinutes: newBreakMinutes,
       maxDistance: maxDistance[0],
       focusNotifications,
       breakNotifications,
@@ -411,7 +438,7 @@ const Settings = () => {
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label htmlFor="focus-duration">Focus Duration (minutes)</Label>
-              <Select value={defaultDuration} onValueChange={setDefaultDuration}>
+              <Select value={selectedFocusDuration} onValueChange={setSelectedFocusDuration}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
@@ -422,13 +449,24 @@ const Settings = () => {
                   <SelectItem value="60">60</SelectItem>
                   <SelectItem value="75">75</SelectItem>
                   <SelectItem value="90">90</SelectItem>
+                  <SelectItem value="custom">Other (Custom)</SelectItem>
                 </SelectContent>
               </Select>
+              {selectedFocusDuration === 'custom' && (
+                <Input
+                  type="number"
+                  placeholder="Enter custom minutes"
+                  value={customFocusDuration}
+                  onChange={(e) => setCustomFocusDuration(e.target.value)}
+                  min="1"
+                  className="mt-2"
+                />
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="break-duration">Break Duration (minutes)</Label>
-              <Select value={breakDuration} onValueChange={setBreakDuration}>
+              <Select value={selectedBreakDuration} onValueChange={setSelectedBreakDuration}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
@@ -438,8 +476,19 @@ const Settings = () => {
                   <SelectItem value="15">15</SelectItem>
                   <SelectItem value="20">20</SelectItem>
                   <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="custom">Other (Custom)</SelectItem>
                 </SelectContent>
               </Select>
+              {selectedBreakDuration === 'custom' && (
+                <Input
+                  type="number"
+                  placeholder="Enter custom minutes"
+                  value={customBreakDuration}
+                  onChange={(e) => setCustomBreakDuration(e.target.value)}
+                  min="1"
+                  className="mt-2"
+                />
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
