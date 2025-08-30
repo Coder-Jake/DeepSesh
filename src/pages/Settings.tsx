@@ -570,7 +570,7 @@ const Settings = () => {
         </AccordionItem>
       </Accordion>
 
-      {/* Verification */}
+    {/* Verification */}
         <AccordionItem value="verification" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
             Verification
