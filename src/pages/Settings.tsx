@@ -8,17 +8,9 @@ import { useState, useRef, useEffect } from "react";
 import { Bell, Smartphone, Volume2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
-import { Input } from "@/components/ui/input"; // Import Input
 
 const Settings = () => {
-  const { 
-    hideSessionsDuringTimer, 
-    setHideSessionsDuringTimer,
-    focusMinutes, // Get current focusMinutes from context
-    setFocusMinutes, // Get setter for focusMinutes
-    breakMinutes, // Get current breakMinutes from context
-    setBreakMinutes, // Get setter for breakMinutes
-  } = useTimer();
+  const { hideSessionsDuringTimer, setHideSessionsDuringTimer } = useTimer();
 
   const [delay, setdelay] = useState(false);
   const [lock, setlock] = useState(false);
@@ -28,8 +20,8 @@ const Settings = () => {
   const [workApps, setWorkApps] = useState(false); // New state for work apps checkbox
   const [intentionalBreaches, setIntentionalBreaches] = useState(false); // New state for intentional breaches checkbox
 
-  const [customFocusDuration, setCustomFocusDuration] = useState(String(focusMinutes)); // Use context value as initial
-  const [customBreakDuration, setCustomBreakDuration] = useState(String(breakMinutes)); // Use context value as initial
+  const [defaultDuration, setDefaultDuration] = useState("90");
+  const [breakDuration, setBreakDuration] = useState("15");
   const [maxDistance, setMaxDistance] = useState([2000]);
   
   // Notification preferences with detailed options
@@ -64,8 +56,8 @@ const Settings = () => {
     workApps,
     intentionalBreaches,
     autoTransition,
-    customFocusDuration: String(focusMinutes), // Initialize with context value
-    customBreakDuration: String(breakMinutes), // Initialize with context value
+    defaultDuration,
+    breakDuration,
     maxDistance: maxDistance[0],
     focusNotifications,
     breakNotifications,
@@ -87,8 +79,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       autoTransition,
-      customFocusDuration,
-      customBreakDuration,
+      defaultDuration,
+      breakDuration,
       maxDistance: maxDistance[0],
       focusNotifications,
       breakNotifications,
@@ -111,10 +103,9 @@ const Settings = () => {
     setHasChanges(changed);
   }, [
     hideSessionsDuringTimer, delay, lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    autoTransition, customFocusDuration, customBreakDuration, maxDistance,
+    autoTransition, defaultDuration, breakDuration, maxDistance,
     focusNotifications, breakNotifications, sessionInvites, friendActivity,
-    verificationStandard, profileVisibility, locationSharing,
-    focusMinutes, breakMinutes // Include context values to re-evaluate if they change externally
+    verificationStandard, profileVisibility, locationSharing
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -128,10 +119,7 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    // Update TimerContext with new default durations
-    setFocusMinutes(parseInt(customFocusDuration) || 1);
-    setBreakMinutes(parseInt(customBreakDuration) || 1);
-
+    // Save settings logic would go here
     // For now, just reset the initial settings to current values
     initialSettings.current = {
       hideSessionsDuringTimer,
@@ -143,8 +131,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       autoTransition,
-      customFocusDuration,
-      customBreakDuration,
+      defaultDuration,
+      breakDuration,
       maxDistance: maxDistance[0],
       focusNotifications,
       breakNotifications,
@@ -423,28 +411,35 @@ const Settings = () => {
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label htmlFor="focus-duration">Focus Duration (minutes)</Label>
-              <Input
-                id="focus-duration"
-                type="number"
-                value={customFocusDuration}
-                onChange={(e) => setCustomFocusDuration(e.target.value)}
-                min="1"
-                max="120" // Max 120 minutes for focus
-                className="w-full"
-              />
+              <Select value={defaultDuration} onValueChange={setDefaultDuration}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">15</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="45">45</SelectItem>
+                  <SelectItem value="60">60</SelectItem>
+                  <SelectItem value="75">75</SelectItem>
+                  <SelectItem value="90">90</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="break-duration">Break Duration (minutes)</Label>
-              <Input
-                id="break-duration"
-                type="number"
-                value={customBreakDuration}
-                onChange={(e) => setCustomBreakDuration(e.target.value)}
-                min="1"
-                max="30" // Max 30 minutes for break
-                className="w-full"
-              />
+              <Select value={breakDuration} onValueChange={setBreakDuration}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="15">15</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </AccordionContent>
         </AccordionItem>

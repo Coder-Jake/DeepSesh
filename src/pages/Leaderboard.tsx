@@ -36,7 +36,7 @@ const Leaderboard = () => {
           <h1 className="text-3xl font-bold text-foreground">Leaderboard</h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Compete with the DeepSesh community!
+          Compare your focus and collaboration with the FlowSesh community!
         </p>
       </div>
 
@@ -104,7 +104,7 @@ const Leaderboard = () => {
           </ul>
           <div className="flex items-center gap-2 text-sm">
             <Gift className="h-4 w-4 text-primary" />
-            <p>Sponsored by <span className="font-medium text-foreground">Airwallet</span>.</p>
+            <p>Sponsored by <span className="font-medium text-foreground">Airwall X</span>.</p>
           </div>
         </CardContent>
       </Card>
