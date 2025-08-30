@@ -575,7 +575,7 @@ const Settings = () => {
             Verification
           </AccordionTrigger>
           <p className="text-sm text-muted-foreground">
-                for users to interact with sessions you host
+                Get verified for more features
               </p>
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
