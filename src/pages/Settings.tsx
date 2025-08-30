@@ -577,7 +577,8 @@ const Settings = () => {
           <p className="text-sm text-muted-foreground">
                 Get verified for more features
               </p>
-                <li className="text-sm text-muted-foreground">hh</li>
+                <li className="text-sm text-muted-foreground">Access competitions
+                start</li>
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label>Verification</Label>
