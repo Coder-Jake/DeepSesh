@@ -264,14 +264,14 @@ const Settings = () => {
             <NotificationControl
               type="invites"
               title="Session Invites"
-              description="Receive invitations to join sessions from others"
+              description="Receive invitations to join sessions from friends"
               value={sessionInvites}
             />
             
             <NotificationControl
               type="activity"
-              title="Friend Activity"
-              description="Get notified about your friends' session activity"
+              title="Friend Sessions"
+              description="Get notified when friends start a session"
               value={friendActivity}
             />
           </AccordionContent>
