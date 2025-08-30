@@ -576,10 +576,10 @@ const Settings = () => {
           </AccordionTrigger>
           <AccordionContent className="space-y-6 pt-4">
             <div className="space-y-2">
-              <Label>Verification Level</Label>
-              <Select value={profileVerification} onValueChange={setProfileVerification}>
+              <Label>Verification</Label>
+              <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select verification" />
+                  <SelectValue placeholder="Select visibility" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
