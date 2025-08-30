@@ -20,8 +20,8 @@ const Settings = () => {
   const [workApps, setWorkApps] = useState(false); // New state for work apps checkbox
   const [intentionalBreaches, setIntentionalBreaches] = useState(false); // New state for intentional breaches checkbox
 
-  const [defaultDuration, setDefaultDuration] = useState("90");
-  const [breakDuration, setBreakDuration] = useState("15");
+  const [defaultDuration, setDefaultDuration] = useState("55");
+  const [breakDuration, setBreakDuration] = useState("5");
   const [maxDistance, setMaxDistance] = useState([2000]);
   
   // Notification preferences with detailed options
