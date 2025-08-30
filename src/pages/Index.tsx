@@ -282,7 +282,7 @@ const Index = () => {
   return (
     <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
-        <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
+        <p className="text-muted-foreground">Sync focus with nearby coworkers</p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Timer Section */}
