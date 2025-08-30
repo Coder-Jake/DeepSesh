@@ -575,7 +575,7 @@ const Settings = () => {
             Verification
           </AccordionTrigger>
           <AccordionContent className="space-y-7 pt-4">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label>Profile Visibility</Label>
               <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
@@ -589,7 +589,7 @@ const Settings = () => {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label>Minimum Verification Status</Label>
               <p className="text-sm text-muted-foreground">
                 for users to interact with sessions you host
