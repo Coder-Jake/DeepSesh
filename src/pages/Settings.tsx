@@ -570,11 +570,11 @@ const Settings = () => {
         </AccordionItem>
       </Accordion>
 
-      <AccordionItem value="verification" className="border rounded-lg px-6">
+      <AccordionItem value="verification" className="border rounded-lg px-7">
           <AccordionTrigger className="text-xl font-semibold">
             Verification
           </AccordionTrigger>
-          <AccordionContent className="space-y-6 pt-4">
+          <AccordionContent className="space-y-7 pt-4">
             <div className="space-y-2">
               <Label>Profile Visibility</Label>
               <Select value={profileVisibility} onValueChange={setProfileVisibility}>
