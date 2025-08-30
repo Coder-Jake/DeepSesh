@@ -590,7 +590,7 @@ const Settings = () => {
                   <SelectValue placeholder="Select visibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
+                  <SelectItem value="Anon">Anonymous</SelectItem>
                   <SelectItem value="friends">Friends Only - Only friends can see details</SelectItem>
                   <SelectItem value="private">Private - Minimal information shared</SelectItem>
                 </SelectContent>
