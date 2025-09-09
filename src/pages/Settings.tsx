@@ -559,7 +559,6 @@ const Settings = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Select verification standard" />
                 </SelectTrigger>
-                jac
                 <SelectContent>
                   <SelectItem value="anyone">Anyone - No verification required</SelectItem>
                   <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
