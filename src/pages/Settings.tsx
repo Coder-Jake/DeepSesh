@@ -30,7 +30,7 @@ const Settings = () => {
 
   const [selectedFocusDuration, setSelectedFocusDuration] = useState<string>(focusMinutes.toString());
   const [customFocusDuration, setCustomFocusDuration] = useState<string>(
-    !['15', '25', '45', '60', '75', '90'].includes(focusMinutes.toString()) ? focusMinutes.toString() : ''
+    !['15', '25', '45', '55', '75', '90'].includes(focusMinutes.toString()) ? focusMinutes.toString() : ''
   );
   const [selectedBreakDuration, setSelectedBreakDuration] = useState<string>(breakMinutes.toString());
   const [customBreakDuration, setCustomBreakDuration] = useState<string>(
