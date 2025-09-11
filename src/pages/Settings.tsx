@@ -446,7 +446,7 @@ const Settings = () => {
                   <SelectItem value="15">15</SelectItem>
                   <SelectItem value="25">25</SelectItem>
                   <SelectItem value="45">45</SelectItem>
-                  <SelectItem value="60">60</SelectItem>
+                  <SelectItem value="55">55</SelectItem>
                   <SelectItem value="75">75</SelectItem>
                   <SelectItem value="90">90</SelectItem>
                   <SelectItem value="custom">Other (Custom)</SelectItem>
