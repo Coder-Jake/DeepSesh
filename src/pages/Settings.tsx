@@ -339,6 +339,20 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
+                <Label htmlFor="lock">Lock in</Label>
+                <p className="text-sm text-muted-foreground">
+                  Prevent switching apps until break
+                </p>
+              </div>
+              <Switch
+                id="lock"
+                checked={lock}
+                onCheckedChange={setlock}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
                 <Label htmlFor="delay">Delay External Notifications</Label>
                 <p className="text-sm text-muted-foreground">
                   Until next break
@@ -351,19 +365,7 @@ const Settings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="lock">Lock in</Label>
-                <p className="text-sm text-muted-foreground">
-                  Prevent switching apps until break
-                </p>
-              </div>
-              <Switch
-                id="lock"
-                checked={lock}
-                onCheckedChange={setlock}
-              />
-            </div>
+
 
             {/* New Exemptions Switch */}
             <div className="space-y-4">
