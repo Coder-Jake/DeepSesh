@@ -28,10 +28,10 @@ const ScheduleForm: React.FC = () => {
   const [localSchedule, setLocalSchedule] = useState<ScheduledTimer[]>([
     { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25 },
     { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
-    { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 55 },
-    { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 15 },
+    { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60 },
+    { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30 },
     { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45 },
-    { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 10 },
+    { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15 },
   ]);
   const [isStartTimeNow, setIsStartTimeNow] = useState(true); // New state for 'Start Time' toggle
 
@@ -144,23 +144,25 @@ const ScheduleForm: React.FC = () => {
           <Plus className="mr-2 h-4 w-4" /> Add Timer
         </Button>
 
-        {/* Start Time Toggle Button */}
+        {/* Start Time Toggle */}
         <div className="flex items-center justify-between">
-          <Label htmlFor="start-time-toggle">Start Time</Label>
-          <Button
-            variant="ghost"
-            onClick={() => setIsStartTimeNow(prev => !prev)}
-            className="px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-          >
-            <span className="text-sm font-medium">{isStartTimeNow ? 'Now' : 'Later'}</span>
-          </Button>
+          <div className="space-y-0.5">
+            <Label htmlFor="start-time-toggle">Start Time</Label>
+            <p className="text-sm text-muted-foreground">
+              {isStartTimeNow ? 'Now' : 'Later'}
+            </p>
+          </div>
+          <Switch
+            id="start-time-toggle"
+            checked={!isStartTimeNow} // Checked means 'Later'
+            onCheckedChange={(checked) => setIsStartTimeNow(!checked)}
+          />
         </div>
 
         {/* Commencement Time and Day Selection (conditionally rendered) */}
         {!isStartTimeNow && (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="commence-time">Commence Time</Label>
               <Input
                 id="commence-time"
                 type="time"
@@ -169,7 +171,6 @@ const ScheduleForm: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-            <Label htmlFor="commence-day">Commence Day</Label>
               <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
                 <SelectTrigger id="commence-day">
                   <SelectValue placeholder="Select day" />
@@ -187,7 +188,7 @@ const ScheduleForm: React.FC = () => {
         )}
 
         <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg">
-          <Play className="mr-2 h-5 w-5" /> Commence Schedule
+          <Play className="mr-2 h-5 w-5" />Commence
         </Button>
       </CardContent>
     </Card>
