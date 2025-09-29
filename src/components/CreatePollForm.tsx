@@ -74,7 +74,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="selection" id="type-selection" />
-            <Label htmlFor="type-selection">Selection (Select Multiple)</Label>
+            <Label htmlFor="type-selection">Selection</Label>
           </div>
         </RadioGroup>
       </div>
