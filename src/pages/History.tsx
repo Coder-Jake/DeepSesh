@@ -1,11 +1,11 @@
+import React, { useState, useMemo } from "react"; // Added React import explicitly
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react"; // Import Search and X icons
+import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo } from "react"; // Import useMemo
-import { Input } from "@/components/ui/input"; // Import Input component
-import { Button } from "@/components/ui/button"; // Import Button component
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const History = () => {
   // Sample data - in a real app this would come from a database
@@ -83,7 +83,7 @@ const History = () => {
   }, [sessions, searchQuery]);
 
   return (
-    <main className="max-w-4xl mx-auto p-4 lg:p-6"> {/* Adjusted padding */}
+    <main className="max-w-4xl mx-auto p-4 lg:p-6">
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">History</h1>
