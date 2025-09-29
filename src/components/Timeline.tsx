@@ -1,0 +1,77 @@
+import React from 'react';
+import { ScheduledTimer } from "@/types/timer";
+import { useTimer } from "@/contexts/TimerContext";
+import { cn } from "@/lib/utils";
+import { Clock, Play, Pause, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface TimelineProps {
+  schedule: ScheduledTimer[];
+  currentScheduleIndex: number;
+  timeLeft: number;
+  formatTime: (seconds: number) => string;
+}
+
+const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, timeLeft, formatTime }) => {
+  const { isRunning, isPaused, setIsRunning, setIsPaused, resetSchedule } = useTimer();
+
+  if (schedule.length === 0) {
+    return null;
+  }
+
+  const currentItem = schedule[currentScheduleIndex];
+  const progressPercentage = currentItem ? ((currentItem.durationMinutes * 60 - timeLeft) / (currentItem.durationMinutes * 60)) * 100 : 0;
+
+  return (
+    <div className="mt-8 p-4 border rounded-lg bg-card shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-foreground">Schedule Timeline</h3>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => isRunning ? setIsPaused(true) : setIsRunning(true)}
+          >
+            {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </Button>
+          <Button variant="outline" size="sm" onClick={resetSchedule}>
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      
+      <div className="flex overflow-x-auto pb-2 space-x-3">
+        {schedule.map((item, index) => (
+          <div
+            key={item.id}
+            className={cn(
+              "flex-shrink-0 p-3 rounded-md border",
+              "w-40", // Fixed width for each item
+              item.type === 'focus' ? 'bg-public-bg border-public-bg/50' : 'bg-private-bg border-private-bg/50',
+              index === currentScheduleIndex && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+            )}
+          >
+            <p className="font-medium text-sm truncate">{item.title}</p>
+            <div className="flex items-center text-xs text-muted-foreground mt-1">
+              <Clock className="h-3 w-3 mr-1" />
+              <span>{item.durationMinutes} min</span>
+            </div>
+            {index === currentScheduleIndex && (
+              <div className="mt-2">
+                <div className="h-1 bg-primary/20 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear" 
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{formatTime(timeLeft)} remaining</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Timeline;

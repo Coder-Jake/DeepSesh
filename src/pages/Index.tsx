@@ -5,14 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef } from "react";
-import { Globe, Lock } from "lucide-react";
+import { Globe, Lock, CalendarPlus } from "lucide-react"; // Import CalendarPlus
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskSection"; // Import ActiveAskSection
+import ActiveAskSection from "@/components/ActiveAskSection";
+import ScheduleForm from "@/components/ScheduleForm"; // Import ScheduleForm
+import Timeline from "@/components/Timeline"; // Import Timeline
 
 // Define types for Ask items
 interface ExtendSuggestion {
@@ -140,6 +142,16 @@ const Index = () => {
     setNotes,
     formatTime,
     hideSessionsDuringTimer,
+    
+    // New scheduling states and functions
+    schedule,
+    currentScheduleIndex,
+    isSchedulingMode,
+    setIsSchedulingMode,
+    isScheduleActive,
+    startSchedule,
+    resetSchedule,
+    advanceSchedule, // Added advanceSchedule
   } = useTimer();
   
   const { profile, loading: profileLoading } = useProfile();
@@ -219,12 +231,14 @@ const Index = () => {
       setIsPaused(false);
       setIsFlashing(false);
       setActiveJoinedSession(null); // Clear joined session
+      if (isScheduleActive) resetSchedule(); // Reset schedule if active
     } else {
       if (confirm('Are you sure you want to stop the timer?')) {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
         setActiveJoinedSession(null); // Clear joined session
+        if (isScheduleActive) resetSchedule(); // Reset schedule if active
       }
     }
   };
@@ -237,6 +251,7 @@ const Index = () => {
       const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
       setTimeLeft(initialTime);
       setActiveJoinedSession(null); // Clear joined session
+      if (isScheduleActive) resetSchedule(); // Reset schedule if active
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
         setIsRunning(false);
@@ -245,6 +260,7 @@ const Index = () => {
         const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
         setTimeLeft(initialTime);
         setActiveJoinedSession(null); // Clear joined session
+        if (isScheduleActive) resetSchedule(); // Reset schedule if active
       }
     }
   };
@@ -266,7 +282,7 @@ const Index = () => {
   };
 
   const handleCircularProgressChange = (progress: number) => {
-    if (isRunning || isPaused) return; // Don't allow changes during active timer
+    if (isRunning || isPaused || isScheduleActive) return; // Don't allow changes during active timer or schedule
     
     if (timerType === 'focus') {
       const minutes = Math.round((progress / 100) * 120); // Max 120 minutes for focus
@@ -298,7 +314,7 @@ const Index = () => {
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
-    if (isRunning || isPaused) return; // Do nothing if timer is active
+    if (isRunning || isPaused || isScheduleActive) return; // Do nothing if timer is active or schedule is active
 
     if (mode === 'focus') {
       setTimerType('focus');
@@ -309,7 +325,7 @@ const Index = () => {
     }
   };
 
-  const shouldHideSessionLists = hideSessionsDuringTimer && (isRunning || isPaused);
+  const shouldHideSessionLists = hideSessionsDuringTimer && (isRunning || isPaused || isScheduleActive);
 
   // Determine which participants to show in the "Coworkers" section
   const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
@@ -455,118 +471,136 @@ const Index = () => {
         {/* Timer Section */}
         <div className="space-y-6">
           <div className={`relative rounded-lg border border-border p-8 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex-1"></div>
-              <div className="flex-1 flex justify-end">
-                <button 
-                  onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
-                  onMouseUp={handleLongPressEnd}
-                  onMouseLeave={handleLongPressEnd}
-                  onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
-                  onTouchEnd={handleLongPressEnd}
-                  onClick={handlePublicPrivateToggle}
-                  className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                >
-                  {isPublic ? <>
-                      <Globe size={16} />
-                      <span className="text-sm font-medium">Public</span>
-                    </> : <>
-                      <Lock size={16} />
-                      <span className="text-sm font-medium">Private</span>
-                    </>}
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex justify-center mb-4">
-              <CircularProgress
-                size={280}
-                strokeWidth={12}
-                progress={timerType === 'focus' 
-                  ? (timeLeft / (focusMinutes * 60)) * 100 
-                  : (timeLeft / (breakMinutes * 60)) * 100
-                }
-                interactive={!isRunning && !isPaused && !isFlashing}
-                onInteract={handleCircularProgressChange}
-                className={isFlashing ? 'animate-pulse' : ''}
-              >
-                <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''}`}>
-                  {formatTime(timeLeft)}
-                </div>
-              </CircularProgress>
-            </div>
-            
-            <div className="flex gap-3 justify-center mb-6 relative">
-              <div className="absolute left-0 bottom-0 flex flex-col gap-1">
-                {(isPaused || isRunning) && (
-                  <button
-                    onMouseDown={() => handleLongPressStart(stopTimer)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(stopTimer)}
-                    onTouchEnd={handleLongPressEnd}
-                    onClick={stopTimer}
-                    className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
-                  >
-                    Stop
-                  </button>
-                )}
-                {(!isRunning && !isFlashing) && (
-                  <button
-                    onMouseDown={() => handleLongPressStart(resetTimer)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(resetTimer)}
-                    onTouchEnd={handleLongPressEnd}
-                    onClick={resetTimer}
-                    className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
-                  >
-                    Reset
-                  </button>
-                )}
-              </div>
-              
-              {isFlashing ? <Button size="lg" className="px-8" onClick={timerType === 'focus' ? switchToBreak : switchToFocus}>
-                  Start {timerType === 'focus' ? 'Break' : 'Focus'}
-                </Button> : <>
+            {isSchedulingMode ? (
+              <ScheduleForm />
+            ) : (
+              <>
+                <div className="flex justify-between items-start mb-6">
                   <Button 
-                    size="lg" 
-                    className="px-8" 
-                    onClick={isRunning ? pauseTimer : (isPaused ? () => { setIsRunning(true); setIsPaused(false); } : startTimer)}
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setIsSchedulingMode(true)}
+                    className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
                   >
-                    {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
+                    <CalendarPlus size={16} />
+                    <span className="text-sm font-medium">Schedule</span>
                   </Button>
-                </>}
-            </div>
+                  <div className="flex-1 flex justify-end">
+                    <button 
+                      onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
+                      onMouseUp={handleLongPressEnd}
+                      onMouseLeave={handleLongPressEnd}
+                      onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
+                      onTouchEnd={handleLongPressEnd}
+                      onClick={handlePublicPrivateToggle}
+                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                    >
+                      {isPublic ? <>
+                          <Globe size={16} />
+                          <span className="text-sm font-medium">Public</span>
+                        </> : <>
+                          <Lock size={16} />
+                          <span className="text-sm font-medium">Private</span>
+                        </>}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex justify-center mb-4">
+                  <CircularProgress
+                    size={280}
+                    strokeWidth={12}
+                    progress={timerType === 'focus' 
+                      ? (timeLeft / (focusMinutes * 60)) * 100 
+                      : (timeLeft / (breakMinutes * 60)) * 100
+                    }
+                    interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive}
+                    onInteract={handleCircularProgressChange}
+                    className={isFlashing ? 'animate-pulse' : ''}
+                  >
+                    <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''}`}>
+                      {formatTime(timeLeft)}
+                    </div>
+                  </CircularProgress>
+                </div>
+                
+                <div className="flex gap-3 justify-center mb-6 relative">
+                  <div className="absolute left-0 bottom-0 flex flex-col gap-1">
+                    {(isPaused || isRunning || isScheduleActive) && (
+                      <button
+                        onMouseDown={() => handleLongPressStart(stopTimer)}
+                        onMouseUp={handleLongPressEnd}
+                        onMouseLeave={handleLongPressEnd}
+                        onTouchStart={() => handleLongPressStart(stopTimer)}
+                        onTouchEnd={handleLongPressEnd}
+                        onClick={stopTimer}
+                        className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
+                      >
+                        Stop
+                      </button>
+                    )}
+                    {(!isRunning && !isFlashing && !isScheduleActive) && (
+                      <button
+                        onMouseDown={() => handleLongPressStart(resetTimer)}
+                        onMouseUp={handleLongPressEnd}
+                        onMouseLeave={handleLongPressEnd}
+                        onTouchStart={() => handleLongPressStart(resetTimer)}
+                        onTouchEnd={handleLongPressEnd}
+                        onClick={resetTimer}
+                        className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                  
+                  {isFlashing ? (
+                    <Button size="lg" className="px-8" onClick={timerType === 'focus' ? switchToBreak : switchToFocus}>
+                      Start {timerType === 'focus' ? 'Break' : 'Focus'}
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="lg" 
+                      className="px-8" 
+                      onClick={isRunning ? pauseTimer : (isPaused ? () => { setIsRunning(true); setIsPaused(false); } : startTimer)}
+                    >
+                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
+                    </Button>
+                  )}
+                </div>
 
-            <div className="flex justify-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span 
-                  className={cn(
-                    "text-muted-foreground cursor-pointer",
-                    timerType === 'focus' && "font-bold text-foreground"
-                  )}
-                  onClick={() => handleModeToggle('focus')}
-                >
-                  Focus:
-                </span>
-                <Input type="number" value={focusMinutes} onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="120" />
-              </div>
-              <div className="flex items-center gap-2">
-                <span 
-                  className={cn(
-                    "text-muted-foreground cursor-pointer",
-                    timerType === 'break' && "font-bold text-foreground"
-                  )}
-                  onClick={() => handleModeToggle('break')}
-                >
-                  Break:
-                </span>
-                <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
-              </div>
-            </div>
-            {/* Ask Menu */}
-            {(isRunning || isPaused) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
+                {!isScheduleActive && ( // Hide manual duration controls if schedule is active
+                  <div className="flex justify-center gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span 
+                        className={cn(
+                          "text-muted-foreground cursor-pointer",
+                          timerType === 'focus' && "font-bold text-foreground"
+                        )}
+                        onClick={() => handleModeToggle('focus')}
+                      >
+                        Focus:
+                      </span>
+                      <Input type="number" value={focusMinutes} onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="120" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span 
+                        className={cn(
+                          "text-muted-foreground cursor-pointer",
+                          timerType === 'break' && "font-bold text-foreground"
+                        )}
+                        onClick={() => handleModeToggle('break')}
+                      >
+                        Break:
+                      </span>
+                      <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
+                    </div>
+                  </div>
+                )}
+                {/* Ask Menu */}
+                {(isRunning || isPaused || isScheduleActive) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
+              </>
+            )}
           </div>
 
           {/* Active Asks Section */}
@@ -623,7 +657,7 @@ const Index = () => {
           </Card>
 
           {/* Coworkers Section - Show when running or paused */}
-          {(isRunning || isPaused) && currentCoworkers.length > 0 && (
+          {(isRunning || isPaused || isScheduleActive) && currentCoworkers.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Coworkers</CardTitle> {/* Renamed title */}
@@ -693,6 +727,15 @@ const Index = () => {
           </TooltipProvider>
         </div>
       </div>
+      {/* Timeline Section */}
+      {isScheduleActive && (
+        <Timeline 
+          schedule={schedule} 
+          currentScheduleIndex={currentScheduleIndex} 
+          timeLeft={timeLeft} 
+          formatTime={formatTime} 
+        />
+      )}
     </main>
   );
 };
