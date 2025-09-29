@@ -47,17 +47,7 @@ const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, tim
     <div className="mt-8 p-4 border rounded-lg bg-card shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-foreground">{scheduleTitle}</h3> {/* Display schedule title */}
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => isRunning ? setIsPaused(true) : setIsRunning(true)}
-          >
-            {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </Button>
-          <Button variant="outline" size="sm" onClick={resetSchedule}>
-            <RotateCcw className="h-4 w-4" />
-          </Button>
+       
         </div>
       </div>
       
