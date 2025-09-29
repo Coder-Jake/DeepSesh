@@ -91,7 +91,7 @@ const ScheduleForm: React.FC = () => {
     <Card className="p-6">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <Input
-          placeholder="Schedule Title"
+          placeholder="OMGWTH"
           value={scheduleTitle}
           onChange={(e) => setScheduleTitle(e.target.value)}
           className="text-2xl font-bold h-auto py-2"
