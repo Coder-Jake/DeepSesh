@@ -163,7 +163,6 @@ const ScheduleForm: React.FC = () => {
         {!isStartTimeNow && (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="commence-time"></Label>
               <Input
                 id="commence-time"
                 type="time"
@@ -172,7 +171,6 @@ const ScheduleForm: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-            
               <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
                 <SelectTrigger id="commence-day">
                   <SelectValue placeholder="Select day" />
