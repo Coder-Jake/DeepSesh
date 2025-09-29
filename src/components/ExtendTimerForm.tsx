@@ -16,7 +16,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
   const { toast } = useToast();
 
   const handleSubmit = () => {
-    if (minutes <= -60) {
+    if (minutes <= -61) {
       toast({
         title: "Invalid minutes",
         description: "Please enter a positive number of minutes to extend.",
