@@ -55,7 +55,6 @@ export type Database = {
           },
         ]
       }
-      [_ in never]: never
     }
     Views: {
       [_ in never]: never
@@ -65,7 +64,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Record<PropertyKey, never>
       }
-      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

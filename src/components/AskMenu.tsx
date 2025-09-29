@@ -16,7 +16,7 @@ type PollType = 'closed' | 'choice' | 'selection'; // Define PollType here for c
 
 interface AskMenuProps {
   onExtendSubmit: (minutes: number) => void;
-  onPollSubmit: (question: string, pollType: PollType, options: string[]) => void;
+  onPollSubmit: (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => void;
 }
 
 const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
