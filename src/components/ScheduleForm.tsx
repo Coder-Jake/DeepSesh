@@ -144,25 +144,23 @@ const ScheduleForm: React.FC = () => {
           <Plus className="mr-2 h-4 w-4" /> Add Timer
         </Button>
 
-        {/* Start Time Toggle */}
+        {/* Start Time Toggle Button */}
         <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="start-time-toggle">Start Time</Label>
-            <p className="text-sm text-muted-foreground">
-              {isStartTimeNow ? 'Now' : 'Later'}
-            </p>
-          </div>
-          <Switch
-            id="start-time-toggle"
-            checked={!isStartTimeNow} // Checked means 'Later'
-            onCheckedChange={(checked) => setIsStartTimeNow(!checked)}
-          />
+          <Label htmlFor="start-time-toggle">Start Time</Label>
+          <Button
+            variant="ghost"
+            onClick={() => setIsStartTimeNow(prev => !prev)}
+            className="px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+          >
+            <span className="text-sm font-medium">{isStartTimeNow ? 'Now' : 'Later'}</span>
+          </Button>
         </div>
 
         {/* Commencement Time and Day Selection (conditionally rendered) */}
         {!isStartTimeNow && (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label htmlFor="commence-time">Commence Time</Label>
               <Input
                 id="commence-time"
                 type="time"
@@ -171,6 +169,7 @@ const ScheduleForm: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
+            <Label htmlFor="commence-day">Commence Day</Label>
               <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
                 <SelectTrigger id="commence-day">
                   <SelectValue placeholder="Select day" />
@@ -188,7 +187,7 @@ const ScheduleForm: React.FC = () => {
         )}
 
         <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg">
-          <Play className="mr-2 h-5 w-5" />Commence
+          <Play className="mr-2 h-5 w-5" /> Commence Schedule
         </Button>
       </CardContent>
     </Card>
