@@ -163,7 +163,7 @@ const ScheduleForm: React.FC = () => {
         {!isStartTimeNow && (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="commence-time">Commence Time</Label>
+              <Label htmlFor="commence-time"></Label>
               <Input
                 id="commence-time"
                 type="time"
