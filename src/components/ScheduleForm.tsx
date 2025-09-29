@@ -25,8 +25,12 @@ const ScheduleForm: React.FC = () => {
   const { toast } = useToast();
 
   const [localSchedule, setLocalSchedule] = useState<ScheduledTimer[]>([
-    { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 25 },
+    { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25 },
     { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
+    { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 55 },
+    { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 15 },
+    { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45 },
+    { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 10 },
   ]);
 
   const daysOfWeek = [
@@ -148,7 +152,7 @@ const ScheduleForm: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="commence-day">Commence Day</Label>
+          <Label htmlFor="commence-day">Commence Day</Label>
             <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
               <SelectTrigger id="commence-day">
                 <SelectValue placeholder="Select day" />
