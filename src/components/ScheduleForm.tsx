@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader } from "@/components/ui/card"; // Removed CardTitle from import as it's replaced by Input
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 import { Plus, Trash2, Play, X } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
@@ -17,7 +17,9 @@ const ScheduleForm: React.FC = () => {
     startSchedule, 
     scheduleTitle, 
     setScheduleTitle, 
+    commenceTime, 
     setCommenceTime, 
+    commenceDay, 
     setCommenceDay 
   } = useTimer();
   const { toast } = useToast();
@@ -26,12 +28,6 @@ const ScheduleForm: React.FC = () => {
     { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 25 },
     { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
   ]);
-  const [startLater, setStartLater] = useState(false); // New state for 'Start Time' toggle
-  const [localCommenceTime, setLocalCommenceTime] = useState(() => {
-    const now = new Date();
-    return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  });
-  const [localCommenceDay, setLocalCommenceDay] = useState(new Date().getDay());
 
   const daysOfWeek = [
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
@@ -81,17 +77,6 @@ const ScheduleForm: React.FC = () => {
       });
       return;
     }
-
-    // Set commencement time and day in context based on 'startLater'
-    if (!startLater) {
-      const now = new Date();
-      setCommenceTime(`${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`);
-      setCommenceDay(now.getDay());
-    } else {
-      setCommenceTime(localCommenceTime);
-      setCommenceDay(localCommenceDay);
-    }
-
     setSchedule(localSchedule);
     startSchedule();
   };
@@ -151,45 +136,33 @@ const ScheduleForm: React.FC = () => {
           <Plus className="mr-2 h-4 w-4" /> Add Timer
         </Button>
 
-        {/* Start Time Toggle */}
-        <div className="flex items-center justify-between">
-          <Label htmlFor="start-time-toggle">Start Time: {startLater ? 'Later' : 'Now'}</Label>
-          <Switch
-            id="start-time-toggle"
-            checked={startLater}
-            onCheckedChange={setStartLater}
-          />
-        </div>
-
-        {/* Commencement Time and Day Selection (conditionally rendered) */}
-        {startLater && (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="commence-time">Commence Time</Label>
-              <Input
-                id="commence-time"
-                type="time"
-                value={localCommenceTime}
-                onChange={(e) => setLocalCommenceTime(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="commence-day">Commence Day</Label>
-              <Select value={localCommenceDay.toString()} onValueChange={(value) => setLocalCommenceDay(parseInt(value))}>
-                <SelectTrigger id="commence-day">
-                  <SelectValue placeholder="Select day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {daysOfWeek.map((day, index) => (
-                    <SelectItem key={day} value={index.toString()}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Commencement Time and Day Selection */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="commence-time">Commence Time</Label>
+            <Input
+              id="commence-time"
+              type="time"
+              value={commenceTime}
+              onChange={(e) => setCommenceTime(e.target.value)}
+            />
           </div>
-        )}
+          <div className="space-y-2">
+            <Label htmlFor="commence-day">Commence Day</Label>
+            <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
+              <SelectTrigger id="commence-day">
+                <SelectValue placeholder="Select day" />
+              </SelectTrigger>
+              <SelectContent>
+                {daysOfWeek.map((day, index) => (
+                  <SelectItem key={day} value={index.toString()}>
+                    {day}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg">
           <Play className="mr-2 h-5 w-5" /> Commence Schedule
