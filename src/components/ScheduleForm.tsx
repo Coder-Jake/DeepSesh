@@ -172,7 +172,7 @@ const ScheduleForm: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-            <Label htmlFor="commence-day"></Label>
+            
               <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
                 <SelectTrigger id="commence-day">
                   <SelectValue placeholder="Select day" />
