@@ -7,10 +7,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquarePlus } from "lucide-react";
+import { Switch } from "@/components/ui/switch"; // Import Switch
 
 interface CreatePollFormProps {
   onClose: () => void;
-  onSubmit: (question: string, pollType: PollType, options: string[]) => void; // New prop
+  onSubmit: (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => void; // New prop
 }
 
 type PollType = 'closed' | 'choice' | 'selection';
@@ -19,7 +20,21 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const [question, setQuestion] = useState("");
   const [pollType, setPollType] = useState<PollType>('closed');
   const [options, setOptions] = useState(""); // Comma-separated for Choice/Selection
+  const [allowCustomResponses, setAllowCustomResponses] = useState(false); // New state for custom responses
   const { toast } = useToast();
+
+  const getPlaceholderText = (type: PollType) => {
+    switch (type) {
+      case 'closed':
+        return "Options are fixed (Yes, No, Don't Mind)";
+      case 'choice':
+        return "e.g., 'Coffee Break, Tea Break, Walk Outside'";
+      case 'selection':
+        return "e.g., 'Feature A, Feature B, Feature C'";
+      default:
+        return "Enter options, comma-separated";
+    }
+  };
 
   const handleSubmit = () => {
     if (!question.trim()) {
@@ -44,7 +59,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       }
     }
 
-    onSubmit(question, pollType, pollOptionsArray); // Call the onSubmit prop
+    onSubmit(question, pollType, pollOptionsArray, allowCustomResponses); // Pass new setting
     onClose();
   };
 
@@ -84,11 +99,22 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           <Label htmlFor="poll-options">Options (comma-separated)</Label>
           <Textarea
             id="poll-options"
-            placeholder="e.g., 'Option A, Option B, Option C'"
+            placeholder={getPlaceholderText(pollType)}
             value={options}
             onChange={(e) => setOptions(e.target.value)}
             rows={3}
             className="w-full"
+          />
+        </div>
+      )}
+
+      {(pollType === 'choice' || pollType === 'selection') && (
+        <div className="flex items-center justify-between space-x-2">
+          <Label htmlFor="allow-custom-responses">Allow Custom Responses</Label>
+          <Switch
+            id="allow-custom-responses"
+            checked={allowCustomResponses}
+            onCheckedChange={setAllowCustomResponses}
           />
         </div>
       )}

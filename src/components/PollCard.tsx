@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { MessageSquarePlus, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input"; // Import Input for custom responses
 
 interface PollOption {
   id: string;
@@ -20,54 +21,73 @@ interface Poll {
   creator: string;
   options: PollOption[];
   status: 'active' | 'closed';
+  allowCustomResponses: boolean; // New prop
 }
 
 interface PollCardProps {
   poll: Poll;
-  onVote: (pollId: string, optionIds: string[]) => void;
+  onVote: (pollId: string, optionIds: string[], customOptionText?: string) => void; // Updated prop
   currentUserId: string;
 }
 
 const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
   const { toast } = useToast();
-  const [selectedOption, setSelectedOption] = useState<string | null>(null); // For 'choice' and 'closed'
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // For 'selection'
+  const [selectedOption, setSelectedOption] = useState<string | null>(() => {
+    // Initialize selectedOption if user has already voted for a single-choice poll
+    if (poll.type === 'closed' || poll.type === 'choice') {
+      const votedOption = poll.options.find(option => option.votes.some(vote => vote.userId === currentUserId));
+      return votedOption ? votedOption.id : null;
+    }
+    return null;
+  });
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(() => {
+    // Initialize selectedOptions if user has already voted for a multi-selection poll
+    if (poll.type === 'selection') {
+      return poll.options
+        .filter(option => option.votes.some(vote => vote.userId === currentUserId))
+        .map(option => option.id);
+    }
+    return [];
+  });
+  const [customResponse, setCustomResponse] = useState("");
 
-  const userHasVoted = poll.options.some(option => 
+  const userHasVotedForExistingOption = poll.options.some(option => 
     option.votes.some(vote => vote.userId === currentUserId)
   );
 
   const handleVote = () => {
-    if (userHasVoted) {
-      toast({
-        title: "Already Voted",
-        description: "You have already voted on this poll.",
-        variant: "default",
-      });
-      return;
-    }
-
     let votesToSend: string[] = [];
+    let customTextToSend: string | undefined;
+
     if (poll.type === 'selection') {
       votesToSend = selectedOptions;
     } else if (selectedOption) {
       votesToSend = [selectedOption];
     }
 
-    if (votesToSend.length === 0) {
+    if (poll.allowCustomResponses && customResponse.trim()) {
+      customTextToSend = customResponse.trim();
+      // If custom response is the only thing, ensure it's sent
+      if (votesToSend.length === 0 && customTextToSend) {
+        // We'll handle adding this as a new option in Index.tsx
+      }
+    }
+
+    if (votesToSend.length === 0 && !customTextToSend) {
       toast({
         title: "No Option Selected",
-        description: "Please select an option before submitting your vote.",
+        description: "Please select an option or type a custom response before submitting your vote.",
         variant: "destructive",
       });
       return;
     }
 
-    onVote(poll.id, votesToSend);
+    onVote(poll.id, votesToSend, customTextToSend);
     toast({
       title: "Vote Submitted!",
       description: `Your vote for "${poll.question}" has been recorded.`,
     });
+    setCustomResponse(""); // Clear custom response after submission
   };
 
   const getTotalVotes = (optionId: string) => {
@@ -93,7 +113,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">Created by {poll.creator}</p>
 
-        {poll.status === 'active' && !userHasVoted && (
+        {poll.status === 'active' && (
           <div className="space-y-3">
             {poll.type === 'closed' && (
               <RadioGroup value={selectedOption || ''} onValueChange={setSelectedOption}>
@@ -141,6 +161,19 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                 ))}
               </div>
             )}
+
+            {poll.allowCustomResponses && (poll.type === 'choice' || poll.type === 'selection') && (
+              <div className="space-y-2">
+                <Label htmlFor={`${poll.id}-custom-response`}>Your Custom Response</Label>
+                <Input
+                  id={`${poll.id}-custom-response`}
+                  placeholder="Type your own option..."
+                  value={customResponse}
+                  onChange={(e) => setCustomResponse(e.target.value)}
+                />
+              </div>
+            )}
+
             <Button onClick={handleVote} className="w-full mt-4">Submit Vote</Button>
           </div>
         )}

@@ -36,6 +36,7 @@ interface Poll {
   creator: string;
   options: PollOption[];
   status: 'active' | 'closed';
+  allowCustomResponses: boolean; // New prop
 }
 
 type ActiveAskItem = ExtendSuggestion | Poll;
@@ -325,7 +326,7 @@ const Index = () => {
     setActiveAsks(prev => [...prev, newSuggestion]);
   };
 
-  const handlePollSubmit = (question: string, pollType: PollType, options: string[]) => {
+  const handlePollSubmit = (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => {
     const pollOptions: PollOption[] = options.map((text, index) => ({
       id: `option-${index}-${Date.now()}`,
       text: text,
@@ -348,6 +349,7 @@ const Index = () => {
       creator: currentUserName,
       options: pollOptions,
       status: 'active',
+      allowCustomResponses, // Store the setting
     };
     setActiveAsks(prev => [...prev, newPoll]);
   };
@@ -391,38 +393,52 @@ const Index = () => {
     });
   };
 
-  const handleVotePoll = (pollId: string, optionIds: string[]) => {
+  const handleVotePoll = (pollId: string, optionIds: string[], customOptionText?: string) => {
     setActiveAsks(prevAsks =>
       prevAsks.map(ask => {
         if (ask.id === pollId && 'options' in ask) {
-          const updatedOptions = ask.options.map(option => {
+          let currentPoll = ask as Poll; // Cast to Poll type for specific properties
+
+          // Handle custom response first
+          if (customOptionText && customOptionText.trim()) {
+            const existingCustomOption = currentPoll.options.find(
+              opt => opt.text.toLowerCase() === customOptionText.toLowerCase() && opt.id.startsWith('custom-')
+            );
+
+            if (!existingCustomOption) {
+              const newCustomOption: PollOption = {
+                id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+                text: customOptionText.trim(),
+                votes: [],
+              };
+              currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
+              optionIds = [...optionIds, newCustomOption.id]; // Add new custom option to selected votes
+            } else {
+              optionIds = [...optionIds, existingCustomOption.id]; // Add existing custom option to selected votes
+            }
+          }
+
+          const updatedOptions = currentPoll.options.map(option => {
+            // Remove current user's vote from all options first for single-choice polls
+            if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
+              option.votes = option.votes.filter(v => v.userId !== currentUserId);
+            }
+
             if (optionIds.includes(option.id)) {
               // Add vote if not already present
               if (!option.votes.some(v => v.userId === currentUserId)) {
                 return { ...option, votes: [...option.votes, { userId: currentUserId }] };
               }
             } else {
-              // For 'choice' type, remove vote from other options if user changes their mind
-              // For 'selection', only add/remove based on optionIds
-              if (ask.type === 'choice') {
+              // For selection type, if an option was previously selected but is no longer in optionIds, remove the vote
+              if (currentPoll.type === 'selection') {
                 return { ...option, votes: option.votes.filter(v => v.userId !== currentUserId) };
               }
             }
             return option;
           });
-
-          // Ensure only one vote for 'choice' and 'closed' types
-          if (ask.type === 'choice' || ask.type === 'closed') {
-            const finalOptions = updatedOptions.map(option => {
-              if (!optionIds.includes(option.id)) {
-                return { ...option, votes: option.votes.filter(v => v.userId !== currentUserId) };
-              }
-              return option;
-            });
-            return { ...ask, options: finalOptions };
-          }
           
-          return { ...ask, options: updatedOptions };
+          return { ...currentPoll, options: updatedOptions };
         }
         return ask;
       })
