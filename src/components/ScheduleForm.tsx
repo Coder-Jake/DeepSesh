@@ -27,6 +27,10 @@ const ScheduleForm: React.FC = () => {
   const [localSchedule, setLocalSchedule] = useState<ScheduledTimer[]>([
     { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25 },
     { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
+    { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 55 },
+    { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 15 },
+    { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45 },
+    { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 10 },
   ]);
 
   const daysOfWeek = [
