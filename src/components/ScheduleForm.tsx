@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader } from "@/components/ui/card"; // Removed CardTitle from import as it's replaced by Input
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Play, X } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils"; // Import cn for conditional styling
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -32,6 +33,7 @@ const ScheduleForm: React.FC = () => {
     { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45 },
     { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 10 },
   ]);
+  const [isStartTimeNow, setIsStartTimeNow] = useState(true); // New state for 'Start Time' toggle
 
   const daysOfWeek = [
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
@@ -118,15 +120,17 @@ const ScheduleForm: React.FC = () => {
                   min="1"
                   className="col-span-full sm:col-span-1"
                 />
-                <div className="flex items-center justify-between col-span-full sm:col-span-1">
-                  <Label htmlFor={`timer-type-${timer.id}`} className="text-sm">
+                <div className="flex items-center justify-center col-span-full sm:col-span-1">
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full h-10 text-sm font-medium",
+                      timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
+                    )}
+                    onClick={() => handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus')}
+                  >
                     {timer.type === 'focus' ? 'Focus' : 'Break'}
-                  </Label>
-                  <Switch
-                    id={`timer-type-${timer.id}`}
-                    checked={timer.type === 'break'}
-                    onCheckedChange={(checked) => handleUpdateTimer(timer.id, 'type', checked ? 'break' : 'focus')}
-                  />
+                  </Button>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)}>
@@ -140,33 +144,50 @@ const ScheduleForm: React.FC = () => {
           <Plus className="mr-2 h-4 w-4" /> Add Timer
         </Button>
 
-        {/* Commencement Time and Day Selection */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="commence-time">Commence Time</Label>
-            <Input
-              id="commence-time"
-              type="time"
-              value={commenceTime}
-              onChange={(e) => setCommenceTime(e.target.value)}
-            />
+        {/* Start Time Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="start-time-toggle">Start Time</Label>
+            <p className="text-sm text-muted-foreground">
+              {isStartTimeNow ? 'Now' : 'Later'}
+            </p>
           </div>
-          <div className="space-y-2">
-          <Label htmlFor="commence-day">Commence Day</Label>
-            <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
-              <SelectTrigger id="commence-day">
-                <SelectValue placeholder="Select day" />
-              </SelectTrigger>
-              <SelectContent>
-                {daysOfWeek.map((day, index) => (
-                  <SelectItem key={day} value={index.toString()}>
-                    {day}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Switch
+            id="start-time-toggle"
+            checked={!isStartTimeNow} // Checked means 'Later'
+            onCheckedChange={(checked) => setIsStartTimeNow(!checked)}
+          />
         </div>
+
+        {/* Commencement Time and Day Selection (conditionally rendered) */}
+        {!isStartTimeNow && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="commence-time">Commence Time</Label>
+              <Input
+                id="commence-time"
+                type="time"
+                value={commenceTime}
+                onChange={(e) => setCommenceTime(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+            <Label htmlFor="commence-day">Commence Day</Label>
+              <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
+                <SelectTrigger id="commence-day">
+                  <SelectValue placeholder="Select day" />
+                </SelectTrigger>
+                <SelectContent>
+                  {daysOfWeek.map((day, index) => (
+                    <SelectItem key={day} value={index.toString()}>
+                      {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
 
         <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg">
           <Play className="mr-2 h-5 w-5" /> Commence Schedule
