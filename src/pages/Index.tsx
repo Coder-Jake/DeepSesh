@@ -11,6 +11,7 @@ import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
 import SessionCard from "@/components/SessionCard"; // Import the new SessionCard component
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
+import AskMenu from "@/components/AskMenu"; // Import the new AskMenu component
 
 interface DemoSession {
   id: number;
@@ -287,7 +288,7 @@ const Index = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Timer Section */}
         <div className="space-y-6">
-          <div className={`rounded-lg border border-border p-8 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
+          <div className={`relative rounded-lg border border-border p-8 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1"></div>
               <div className="flex-1 flex justify-end">
@@ -398,6 +399,8 @@ const Index = () => {
                 <Input type="number" value={breakMinutes} onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} className="w-16 h-8 text-center" min="1" max="60" />
               </div>
             </div>
+            {/* Ask Menu */}
+            {(isRunning || isPaused) && <AskMenu />}
           </div>
 
           {/* Session Controls */}
