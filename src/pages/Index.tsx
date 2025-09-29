@@ -352,22 +352,43 @@ const Index = () => {
     setActiveAsks(prev => [...prev, newPoll]);
   };
 
-  const handleVoteExtend = (id: string, vote: 'yes' | 'no') => {
-    setActiveAsks(prevAsks =>
-      prevAsks.map(ask => {
+  const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | null) => {
+    setActiveAsks(prevAsks => {
+      return prevAsks.map(ask => {
         if (ask.id === id && 'minutes' in ask) {
-          const existingVoteIndex = ask.votes.findIndex(v => v.userId === currentUserId);
-          if (existingVoteIndex !== -1) {
-            return ask; // User already voted
+          let updatedVotes = ask.votes.filter(v => v.userId !== currentUserId); // Remove existing vote by current user
+
+          if (newVote !== null) {
+            updatedVotes.push({ userId: currentUserId, vote: newVote }); // Add new vote
           }
+
+          const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
+          const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
+          
+          // Determine total participants for threshold.
+          // Using currentCoworkers.length + 1 (for current user) if in a session, else a mock value.
+          const totalParticipants = (activeJoinedSession?.participants.length || 0) + 1; 
+          const threshold = Math.ceil(totalParticipants / 2);
+
+          let newStatus = ask.status;
+          if (yesVotes >= threshold) {
+            newStatus = 'accepted';
+            // Optionally, add the minutes to the timer here if accepted
+            // setTimeLeft(prev => prev + ask.minutes * 60);
+            // setFocusMinutes(prev => prev + ask.minutes); // Or breakMinutes
+          } else if (noVotes >= threshold) {
+            newStatus = 'rejected';
+          }
+
           return {
             ...ask,
-            votes: [...ask.votes, { userId: currentUserId, vote }],
+            votes: updatedVotes,
+            status: newStatus,
           };
         }
         return ask;
-      })
-    );
+      });
+    });
   };
 
   const handleVotePoll = (pollId: string, optionIds: string[]) => {

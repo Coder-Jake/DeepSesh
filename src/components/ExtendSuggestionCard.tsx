@@ -14,7 +14,7 @@ interface ExtendSuggestion {
 
 interface ExtendSuggestionCardProps {
   suggestion: ExtendSuggestion;
-  onVote: (id: string, vote: 'yes' | 'no') => void;
+  onVote: (id: string, vote: 'yes' | 'no' | null) => void; // Updated prop type
   currentUserId: string; // To prevent self-voting and show user's vote
 }
 
@@ -26,20 +26,39 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
   const noVotes = suggestion.votes.filter(v => v.vote === 'no').length;
   const totalVotes = suggestion.votes.length;
 
-  const handleVote = (vote: 'yes' | 'no') => {
-    if (userVote) {
+  const handleVoteClick = (voteType: 'yes' | 'no') => {
+    if (suggestion.status !== 'pending') {
       toast({
-        title: "Already Voted",
-        description: `You have already voted "${userVote}" on this suggestion.`,
+        title: "Voting Closed",
+        description: `This suggestion has already been ${suggestion.status}.`,
         variant: "default",
       });
       return;
     }
-    onVote(suggestion.id, vote);
-    toast({
-      title: "Vote Cast",
-      description: `You voted "${vote}" on the extension suggestion.`,
-    });
+
+    let newVote: 'yes' | 'no' | null = voteType;
+
+    if (userVote === voteType) {
+      // User clicked the same thumb again, so unvote
+      newVote = null;
+    } else {
+      // User clicked a different thumb, or no thumb yet, so cast/change vote
+      newVote = voteType;
+    }
+    
+    onVote(suggestion.id, newVote);
+    
+    if (newVote === null) {
+      toast({
+        title: "Vote Removed",
+        description: `Your vote for the extension has been removed.`,
+      });
+    } else {
+      toast({
+        title: "Vote Cast",
+        description: `You voted "${newVote}" on the extension suggestion.`,
+      });
+    }
   };
 
   return (
@@ -55,39 +74,28 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1 text-sm text-green-600">
-              <ThumbsUp className="h-4 w-4" /> {yesVotes}
-            </div>
-            <div className="flex items-center gap-1 text-sm text-red-600">
-              <ThumbsDown className="h-4 w-4" /> {noVotes}
-            </div>
+            {/* Thumbs Up */}
+            <button 
+              onClick={() => handleVoteClick('yes')} 
+              disabled={suggestion.status !== 'pending'}
+              className="flex items-center gap-1 text-sm text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ThumbsUp className="h-4 w-4" fill={userVote === 'yes' ? "currentColor" : "none"} /> {yesVotes}
+            </button>
+            {/* Thumbs Down */}
+            <button 
+              onClick={() => handleVoteClick('no')} 
+              disabled={suggestion.status !== 'pending'}
+              className="flex items-center gap-1 text-sm text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ThumbsDown className="h-4 w-4" fill={userVote === 'no' ? "currentColor" : "none"} /> {noVotes}
+            </button>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Users className="h-4 w-4" /> {totalVotes} votes
             </div>
           </div>
           
-          {suggestion.status === 'pending' ? (
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleVote('yes')} 
-                disabled={!!userVote}
-                className={userVote === 'yes' ? 'bg-green-100 dark:bg-green-900' : ''}
-              >
-                Yes
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleVote('no')} 
-                disabled={!!userVote}
-                className={userVote === 'no' ? 'bg-red-100 dark:bg-red-900' : ''}
-              >
-                No
-              </Button>
-            </div>
-          ) : (
+          {suggestion.status !== 'pending' && (
             <span className={`text-sm font-medium ${suggestion.status === 'accepted' ? 'text-green-600' : 'text-red-600'}`}>
               {suggestion.status === 'accepted' ? 'Accepted' : 'Rejected'}
             </span>

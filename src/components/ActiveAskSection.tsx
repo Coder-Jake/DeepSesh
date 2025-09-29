@@ -29,7 +29,7 @@ type ActiveAskItem = ExtendSuggestion | Poll;
 
 interface ActiveAskSectionProps {
   activeAsks: ActiveAskItem[];
-  onVoteExtend: (id: string, vote: 'yes' | 'no') => void;
+  onVoteExtend: (id: string, vote: 'yes' | 'no' | null) => void; // Updated prop type
   onVotePoll: (pollId: string, optionIds: string[]) => void;
   currentUserId: string;
 }
