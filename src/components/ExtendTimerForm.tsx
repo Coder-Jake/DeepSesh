@@ -36,7 +36,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
           id="extend-minutes"
           type="number"
           value={minutes}
-          onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
+          onChange={(e) => setMinutes(parseInt(e.target.value) || -60)}
           min="1"
           className="w-full"
         />
