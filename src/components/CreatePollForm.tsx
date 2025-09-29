@@ -51,7 +51,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="poll-question">Poll Question</Label>
+        <Label htmlFor="poll-question">Question</Label>
         <Input
           id="poll-question"
           placeholder="e.g., 'Should we take a longer break?'"
