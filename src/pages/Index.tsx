@@ -425,7 +425,7 @@ const Index = () => {
           const updatedOptions = currentPoll.options.map(option => {
             // Remove current user's vote from all options first for single-choice polls
             if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
-              option.votes = option.votes.filter(v => v.userId !== currentUserId);
+              option.votes = option.votes.filter(v => v.userId === currentUserId);
             }
 
             if (optionIds.includes(option.id)) {
@@ -447,6 +447,21 @@ const Index = () => {
         return ask;
       })
     );
+  };
+
+  const handleJoinSession = (session: DemoSession) => {
+    setActiveJoinedSession(session);
+    setIsRunning(true);
+    setIsPaused(false);
+    setIsFlashing(false);
+    setTimerType(session.currentPhase);
+    setTimeLeft(session.currentPhaseDurationMinutes * 60);
+    // You might want to set focusMinutes/breakMinutes based on the session's total duration or phase duration
+    if (session.currentPhase === 'focus') {
+      setFocusMinutes(session.currentPhaseDurationMinutes);
+    } else {
+      setBreakMinutes(session.currentPhaseDurationMinutes);
+    }
   };
 
 
