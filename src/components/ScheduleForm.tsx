@@ -25,7 +25,7 @@ const ScheduleForm: React.FC = () => {
   const { toast } = useToast();
 
   const [localSchedule, setLocalSchedule] = useState<ScheduledTimer[]>([
-    { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 25 },
+    { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25 },
     { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
   ]);
 
