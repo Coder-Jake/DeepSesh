@@ -122,7 +122,10 @@ const ScheduleForm: React.FC = () => {
                   <Label htmlFor={`timer-type-${timer.id}`} className="text-sm">
                     {timer.type === 'focus' ? 'Focus' : 'Break'}
                   </Label>
-                  
+                  <Switch
+                    id={`timer-type-${timer.id}`}
+                    handleUpdateTimer(timer.id, 'type', checked ? 'break' : 'focus')}
+                  />
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)}>
