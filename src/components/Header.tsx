@@ -8,7 +8,7 @@ const Header = () => {
   const isHomePage = location.pathname === "/";
 
   return (
-    <header className="border-b border-border p-6">
+    <header className="border-b border-border p-4 lg:p-6"> {/* Adjusted padding */}
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <Link to="/" className="hover:opacity-80 transition-opacity">
           <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
