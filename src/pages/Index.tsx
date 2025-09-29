@@ -15,6 +15,7 @@ import AskMenu from "@/components/AskMenu";
 import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm"; // Import ScheduleForm
 import Timeline from "@/components/Timeline"; // Import Timeline
+import ShareTimerDialog from "@/components/ShareTimerDialog"; // Import ShareTimerDialog
 
 // Define types for Ask items
 interface ExtendSuggestion {
@@ -300,22 +301,6 @@ const Index = () => {
     }
   };
 
-  const handleJoinSession = (session: DemoSession) => {
-    setActiveJoinedSession(session);
-    setFocusMinutes(session.totalDurationMinutes); // Assuming total duration is focus for simplicity
-    setBreakMinutes(session.totalDurationMinutes / 6); // A common ratio, adjust as needed
-    setTimerType(session.currentPhase);
-
-    const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
-    const remainingSecondsInPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
-    setTimeLeft(remainingSecondsInPhase);
-    
-    setIsRunning(true);
-    setIsPaused(false);
-    setIsFlashing(false);
-    playStartSound();
-  };
-
   const handleModeToggle = (mode: 'focus' | 'break') => {
     if (isRunning || isPaused || isScheduleActive) return; // Do nothing if timer is active or schedule is active
 
@@ -488,7 +473,7 @@ const Index = () => {
                     <CalendarPlus size={16} />
                     <span className="text-sm font-medium">Schedule</span>
                   </Button>
-                  <div className="flex-1 flex justify-end">
+                  <div className="flex flex-col items-end gap-2"> {/* Use flex-col for vertical stacking */}
                     <button 
                       onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
                       onMouseUp={handleLongPressEnd}
@@ -504,8 +489,11 @@ const Index = () => {
                         </> : <>
                           <Lock size={16} />
                           <span className="text-sm font-medium">Private</span>
-                        </>}
+                        >}
                     </button>
+                    {(isRunning || isPaused || isScheduleActive) && (
+                      <ShareTimerDialog sessionId={activeJoinedSession?.id?.toString()} />
+                    )}
                   </div>
                 </div>
                 
