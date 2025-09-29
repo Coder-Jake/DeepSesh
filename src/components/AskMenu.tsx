@@ -53,7 +53,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
             </Button>
           )}
           <DialogTitle className="text-center">
-            {currentAskOption === 'extend' ? 'Suggest Timer Extension' :
+            {currentAskOption === 'extend' ? 'Timer Extension' :
              currentAskOption === 'poll' ? 'Poll' :
              'What would you like to ask?'}
           </DialogTitle>
