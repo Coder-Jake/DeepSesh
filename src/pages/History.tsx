@@ -1,13 +1,11 @@
-"use client";
-
-import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react";
+import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react"; // Import Search and X icons
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState, useMemo } from "react"; // Import useMemo
+import { Input } from "@/components/ui/input"; // Import Input component
+import { Button } from "@/components/ui/button"; // Import Button component
 
 const History = () => {
   // Sample data - in a real app this would come from a database
@@ -85,7 +83,7 @@ const History = () => {
   }, [sessions, searchQuery]);
 
   return (
-    <main className="max-w-4xl mx-auto p-4 lg:p-6">
+    <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">History</h1>
@@ -118,9 +116,9 @@ const History = () => {
                     <p className="text-2xl font-bold">{sessions.length}</p>
                     <p className="text-sm text-muted-foreground">Sessions Completed</p>
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
+                </div>
+              </CardContent>
+            </Card>
             
             <Link to="/leaderboard#collaborated-users-leaderboard" className="block hover:opacity-80 transition-opacity">
               <Card>

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef } from "react";
-import { Globe, Lock, CalendarPlus, Share2 } from "lucide-react"; // Import CalendarPlus and Share2
+import { Globe, Lock, CalendarPlus } from "lucide-react"; // Import CalendarPlus
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,6 @@ import AskMenu from "@/components/AskMenu";
 import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm"; // Import ScheduleForm
 import Timeline from "@/components/Timeline"; // Import Timeline
-import ShareSessionDialog from "@/components/ShareSessionDialog"; // Import ShareSessionDialog
 
 // Define types for Ask items
 interface ExtendSuggestion {
@@ -166,7 +165,6 @@ const Index = () => {
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]); // State for active asks
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false); // State for Share dialog
 
   // Mock current user ID for voting
   const currentUserId = profile?.id || "mock-user-id-123"; 
@@ -468,7 +466,7 @@ const Index = () => {
 
 
   return (
-    <main className="max-w-4xl mx-auto p-4 lg:p-6"> {/* Adjusted padding */}
+    <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
         <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
       </div>
@@ -490,18 +488,7 @@ const Index = () => {
                     <CalendarPlus size={16} />
                     <span className="text-sm font-medium">Schedule</span>
                   </Button>
-                  <div className="flex-1 flex justify-end space-x-2"> {/* Added space-x-2 for spacing */}
-                    {(isRunning || isPaused || isScheduleActive) && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => setIsShareDialogOpen(true)}
-                        className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                      >
-                        <Share2 size={16} />
-                        <span className="text-sm font-medium">Share</span>
-                      </Button>
-                    )}
+                  <div className="flex-1 flex justify-end">
                     <button 
                       onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
                       onMouseUp={handleLongPressEnd}
@@ -517,7 +504,7 @@ const Index = () => {
                         </> : <>
                           <Lock size={16} />
                           <span className="text-sm font-medium">Private</span>
-                        >}
+                        </>}
                     </button>
                   </div>
                 </div>
@@ -755,14 +742,6 @@ const Index = () => {
           commenceDay={commenceDay} // Pass commenceDay
         />
       )}
-
-      {/* Share Session Dialog */}
-      <ShareSessionDialog
-        isOpen={isShareDialogOpen}
-        onOpenChange={setIsShareDialogOpen}
-        sessionLink="https://flows.sh/join/your-session-id" // Placeholder link
-        sessionTitle={activeJoinedSession?.title || "My Focus Session"}
-      />
     </main>
   );
 };

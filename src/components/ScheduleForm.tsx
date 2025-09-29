@@ -114,11 +114,11 @@ const ScheduleForm: React.FC = () => {
                 />
                 <Input
                   type="number"
-                  placeholder="Min"
+                  placeholder="Minutes"
                   value={timer.durationMinutes}
                   onChange={(e) => handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || 0)}
                   min="1"
-                  className="w-16 text-center" // Made slimmer
+                  className="col-span-full sm:col-span-1"
                 />
                 <div className="flex items-center justify-center col-span-full sm:col-span-1">
                   <Button
