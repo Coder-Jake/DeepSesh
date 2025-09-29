@@ -23,7 +23,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const [allowCustomResponses, setAllowCustomResponses] = useState(false); // New state for custom responses
   const { toast } = useToast();
 
-  const getPlaceholderText = (type: PollType) => {
+  const getOptionsPlaceholderText = (type: PollType) => {
     switch (type) {
       case 'closed':
         return "Options are fixed (Yes, No, Don't Mind)";
@@ -33,6 +33,19 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
         return "e.g., 'Feature A, Feature B, Feature C'";
       default:
         return "Enter options, comma-separated";
+    }
+  };
+
+  const getQuestionPlaceholderText = (type: PollType) => {
+    switch (type) {
+      case 'closed':
+        return "e.g., 'Should we extend the focus session?'";
+      case 'choice':
+        return "e.g., 'What should we do for our next break?'";
+      case 'selection':
+        return "e.g., 'Which features should we prioritize?'";
+      default:
+        return "Enter your poll question...";
     }
   };
 
@@ -69,7 +82,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
         <Label htmlFor="poll-question">Question</Label>
         <Input
           id="poll-question"
-          placeholder="e.g., 'Should we take a longer break?'"
+          placeholder={getQuestionPlaceholderText(pollType)}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           className="w-full"
@@ -99,7 +112,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           <Label htmlFor="poll-options">Options (comma-separated)</Label>
           <Textarea
             id="poll-options"
-            placeholder={getPlaceholderText(pollType)}
+            placeholder={getOptionsPlaceholderText(pollType)}
             value={options}
             onChange={(e) => setOptions(e.target.value)}
             rows={3}
