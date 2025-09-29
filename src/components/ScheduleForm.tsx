@@ -143,6 +143,7 @@ const ScheduleForm: React.FC = () => {
         {/* Commencement Time and Day Selection */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
+            <Label htmlFor="commence-time">Commence Time</Label>
             <Input
               id="commence-time"
               type="time"
