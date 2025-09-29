@@ -190,7 +190,7 @@ const ScheduleForm: React.FC = () => {
         )}
 
         <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg">
-          <Play className="mr-2 h-5 w-5" /> Commence Schedule
+          <Play className="mr-2 h-5 w-5" />Commence
         </Button>
       </CardContent>
     </Card>
