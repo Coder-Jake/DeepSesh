@@ -12,7 +12,7 @@ interface ExtendTimerFormProps {
 }
 
 const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) => {
-  const [minutes, setMinutes] = useState(15);
+  const [minutes, setMinutes] = useState(10);
   const { toast } = useToast();
 
   const handleSubmit = () => {
