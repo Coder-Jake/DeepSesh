@@ -10,9 +10,12 @@ interface TimelineProps {
   currentScheduleIndex: number;
   timeLeft: number;
   formatTime: (seconds: number) => string;
+  scheduleTitle: string; // New prop
+  commenceTime: string; // New prop
+  commenceDay: number; // New prop
 }
 
-const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, timeLeft, formatTime }) => {
+const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, timeLeft, formatTime, scheduleTitle, commenceTime, commenceDay }) => {
   const { isRunning, isPaused, setIsRunning, setIsPaused, resetSchedule } = useTimer();
 
   if (schedule.length === 0) {
@@ -22,10 +25,28 @@ const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, tim
   const currentItem = schedule[currentScheduleIndex];
   const progressPercentage = currentItem ? ((currentItem.durationMinutes * 60 - timeLeft) / (currentItem.durationMinutes * 60)) * 100 : 0;
 
+  const calculateStartTime = (index: number) => {
+    const [hours, minutes] = commenceTime.split(':').map(Number);
+    let totalMinutesOffset = 0;
+
+    for (let i = 0; i < index; i++) {
+      totalMinutesOffset += schedule[i].durationMinutes;
+    }
+
+    let currentHour = hours;
+    let currentMinute = minutes + totalMinutesOffset;
+
+    currentHour += Math.floor(currentMinute / 60);
+    currentMinute %= 60;
+    currentHour %= 24; // Handle overflow past 24 hours
+
+    return `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="mt-8 p-4 border rounded-lg bg-card shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground">Schedule Timeline</h3>
+        <h3 className="text-lg font-semibold text-foreground">{scheduleTitle}</h3> {/* Display schedule title */}
         <div className="flex gap-2">
           <Button 
             variant="outline" 
@@ -51,6 +72,7 @@ const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, tim
               index === currentScheduleIndex && "ring-2 ring-primary ring-offset-2 ring-offset-background"
             )}
           >
+            <p className="text-xs text-muted-foreground mb-1">{calculateStartTime(index)}</p> {/* Display start time */}
             <p className="font-medium text-sm truncate">{item.title}</p>
             <div className="flex items-center text-xs text-muted-foreground mt-1">
               <Clock className="h-3 w-3 mr-1" />

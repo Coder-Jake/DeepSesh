@@ -151,7 +151,10 @@ const Index = () => {
     isScheduleActive,
     startSchedule,
     resetSchedule,
-    advanceSchedule, // Added advanceSchedule
+    // New states for schedule details
+    scheduleTitle,
+    commenceTime,
+    commenceDay,
   } = useTimer();
   
   const { profile, loading: profileLoading } = useProfile();
@@ -734,6 +737,9 @@ const Index = () => {
           currentScheduleIndex={currentScheduleIndex} 
           timeLeft={timeLeft} 
           formatTime={formatTime} 
+          scheduleTitle={scheduleTitle} // Pass scheduleTitle
+          commenceTime={commenceTime} // Pass commenceTime
+          commenceDay={commenceDay} // Pass commenceDay
         />
       )}
     </main>

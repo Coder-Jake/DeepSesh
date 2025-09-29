@@ -3,20 +3,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card"; // Removed CardTitle from import as it's replaced by Input
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 import { Plus, Trash2, Play, X } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
 
 const ScheduleForm: React.FC = () => {
-  const { setSchedule, setIsSchedulingMode, startSchedule } = useTimer();
+  const { 
+    setSchedule, 
+    setIsSchedulingMode, 
+    startSchedule, 
+    scheduleTitle, 
+    setScheduleTitle, 
+    commenceTime, 
+    setCommenceTime, 
+    commenceDay, 
+    setCommenceDay 
+  } = useTimer();
   const { toast } = useToast();
 
   const [localSchedule, setLocalSchedule] = useState<ScheduledTimer[]>([
     { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 25 },
     { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
   ]);
+
+  const daysOfWeek = [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+  ];
 
   const handleAddTimer = () => {
     setLocalSchedule(prev => [
@@ -38,6 +53,14 @@ const ScheduleForm: React.FC = () => {
   };
 
   const handleCommenceSchedule = () => {
+    if (!scheduleTitle.trim()) {
+      toast({
+        title: "Schedule Title Missing",
+        description: "Please enter a title for your schedule.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (localSchedule.length === 0) {
       toast({
         title: "No Timers in Schedule",
@@ -61,7 +84,12 @@ const ScheduleForm: React.FC = () => {
   return (
     <Card className="p-6">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-2xl font-bold">Create Schedule</CardTitle>
+        <Input
+          placeholder="Schedule Title"
+          value={scheduleTitle}
+          onChange={(e) => setScheduleTitle(e.target.value)}
+          className="text-2xl font-bold h-auto py-2"
+        />
         <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
           <X className="h-5 w-5" />
         </Button>
@@ -107,6 +135,34 @@ const ScheduleForm: React.FC = () => {
         <Button onClick={handleAddTimer} variant="outline" className="w-full">
           <Plus className="mr-2 h-4 w-4" /> Add Timer
         </Button>
+
+        {/* Commencement Time and Day Selection */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="commence-time">Commence Time</Label>
+            <Input
+              id="commence-time"
+              type="time"
+              value={commenceTime}
+              onChange={(e) => setCommenceTime(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="commence-day">Commence Day</Label>
+            <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
+              <SelectTrigger id="commence-day">
+                <SelectValue placeholder="Select day" />
+              </SelectTrigger>
+              <SelectContent>
+                {daysOfWeek.map((day, index) => (
+                  <SelectItem key={day} value={index.toString()}>
+                    {day}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg">
           <Play className="mr-2 h-5 w-5" /> Commence Schedule

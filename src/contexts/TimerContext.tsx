@@ -34,6 +34,14 @@ interface TimerContextType {
   startSchedule: () => void;
   resetSchedule: () => void;
   advanceSchedule: () => void;
+
+  // New states for schedule details
+  scheduleTitle: string;
+  setScheduleTitle: (title: string) => void;
+  commenceTime: string;
+  setCommenceTime: (time: string) => void;
+  commenceDay: number; // 0 for Sunday, 1 for Monday, etc.
+  setCommenceDay: (day: number) => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -66,6 +74,14 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
   const [isSchedulingMode, setIsSchedulingMode] = useState(false);
   const [isScheduleActive, setIsScheduleActive] = useState(false);
+
+  // New states for schedule details
+  const [scheduleTitle, setScheduleTitle] = useState("My Schedule");
+  const [commenceTime, setCommenceTime] = useState(() => {
+    const now = new Date();
+    return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  });
+  const [commenceDay, setCommenceDay] = useState(new Date().getDay()); // 0 for Sunday, 1 for Monday, etc.
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -219,6 +235,12 @@ export const TimerProvider = ({ children }: TimerProviderProps) => {
     startSchedule,
     resetSchedule,
     advanceSchedule,
+    scheduleTitle,
+    setScheduleTitle,
+    commenceTime,
+    setCommenceTime,
+    commenceDay,
+    setCommenceDay,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
