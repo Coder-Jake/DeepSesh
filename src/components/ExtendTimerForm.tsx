@@ -8,9 +8,10 @@ import { PlusCircle } from "lucide-react";
 
 interface ExtendTimerFormProps {
   onClose: () => void;
+  onSubmit: (minutes: number) => void; // New prop
 }
 
-const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose }) => {
+const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) => {
   const [minutes, setMinutes] = useState(15);
   const { toast } = useToast();
 
@@ -23,11 +24,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose }) => {
       });
       return;
     }
-    // In a real application, this would send a request to other users
-    toast({
-      title: "Extension Suggested!",
-      description: `You suggested adding ${minutes} minutes to the timer. Waiting for group response.`,
-    });
+    onSubmit(minutes); // Call the onSubmit prop
     onClose();
   };
 

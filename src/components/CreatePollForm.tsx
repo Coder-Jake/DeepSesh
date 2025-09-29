@@ -10,11 +10,12 @@ import { MessageSquarePlus } from "lucide-react";
 
 interface CreatePollFormProps {
   onClose: () => void;
+  onSubmit: (question: string, pollType: PollType, options: string[]) => void; // New prop
 }
 
 type PollType = 'closed' | 'choice' | 'selection';
 
-const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose }) => {
+const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) => {
   const [question, setQuestion] = useState("");
   const [pollType, setPollType] = useState<PollType>('closed');
   const [options, setOptions] = useState(""); // Comma-separated for Choice/Selection
@@ -43,11 +44,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose }) => {
       }
     }
 
-    // In a real application, this would send a request to other users
-    toast({
-      title: "Poll Created!",
-      description: `Your "${question}" poll (${pollType}) has been submitted to the group.`,
-    });
+    onSubmit(question, pollType, pollOptionsArray); // Call the onSubmit prop
     onClose();
   };
 

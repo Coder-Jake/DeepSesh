@@ -9,9 +9,37 @@ import { Globe, Lock } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
-import SessionCard from "@/components/SessionCard"; // Import the new SessionCard component
-import { cn } from "@/lib/utils"; // Import cn for conditional class names
-import AskMenu from "@/components/AskMenu"; // Import the new AskMenu component
+import SessionCard from "@/components/SessionCard";
+import { cn } from "@/lib/utils";
+import AskMenu from "@/components/AskMenu";
+import ActiveAskSection from "@/components/ActiveAskSection"; // Import ActiveAskSection
+
+// Define types for Ask items
+interface ExtendSuggestion {
+  id: string;
+  minutes: number;
+  creator: string;
+  votes: { userId: string; vote: 'yes' | 'no' }[];
+  status: 'pending' | 'accepted' | 'rejected';
+}
+
+interface PollOption {
+  id: string;
+  text: string;
+  votes: { userId: string }[];
+}
+
+interface Poll {
+  id: string;
+  question: string;
+  type: 'closed' | 'choice' | 'selection';
+  creator: string;
+  options: PollOption[];
+  status: 'active' | 'closed';
+}
+
+type ActiveAskItem = ExtendSuggestion | Poll;
+type PollType = 'closed' | 'choice' | 'selection'; // Re-define PollType for Index.tsx
 
 interface DemoSession {
   id: number;
@@ -120,6 +148,11 @@ const Index = () => {
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
+  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]); // State for active asks
+
+  // Mock current user ID for voting
+  const currentUserId = profile?.id || "mock-user-id-123"; 
+  const currentUserName = profile?.first_name || "You";
 
   const playStartSound = () => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -280,6 +313,102 @@ const Index = () => {
   // Determine which participants to show in the "Coworkers" section
   const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
 
+  // --- Ask Menu Handlers ---
+  const handleExtendSubmit = (minutes: number) => {
+    const newSuggestion: ExtendSuggestion = {
+      id: `extend-${Date.now()}`,
+      minutes,
+      creator: currentUserName,
+      votes: [],
+      status: 'pending',
+    };
+    setActiveAsks(prev => [...prev, newSuggestion]);
+  };
+
+  const handlePollSubmit = (question: string, pollType: PollType, options: string[]) => {
+    const pollOptions: PollOption[] = options.map((text, index) => ({
+      id: `option-${index}-${Date.now()}`,
+      text: text,
+      votes: [],
+    }));
+
+    // For 'closed' type, pre-define options
+    if (pollType === 'closed') {
+      pollOptions.push(
+        { id: 'closed-yes', text: 'Yes', votes: [] },
+        { id: 'closed-no', text: 'No', votes: [] },
+        { id: 'closed-dont-mind', text: "Don't Mind", votes: [] }
+      );
+    }
+
+    const newPoll: Poll = {
+      id: `poll-${Date.now()}`,
+      question,
+      type: pollType,
+      creator: currentUserName,
+      options: pollOptions,
+      status: 'active',
+    };
+    setActiveAsks(prev => [...prev, newPoll]);
+  };
+
+  const handleVoteExtend = (id: string, vote: 'yes' | 'no') => {
+    setActiveAsks(prevAsks =>
+      prevAsks.map(ask => {
+        if (ask.id === id && 'minutes' in ask) {
+          const existingVoteIndex = ask.votes.findIndex(v => v.userId === currentUserId);
+          if (existingVoteIndex !== -1) {
+            return ask; // User already voted
+          }
+          return {
+            ...ask,
+            votes: [...ask.votes, { userId: currentUserId, vote }],
+          };
+        }
+        return ask;
+      })
+    );
+  };
+
+  const handleVotePoll = (pollId: string, optionIds: string[]) => {
+    setActiveAsks(prevAsks =>
+      prevAsks.map(ask => {
+        if (ask.id === pollId && 'options' in ask) {
+          const updatedOptions = ask.options.map(option => {
+            if (optionIds.includes(option.id)) {
+              // Add vote if not already present
+              if (!option.votes.some(v => v.userId === currentUserId)) {
+                return { ...option, votes: [...option.votes, { userId: currentUserId }] };
+              }
+            } else {
+              // For 'choice' type, remove vote from other options if user changes their mind
+              // For 'selection', only add/remove based on optionIds
+              if (ask.type === 'choice') {
+                return { ...option, votes: option.votes.filter(v => v.userId !== currentUserId) };
+              }
+            }
+            return option;
+          });
+
+          // Ensure only one vote for 'choice' and 'closed' types
+          if (ask.type === 'choice' || ask.type === 'closed') {
+            const finalOptions = updatedOptions.map(option => {
+              if (!optionIds.includes(option.id)) {
+                return { ...option, votes: option.votes.filter(v => v.userId !== currentUserId) };
+              }
+              return option;
+            });
+            return { ...ask, options: finalOptions };
+          }
+          
+          return { ...ask, options: updatedOptions };
+        }
+        return ask;
+      })
+    );
+  };
+
+
   return (
     <main className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
@@ -400,14 +529,16 @@ const Index = () => {
               </div>
             </div>
             {/* Ask Menu */}
-            {(isRunning || isPaused) && <AskMenu />}
+            {(isRunning || isPaused) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
           </div>
 
-          {/* Session Controls */}
-          <div className="grid grid-cols-2 gap-4">
-            
-            
-          </div>
+          {/* Active Asks Section */}
+          <ActiveAskSection 
+            activeAsks={activeAsks} 
+            onVoteExtend={handleVoteExtend} 
+            onVotePoll={handleVotePoll} 
+            currentUserId={currentUserId} 
+          />
         </div>
 
         {/* Right Column */}
