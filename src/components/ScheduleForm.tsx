@@ -88,8 +88,8 @@ const ScheduleForm: React.FC = () => {
   };
 
   return (
-    <Card className="p-6">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
+    <Card className="py-6 px-0"> {/* Removed horizontal padding from the main Card */}
+      <CardHeader className="flex flex-row items-center justify-between pb-4 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
         <Input
           placeholder="Schedule Title"
           value={scheduleTitle}
@@ -100,7 +100,7 @@ const ScheduleForm: React.FC = () => {
           <X className="h-5 w-5" />
         </Button>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
         <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
           {localSchedule.map((timer, index) => (
             <div key={timer.id} className="flex items-center gap-4 p-3 border rounded-md bg-muted/50">
@@ -118,7 +118,7 @@ const ScheduleForm: React.FC = () => {
                   value={timer.durationMinutes}
                   onChange={(e) => handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || 0)}
                   min="1"
-                  className="w-20 text-center col-span-full sm:col-span-1" // Adjusted width and added text-center
+                  className="w-20 text-center col-span-full sm:col-span-1"
                 />
                 <div className="flex items-center justify-center col-span-full sm:col-span-1">
                   <Button
