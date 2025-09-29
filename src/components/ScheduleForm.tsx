@@ -124,7 +124,8 @@ const ScheduleForm: React.FC = () => {
                   </Label>
                   <Switch
                     id={`timer-type-${timer.id}`}
-                    handleUpdateTimer(timer.id, 'type', checked ? 'break' : 'focus')}
+                    checked={timer.type === 'break'}
+                    onCheckedChange={(checked) => handleUpdateTimer(timer.id, 'type', checked ? 'break' : 'focus')}
                   />
                 </div>
               </div>
