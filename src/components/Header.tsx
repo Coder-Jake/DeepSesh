@@ -9,7 +9,7 @@ const Header = () => {
 
   return (
     <header className="border-b border-border p-6">
-      <div className="max-w-4xl mx-auto flex justify-between items-center">
+      <div className="max-w-4xl mx-auto flex justify-between items-center px-4 lg:px-6"> {/* Adjusted padding */}
         <Link to="/" className="hover:opacity-80 transition-opacity">
           <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
         </Link>

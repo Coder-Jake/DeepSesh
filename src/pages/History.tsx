@@ -83,7 +83,7 @@ const History = () => {
   }, [sessions, searchQuery]);
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
+    <main className="max-w-4xl mx-auto p-4 lg:p-6"> {/* Adjusted padding */}
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">History</h1>
@@ -116,9 +116,9 @@ const History = () => {
                     <p className="text-2xl font-bold">{sessions.length}</p>
                     <p className="text-sm text-muted-foreground">Sessions Completed</p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
             
             <Link to="/leaderboard#collaborated-users-leaderboard" className="block hover:opacity-80 transition-opacity">
               <Card>
