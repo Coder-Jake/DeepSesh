@@ -44,7 +44,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
       <DialogFooter>
         <Button onClick={handleSubmit} className="w-full">
           <PlusCircle className="mr-2 h-4 w-4" />
-          Suggest Extension
+          Suggest
         </Button>
       </DialogFooter>
     </div>
