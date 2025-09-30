@@ -70,7 +70,7 @@ const FeedbackForm = () => {
         {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="feedback-email">Email (optional)</Label>
+        <Label htmlFor="feedback-email"> Email (optional)</Label>
         <Input
           id="feedback-email"
           type="email"
