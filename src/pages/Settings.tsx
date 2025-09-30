@@ -23,7 +23,7 @@ const Settings = () => {
     setTimerIncrement, // Setter for timerIncrement
   } = useTimer();
 
-  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(true); // New state for toggle
+  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false); // Changed default to false
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
   const [customBatchMinutes, setCustomBatchMinutes] = useState(15); // Default to 15 minutes
   const [lock, setlock] = useState(false);
@@ -61,7 +61,7 @@ const Settings = () => {
   const [locationSharing, setLocationSharing] = useState("approximate");
 
   // New state for global visibility toggle
-  const [isGlobalPublic, setIsGlobalPublic] = useState(true); 
+  const [isGlobalPublic, setIsGlobalPublic] = useState(false); // Changed default to false
   
   // New state for timer increments
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
