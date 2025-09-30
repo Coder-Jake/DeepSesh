@@ -53,7 +53,7 @@ const Settings = () => {
   const [sessionInvites, setSessionInvites] = useState({ push: false, vibrate: false, sound: false });
   const [friendActivity, setFriendActivity] = useState({ push: false, vibrate: false, sound: false });
   
-  const [autoTransition, setAutoTransition] = useState(false);
+  const [manualTransition, setManualTransition] = useState(false); // Renamed from autoTransition
   
   const [verificationStandard, setVerificationStandard] = useState("anyone");
   
@@ -67,7 +67,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>([]);
 
   // Initial state for comparison to detect changes
   const initialSettings = useRef({
@@ -81,7 +81,7 @@ const Settings = () => {
     favourites,
     workApps,
     intentionalBreaches,
-    autoTransition,
+    manualTransition, // Renamed
     focusMinutes, 
     breakMinutes, 
     maxDistance: maxDistance[0],
@@ -113,7 +113,7 @@ const Settings = () => {
       favourites,
       workApps,
       intentionalBreaches,
-      autoTransition,
+      manualTransition, // Renamed
       focusMinutes: currentFocusVal,
       breakMinutes: currentBreakVal,
       maxDistance: maxDistance[0],
@@ -146,7 +146,7 @@ const Settings = () => {
     batchNotificationPreference, 
     customBatchMinutes, 
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
+    manualTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance, // Renamed
     askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPublic, 
@@ -189,7 +189,7 @@ const Settings = () => {
       favourites,
       workApps,
       intentionalBreaches,
-      autoTransition,
+      manualTransition, // Renamed
       focusMinutes: newFocusMinutes,
       breakMinutes: newBreakMinutes,
       maxDistance: maxDistance[0],
@@ -378,15 +378,15 @@ const Settings = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto-transition"> Manual Transitions</Label>
+                  <Label htmlFor="manual-transition"> Manual Transitions</Label> {/* Renamed label */}
                   <p className="text-sm text-muted-foreground">
                     Prompt for session ends?
                   </p>
                 </div>
                 <Switch
-                  id="auto-transition"
-                  checked={autoTransition}
-                  onCheckedChange={setAutoTransition}
+                  id="manual-transition" // Renamed id
+                  checked={manualTransition}
+                  onCheckedChange={setManualTransition} // Renamed setter
                 />
               </div>
 
