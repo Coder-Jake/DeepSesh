@@ -11,6 +11,24 @@ import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils"; // Import cn for conditional styling
 
+// Utility function to get the next 30-minute increment
+const getNextHalfHourIncrement = () => {
+  const now = new Date();
+  let minutes = now.getMinutes();
+  let hours = now.getHours();
+
+  if (minutes < 30) {
+    minutes = 30;
+  } else {
+    minutes = 0;
+    hours = (hours + 1) % 24;
+  }
+
+  const formattedHours = hours.toString().padStart(2, '0');
+  const formattedMinutes = minutes.toString().padStart(2, '0');
+  return `${formattedHours}:${formattedMinutes}`;
+};
+
 const ScheduleForm: React.FC = () => {
   const { 
     setSchedule, 
@@ -39,6 +57,12 @@ const ScheduleForm: React.FC = () => {
   const daysOfWeek = [
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
+
+  // Initialize commenceTime and commenceDay to the next 30-minute increment and current day
+  React.useEffect(() => {
+    setCommenceTime(getNextHalfHourIncrement());
+    setCommenceDay(new Date().getDay());
+  }, [setCommenceTime, setCommenceDay]);
 
   const handleAddTimer = () => {
     setLocalSchedule(prev => [
