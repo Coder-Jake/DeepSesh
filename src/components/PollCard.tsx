@@ -123,8 +123,9 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
     submitVote(newOptionId, selectedOptions, customResponse);
   };
 
-  const handleSelectionChange = (optionId: string, checked: boolean) => {
-    const newSelectedOptions = checked
+  const handleSelectionChange = (optionId: string, checked: boolean | 'indeterminate') => { // Updated type for checked
+    const isChecked = !!checked; // Ensure it's a boolean
+    const newSelectedOptions = isChecked
       ? [...selectedOptions, optionId]
       : selectedOptions.filter(id => id !== optionId);
     setSelectedOptions(newSelectedOptions);

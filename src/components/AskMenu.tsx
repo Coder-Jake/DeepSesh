@@ -16,6 +16,8 @@ interface AskMenuProps {
   onPollSubmit: (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => void;
 }
 
+type AskOption = 'extend' | 'poll'; // Defined AskOption type
+
 const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentAskOption, setCurrentAskOption] = useState<AskOption>('extend');

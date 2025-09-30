@@ -7,7 +7,7 @@ interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
-  votes: { userId: string; vote: 'yes' | 'no' }[];
+  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[]; // Added 'neutral'
   status: 'pending' | 'accepted' | 'rejected';
 }
 
@@ -31,7 +31,7 @@ type ActiveAskItem = ExtendSuggestion | Poll;
 
 interface ActiveAskSectionProps {
   activeAsks: ActiveAskItem[];
-  onVoteExtend: (id: string, vote: 'yes' | 'no' | null) => void; // Updated prop type
+  onVoteExtend: (id: string, vote: 'yes' | 'no' | 'neutral' | null) => void; // Updated prop type
   onVotePoll: (pollId: string, optionIds: string[], customOptionText?: string) => void; // Updated prop
   currentUserId: string;
 }
