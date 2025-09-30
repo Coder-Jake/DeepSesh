@@ -424,7 +424,7 @@ const Index = () => {
             if (!existingCustomOption) {
               const newCustomOption: PollOption = {
                 id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                text: customResponse.trim(),
+                text: customOptionText.trim(), // Use customOptionText here
                 votes: [],
               };
               currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
@@ -490,7 +490,7 @@ const Index = () => {
                       onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
                       onTouchEnd={handleLongPressEnd}
                       onClick={handlePublicPrivateToggle}
-                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
                     >
                       {isPublic ? <>
                           <Globe size={16} />
@@ -533,7 +533,7 @@ const Index = () => {
                     onInteract={handleCircularProgressChange}
                     className={isFlashing ? 'animate-pulse' : ''}
                   >
-                    <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''}`}>
+                    <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}>
                       {formatTime(timeLeft)}
                     </div>
                   </CircularProgress>
@@ -565,7 +565,7 @@ const Index = () => {
                       onTouchStart={() => handleLongPressStart(stopTimer)}
                       onTouchEnd={handleLongPressEnd}
                       onClick={stopTimer}
-                      className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
+                      className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground select-none"
                     >
                       Stop
                     </button>
@@ -577,7 +577,7 @@ const Index = () => {
                     <div className="flex items-center gap-2">
                       <span 
                         className={cn(
-                          "text-muted-foreground cursor-pointer",
+                          "text-muted-foreground cursor-pointer select-none",
                           timerType === 'focus' && "font-bold text-foreground"
                         )}
                         onClick={() => handleModeToggle('focus')}
@@ -609,7 +609,7 @@ const Index = () => {
                     <div className="flex items-center gap-2">
                       <span 
                         className={cn(
-                          "text-muted-foreground cursor-pointer",
+                          "text-muted-foreground cursor-pointer select-none",
                           timerType === 'break' && "font-bold text-foreground"
                         )}
                         onClick={() => handleModeToggle('break')}
@@ -664,7 +664,7 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <p 
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
                   onMouseDown={() => handleLongPressStart(handleIntentionLongPress)}
                   onMouseUp={handleLongPressEnd}
                   onMouseLeave={handleLongPressEnd}
@@ -707,7 +707,7 @@ const Index = () => {
                 {currentCoworkers.map(participant => (
                   <Tooltip key={participant.id}>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-default">
+                      <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-default select-none">
                         <span className="font-medium text-foreground">{participant.name}</span>
                         <span className="text-sm text-muted-foreground">Sociability: {participant.sociability}%</span>
                       </div>

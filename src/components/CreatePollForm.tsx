@@ -98,7 +98,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
             htmlFor="type-closed"
             onClick={() => setPollType('closed')}
             className={cn(
-              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors",
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors select-none",
               pollType === 'closed' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
             )}
           >
@@ -109,7 +109,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
             htmlFor="type-choice"
             onClick={() => setPollType('choice')}
             className={cn(
-              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors",
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors select-none",
               pollType === 'choice' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
             )}
           >
@@ -120,7 +120,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
             htmlFor="type-selection"
             onClick={() => setPollType('selection')}
             className={cn(
-              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors",
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors select-none",
               pollType === 'selection' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
             )}
           >

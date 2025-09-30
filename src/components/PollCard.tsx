@@ -183,7 +183,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                 <button 
                   onClick={() => handleClosedPollVote('closed-yes')} 
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 text-green-600 disabled:opacity-50 w-16 h-16 rounded-lg border",
+                    "flex flex-col items-center justify-center gap-1 text-green-600 disabled:opacity-50 w-16 h-16 rounded-lg border select-none",
                     selectedOption === 'closed-yes' && "font-bold bg-green-100 border-green-200"
                   )}
                 >
@@ -193,7 +193,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                 <button 
                   onClick={() => handleClosedPollVote('closed-dont-mind')} 
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 text-blue-500 disabled:opacity-50 w-16 h-16 rounded-lg border",
+                    "flex flex-col items-center justify-center gap-1 text-blue-500 disabled:opacity-50 w-16 h-16 rounded-lg border select-none",
                     selectedOption === 'closed-dont-mind' && "font-bold bg-blue-100 border-blue-200"
                   )}
                 >
@@ -203,7 +203,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                 <button 
                   onClick={() => handleClosedPollVote('closed-no')} 
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 text-red-600 disabled:opacity-50 w-16 h-16 rounded-lg border",
+                    "flex flex-col items-center justify-center gap-1 text-red-600 disabled:opacity-50 w-16 h-16 rounded-lg border select-none",
                     selectedOption === 'closed-no' && "font-bold bg-red-100 border-red-200"
                   )}
                 >
@@ -238,7 +238,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                       <RadioGroupItem value={option.id} id={`${poll.id}-${option.id}`} />
                       <Label htmlFor={`${poll.id}-${option.id}`}>{option.text}</Label>
                     </div>
-                    <span className="text-muted-foreground text-sm">{getTotalVotes(option.id)} votes</span>
+                    <span className="text-muted-foreground text-sm select-none">{getTotalVotes(option.id)} votes</span>
                   </div>
                 ))}
               </RadioGroup>
@@ -256,7 +256,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                       />
                       <Label htmlFor={`${poll.id}-${option.id}`}>{option.text}</Label>
                     </div>
-                    <span className="text-muted-foreground text-sm">{getTotalVotes(option.id)} votes</span>
+                    <span className="text-muted-foreground text-sm select-none">{getTotalVotes(option.id)} votes</span>
                   </div>
                 ))}
               </div>

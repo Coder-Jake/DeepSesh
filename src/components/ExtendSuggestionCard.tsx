@@ -65,7 +65,7 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
           <button 
             onClick={() => handleVoteClick('yes')} 
             className={cn(
-              "flex flex-col items-center justify-center gap-1 text-green-600 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+              "flex flex-col items-center justify-center gap-1 text-green-600 disabled:opacity-50 w-16 h-16 rounded-lg border select-none", // Larger, centered
               userVote === 'yes' && "font-bold bg-green-100 border-green-200"
             )}
           >
@@ -75,7 +75,7 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
           <button 
             onClick={() => handleVoteClick('neutral')} 
             className={cn(
-              "flex flex-col items-center justify-center gap-1 text-blue-500 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+              "flex flex-col items-center justify-center gap-1 text-blue-500 disabled:opacity-50 w-16 h-16 rounded-lg border select-none", // Larger, centered
               userVote === 'neutral' && "font-bold bg-blue-100 border-blue-200"
             )}
           >
@@ -85,7 +85,7 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
           <button 
             onClick={() => handleVoteClick('no')} 
             className={cn(
-              "flex flex-col items-center justify-center gap-1 text-red-600 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+              "flex flex-col items-center justify-center gap-1 text-red-600 disabled:opacity-50 w-16 h-16 rounded-lg border select-none", // Larger, centered
               userVote === 'no' && "font-bold bg-red-100 border-red-200"
             )}
           >

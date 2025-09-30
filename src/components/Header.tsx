@@ -36,13 +36,13 @@ const Header = () => {
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <div className="relative">
           <Link to="/" className="hover:opacity-80 transition-opacity" onClick={handleHeaderClick}>
-            <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
+            <h1 className="text-3xl font-bold text-foreground select-none">DeepSesh</h1>
           </Link>
           {showSecretTextDiv && ( // Conditionally render the div
             <div
               className={`absolute left-0 top-full mt-1 text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
                 secretTextVisible ? "opacity-100" : "opacity-0"
-              }`}
+              } select-none`}
             >
               Deep Work Study Sesh
             </div>
@@ -52,7 +52,7 @@ const Header = () => {
         {/* Timer display on non-home pages */}
         {!isHomePage && (isRunning || isPaused || isFlashing) && (
           <Link to="/" className="hover:opacity-80 transition-opacity">
-            <div className={`text-2xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'animate-pulse' : ''}`}>
+            <div className={`text-2xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'animate-pulse' : ''} select-none`}>
               {formatTime(timeLeft)}
             </div>
           </Link>

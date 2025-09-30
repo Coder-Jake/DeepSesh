@@ -222,8 +222,12 @@ const Settings = () => {
   }) => (
     <div className="space-y-4">
       <div>
-        <Label className="text-base font-medium">{title}</Label>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <Label className="text-base font-medium">
+          {title}
+        </Label>
+        <p className="text-sm text-muted-foreground">
+          {description}
+        </p>
       </div>
       
       <div className="flex items-center gap-4">
@@ -237,7 +241,7 @@ const Settings = () => {
             <Bell size={20} />
           </Button>
           {momentaryText[`${type}-push`] && (
-            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300">
+            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 select-none">
               Push {momentaryText[`${type}-push`]}
             </span>
           )}
@@ -253,7 +257,7 @@ const Settings = () => {
             <Smartphone size={20} />
           </Button>
           {momentaryText[`${type}-vibrate`] && (
-            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300">
+            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 select-none">
               Vibrate {momentaryText[`${type}-vibrate`]}
             </span>
           )}
@@ -269,7 +273,7 @@ const Settings = () => {
             <Volume2 size={20} />
           </Button>
           {momentaryText[`${type}-sound`] && (
-            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300">
+            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 select-none">
               Sound {momentaryText[`${type}-sound`]}
             </span>
           )}
@@ -470,12 +474,12 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="global-visibility-toggle">Visibility</Label>
-                </div>
+                </div >
                 <Button
                   id="global-visibility-toggle"
                   onClick={() => setIsGlobalPublic(prev => !prev)}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-black",
+                    "px-4 py-2 rounded-full transition-colors text-black select-none",
                     isGlobalPublic ? "bg-[hsl(var(--public-bg))] hover:bg-white" : "bg-[hsl(var(--private-bg))] hover:bg-white"
                   )}
                 >
@@ -495,7 +499,7 @@ const Settings = () => {
                   id="timer-increments-toggle"
                   onClick={() => setCurrentTimerIncrement(prev => prev === 1 ? 5 : 1)}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80 select-none"
                   )}
                 >
                   {currentTimerIncrement}
@@ -568,7 +572,7 @@ const Settings = () => {
               <div>
                 <Label>Maximum Distance for Nearby Sessions</Label>
                 <div className="space-y-4">
-                  <div className="flex justify-between text-sm text-muted-foreground">
+                  <div className="flex justify-between text-sm text-muted-foreground select-none">
                     <span>100m</span>
                     <span>5km</span>
                   </div>
@@ -581,11 +585,11 @@ const Settings = () => {
                       step={100}
                       className="w-full"
                     />
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none select-none">
                       {maxDistance[0] >= 1000 ? `${(maxDistance[0] / 1000).toFixed(1)}km` : `${maxDistance[0]}m`}
                     </div>
                   </div>
-                  <div className="text-center mt-3 text-sm text-muted-foreground">
+                  <div className="text-center mt-3 text-sm text-muted-foreground select-none">
                     {maxDistance[0] <= 300 && "Very close proximity only"}
                     {maxDistance[0] > 300 && maxDistance[0] <= 1000 && "Walking distance"}
                     {maxDistance[0] > 1000 && maxDistance[0] <= 2000 && "Short bike ride"}
