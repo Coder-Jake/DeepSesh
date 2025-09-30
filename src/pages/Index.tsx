@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef } from "react";
-import { Globe, Lock, CalendarPlus } from "lucide-react";
+import { Globe, Lock, CalendarPlus, Share2 } from "lucide-react"; // Added Share2
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,12 @@ import AskMenu from "@/components/AskMenu";
 import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // Added DropdownMenu components
 
 // Define types for Ask items
 interface ExtendSuggestion {
@@ -477,7 +483,7 @@ const Index = () => {
                     <CalendarPlus size={16} />
                     <span className="text-sm font-medium">Schedule</span>
                   </Button>
-                  <div className="flex-1 flex justify-end">
+                  <div className="flex flex-col items-end gap-2"> {/* Changed to flex-col for vertical stacking */}
                     <button 
                       onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
                       onMouseUp={handleLongPressEnd}
@@ -495,6 +501,25 @@ const Index = () => {
                           <span className="text-sm font-medium">Private</span>
                         </>}
                     </button>
+                    
+                    {/* Share Dropdown */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                        >
+                          <Share2 size={16} />
+                          <span className="text-sm font-medium">Share</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => console.log('Share QR')}>QR</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => console.log('Share Link')}>Link</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => console.log('Share NFC')}>NFC</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
                 
