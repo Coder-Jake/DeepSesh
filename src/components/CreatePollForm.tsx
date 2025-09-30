@@ -28,9 +28,9 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       case 'closed':
         return "Options are fixed (Yes, No, Don't Mind)";
       case 'choice':
-        return "e.g., 'Coffee Break, Tea Break, Walk Outside'";
+        return "e.g., Coffee Break, Tea Break, Walk Outside";
       case 'selection':
-        return "e.g., 'Feature A, Feature B, Feature C'";
+        return "e.g., Feature A, Feature B, Feature C";
       default:
         return "Enter options, comma-separated";
     }
