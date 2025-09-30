@@ -113,7 +113,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [favourites, setFavourites] = useState(false);
   const [workApps, setWorkApps] = useState(false);
   const [intentionalBreaches, setIntentionalBreaches] = useState(false);
-  const [manualTransition, setManualTransition] = useState(false);
+  const [manualTransition, setManualTransition] = useState(false); // Default to false
   const [maxDistance, setMaxDistance] = useState(2000);
   const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false });
   const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
@@ -183,9 +183,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       }, 1000);
     } else if (timeLeft === 0 && isRunning) { // Timer reached 0 and was running
       setIsRunning(false); // Stop the timer
-      setIsFlashing(true); // Start flashing to indicate completion
 
-      // Handle transitions based on whether a schedule is active
+      // Handle transitions based on whether a schedule is active or manualTransition is off
       if (isScheduleActive) {
         if (currentScheduleIndex < schedule.length - 1) {
           // Schedule: Move to next item
@@ -202,9 +201,16 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
           resetSchedule();
           // Optionally play a completion sound or show a final toast
         }
+      } else if (!manualTransition) {
+        // Non-scheduled timer with automatic transition
+        const nextType = timerType === 'focus' ? 'break' : 'focus';
+        setTimerType(nextType);
+        setTimeLeft(nextType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
+        setIsRunning(true); // Automatically start the next phase
+        setIsFlashing(false); // No flashing for automatic transition
       } else {
-        // Non-scheduled timer: Flash and wait for user action (Start Break/Focus)
-        // The flashing state will be handled by the UI in Index.tsx
+        // Non-scheduled timer with manual transition (default behavior)
+        setIsFlashing(true); // Start flashing to indicate completion
       }
     }
 
@@ -214,7 +220,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   }, [
     isRunning, isPaused, timeLeft, isScheduleActive, currentScheduleIndex, schedule,
     setTimeLeft, setTimerType, setCurrentScheduleIndex, setIsRunning, setIsFlashing,
-    focusMinutes, breakMinutes // Added for resetting timeLeft if needed
+    focusMinutes, breakMinutes, manualTransition // Added manualTransition to dependencies
   ]);
 
   // Effect to update timeLeft when focusMinutes or breakMinutes change (if timer is not active)
