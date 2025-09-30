@@ -3,15 +3,13 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
+  DialogHeader, // Added DialogHeader
+  DialogTitle,  // Added DialogTitle
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PlusCircle, MessageSquarePlus, HelpCircle } from "lucide-react";
 import ExtendTimerForm from "./ExtendTimerForm";
-import CreatePollForm from "./CreatePollForm";
-
-type AskOption = 'extend' | 'poll';
+import CreatePollForm, { PollType } from "./CreatePollForm";
 
 interface AskMenuProps {
   onExtendSubmit: (minutes: number) => void;
@@ -35,14 +33,17 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
           Ask
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] min-h-[450px] flex flex-col">
+      <DialogContent className="w-[425px] max-h-[90vh] overflow-y-auto top-[5%] translate-y-0 flex flex-col"> {/* Adjusted classes here */}
+        <DialogHeader> {/* Added DialogHeader */}
+          <DialogTitle>Ask a Question</DialogTitle> {/* Added DialogTitle */}
+        </DialogHeader>
         
         {/* Persistent tab-like buttons */}
-        <div className="flex border-b"> {/* Removed justify-center, gap-2, and p-4 */}
+        <div className="flex border-b">
           <Button
             variant={currentAskOption === 'extend' ? 'default' : 'ghost'}
             onClick={() => setCurrentAskOption('extend')}
-            className="flex-1 rounded-none" // Added rounded-none for tab-like appearance
+            className="flex-1 rounded-none"
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             Timer
@@ -50,7 +51,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
           <Button
             variant={currentAskOption === 'poll' ? 'default' : 'ghost'}
             onClick={() => setCurrentAskOption('poll')}
-            className="flex-1 rounded-none" // Added rounded-none for tab-like appearance
+            className="flex-1 rounded-none"
           >
             <MessageSquarePlus className="mr-2 h-4 w-4" />
             Poll
@@ -58,7 +59,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
         </div>
 
         {/* Form content, taking remaining space */}
-        <div className="flex-grow p-4">
+        <div className="flex-grow p-4 overflow-auto">
           {currentAskOption === 'extend' && (
             <ExtendTimerForm onClose={handleCloseDialog} onSubmit={onExtendSubmit} />
           )}
