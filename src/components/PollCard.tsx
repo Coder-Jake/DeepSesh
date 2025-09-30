@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { MessageSquarePlus, Users } from "lucide-react";
+import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus } from "lucide-react"; // Import ThumbsUp, ThumbsDown, Minus
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input"; // Import Input for custom responses
+import { cn } from "@/lib/utils"; // Import cn for conditional styling
 
 interface PollOption {
   id: string;
@@ -116,20 +117,41 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
         {poll.status === 'active' && (
           <div className="space-y-3">
             {poll.type === 'closed' && (
-              <RadioGroup value={selectedOption || ''} onValueChange={setSelectedOption}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="yes" id={`${poll.id}-yes`} />
-                  <Label htmlFor={`${poll.id}-yes`}>Yes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="no" id={`${poll.id}-no`} />
-                  <Label htmlFor={`${poll.id}-no`}>No</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="dont-mind" id={`${poll.id}-dont-mind`} />
-                  <Label htmlFor={`${poll.id}-dont-mind`}>Don't Mind</Label>
-                </div>
-              </RadioGroup>
+              <div className="flex justify-center gap-4">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className={cn(
+                    "rounded-full w-12 h-12",
+                    selectedOption === "closed-yes" && "bg-primary text-primary-foreground"
+                  )}
+                  onClick={() => setSelectedOption("closed-yes")}
+                >
+                  <ThumbsUp className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className={cn(
+                    "rounded-full w-12 h-12",
+                    selectedOption === "closed-no" && "bg-destructive text-destructive-foreground"
+                  )}
+                  onClick={() => setSelectedOption("closed-no")}
+                >
+                  <ThumbsDown className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className={cn(
+                    "rounded-full w-12 h-12",
+                    selectedOption === "closed-dont-mind" && "bg-blue-500 text-white" // Neutral blue
+                  )}
+                  onClick={() => setSelectedOption("closed-dont-mind")}
+                >
+                  <Minus className="h-5 w-5" />
+                </Button>
+              </div>
             )}
 
             {poll.type === 'choice' && (
