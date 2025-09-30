@@ -29,7 +29,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col flex-grow"> {/* Added flex flex-col flex-grow */}
       <div className="space-y-2">
         <Label htmlFor="extend-minutes">Minutes to Add</Label>
         <Input
@@ -41,7 +41,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
           className="w-full"
         />
       </div>
-      <DialogFooter>
+      <DialogFooter className="mt-auto"> {/* Added mt-auto to push to bottom */}
         <Button onClick={handleSubmit} className="w-full">
           <PlusCircle className="mr-2 h-4 w-4" />
           Suggest
