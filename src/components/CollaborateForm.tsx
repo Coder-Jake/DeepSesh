@@ -60,7 +60,7 @@ const CollaborateForm = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="collaborate-name">Your Name</Label>
+        <Label htmlFor="collaborate-name">Name</Label>
         <Input
           id="collaborate-name"
           {...register('name')}
