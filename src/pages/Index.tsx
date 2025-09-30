@@ -458,6 +458,10 @@ const Index = () => {
     );
   };
 
+  // Determine the total duration of the current timer phase for CircularProgress
+  const currentItemDuration = isScheduleActive && schedule[currentScheduleIndex]
+    ? schedule[currentScheduleIndex].durationMinutes
+    : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
   return (
     <main className="max-w-4xl mx-auto py-4 px-1 lg:py-6 lg:px-1">
@@ -525,10 +529,7 @@ const Index = () => {
                   <CircularProgress
                     size={280}
                     strokeWidth={12}
-                    progress={timerType === 'focus' 
-                      ? (timeLeft / (focusMinutes * 60)) * 100 
-                      : (timeLeft / (breakMinutes * 60)) * 100
-                    }
+                    progress={(timeLeft / (currentItemDuration * 60)) * 100}
                     interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive}
                     onInteract={handleCircularProgressChange}
                     className={isFlashing ? 'animate-pulse' : ''}
