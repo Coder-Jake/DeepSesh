@@ -637,7 +637,7 @@ const Settings = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="anyone">Anyone - No verification required</SelectItem>
-                  <SelectItem value="phone">Phone# verified</SelectItem>
+                  <SelectItem value="phone">Phone - Number verified</SelectItem>
                   <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
                   <SelectItem value="id">ID Verified - verified government ID</SelectItem>
                 </SelectContent>
