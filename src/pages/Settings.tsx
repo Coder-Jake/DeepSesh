@@ -449,7 +449,7 @@ const Settings = () => {
             {/* Global Session Visibility - Moved here */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="global-visibility-toggle">Session Visibility</Label>
+                <Label htmlFor="global-visibility-toggle">Visibility</Label>
               </div>
               <Button
                 id="global-visibility-toggle"
