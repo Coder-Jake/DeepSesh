@@ -7,12 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom"; // Import Link
+import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection"; // Import the new component
+import { Toaster } from 'sonner'; // Import Toaster from sonner
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const { toast } = useToast();
+  const { toast } = useToast(); // This toast is from shadcn/ui, we'll use sonner for form feedback
 
   const quickAmounts = [5, 10, 25, 50];
 
@@ -60,7 +62,10 @@ const ChipIn = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* New Feedback and Collaborate Section */}
+      <FeedbackAndCollaborateSection />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8"> {/* Added mt-8 for spacing */}
         {/* Donation Form */}
         <Card>
           <CardHeader>
@@ -192,6 +197,7 @@ const ChipIn = () => {
           Credits
         </Link>
       </div>
+      <Toaster /> {/* Add Sonner Toaster for notifications */}
     </main>
   );
 };
