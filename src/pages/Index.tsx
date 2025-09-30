@@ -551,17 +551,6 @@ const Index = () => {
                       </button>
                     )}
                     {(!isRunning && !isFlashing && !isScheduleActive) && (
-                      <button
-                        onMouseDown={() => handleLongPressStart(resetTimer)}
-                        onMouseUp={handleLongPressEnd}
-                        onMouseLeave={handleLongPressEnd}
-                        onTouchStart={() => handleLongPressStart(resetTimer)}
-                        onTouchEnd={handleLongPressEnd}
-                        onClick={resetTimer}
-                        className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
-                      >
-                        Reset
-                      </button>
                     )}
                   </div>
                   
