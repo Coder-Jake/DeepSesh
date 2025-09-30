@@ -67,7 +67,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>([]);
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({}); // Fixed: Initialized with an empty object
 
   // Initial state for comparison to detect changes
   const initialSettings = useRef({
