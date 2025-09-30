@@ -23,7 +23,7 @@ const Settings = () => {
     setTimerIncrement, // Setter for timerIncrement
   } = useTimer();
 
-  // Removed 'delay' state
+  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(true); // New state for toggle
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
   const [customBatchMinutes, setCustomBatchMinutes] = useState(15); // Default to 15 minutes
   const [lock, setlock] = useState(false);
@@ -74,8 +74,9 @@ const Settings = () => {
   // Initial state for comparison to detect changes
   const initialSettings = useRef({
     hideSessionsDuringTimer,
-    batchNotificationPreference, // ADDED
-    customBatchMinutes, // ADDED
+    isBatchNotificationsEnabled, // ADDED
+    batchNotificationPreference, 
+    customBatchMinutes, 
     lock,
     exemptionsEnabled,
     phoneCalls,
@@ -83,8 +84,8 @@ const Settings = () => {
     workApps,
     intentionalBreaches,
     autoTransition,
-    focusMinutes, // Use actual focusMinutes from context
-    breakMinutes, // Use actual breakMinutes from context
+    focusMinutes, 
+    breakMinutes, 
     maxDistance: maxDistance[0],
     askNotifications,
     breakNotifications,
@@ -93,8 +94,8 @@ const Settings = () => {
     verificationStandard,
     profileVisibility,
     locationSharing,
-    isGlobalPublic, // Add new state here
-    timerIncrement, // Add new state here
+    isGlobalPublic, 
+    timerIncrement, 
   });
 
   useEffect(() => {
@@ -103,8 +104,9 @@ const Settings = () => {
 
     const currentSettings = {
       hideSessionsDuringTimer,
-      batchNotificationPreference, // ADDED
-      customBatchMinutes, // ADDED
+      isBatchNotificationsEnabled, // ADDED
+      batchNotificationPreference, 
+      customBatchMinutes, 
       lock,
       exemptionsEnabled,
       phoneCalls,
@@ -122,8 +124,8 @@ const Settings = () => {
       verificationStandard,
       profileVisibility,
       locationSharing,
-      isGlobalPublic, // Add new state here
-      timerIncrement: currentTimerIncrement, // Add new state here
+      isGlobalPublic, 
+      timerIncrement: currentTimerIncrement, 
     };
 
     const changed = Object.keys(currentSettings).some(key => {
@@ -138,14 +140,15 @@ const Settings = () => {
     setHasChanges(changed);
   }, [
     hideSessionsDuringTimer, 
-    batchNotificationPreference, // ADDED
-    customBatchMinutes, // ADDED
+    isBatchNotificationsEnabled, // ADDED
+    batchNotificationPreference, 
+    customBatchMinutes, 
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
     askNotifications, breakNotifications, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
-    isGlobalPublic, // Add new state to dependencies
-    currentTimerIncrement, // Add new state to dependencies
+    isGlobalPublic, 
+    currentTimerIncrement, 
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -173,8 +176,9 @@ const Settings = () => {
     // Update initial settings for change detection
     initialSettings.current = {
       hideSessionsDuringTimer,
-      batchNotificationPreference, // ADDED
-      customBatchMinutes, // ADDED
+      isBatchNotificationsEnabled, // ADDED
+      batchNotificationPreference, 
+      customBatchMinutes, 
       lock,
       exemptionsEnabled,
       phoneCalls,
@@ -392,43 +396,58 @@ const Settings = () => {
               </div>
 
               {/* Updated Batch Notifications Section */}
-              <div className="space-y-2">
-                <Label htmlFor="batch-notifications-preference">Batch Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Hold notifications until:
-                </p>
-                <Select value={batchNotificationPreference} onValueChange={(value: 'break' | 'sesh_end' | 'custom') => setBatchNotificationPreference(value)}>
-                  <SelectTrigger id="batch-notifications-preference">
-                    <SelectValue placeholder="Select when to batch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="break">Next Break</SelectItem>
-                    <SelectItem value="sesh_end">Sesh End</SelectItem>
-                    <SelectItem value="custom">Custom Minutes</SelectItem>
-                  </SelectContent>
-                </Select>
-                {batchNotificationPreference === 'custom' && (
-                  <Input
-                    type="number"
-                    placeholder="Enter minutes"
-                    value={customBatchMinutes === 0 ? "" : customBatchMinutes}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === "") {
-                        setCustomBatchMinutes(0);
-                      } else {
-                        setCustomBatchMinutes(parseFloat(value) || 0);
-                      }
-                    }}
-                    onBlur={() => {
-                      if (customBatchMinutes === 0) {
-                        setCustomBatchMinutes(timerIncrement); // Default to timerIncrement if empty
-                      }
-                    }}
-                    min={timerIncrement}
-                    step={timerIncrement}
-                    className="mt-2"
+              <div className="space-y-4"> {/* This div wraps the entire batch notification section */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="batch-notifications-toggle">Batch Notifications</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Group notifications to reduce interruptions.
+                    </p>
+                  </div>
+                  <Switch
+                    id="batch-notifications-toggle"
+                    checked={isBatchNotificationsEnabled}
+                    onCheckedChange={setIsBatchNotificationsEnabled}
                   />
+                </div>
+
+                {isBatchNotificationsEnabled && (
+                  <div className="space-y-2">
+                    <Label htmlFor="batch-notifications-preference">Hold until:</Label>
+                    <Select value={batchNotificationPreference} onValueChange={(value: 'break' | 'sesh_end' | 'custom') => setBatchNotificationPreference(value)}>
+                      <SelectTrigger id="batch-notifications-preference">
+                        <SelectValue placeholder="Select when to batch" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="break">Next Break</SelectItem>
+                        <SelectItem value="sesh_end">Sesh End</SelectItem>
+                        <SelectItem value="custom">Custom Minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {batchNotificationPreference === 'custom' && (
+                      <Input
+                        type="number"
+                        placeholder="Enter minutes"
+                        value={customBatchMinutes === 0 ? "" : customBatchMinutes}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "") {
+                            setCustomBatchMinutes(0);
+                          } else {
+                            setCustomBatchMinutes(parseFloat(value) || 0);
+                          }
+                        }}
+                        onBlur={() => {
+                          if (customBatchMinutes === 0) {
+                            setCustomBatchMinutes(timerIncrement); // Default to timerIncrement if empty
+                          }
+                        }}
+                        min={timerIncrement}
+                        step={timerIncrement}
+                        className="mt-2"
+                      />
+                    )}
+                  </div>
                 )}
               </div>
 
