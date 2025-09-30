@@ -189,7 +189,7 @@ const Settings = () => {
     };
     
     const currentValues = {
-      ask: focusNotifications,
+      ask: askNotifications,
       break: breakNotifications,
       invites: sessionInvites,
       activity: friendActivity
@@ -208,7 +208,7 @@ const Settings = () => {
     type: 'focus' | 'break' | 'invites' | 'activity';
     title: string;
     description: string;
-    value: typeof focusNotifications;
+    value: typeof askNotifications;
   }) => (
     <div className="space-y-4">
       <div>
