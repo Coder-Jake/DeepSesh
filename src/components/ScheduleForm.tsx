@@ -110,7 +110,7 @@ const ScheduleForm: React.FC = () => {
                   placeholder="Timer Title"
                   value={timer.title}
                   onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
-                  className="col-span-full" // Removed sm:col-span-1
+                  // Removed col-span-full
                 />
                 <Input
                   type="number"
@@ -118,9 +118,9 @@ const ScheduleForm: React.FC = () => {
                   value={timer.durationMinutes}
                   onChange={(e) => handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || 0)}
                   min="1"
-                  className="w-20 text-center col-span-full" // Removed sm:col-span-1
+                  className="w-20 text-center" // Removed col-span-full
                 />
-                <div className="flex items-center justify-center col-span-full"> {/* Removed sm:col-span-1 */}
+                <div className="flex items-center justify-center"> {/* Removed col-span-full */}
                   <Button
                     variant="ghost"
                     className={cn(
