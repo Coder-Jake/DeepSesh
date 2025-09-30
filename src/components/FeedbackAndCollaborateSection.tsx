@@ -24,7 +24,7 @@ const FeedbackAndCollaborateSection = () => {
           rel="noopener noreferrer"
           className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg cursor-pointer"
         >
-          <div className="text-center p-4"><p className="text-xlg font-semibold text-foreground"> Feedback Form</p>
+          <div className="text-center p-4"><p className="text-xxxlg font-semibold text-foreground"> Feedback Form</p>
           </div>
         </a>
 
