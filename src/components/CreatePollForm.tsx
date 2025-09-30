@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup } from "@/components/ui/radio-group";
+import { RadioGroup } from "@/components/ui/radio-group"; // Keep RadioGroup for semantic grouping if needed, but remove its state control
 import { DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react";
+import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react"; // Import ThumbsUp and Circle
 import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 interface CreatePollFormProps {
   onClose: () => void;
@@ -78,7 +78,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   };
 
   return (
-    <div className="space-y-4 flex flex-col flex-grow"> {/* Added flex flex-col flex-grow */}
+    <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="poll-question">Question</Label>
         <Input
@@ -92,7 +92,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
 
       <div className="space-y-2">
         <Label>Poll Type</Label>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2"> {/* Changed from RadioGroup to a simple div for layout */}
           <Label
             htmlFor="type-closed"
             onClick={() => setPollType('closed')}
@@ -101,7 +101,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
               pollType === 'closed' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
             )}
           >
-            <ThumbsUp size={16} />
+            <ThumbsUp size={16} /> {/* Added ThumbsUp icon */}
             <span>Closed</span>
           </Label>
           <Label
@@ -112,7 +112,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
               pollType === 'choice' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
             )}
           >
-            <Circle size={16} />
+            <Circle size={16} /> {/* Added Circle icon */}
             <span>Choice</span>
           </Label>
           <Label
@@ -154,7 +154,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
         </div>
       )}
 
-      <DialogFooter className="mt-auto"> {/* Added mt-auto to push to bottom */}
+      <DialogFooter>
         <Button onClick={handleSubmit} className="w-full">
           <MessageSquarePlus className="mr-2 h-4 w-4" />
           Create Poll
