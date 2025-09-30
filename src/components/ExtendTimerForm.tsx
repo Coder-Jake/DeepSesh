@@ -41,10 +41,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
           onChange={(e) => {
             setMinutes(parseInt(e.target.value) || timerIncrement);
           }}
-          onBlur={() => {
-            const roundedValue = Math.max(timerIncrement, Math.round(minutes / timerIncrement) * timerIncrement);
-            setMinutes(roundedValue);
-          }}
+          // Removed onBlur handler
           min={timerIncrement} // Set min to timerIncrement
           step={timerIncrement} // Set step to timerIncrement
           className="w-full"

@@ -589,10 +589,7 @@ const Index = () => {
                         onChange={e => {
                           setFocusMinutes(parseInt(e.target.value) || timerIncrement);
                         }} 
-                        onBlur={() => {
-                          const roundedValue = Math.max(timerIncrement, Math.round(focusMinutes / timerIncrement) * timerIncrement);
-                          setFocusMinutes(roundedValue);
-                        }}
+                        // Removed onBlur handler
                         className="w-16 h-8 text-center" 
                         min={timerIncrement} 
                         max="120" 
@@ -615,10 +612,7 @@ const Index = () => {
                         onChange={e => {
                           setBreakMinutes(parseInt(e.target.value) || timerIncrement);
                         }} 
-                        onBlur={() => {
-                          const roundedValue = Math.max(timerIncrement, Math.round(breakMinutes / timerIncrement) * timerIncrement);
-                          setBreakMinutes(roundedValue);
-                        }}
+                        // Removed onBlur handler
                         className="w-16 h-8 text-center" 
                         min={timerIncrement} 
                         max="60" 

@@ -123,11 +123,7 @@ const ScheduleForm: React.FC = () => {
                 onChange={(e) => {
                   handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || timerIncrement);
                 }}
-                onBlur={() => {
-                  const currentVal = timer.durationMinutes;
-                  const roundedValue = Math.max(timerIncrement, Math.round(currentVal / timerIncrement) * timerIncrement);
-                  handleUpdateTimer(timer.id, 'durationMinutes', roundedValue);
-                }}
+                // Removed onBlur handler
                 min={timerIncrement}
                 step={timerIncrement}
                 className="w-20 text-center flex-shrink-0"
