@@ -44,6 +44,12 @@ interface TimerContextType {
   setCommenceDay: (day: number) => void;
   startSchedule: () => void;
   resetSchedule: () => void;
+
+  // New notification settings for timer end
+  shouldPlayEndSound: boolean;
+  setShouldPlayEndSound: (value: boolean) => void;
+  shouldShowEndToast: boolean;
+  setShouldShowEndToast: (value: boolean) => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -71,6 +77,10 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [commenceTime, setCommenceTime] = useState(new Date().toTimeString().slice(0, 5)); // HH:MM format
   const [commenceDay, setCommenceDay] = useState(new Date().getDay()); // 0 for Sunday, 1 for Monday, etc.
 
+  // New notification settings
+  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false); // Default to false
+  const [shouldShowEndToast, setShouldShowEndToast] = useState(false); // Default to false
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const flashingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -82,6 +92,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const playEndSound = useCallback(() => {
+    if (!shouldPlayEndSound) return; // Only play if enabled in settings
+
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -93,7 +105,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
-  }, []);
+  }, [shouldPlayEndSound]); // Dependency on shouldPlayEndSound
 
   const startSchedule = useCallback(() => {
     if (schedule.length > 0) {
@@ -105,12 +117,14 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setIsPaused(false);
       setIsFlashing(false);
       setIsSchedulingMode(false);
-      toast({
-        title: "Schedule Commenced!",
-        description: `Starting "${schedule[0].title}" for ${schedule[0].durationMinutes} minutes.`,
-      });
+      if (shouldShowEndToast) { // Only show if enabled in settings
+        toast({
+          title: "Schedule Commenced!",
+          description: `Starting "${schedule[0].title}" for ${schedule[0].durationMinutes} minutes.`,
+        });
+      }
     }
-  }, [schedule]);
+  }, [schedule, shouldShowEndToast]); // Dependency on shouldShowEndToast
 
   const resetSchedule = useCallback(() => {
     setIsScheduleActive(false);
@@ -124,11 +138,13 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setScheduleTitle("My DeepSesh Schedule");
     setCommenceTime(new Date().toTimeString().slice(0, 5));
     setCommenceDay(new Date().getDay());
-    toast({
-      title: "Schedule Reset",
-      description: "Your current schedule has been cleared.",
-    });
-  }, [focusMinutes]);
+    if (shouldShowEndToast) { // Only show if enabled in settings
+      toast({
+        title: "Schedule Reset",
+        description: "Your current schedule has been cleared.",
+      });
+    }
+  }, [focusMinutes, shouldShowEndToast]); // Dependency on shouldShowEndToast
 
   useEffect(() => {
     if (isRunning && !isPaused) {
@@ -149,26 +165,32 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
                 setTimeLeft(schedule[nextIndex].durationMinutes * 60);
                 setIsRunning(true);
                 setIsFlashing(false);
-                toast({
-                  title: "Next in Schedule!",
-                  description: `Starting "${schedule[nextIndex].title}" for ${schedule[nextIndex].durationMinutes} minutes.`,
-                });
+                if (shouldShowEndToast) { // Only show if enabled in settings
+                  toast({
+                    title: "Next in Schedule!",
+                    description: `Starting "${schedule[nextIndex].title}" for ${schedule[nextIndex].durationMinutes} minutes.`,
+                  });
+                }
               } else {
                 // Schedule completed
                 setIsScheduleActive(false);
                 setCurrentScheduleIndex(0);
-                toast({
-                  title: "Schedule Completed!",
-                  description: "All timers in your schedule have finished.",
-                });
+                if (shouldShowEndToast) { // Only show if enabled in settings
+                  toast({
+                    title: "Schedule Completed!",
+                    description: "All timers in your schedule have finished.",
+                  });
+                }
               }
             } else {
               // Regular timer finished, prompt user to switch or stop
-              toast({
-                title: "Time's Up!",
-                description: `Your ${timerType} session has ended.`,
-                variant: "default",
-              });
+              if (shouldShowEndToast) { // Only show if enabled in settings
+                toast({
+                  title: "Time's Up!",
+                  description: `Your ${timerType} session has ended.`,
+                  variant: "default",
+                });
+              }
             }
             return 0;
           }
@@ -180,7 +202,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return () => clearInterval(intervalRef.current!);
-  }, [isRunning, isPaused, isScheduleActive, currentScheduleIndex, schedule, timerType, playEndSound]);
+  }, [isRunning, isPaused, isScheduleActive, currentScheduleIndex, schedule, timerType, playEndSound, shouldShowEndToast]); // Added shouldShowEndToast dependency
 
   useEffect(() => {
     if (isFlashing) {
@@ -241,6 +263,11 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setCommenceDay,
     startSchedule,
     resetSchedule,
+
+    shouldPlayEndSound,
+    setShouldPlayEndSound,
+    shouldShowEndToast,
+    setShouldShowEndToast,
   };
 
   return (

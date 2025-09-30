@@ -21,6 +21,10 @@ const Settings = () => {
     setBreakMinutes, // Setter for breakMinutes
     timerIncrement, // Get current timerIncrement from context
     setTimerIncrement, // Setter for timerIncrement
+    shouldPlayEndSound, // Get from TimerContext
+    setShouldPlayEndSound, // Set in TimerContext
+    shouldShowEndToast, // Get from TimerContext
+    setShouldShowEndToast, // Set in TimerContext
   } = useTimer();
 
   const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false); // Changed default to false
@@ -45,8 +49,9 @@ const Settings = () => {
   const [maxDistance, setMaxDistance] = useState([2000]);
   
   // Notification preferences with detailed options
+  // breakNotifications now only handles vibrate locally, push and sound are from context
+  const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false); 
   const [askNotifications, setaskNotifications] = useState({ push: false, vibrate: false, sound: false });
-  const [breakNotifications, setBreakNotifications] = useState({ push: false, vibrate: false, sound: false });
   const [sessionInvites, setSessionInvites] = useState({ push: false, vibrate: false, sound: false });
   const [friendActivity, setFriendActivity] = useState({ push: false, vibrate: false, sound: false });
   
@@ -91,7 +96,7 @@ const Settings = () => {
     breakMinutes, 
     maxDistance: maxDistance[0],
     askNotifications,
-    breakNotifications,
+    breakNotificationsVibrate, // Updated
     sessionInvites,
     friendActivity,
     verificationStandard,
@@ -99,6 +104,8 @@ const Settings = () => {
     locationSharing,
     isGlobalPublic, 
     timerIncrement, 
+    shouldPlayEndSound, // Added
+    shouldShowEndToast, // Added
   });
 
   useEffect(() => {
@@ -121,7 +128,7 @@ const Settings = () => {
       breakMinutes: currentBreakVal,
       maxDistance: maxDistance[0],
       askNotifications,
-      breakNotifications,
+      breakNotificationsVibrate, // Updated
       sessionInvites,
       friendActivity,
       verificationStandard,
@@ -129,6 +136,8 @@ const Settings = () => {
       locationSharing,
       isGlobalPublic, 
       timerIncrement: currentTimerIncrement, 
+      shouldPlayEndSound, // Added
+      shouldShowEndToast, // Added
     };
 
     const changed = Object.keys(currentSettings).some(key => {
@@ -148,10 +157,12 @@ const Settings = () => {
     customBatchMinutes, 
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
-    askNotifications, breakNotifications, sessionInvites, friendActivity,
+    askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, // Updated
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPublic, 
     currentTimerIncrement, 
+    shouldPlayEndSound, // Added
+    shouldShowEndToast, // Added
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -194,7 +205,7 @@ const Settings = () => {
       breakMinutes: newBreakMinutes,
       maxDistance: maxDistance[0],
       askNotifications,
-      breakNotifications,
+      breakNotificationsVibrate, // Updated
       sessionInvites,
       friendActivity,
       verificationStandard,
@@ -202,26 +213,36 @@ const Settings = () => {
       locationSharing,
       isGlobalPublic, 
       timerIncrement: currentTimerIncrement, 
+      shouldPlayEndSound, // Added
+      shouldShowEndToast, // Added
     };
     setHasChanges(false);
   };
 
   const updateNotificationSetting = (type: 'ask' | 'break' | 'invites' | 'activity', key: 'push' | 'vibrate' | 'sound', value: boolean) => {
-    const setters = {
-      ask: setaskNotifications,
-      break: setBreakNotifications,
-      invites: setSessionInvites,
-      activity: setFriendActivity
-    };
-    
-    const currentValues = {
-      ask: askNotifications,
-      break: breakNotifications,
-      invites: sessionInvites,
-      activity: friendActivity
-    };
-    
-    setters[type]({ ...currentValues[type], [key]: value });
+    if (type === 'break') {
+      if (key === 'push') {
+        setShouldShowEndToast(value);
+      } else if (key === 'sound') {
+        setShouldPlayEndSound(value);
+      } else if (key === 'vibrate') {
+        setBreakNotificationsVibrate(value);
+      }
+    } else {
+      const setters = {
+        ask: setaskNotifications,
+        invites: setSessionInvites,
+        activity: setFriendActivity
+      };
+      
+      const currentValues = {
+        ask: askNotifications,
+        invites: sessionInvites,
+        activity: friendActivity
+      };
+      
+      setters[type]({ ...currentValues[type], [key]: value });
+    }
     showMomentaryText(`${type}-${key}`, value ? 'On' : 'Off');
   };
 
@@ -234,7 +255,7 @@ const Settings = () => {
     type: 'ask' | 'break' | 'invites' | 'activity';
     title: string;
     description?: string; // Made description optional as it's commented out in usage
-    value: typeof askNotifications;
+    value: { push: boolean; vibrate: boolean; sound: boolean; }; // Explicitly define structure
   }) => (
     <div className="space-y-4">
       <div>
@@ -333,7 +354,7 @@ const Settings = () => {
                 type="break"
                 title="Break Reminders"
                 //description="Get notified when breaks start and end"//
-                value={breakNotifications}
+                value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }} // Use context values
               />
               
               <NotificationControl
@@ -391,7 +412,7 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground">
                     Prevent switching apps until break
                   </p>
-                </div>
+                </div >
                 <Switch
                   id="lock"
                   checked={lock}
