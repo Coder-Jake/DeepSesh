@@ -6,12 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquarePlus } from "lucide-react";
-import { Switch } from "@/components/ui/switch"; // Import Switch
+import { MessageSquarePlus, CheckSquare } from "lucide-react"; // Import CheckSquare
+import { Switch } from "@/components/ui/switch";
 
 interface CreatePollFormProps {
   onClose: () => void;
-  onSubmit: (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => void; // New prop
+  onSubmit: (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => void;
 }
 
 type PollType = 'closed' | 'choice' | 'selection';
@@ -19,8 +19,8 @@ type PollType = 'closed' | 'choice' | 'selection';
 const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) => {
   const [question, setQuestion] = useState("");
   const [pollType, setPollType] = useState<PollType>('closed');
-  const [options, setOptions] = useState(""); // Comma-separated for Choice/Selection
-  const [allowCustomResponses, setAllowCustomResponses] = useState(false); // New state for custom responses
+  const [options, setOptions] = useState("");
+  const [allowCustomResponses, setAllowCustomResponses] = useState(false);
   const { toast } = useToast();
 
   const getOptionsPlaceholderText = (type: PollType) => {
@@ -72,7 +72,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       }
     }
 
-    onSubmit(question, pollType, pollOptionsArray, allowCustomResponses); // Pass new setting
+    onSubmit(question, pollType, pollOptionsArray, allowCustomResponses);
     onClose();
   };
 
@@ -102,7 +102,10 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="selection" id="type-selection" />
-            <Label htmlFor="type-selection">Selection</Label>
+            <Label htmlFor="type-selection" className="flex items-center space-x-1">
+              <CheckSquare size={16} /> {/* Added CheckSquare icon */}
+              <span>Selection</span>
+            </Label>
           </div>
         </RadioGroup>
       </div>
