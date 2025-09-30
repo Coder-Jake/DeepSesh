@@ -62,10 +62,12 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
     let pollOptionsArray: string[] = [];
     if (pollType === 'choice' || pollType === 'selection') {
       pollOptionsArray = options.split(',').map(opt => opt.trim()).filter(opt => opt.length > 0);
-      if (pollOptionsArray.length < 2) {
+      
+      // Only enforce minimum options if custom responses are NOT allowed
+      if (!allowCustomResponses && pollOptionsArray.length < 2) {
         toast({
           title: "Insufficient Options",
-          description: "Please provide at least two comma-separated options for Choice/Selection polls.",
+          description: "Please provide at least two comma-separated options for Choice/Selection polls, or enable custom responses.",
           variant: "destructive",
         });
         return;
