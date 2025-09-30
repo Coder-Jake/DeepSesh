@@ -449,10 +449,7 @@ const Settings = () => {
             {/* Global Session Visibility - Moved here */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="global-visibility-toggle">Global Session Visibility</Label>
-                <p className="text-sm text-muted-foreground">
-                  Control whether your sessions are discoverable by others.
-                </p>
+                <Label htmlFor="global-visibility-toggle">Session Visibility</Label>
               </div>
               <Button
                 id="global-visibility-toggle"
