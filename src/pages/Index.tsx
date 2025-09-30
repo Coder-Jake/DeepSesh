@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"; // Added DropdownMenu components
+import { toast } from "@/hooks/use-toast"; // Import toast for notifications
 
 // Define types for Ask items
 interface ExtendSuggestion {
@@ -314,6 +315,19 @@ const Index = () => {
       setTimerType('break');
       setTimeLeft(breakMinutes * 60);
     }
+  };
+
+  const handleJoinSession = (session: DemoSession) => {
+    setActiveJoinedSession(session);
+    setTimerType(session.currentPhase);
+    setTimeLeft(session.currentPhaseDurationMinutes * 60);
+    setIsRunning(true);
+    setIsPaused(false);
+    setIsFlashing(false);
+    toast({
+      title: "Session Joined!",
+      description: `You've joined "${session.title}".`,
+    });
   };
 
   const shouldHideSessionLists = hideSessionsDuringTimer && (isRunning || isPaused || isScheduleActive);
