@@ -383,7 +383,7 @@ const Settings = () => {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="delay">Delay External Notifications</Label>
+                  <Label htmlFor="delay">Batch Notifications</Label>
                   <p className="text-sm text-muted-foreground">
                     Until next break
                   </p>
