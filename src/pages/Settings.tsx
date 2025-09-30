@@ -300,35 +300,35 @@ const Settings = () => {
               <NotificationControl
                 type="ask"
                 title="Asks"
-                description="Get notified when coworkers Ask"
+                //description="Get notified when coworkers Ask"// 
                 value={askNotifications}
               />
 
               <NotificationControl
                 type="ask" // This was 'join' but the type is 'ask'
                 title="Joins"
-                description="Get notified when newcomers Join"
+                //description="Get notified when newcomers Join"//
                 value={askNotifications}
               />
               
               <NotificationControl
                 type="break"
                 title="Break Reminders"
-                description="Get notified when breaks start and end"
+                //description="Get notified when breaks start and end"//
                 value={breakNotifications}
               />
               
               <NotificationControl
                 type="invites"
                 title="Session Invites"
-                description="Receive invitations to join sessions from others"
+                //description="Receive invitations to join sessions from others"//
                 value={sessionInvites}
               />
               
               <NotificationControl
                 type="activity"
                 title="Friend Activity"
-                description="Get notified about your friends' session activity"
+                //description="Get notified about your friends' session activity"//
                 value={friendActivity}
               />
             </AccordionContent>
@@ -492,7 +492,7 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Label htmlFor="timer-increments-toggle">Increments</Label>
                   <p className="text-sm text-muted-foreground">
-                    Adjust timer by 1 or 5 minutes.
+                    Adjust timers by 1 or 5 minutes.
                   </p>
                 </div>
                 <Button
