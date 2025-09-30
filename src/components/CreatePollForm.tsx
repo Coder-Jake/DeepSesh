@@ -147,8 +147,10 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           variant="outline"
           onClick={() => setAllowCustomResponses(prev => !prev)}
           className={cn(
-            "ml-auto", // Align right
-            allowCustomResponses && "bg-green-500 text-white hover:bg-green-600 border-green-500" // Green when active
+            "ml-auto h-auto px-3 py-1 rounded-full text-sm", // Base styles for size and roundness
+            allowCustomResponses
+              ? "bg-lime-300 text-black hover:bg-lime-400 border-lime-300" // Active state: olive, black text, hover darker olive
+              : "" // No specific overrides for inactive state, let variant="outline" handle colors
           )}
         >
           Custom Responses
