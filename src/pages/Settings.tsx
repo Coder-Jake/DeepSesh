@@ -636,7 +636,7 @@ const Settings = () => {
                   <SelectValue placeholder="Select verification standard" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="anyone">Anyone - No verification required</SelectItem>
+                  <SelectItem value="anyone">Anyone - No requirements</SelectItem>
                   <SelectItem value="phone">Phone - Number verified</SelectItem>
                   <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
                   <SelectItem value="id">ID Verified - verified government ID</SelectItem>
