@@ -56,7 +56,7 @@ const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, tim
             className={cn(
               "flex-shrink-0 p-3 rounded-md border",
               "w-40", // Fixed width for each item
-              item.type === 'focus' ? 'bg-public-bg border-public-bg/50' : 'bg-private-bg border-private-bg/50',
+              item.type === 'focus' ? 'bg-green-100 border-green-200' : 'bg-yellow-100 border-yellow-200',
               index === currentScheduleIndex && "ring-2 ring-primary ring-offset-2 ring-offset-background"
             )}
           >
