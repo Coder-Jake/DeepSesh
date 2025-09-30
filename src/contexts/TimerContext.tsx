@@ -7,8 +7,8 @@ interface TimerContextType {
   setFocusMinutes: (minutes: number) => void;
   breakMinutes: number;
   setBreakMinutes: (minutes: number) => void;
-  hideSessionsDuringTimer: boolean;
-  setHideSessionsDuringTimer: (hide: boolean) => void;
+  showSessionsWhileActive: boolean; // Renamed
+  setShowSessionsWhileActive: (show: boolean) => void; // Renamed
   timerIncrement: number;
   setTimerIncrement: (increment: number) => void;
   formatTime: (seconds: number) => string;
@@ -55,9 +55,9 @@ interface TimerContextType {
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
-  const [focusMinutes, setFocusMinutes] = useState(25); // Corrected from .025 to 25
+  const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
-  const [hideSessionsDuringTimer, setHideSessionsDuringTimer] = useState(false);
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true); // Renamed and default to true
   const [timerIncrement, setTimerIncrement] = useState(5);
 
   // Timer control states
@@ -78,8 +78,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [commenceDay, setCommenceDay] = useState(new Date().getDay()); // 0 for Sunday, 1 for Monday, etc.
 
   // New notification settings
-  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false); // Default to false
-  const [shouldShowEndToast, setShouldShowEndToast] = useState(false); // Default to false
+  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false);
+  const [shouldShowEndToast, setShouldShowEndToast] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const flashingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -92,7 +92,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const playEndSound = useCallback(() => {
-    if (!shouldPlayEndSound) return; // Only play if enabled in settings
+    if (!shouldPlayEndSound) return;
 
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
@@ -105,7 +105,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
-  }, [shouldPlayEndSound]); // Dependency on shouldPlayEndSound
+  }, [shouldPlayEndSound]);
 
   const startSchedule = useCallback(() => {
     if (schedule.length > 0) {
@@ -117,14 +117,14 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setIsPaused(false);
       setIsFlashing(false);
       setIsSchedulingMode(false);
-      if (shouldShowEndToast) { // Only show if enabled in settings
+      if (shouldShowEndToast) {
         toast({
           title: "Schedule Commenced!",
           description: `Starting "${schedule[0].title}" for ${schedule[0].durationMinutes} minutes.`,
         });
       }
     }
-  }, [schedule, shouldShowEndToast]); // Dependency on shouldShowEndToast
+  }, [schedule, shouldShowEndToast]);
 
   const resetSchedule = useCallback(() => {
     setIsScheduleActive(false);
@@ -138,13 +138,13 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setScheduleTitle("My DeepSesh Schedule");
     setCommenceTime(new Date().toTimeString().slice(0, 5));
     setCommenceDay(new Date().getDay());
-    if (shouldShowEndToast) { // Only show if enabled in settings
+    if (shouldShowEndToast) {
       toast({
         title: "Schedule Reset",
         description: "Your current schedule has been cleared.",
       });
     }
-  }, [focusMinutes, shouldShowEndToast]); // Dependency on shouldShowEndToast
+  }, [focusMinutes, shouldShowEndToast]);
 
   useEffect(() => {
     if (isRunning && !isPaused) {
@@ -154,28 +154,26 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
             clearInterval(intervalRef.current!);
             playEndSound();
             setIsRunning(false);
-            setIsFlashing(true); // Start flashing when timer hits 0
+            setIsFlashing(true);
 
             if (isScheduleActive) {
               const nextIndex = currentScheduleIndex + 1;
               if (nextIndex < schedule.length) {
-                // Automatically transition to the next item in the schedule
                 setCurrentScheduleIndex(nextIndex);
                 setTimerType(schedule[nextIndex].type);
                 setTimeLeft(schedule[nextIndex].durationMinutes * 60);
                 setIsRunning(true);
                 setIsFlashing(false);
-                if (shouldShowEndToast) { // Only show if enabled in settings
+                if (shouldShowEndToast) {
                   toast({
                     title: "Next in Schedule!",
                     description: `Starting "${schedule[nextIndex].title}" for ${schedule[nextIndex].durationMinutes} minutes.`,
                   });
                 }
               } else {
-                // Schedule completed
                 setIsScheduleActive(false);
                 setCurrentScheduleIndex(0);
-                if (shouldShowEndToast) { // Only show if enabled in settings
+                if (shouldShowEndToast) {
                   toast({
                     title: "Schedule Completed!",
                     description: "All timers in your schedule have finished.",
@@ -183,8 +181,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
                 }
               }
             } else {
-              // Regular timer finished, prompt user to switch or stop
-              if (shouldShowEndToast) { // Only show if enabled in settings
+              if (shouldShowEndToast) {
                 toast({
                   title: "Time's Up!",
                   description: `Your ${timerType} session has ended.`,
@@ -202,13 +199,13 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return () => clearInterval(intervalRef.current!);
-  }, [isRunning, isPaused, isScheduleActive, currentScheduleIndex, schedule, timerType, playEndSound, shouldShowEndToast]); // Added shouldShowEndToast dependency
+  }, [isRunning, isPaused, isScheduleActive, currentScheduleIndex, schedule, timerType, playEndSound, shouldShowEndToast]);
 
   useEffect(() => {
     if (isFlashing) {
       flashingIntervalRef.current = setInterval(() => {
         // Toggle a class or state for visual flashing effect
-      }, 500); // Flash every 500ms
+      }, 500);
     } else {
       clearInterval(flashingIntervalRef.current!);
     }
@@ -228,8 +225,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setFocusMinutes,
     breakMinutes,
     setBreakMinutes,
-    hideSessionsDuringTimer,
-    setHideSessionsDuringTimer,
+    showSessionsWhileActive, // Renamed
+    setShowSessionsWhileActive, // Renamed
     timerIncrement,
     setTimerIncrement,
     formatTime,

@@ -13,23 +13,23 @@ import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 const Settings = () => {
   const { 
-    hideSessionsDuringTimer, 
-    setHideSessionsDuringTimer,
-    focusMinutes, // Get current focusMinutes from context
-    setFocusMinutes, // Setter for focusMinutes
-    breakMinutes, // Setter for breakMinutes
-    setBreakMinutes, // Setter for breakMinutes
-    timerIncrement, // Get current timerIncrement from context
-    setTimerIncrement, // Setter for timerIncrement
-    shouldPlayEndSound, // Get from TimerContext
-    setShouldPlayEndSound, // Set in TimerContext
-    shouldShowEndToast, // Get from TimerContext
-    setShouldShowEndToast, // Set in TimerContext
+    showSessionsWhileActive, // Renamed
+    setShowSessionsWhileActive, // Renamed
+    focusMinutes, 
+    setFocusMinutes, 
+    breakMinutes, 
+    setBreakMinutes, 
+    timerIncrement, 
+    setTimerIncrement, 
+    shouldPlayEndSound, 
+    setShouldPlayEndSound, 
+    shouldShowEndToast, 
+    setShouldShowEndToast, 
   } = useTimer();
 
-  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false); // Changed default to false
+  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
-  const [customBatchMinutes, setCustomBatchMinutes] = useState(15); // Default to 15 minutes
+  const [customBatchMinutes, setCustomBatchMinutes] = useState(15);
   const [lock, setlock] = useState(false);
   const [exemptionsEnabled, setExemptionsEnabled] = useState(false);
   const [phoneCalls, setPhoneCalls] = useState(false);
@@ -48,31 +48,21 @@ const Settings = () => {
 
   const [maxDistance, setMaxDistance] = useState([2000]);
   
-  // Notification preferences with detailed options
-  // breakNotifications now only handles vibrate locally, push and sound are from context
   const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false); 
   const [askNotifications, setaskNotifications] = useState({ push: false, vibrate: false, sound: false });
   const [sessionInvites, setSessionInvites] = useState({ push: false, vibrate: false, sound: false });
   const [friendActivity, setFriendActivity] = useState({ push: false, vibrate: false, sound: false });
   
-  // Transition preferences
   const [autoTransition, setAutoTransition] = useState(false);
   
-  // Verification standards
   const [verificationStandard, setVerificationStandard] = useState("anyone");
   
-  // Privacy settings
   const [profileVisibility, setProfileVisibility] = useState("friends");
   const [locationSharing, setLocationSharing] = useState("approximate");
 
-  // New state for global visibility toggle
-  const [isGlobalPublic, setIsGlobalPublic] = useState(false); // Changed default to false
+  const [isGlobalPublic, setIsGlobalPublic] = useState(false);
   
-  // New state for timer increments
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
-
-  // New state for "Show other sessions while active" - now defaults to false (disabled)
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(!hideSessionsDuringTimer); // Initialized from context
 
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -81,7 +71,7 @@ const Settings = () => {
 
   // Initial state for comparison to detect changes
   const initialSettings = useRef({
-    showSessionsWhileActive: !hideSessionsDuringTimer, // Initialized from context
+    showSessionsWhileActive, // Directly use context value
     isBatchNotificationsEnabled, 
     batchNotificationPreference, 
     customBatchMinutes, 
@@ -96,7 +86,7 @@ const Settings = () => {
     breakMinutes, 
     maxDistance: maxDistance[0],
     askNotifications,
-    breakNotificationsVibrate, // Updated
+    breakNotificationsVibrate, 
     sessionInvites,
     friendActivity,
     verificationStandard,
@@ -104,8 +94,8 @@ const Settings = () => {
     locationSharing,
     isGlobalPublic, 
     timerIncrement, 
-    shouldPlayEndSound, // Added
-    shouldShowEndToast, // Added
+    shouldPlayEndSound, 
+    shouldShowEndToast, 
   });
 
   useEffect(() => {
@@ -113,7 +103,7 @@ const Settings = () => {
     const currentBreakVal = selectedBreakDuration === 'custom' ? (parseInt(customBreakDuration) || 0) : parseInt(selectedBreakDuration);
 
     const currentSettings = {
-      showSessionsWhileActive, // UPDATED
+      showSessionsWhileActive, // Directly use context value
       isBatchNotificationsEnabled, 
       batchNotificationPreference, 
       customBatchMinutes, 
@@ -128,7 +118,7 @@ const Settings = () => {
       breakMinutes: currentBreakVal,
       maxDistance: maxDistance[0],
       askNotifications,
-      breakNotificationsVibrate, // Updated
+      breakNotificationsVibrate, 
       sessionInvites,
       friendActivity,
       verificationStandard,
@@ -136,8 +126,8 @@ const Settings = () => {
       locationSharing,
       isGlobalPublic, 
       timerIncrement: currentTimerIncrement, 
-      shouldPlayEndSound, // Added
-      shouldShowEndToast, // Added
+      shouldPlayEndSound, 
+      shouldShowEndToast, 
     };
 
     const changed = Object.keys(currentSettings).some(key => {
@@ -151,18 +141,18 @@ const Settings = () => {
     });
     setHasChanges(changed);
   }, [
-    showSessionsWhileActive, // UPDATED
+    showSessionsWhileActive, // Directly use context value
     isBatchNotificationsEnabled, 
     batchNotificationPreference, 
     customBatchMinutes, 
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
-    askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, // Updated
+    askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPublic, 
     currentTimerIncrement, 
-    shouldPlayEndSound, // Added
-    shouldShowEndToast, // Added
+    shouldPlayEndSound, 
+    shouldShowEndToast, 
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -185,12 +175,11 @@ const Settings = () => {
 
     setFocusMinutes(newFocusMinutes);
     setBreakMinutes(newBreakMinutes);
-    setTimerIncrement(currentTimerIncrement); // Save the new timer increment
-    setHideSessionsDuringTimer(!showSessionsWhileActive); // Update context with inverted value
+    setTimerIncrement(currentTimerIncrement);
 
     // Update initial settings for change detection
     initialSettings.current = {
-      showSessionsWhileActive, // UPDATED
+      showSessionsWhileActive, // Directly use context value
       isBatchNotificationsEnabled, 
       batchNotificationPreference, 
       customBatchMinutes, 
@@ -205,7 +194,7 @@ const Settings = () => {
       breakMinutes: newBreakMinutes,
       maxDistance: maxDistance[0],
       askNotifications,
-      breakNotificationsVibrate, // Updated
+      breakNotificationsVibrate, 
       sessionInvites,
       friendActivity,
       verificationStandard,
@@ -213,8 +202,8 @@ const Settings = () => {
       locationSharing,
       isGlobalPublic, 
       timerIncrement: currentTimerIncrement, 
-      shouldPlayEndSound, // Added
-      shouldShowEndToast, // Added
+      shouldPlayEndSound, 
+      shouldShowEndToast, 
     };
     setHasChanges(false);
   };
@@ -254,8 +243,8 @@ const Settings = () => {
   }: { 
     type: 'ask' | 'break' | 'invites' | 'activity';
     title: string;
-    description?: string; // Made description optional as it's commented out in usage
-    value: { push: boolean; vibrate: boolean; sound: boolean; }; // Explicitly define structure
+    description?: string;
+    value: { push: boolean; vibrate: boolean; sound: boolean; };
   }) => (
     <div className="space-y-4">
       <div>
@@ -322,13 +311,13 @@ const Settings = () => {
   );
 
   return (
-    <main className="max-w-4xl mx-auto p-4 lg:p-6"> {/* Adjusted padding */}
+    <main className="max-w-4xl mx-auto p-4 lg:p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-2">Optimise your experience</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4"> {/* Added grid for two columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Accordion type="multiple" className="space-y-4">
           {/* Notifications */}
           <AccordionItem value="notifications" className="border rounded-lg px-6">
@@ -339,35 +328,30 @@ const Settings = () => {
               <NotificationControl
                 type="ask"
                 title="Asks"
-                //description="Get notified when coworkers Ask"// 
                 value={askNotifications}
               />
 
               <NotificationControl
-                type="ask" // This was 'join' but the type is 'ask'
+                type="ask"
                 title="Joins"
-                //description="Get notified when newcomers Join"//
                 value={askNotifications}
               />
               
               <NotificationControl
                 type="break"
                 title="Break Reminders"
-                //description="Get notified when breaks start and end"//
-                value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }} // Use context values
+                value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }}
               />
               
               <NotificationControl
                 type="invites"
                 title="Session Invites"
-                //description="Receive invitations to join sessions from others"//
                 value={sessionInvites}
               />
               
               <NotificationControl
                 type="activity"
                 title="Friend Activity"
-                //description="Get notified about your friends' session activity"//
                 value={friendActivity}
               />
             </AccordionContent>
@@ -388,13 +372,13 @@ const Settings = () => {
                 </div>
                 <Switch
                   id="show-sessions-while-active"
-                  checked={showSessionsWhileActive}
-                  onCheckedChange={setShowSessionsWhileActive}
+                  checked={showSessionsWhileActive} // Directly use context value
+                  onCheckedChange={setShowSessionsWhileActive} // Directly update context
                 />
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto-transition"> Manual Transitions</Label> {/* Changed label here */}
+                  <Label htmlFor="auto-transition"> Manual Transitions</Label>
                   <p className="text-sm text-muted-foreground">
                     Prompt for session ends?
                   </p>
@@ -421,7 +405,7 @@ const Settings = () => {
               </div>
 
               {/* Updated Batch Notifications Section */}
-              <div className="space-y-4"> {/* This div wraps the entire batch notification section */}
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="batch-notifications-toggle">Batch Notifications</Label>
@@ -464,7 +448,7 @@ const Settings = () => {
                         }}
                         onBlur={() => {
                           if (customBatchMinutes === 0) {
-                            setCustomBatchMinutes(timerIncrement); // Default to timerIncrement if empty
+                            setCustomBatchMinutes(timerIncrement);
                           }
                         }}
                         min={timerIncrement}
@@ -543,7 +527,7 @@ const Settings = () => {
           </AccordionItem>
         </Accordion>
 
-        <Accordion type="multiple" className="space-y-4"> {/* New Accordion for the second column */}
+        <Accordion type="multiple" className="space-y-4">
           {/* Session Defaults */}
           <AccordionItem value="session-defaults" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">

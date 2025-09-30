@@ -148,8 +148,8 @@ const Index = () => {
     notes,
     setNotes,
     formatTime,
-    hideSessionsDuringTimer,
-    timerIncrement, // Get timerIncrement from context
+    showSessionsWhileActive, // Renamed
+    timerIncrement,
     
     schedule,
     currentScheduleIndex,
@@ -330,7 +330,7 @@ const Index = () => {
     });
   };
 
-  const shouldHideSessionLists = hideSessionsDuringTimer && (isRunning || isPaused || isScheduleActive);
+  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive); // Updated logic
 
   const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
 
@@ -424,7 +424,7 @@ const Index = () => {
             if (!existingCustomOption) {
               const newCustomOption: PollOption = {
                 id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                text: customOptionText.trim(), // Use customOptionText here
+                text: customOptionText.trim(),
                 votes: [],
               };
               currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
@@ -482,7 +482,7 @@ const Index = () => {
                     <CalendarPlus size={16} />
                     <span className="text-sm font-medium">Schedule</span>
                   </Button>
-                  <div className="flex flex-col items-end gap-2"> {/* Changed to flex-col for vertical stacking */}
+                  <div className="flex flex-col items-end gap-2">
                     <button 
                       onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
                       onMouseUp={handleLongPressEnd}
@@ -539,7 +539,7 @@ const Index = () => {
                   </CircularProgress>
                 </div>
                 
-                <div className="flex gap-3 justify-center mb-6"> {/* Removed relative from here */}
+                <div className="flex gap-3 justify-center mb-6">
                   {isFlashing ? (
                     <Button size="lg" className="px-8" onClick={timerType === 'focus' ? switchToBreak : switchToFocus}>
                       Start {timerType === 'focus' ? 'Break' : 'Focus'}
@@ -555,7 +555,6 @@ const Index = () => {
                   )}
                 </div>
 
-                {/* Moved Stop button container here, positioned absolutely within the main colored section */}
                 {(isPaused || isRunning || isScheduleActive) && (
                   <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                     <button
@@ -590,13 +589,13 @@ const Index = () => {
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
-                            setFocusMinutes(0); // Temporarily set to 0 for empty input
+                            setFocusMinutes(0);
                           } else {
                             setFocusMinutes(parseFloat(value) || 0);
                           }
                         }} 
                         onBlur={() => {
-                          if (focusMinutes === 0) { // If it's empty or was set to 0
+                          if (focusMinutes === 0) {
                             setFocusMinutes(timerIncrement);
                           }
                         }}
@@ -622,13 +621,13 @@ const Index = () => {
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
-                            setBreakMinutes(0); // Temporarily set to 0 for empty input
+                            setBreakMinutes(0);
                           } else {
                             setBreakMinutes(parseFloat(value) || 0);
                           }
                         }} 
                         onBlur={() => {
-                          if (breakMinutes === 0) { // If it's empty or was set to 0
+                          if (breakMinutes === 0) {
                             setBreakMinutes(timerIncrement);
                           }
                         }}
