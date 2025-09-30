@@ -130,7 +130,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
 
       {(pollType === 'choice' || pollType === 'selection') && (
         <div className="space-y-2">
-          <Label htmlFor="poll-options">Options (comma-separated)</Label>
+          <Label htmlFor="poll-options">Options</Label>
           <Textarea
             id="poll-options"
             placeholder={getOptionsPlaceholderText(pollType)}
