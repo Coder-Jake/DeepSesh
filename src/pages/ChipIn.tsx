@@ -142,7 +142,7 @@ const ChipIn = () => {
                 <Users className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium text-foreground">Annual Expenses per User:</p>
-                  <p>$0.50 (hosting, database, third-party services)</p>
+                  <p>$0.69 (hosting, database, third-party services)</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
