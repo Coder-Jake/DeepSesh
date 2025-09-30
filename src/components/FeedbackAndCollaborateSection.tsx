@@ -27,7 +27,7 @@ const FeedbackAndCollaborateSection = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="feedback" className="mt-4 space-y-4">
-            <p className="text-sm text-muted-foreground">Report an idea/issue</p>
+            <p className="text-sm text-muted-foreground">Report an idea/bug</p>
             <FeedbackForm />
           </TabsContent>
           <TabsContent value="collaborate" className="mt-4 space-y-4">
