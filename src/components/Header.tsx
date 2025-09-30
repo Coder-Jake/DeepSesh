@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import Navigation from "@/components/Navigation";
-import { useState } from "react"; // Import useState
+import { useState } from "react";
 
 const Header = () => {
   const location = useLocation();
@@ -9,21 +9,25 @@ const Header = () => {
   const isHomePage = location.pathname === "/";
 
   const [secretTextVisible, setSecretTextVisible] = useState(false);
+  const [showSecretTextDiv, setShowSecretTextDiv] = useState(false); // New state to control rendering
 
   const handleHeaderClick = () => {
     if (isHomePage) {
-      // Clear any existing timeout to prevent multiple animations
+      // Ensure any previous timeouts are cleared to prevent overlapping animations
       // (This part is not strictly necessary for this specific request but good practice)
       // if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-      // Delay showing the text by 1 second
+      setShowSecretTextDiv(true); // Start rendering the div with initial opacity-0
+      
       setTimeout(() => {
-        setSecretTextVisible(true);
-        // Hide the text after 3 seconds (total 4 seconds from click: 1s delay + 3s visible)
+        setSecretTextVisible(true); // Trigger fade-in after 1s delay
         setTimeout(() => {
-          setSecretTextVisible(false);
+          setSecretTextVisible(false); // Trigger fade-out after 3s
+          setTimeout(() => {
+            setShowSecretTextDiv(false); // Remove from DOM after fade-out completes (1s transition)
+          }, 1000); 
         }, 3000);
-      }, 1000); // 1 second delay before text appears
+      }, 1000); // Initial delay before fade-in starts
     }
   };
 
@@ -34,9 +38,9 @@ const Header = () => {
           <Link to="/" className="hover:opacity-80 transition-opacity" onClick={handleHeaderClick}>
             <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
           </Link>
-          {secretTextVisible && (
+          {showSecretTextDiv && ( // Conditionally render the div
             <div
-              className={`absolute left-0 top-full mt-1 text-sm font-medium text-muted-foreground transition-opacity duration-1000 ${
+              className={`absolute left-0 top-full mt-1 text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
                 secretTextVisible ? "opacity-100" : "opacity-0"
               }`}
             >
