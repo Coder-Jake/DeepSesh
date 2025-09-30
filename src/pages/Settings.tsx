@@ -449,7 +449,10 @@ const Settings = () => {
             {/* Global Session Visibility - Moved here */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="global-visibility-toggle">Visibility</Label>
+                <Label htmlFor="global-visibility-toggle">Global Session Visibility</Label>
+                <p className="text-sm text-muted-foreground">
+                  Control whether your sessions are discoverable by others.
+                </p>
               </div>
               <Button
                 id="global-visibility-toggle"
@@ -567,65 +570,56 @@ const Settings = () => {
               <Label>Profile Visibility</Label>
               <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
-                  <SelectValue placeholder="public" />
+                  <SelectValue placeholder="Select visibility" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
-                  <SelectItem value="friends">Friends Only - Only contacts can see details</SelectItem>
+                  <SelectItem value="friends">Friends Only - Only friends can see details</SelectItem>
                   <SelectItem value="private">Private - Minimal information shared</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            
-          </AccordionContent>
-        </AccordionItem>
-
-      {/* Verification */}
-      <AccordionItem value="verification" className="border rounded-lg px-6">
-          <AccordionTrigger className="text-xl font-semibold">
-            Verification
-          </AccordionTrigger>
-          <AccordionContent className="space-y-6 pt-4">
-          
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Get security clearance
-              </p>
-              <p className="text-sm text-muted-foreground">Access private spaces
+            {/* Verification Subheading */}
+            <div className="border-t border-border pt-6 mt-6">
+              <h3 className="text-lg font-semibold mb-4">Verification</h3>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Get security clearance
                 </p>
+                <p className="text-sm text-muted-foreground">Access private spaces</p>
                 <p className="text-sm text-muted-foreground">Build trust with peers</p>
                 <p className="text-sm text-muted-foreground">Compete for prizes! <br /> <br /> <br />  </p>
-              <Label>Your Verification</Label>
-              <Select value={profileVisibility} onValueChange={setProfileVisibility}>
-                <SelectTrigger>
-                  <SelectValue placeholder="id" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="anon">None</SelectItem>
-                  <SelectItem value="phone">Phone</SelectItem>
-                  <SelectItem value="organisation">Enterprise</SelectItem>
-                  <SelectItem value="id">ID Verified</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <Label>Your Verification</Label>
+                <Select value={profileVisibility} onValueChange={setProfileVisibility}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select verification status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Anon">None</SelectItem>
+                    <SelectItem value="phone">Phone</SelectItem>
+                    <SelectItem value="organisation">Enterprise</SelectItem>
+                    <SelectItem value="id">ID Verified</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label>Others' Verification</Label>
-              <p className="text-sm text-muted-foreground">
-                 to join sessions you host
-              </p>
-              <Select value={verificationStandard} onValueChange={setVerificationStandard}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select verification standard" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="anyone">Anyone - No requirements</SelectItem>
-                  <SelectItem value="phone">Phone - Number verified</SelectItem>
-                  <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
-                  <SelectItem value="id">ID Verified - verified government ID</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2 mt-6">
+                <Label>Minimum Verification Status</Label>
+                <p className="text-sm text-muted-foreground">
+                  for users to interact with sessions you host
+                </p>
+                <Select value={verificationStandard} onValueChange={setVerificationStandard}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select verification standard" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="anyone">Anyone - No verification required</SelectItem>
+                    <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
+                    <SelectItem value="id">ID Verified - verified government ID</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
