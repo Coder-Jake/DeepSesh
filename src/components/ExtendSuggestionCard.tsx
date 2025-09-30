@@ -84,7 +84,6 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
             {/* Thumbs Down */}
             <button 
               onClick={() => handleVoteClick('no')} 
-              disabled={suggestion.status !== 'pending'}
               className="flex items-center gap-1 text-sm text-red-600 disabled:opacity-50"
             >
               <ThumbsDown className="h-4 w-4" fill={userVote === 'no' ? "currentColor" : "none"} /> {noVotes}
