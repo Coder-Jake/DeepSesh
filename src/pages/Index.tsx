@@ -549,9 +549,6 @@ const Index = () => {
                       >
                         Stop
                       </button>
-                    )}
-                    {(!isRunning && !isFlashing && !isScheduleActive) && (
-                    )}
                   </div>
                   
                   {isFlashing ? (
