@@ -140,6 +140,13 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
     submitVote(selectedOption, selectedOptions, customResponse);
   };
 
+  const handleCustomResponseKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent default form submission behavior
+      handleCustomResponseBlur(); // This already calls submitVote
+    }
+  };
+
   const getTotalVotes = (optionId: string) => {
     return poll.options.find(opt => opt.id === optionId)?.votes.length || 0;
   };
@@ -214,6 +221,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                   value={customResponse}
                   onChange={handleCustomResponseChange}
                   onBlur={handleCustomResponseBlur}
+                  onKeyDown={handleCustomResponseKeyDown}
                 />
               </div>
             )}
