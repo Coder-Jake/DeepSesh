@@ -293,7 +293,7 @@ const Settings = () => {
               type="join"
               title="Joins"
               description="Get notified when others Join"
-              value={joinNotifications}
+              value={askNotifications}
             />
             
             <NotificationControl
