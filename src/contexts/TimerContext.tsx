@@ -55,7 +55,7 @@ interface TimerContextType {
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
-  const [focusMinutes, setFocusMinutes] = useState(.025);
+  const [focusMinutes, setFocusMinutes] = useState(25); // Corrected from .025 to 25
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [hideSessionsDuringTimer, setHideSessionsDuringTimer] = useState(false);
   const [timerIncrement, setTimerIncrement] = useState(5);
