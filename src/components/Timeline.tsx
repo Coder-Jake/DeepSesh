@@ -9,14 +9,13 @@ interface TimelineProps {
   schedule: ScheduledTimer[];
   currentScheduleIndex: number;
   timeLeft: number;
-  formatTime: (seconds: number) => string;
   scheduleTitle: string; // New prop
   commenceTime: string; // New prop
   commenceDay: number; // New prop
 }
 
-const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, timeLeft, formatTime, scheduleTitle, commenceTime, commenceDay }) => {
-  const { isRunning, isPaused, setIsRunning, setIsPaused, resetSchedule } = useTimer();
+const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, timeLeft, scheduleTitle, commenceTime, commenceDay }) => {
+  const { isRunning, isPaused, setIsRunning, setIsPaused, resetSchedule, formatTime } = useTimer(); // Destructure formatTime from useTimer
 
   if (schedule.length === 0) {
     return null;

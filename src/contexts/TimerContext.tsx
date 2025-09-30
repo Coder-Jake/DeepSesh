@@ -57,6 +57,7 @@ interface TimerContextType {
   setLocationSharing: (sharing: string) => void;
   isGlobalPublic: boolean;
   setIsGlobalPublic: (isPublic: boolean) => void;
+  formatTime: (seconds: number) => string; // Added formatTime to context type
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -89,6 +90,13 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [profileVisibility, setProfileVisibility] = useState("friends");
   const [locationSharing, setLocationSharing] = useState("approximate");
   const [isGlobalPublic, setIsGlobalPublic] = useState(false);
+
+  // Utility function for formatting time
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   // Load settings from local storage on initial mount
   useEffect(() => {
@@ -188,6 +196,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     profileVisibility, setProfileVisibility,
     locationSharing, setLocationSharing,
     isGlobalPublic, setIsGlobalPublic,
+    formatTime, // Provided formatTime
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

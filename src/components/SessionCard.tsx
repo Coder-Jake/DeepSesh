@@ -24,7 +24,7 @@ interface SessionCardProps {
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => {
-  const { formatTime } = useTimer();
+  const { formatTime } = useTimer(); // Destructure formatTime from useTimer
   const [remainingSeconds, setRemainingSeconds] = useState(() => {
     const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
     return Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);

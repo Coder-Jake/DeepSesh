@@ -147,7 +147,7 @@ const Index = () => {
     setIsFlashing,
     notes,
     setNotes,
-    formatTime,
+    formatTime, // Destructure formatTime from useTimer
     showSessionsWhileActive, // Renamed
     timerIncrement,
     
@@ -773,7 +773,6 @@ const Index = () => {
           schedule={schedule} 
           currentScheduleIndex={currentScheduleIndex} 
           timeLeft={timeLeft} 
-          formatTime={formatTime} 
           scheduleTitle={scheduleTitle}
           commenceTime={commenceTime}
           commenceDay={commenceDay}
