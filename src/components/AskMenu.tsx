@@ -40,7 +40,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
           Ask
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] min-h-[450px] flex flex-col"> {/* Added min-h-[450px] and flex flex-col */}
+      <DialogContent className="sm:max-w-[425px] min-h-[450px] flex flex-col">
         <DialogHeader className="relative">
           {currentAskOption !== 'none' && (
             <Button
@@ -52,25 +52,29 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          
+          <DialogTitle className="text-center">
+            {currentAskOption === 'extend' ? 'Timer Extension' :
+             currentAskOption === 'poll' ? 'Poll' :
+             'What would you like to ask?'}
+          </DialogTitle>
         </DialogHeader>
         
         {currentAskOption === 'none' && (
-          <div className="grid gap-4 py-4 flex-grow"> {/* Added flex-grow */}
+          <div className="flex flex-col justify-end gap-4 py-4 flex-grow"> {/* Changed to flex-col justify-end */}
             <Button 
               variant="outline" 
-              className="justify-start" 
+              className="w-full h-20 text-lg" // Added h-20 and text-lg, removed justify-start
               onClick={() => setCurrentAskOption('extend')}
             >
-              <PlusCircle className="mr-2 h-4 w-4" />
+              <PlusCircle className="mr-2 h-5 w-5" /> {/* Increased icon size */}
               Extend Timer
             </Button>
             <Button 
               variant="outline" 
-              className="justify-start" 
+              className="w-full h-20 text-lg" // Added h-20 and text-lg, removed justify-start
               onClick={() => setCurrentAskOption('poll')}
             >
-              <MessageSquarePlus className="mr-2 h-4 w-4" />
+              <MessageSquarePlus className="mr-2 h-5 w-5" /> {/* Increased icon size */}
               Create Poll
             </Button>
           </div>
