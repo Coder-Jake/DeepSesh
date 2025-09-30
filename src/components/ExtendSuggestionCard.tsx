@@ -90,9 +90,6 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
             >
               <ThumbsDown className="h-4 w-4" fill={userVote === 'no' ? "currentColor" : "none"} /> {noVotes}
             </button>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" /> {totalVotes} votes
-            </div>
           </div>
           
           {suggestion.status !== 'pending' && (
