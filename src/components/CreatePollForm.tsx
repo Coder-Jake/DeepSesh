@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/components/ui/switch"; // Still needed for the type, but not rendered
 import { cn } from "@/lib/utils";
 
 interface CreatePollFormProps {
@@ -14,7 +14,7 @@ interface CreatePollFormProps {
   onSubmit: (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => void;
 }
 
-type PollType = 'closed' | 'choice' | 'selection';
+export type PollType = 'closed' | 'choice' | 'selection';
 
 const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) => {
   const [question, setQuestion] = useState("");
@@ -77,7 +77,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   };
 
   return (
-    <div className="space-y-4 flex flex-col flex-grow"> {/* Added flex flex-col flex-grow */}
+    <div className="space-y-4 flex flex-col flex-grow">
       <div className="space-y-2">
         <Label htmlFor="poll-question">Question</Label>
         <Input
@@ -143,17 +143,19 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       )}
 
       {(pollType === 'choice' || pollType === 'selection') && (
-        <div className="flex items-center justify-between space-x-2">
-          <Label htmlFor="allow-custom-responses">Custom Responses?</Label>
-          <Switch
-            id="allow-custom-responses"
-            checked={allowCustomResponses}
-            onCheckedChange={setAllowCustomResponses}
-          />
-        </div>
+        <Button
+          variant="outline"
+          onClick={() => setAllowCustomResponses(prev => !prev)}
+          className={cn(
+            "ml-auto", // Align right
+            allowCustomResponses && "bg-green-500 text-white hover:bg-green-600 border-green-500" // Green when active
+          )}
+        >
+          Custom Responses
+        </Button>
       )}
 
-      <DialogFooter className="mt-auto"> {/* Added mt-auto to push to bottom */}
+      <DialogFooter className="mt-auto">
         <Button onClick={handleSubmit} className="w-full">
           <MessageSquarePlus className="mr-2 h-4 w-4" />
           Create Poll
