@@ -459,7 +459,7 @@ const Settings = () => {
                 onClick={() => setIsGlobalPublic(prev => !prev)}
                 className={cn(
                   "px-4 py-2 rounded-full transition-colors text-black", // Added text-black
-                  isGlobalPublic ? "bg-[hsl(var(--public-bg))] hover:opacity-10" : "bg-[hsl(var(--private-bg))] hover:opacity-90"
+                  isGlobalPublic ? 
                 )}
               >
                 {isGlobalPublic ? "Public" : "Private"}
