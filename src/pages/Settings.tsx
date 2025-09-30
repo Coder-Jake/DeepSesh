@@ -66,8 +66,8 @@ const Settings = () => {
   // New state for timer increments
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
 
-  // New state for "Show other sessions while active"
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(!hideSessionsDuringTimer);
+  // New state for "Show other sessions while active" - now defaults to false (disabled)
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false);
 
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -76,7 +76,7 @@ const Settings = () => {
 
   // Initial state for comparison to detect changes
   const initialSettings = useRef({
-    showSessionsWhileActive, // UPDATED
+    showSessionsWhileActive: false, // UPDATED to explicitly be false
     isBatchNotificationsEnabled, 
     batchNotificationPreference, 
     customBatchMinutes, 
