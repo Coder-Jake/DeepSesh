@@ -157,8 +157,8 @@ const ChipIn = () => {
                 <div>
                   <p className="font-medium text-foreground">Upcoming Developments:</p>
                   <ul className="list-disc list-inside ml-2">
-                    <li>Real-time collaboration features ($5,000)</li>
-                    <li>Advanced analytics dashboard ($3,000)</li>
+                    <li>Real-time collaboration ($5,000)</li>
+                    <li>Advanced stats dashboard ($3,000)</li>
                     <li>Mobile app development ($10,000)</li>
                     <li>Verification feature ($6,000)</li>
                     <li>Stake accountability ($7,500)</li>
