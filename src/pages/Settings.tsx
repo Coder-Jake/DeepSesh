@@ -66,6 +66,9 @@ const Settings = () => {
   // New state for timer increments
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
 
+  // New state for "Show other sessions while active"
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(!hideSessionsDuringTimer);
+
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
@@ -73,8 +76,8 @@ const Settings = () => {
 
   // Initial state for comparison to detect changes
   const initialSettings = useRef({
-    hideSessionsDuringTimer,
-    isBatchNotificationsEnabled, // ADDED
+    showSessionsWhileActive, // UPDATED
+    isBatchNotificationsEnabled, 
     batchNotificationPreference, 
     customBatchMinutes, 
     lock,
@@ -103,8 +106,8 @@ const Settings = () => {
     const currentBreakVal = selectedBreakDuration === 'custom' ? (parseInt(customBreakDuration) || 0) : parseInt(selectedBreakDuration);
 
     const currentSettings = {
-      hideSessionsDuringTimer,
-      isBatchNotificationsEnabled, // ADDED
+      showSessionsWhileActive, // UPDATED
+      isBatchNotificationsEnabled, 
       batchNotificationPreference, 
       customBatchMinutes, 
       lock,
@@ -139,8 +142,8 @@ const Settings = () => {
     });
     setHasChanges(changed);
   }, [
-    hideSessionsDuringTimer, 
-    isBatchNotificationsEnabled, // ADDED
+    showSessionsWhileActive, // UPDATED
+    isBatchNotificationsEnabled, 
     batchNotificationPreference, 
     customBatchMinutes, 
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
@@ -172,11 +175,12 @@ const Settings = () => {
     setFocusMinutes(newFocusMinutes);
     setBreakMinutes(newBreakMinutes);
     setTimerIncrement(currentTimerIncrement); // Save the new timer increment
+    setHideSessionsDuringTimer(!showSessionsWhileActive); // Update context with inverted value
 
     // Update initial settings for change detection
     initialSettings.current = {
-      hideSessionsDuringTimer,
-      isBatchNotificationsEnabled, // ADDED
+      showSessionsWhileActive, // UPDATED
+      isBatchNotificationsEnabled, 
       batchNotificationPreference, 
       customBatchMinutes, 
       lock,
@@ -356,15 +360,15 @@ const Settings = () => {
             <AccordionContent className="space-y-6 pt-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="hide-sessions-during-timer">Hide Sessions During Timer</Label>
+                  <Label htmlFor="show-sessions-while-active">Show other sessions while active</Label>
                   <p className="text-sm text-muted-foreground">
-                    Hide Nearby and Friends sessions when your timer is active.
+                    Keep Nearby and Friends sessions visible when your timer is active.
                   </p>
                 </div>
                 <Switch
-                  id="hide-sessions-during-timer"
-                  checked={hideSessionsDuringTimer}
-                  onCheckedChange={setHideSessionsDuringTimer}
+                  id="show-sessions-while-active"
+                  checked={showSessionsWhileActive}
+                  onCheckedChange={setShowSessionsWhileActive}
                 />
               </div>
               <div className="flex items-center justify-between">
