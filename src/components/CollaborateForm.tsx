@@ -85,7 +85,7 @@ const CollaborateForm = () => {
         <Textarea
           id="collaborate-message"
           {...register('message')}
-          placeholder="Tell us about your IT needs..."
+          placeholder="Tell us about your IT skills..."
           rows={5}
           disabled={isSubmitting}
         />
