@@ -70,7 +70,7 @@ const CollaborateForm = () => {
         {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="collaborate-email">Your Email (optional)</Label>
+        <Label htmlFor="collaborate-email">Email (optional)</Label>
         <Input
           id="collaborate-email"
           type="email"
