@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup } from "@/components/ui/radio-group"; // Keep RadioGroup for semantic grouping if needed, but remove its state control
 import { DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquarePlus, CheckSquare } from "lucide-react";
+import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react"; // Import ThumbsUp and Circle
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
@@ -101,6 +101,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
               pollType === 'closed' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
             )}
           >
+            <ThumbsUp size={16} /> {/* Added ThumbsUp icon */}
             <span>Closed</span>
           </Label>
           <Label
@@ -111,6 +112,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
               pollType === 'choice' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
             )}
           >
+            <Circle size={16} /> {/* Added Circle icon */}
             <span>Choice</span>
           </Label>
           <Label
