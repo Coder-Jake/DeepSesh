@@ -36,9 +36,6 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] min-h-[450px] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-center">Ask a Question</DialogTitle>
-        </DialogHeader>
         
         {/* Persistent tab-like buttons */}
         <div className="flex border-b"> {/* Removed justify-center, gap-2, and p-4 */}
