@@ -11,7 +11,7 @@ const Credits = () => {
   const supporters = [
     { name: "Generous Giver", amount: "$100" },
     { name: "Community Champion", amount: "$75" },
-    { name: "DeepSesh Fan", amount: "$60" },
+    { name: "DeepSesh Diehard", amount: "$60" },
     { name: "Anonymous Supporter", amount: "$55" },
   ];
 
