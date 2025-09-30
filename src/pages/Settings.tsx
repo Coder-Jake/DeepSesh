@@ -612,7 +612,7 @@ const Settings = () => {
                 </p>
                 <p className="text-sm text-muted-foreground">Build trust with peers</p>
                 <p className="text-sm text-muted-foreground">Compete for prizes! <br /> <br /> <br />  </p>
-              <Label>Verification</Label>
+              <Label>Your Verification</Label>
               <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
                   <SelectValue placeholder="Anon" />
