@@ -285,7 +285,7 @@ const Settings = () => {
             <NotificationControl
               type="ask"
               title="Asks"
-              description="Get notified when others Ask"
+              description="Get notified when coworkers Ask"
               value={askNotifications}
             />
 
