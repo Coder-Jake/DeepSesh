@@ -213,18 +213,20 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
           </div>
         )}
 
-        {/* Display Results */}
-        <div className="space-y-2 pt-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" /> {getOverallTotalVotes()} total votes
-          </div>
-          {poll.options.map(option => (
-            <div key={option.id} className="flex items-center justify-between text-sm">
-              <span className="font-medium">{option.text}</span>
-              <span className="text-muted-foreground">{getTotalVotes(option.id)} votes</span>
+        {/* Display Results - Only show for 'choice' and 'selection' polls */}
+        {(poll.type === 'choice' || poll.type === 'selection') && (
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4" /> {getOverallTotalVotes()} total votes
             </div>
-          ))}
-        </div>
+            {poll.options.map(option => (
+              <div key={option.id} className="flex items-center justify-between text-sm">
+                <span className="font-medium">{option.text}</span>
+                <span className="text-muted-foreground">{getTotalVotes(option.id)} votes</span>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
