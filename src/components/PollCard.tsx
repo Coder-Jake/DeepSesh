@@ -134,22 +134,22 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                   size="icon"
                   className={cn(
                     "rounded-full w-12 h-12",
-                    selectedOption === "closed-no" && "bg-destructive text-destructive-foreground"
+                    selectedOption === "closed-dont-mind" && "bg-blue-500 text-white" // Neutral blue
                   )}
-                  onClick={() => setSelectedOption("closed-no")}
+                  onClick={() => setSelectedOption("closed-dont-mind")}
                 >
-                  <ThumbsDown className="h-5 w-5" />
+                  <Minus className="h-5 w-5" />
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
                   className={cn(
                     "rounded-full w-12 h-12",
-                    selectedOption === "closed-dont-mind" && "bg-blue-500 text-white" // Neutral blue
+                    selectedOption === "closed-no" && "bg-destructive text-destructive-foreground"
                   )}
-                  onClick={() => setSelectedOption("closed-dont-mind")}
+                  onClick={() => setSelectedOption("closed-no")}
                 >
-                  <Minus className="h-5 w-5" />
+                  <ThumbsDown className="h-5 w-5" />
                 </Button>
               </div>
             )}
