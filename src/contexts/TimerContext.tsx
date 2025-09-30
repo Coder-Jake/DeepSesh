@@ -57,7 +57,7 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true); // Renamed and default to true
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false); // Renamed and default to true
   const [timerIncrement, setTimerIncrement] = useState(5);
 
   // Timer control states
