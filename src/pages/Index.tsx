@@ -424,7 +424,7 @@ const Index = () => {
             if (!existingCustomOption) {
               const newCustomOption: PollOption = {
                 id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                text: customOptionText.trim(),
+                text: customResponse.trim(),
                 votes: [],
               };
               currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
@@ -539,23 +539,7 @@ const Index = () => {
                   </CircularProgress>
                 </div>
                 
-                <div className="flex gap-3 justify-center mb-6 relative">
-                  <div className="absolute left-0 bottom-0 flex flex-col gap-1">
-                    {(isPaused || isRunning || isScheduleActive) && (
-                      <button
-                        onMouseDown={() => handleLongPressStart(stopTimer)}
-                        onMouseUp={handleLongPressEnd}
-                        onMouseLeave={handleLongPressEnd}
-                        onTouchStart={() => handleLongPressStart(stopTimer)}
-                        onTouchEnd={handleLongPressEnd}
-                        onClick={stopTimer}
-                        className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
-                      >
-                        Stop
-                      </button>
-                    )}
-                  </div>
-                  
+                <div className="flex gap-3 justify-center mb-6"> {/* Removed relative from here */}
                   {isFlashing ? (
                     <Button size="lg" className="px-8" onClick={timerType === 'focus' ? switchToBreak : switchToFocus}>
                       Start {timerType === 'focus' ? 'Break' : 'Focus'}
@@ -570,6 +554,23 @@ const Index = () => {
                     </Button>
                   )}
                 </div>
+
+                {/* Moved Stop button container here, positioned absolutely within the main colored section */}
+                {(isPaused || isRunning || isScheduleActive) && (
+                  <div className="absolute bottom-4 left-4 flex flex-col gap-1">
+                    <button
+                      onMouseDown={() => handleLongPressStart(stopTimer)}
+                      onMouseUp={handleLongPressEnd}
+                      onMouseLeave={handleLongPressEnd}
+                      onTouchStart={() => handleLongPressStart(stopTimer)}
+                      onTouchEnd={handleLongPressEnd}
+                      onClick={stopTimer}
+                      className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground"
+                    >
+                      Stop
+                    </button>
+                  </div>
+                )}
 
                 {!isScheduleActive && (
                   <div className="flex justify-center gap-4 text-sm">
