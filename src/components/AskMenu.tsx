@@ -33,11 +33,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
           Ask
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[425px] max-h-[90vh] overflow-y-auto top-[5%] translate-y-0 flex flex-col"> {/* Adjusted classes here */}
-        <DialogHeader> {/* Added DialogHeader */}
-          <DialogTitle>Ask a Question</DialogTitle> {/* Added DialogTitle */}
-        </DialogHeader>
-        
+      <DialogContent className="w-[425px] max-h-[90vh] overflow-y-auto top-[5%] translate-y-0 flex flex-col"> {/* Adjusted classes here */}        
         {/* Persistent tab-like buttons */}
         <div className="flex border-b">
           <Button
