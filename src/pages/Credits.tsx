@@ -98,7 +98,7 @@ const Credits = () => {
         </Card>
       </div>
       <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Thank you to everyone who contributed to making FlowSesh possible!
+          Thank you to everyone who contributed to making DeepSesh possible!
         </p>
     </main>
   );
