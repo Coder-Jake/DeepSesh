@@ -56,13 +56,6 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
     option.votes.some(vote => vote.userId === currentUserId)
   );
 
-  const getOptionText = (optionId: string) => {
-    if (optionId === 'closed-yes') return 'Yes';
-    if (optionId === 'closed-no') return 'No';
-    if (optionId === 'closed-dont-mind') return "Don't Mind";
-    return poll.options.find(opt => opt.id === optionId)?.text || '';
-  };
-
   const handleVote = () => {
     let votesToSend: string[] = [];
     let customTextToSend: string | undefined;
@@ -75,8 +68,9 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
 
     if (poll.allowCustomResponses && customResponse.trim()) {
       customTextToSend = customResponse.trim();
+      // If custom response is the only thing, ensure it's sent
       if (votesToSend.length === 0 && customTextToSend) {
-        // This case is handled in Index.tsx where a new custom option is created
+        // We'll handle adding this as a new option in Index.tsx
       }
     }
 
@@ -89,20 +83,10 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
       return;
     }
 
-    let voteDescription = '';
-    if (customTextToSend) {
-      voteDescription = `your custom response "${customTextToSend}"`;
-    } else if (votesToSend.length === 1) {
-      voteDescription = `"${getOptionText(votesToSend[0])}"`;
-    } else if (votesToSend.length > 1) {
-      const selectedTexts = votesToSend.map(id => getOptionText(id));
-      voteDescription = `"${selectedTexts.join(', ')}"`;
-    }
-
     onVote(poll.id, votesToSend, customTextToSend);
     toast({
       title: "Vote Submitted!",
-      description: `You voted ${voteDescription} on "${poll.question}".`,
+      description: `Your vote for "${poll.question}" has been recorded.`,
     });
     setCustomResponse(""); // Clear custom response after submission
   };
