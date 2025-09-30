@@ -578,9 +578,9 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Minimum Verification Status</Label>
+              <Label>Verification Status</Label>
               <p className="text-sm text-muted-foreground">
-                for users to interact with sessions you host
+                for others to see with your sessions
               </p>
               <Select value={verificationStandard} onValueChange={setVerificationStandard}>
                 <SelectTrigger>
@@ -588,6 +588,7 @@ const Settings = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="anyone">Anyone - No verification required</SelectItem>
+                  <SelectItem value="phone">Phone# verified</SelectItem>
                   <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
                   <SelectItem value="id">ID Verified - Must have verified government ID</SelectItem>
                 </SelectContent>
