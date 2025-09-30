@@ -464,7 +464,7 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="focus-duration">Focus Duration (minutes)</Label>
+              <Label htmlFor="focus-duration">Focus </Label>
               <Select value={selectedFocusDuration} onValueChange={setSelectedFocusDuration}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select duration" />
@@ -492,7 +492,7 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="break-duration">Break Duration (minutes)</Label>
+              <Label htmlFor="break-duration">Break</Label>
               <Select value={selectedBreakDuration} onValueChange={setSelectedBreakDuration}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select duration" />
