@@ -512,7 +512,7 @@ const Index = () => {
                         </> : <>
                           <Lock size={16} />
                           <span className="text-sm font-medium">Private</span>
-                        />}
+                        </>}
                     </button>
                   </div>
                 </div>
@@ -616,7 +616,7 @@ const Index = () => {
 
           {/* Active Asks Section */}
           <ActiveAskSection 
-            activeAsks={[...activeAsks].reverse()} // Reverse the array here
+            activeAsks={activeAsks} 
             onVoteExtend={handleVoteExtend} 
             onVotePoll={handleVotePoll} 
             currentUserId={currentUserId} 
