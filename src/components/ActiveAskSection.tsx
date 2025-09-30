@@ -54,7 +54,7 @@ const ActiveAskSection: React.FC<ActiveAskSectionProps> = ({ activeAsks, onVoteE
       </button>
       
       {isOpen && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4"> {/* Removed md:grid-cols-2 to ensure stacking */}
           {activeAsks.map(item => {
             if ('minutes' in item) { // It's an ExtendSuggestion
               return (
