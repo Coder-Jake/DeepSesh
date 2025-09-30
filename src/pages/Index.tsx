@@ -473,7 +473,7 @@ const Index = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Timer Section */}
         <div className="space-y-6">
-          <div className={`relative rounded-lg border border-border p-8 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
+          <div className={`relative rounded-lg border border-border py-8 px-1 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
             {isSchedulingMode ? (
               <ScheduleForm />
             ) : (
