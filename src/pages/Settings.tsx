@@ -727,11 +727,14 @@ const Settings = () => {
       </div>
 
       {/* Save Button */}
-      <div className="mt-8 flex justify-end">
+      <div className={cn(
+        "fixed bottom-4 right-4 z-50 transition-opacity duration-300",
+        hasChanges ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      )}>
         <Button 
           onClick={handleSave}
           disabled={!hasChanges}
-          className={!hasChanges ? "opacity-50 cursor-not-allowed" : ""}
+          className="shadow-lg"
         >
           Save Settings
         </Button>
