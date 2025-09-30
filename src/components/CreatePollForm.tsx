@@ -145,7 +145,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
 
       {(pollType === 'choice' || pollType === 'selection') && (
         <div className="flex items-center justify-between space-x-2">
-          <Label htmlFor="allow-custom-responses">Allow Custom Responses</Label>
+          <Label htmlFor="allow-custom-responses">Custom Responses?</Label>
           <Switch
             id="allow-custom-responses"
             checked={allowCustomResponses}
