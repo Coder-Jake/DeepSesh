@@ -78,7 +78,7 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
             <button 
               onClick={() => handleVoteClick('yes')} 
               disabled={suggestion.status !== 'pending'}
-              className="flex items-center gap-1 text-sm text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 text-sm text-green-600 disabled:opacity-50"
             >
               <ThumbsUp className="h-4 w-4" fill={userVote === 'yes' ? "currentColor" : "none"} /> {yesVotes}
             </button>
