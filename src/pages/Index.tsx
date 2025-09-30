@@ -233,7 +233,7 @@ const Index = () => {
   };
   
   const stopTimer = () => {
-    if (isLongPress.current) {
+    if (longPressRef.current) {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
@@ -251,7 +251,7 @@ const Index = () => {
   };
   
   const resetTimer = () => {
-    if (isLongPress.current) {
+    if (longPressRef.current) {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
@@ -588,11 +588,15 @@ const Index = () => {
                       <Input 
                         type="number" 
                         value={focusMinutes} 
-                        onChange={e => setFocusMinutes(parseInt(e.target.value) || 1)} 
+                        onChange={e => {
+                          const value = parseInt(e.target.value) || timerIncrement;
+                          const roundedValue = Math.max(timerIncrement, Math.round(value / timerIncrement) * timerIncrement);
+                          setFocusMinutes(roundedValue);
+                        }} 
                         className="w-16 h-8 text-center" 
-                        min="1" 
+                        min={timerIncrement} 
                         max="120" 
-                        step={timerIncrement} // Apply timerIncrement here
+                        step={timerIncrement}
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -608,11 +612,15 @@ const Index = () => {
                       <Input 
                         type="number" 
                         value={breakMinutes} 
-                        onChange={e => setBreakMinutes(parseInt(e.target.value) || 1)} 
+                        onChange={e => {
+                          const value = parseInt(e.target.value) || timerIncrement;
+                          const roundedValue = Math.max(timerIncrement, Math.round(value / timerIncrement) * timerIncrement);
+                          setBreakMinutes(roundedValue);
+                        }} 
                         className="w-16 h-8 text-center" 
-                        min="1" 
+                        min={timerIncrement} 
                         max="60" 
-                        step={timerIncrement} // Apply timerIncrement here
+                        step={timerIncrement}
                       />
                     </div>
                   </div>
