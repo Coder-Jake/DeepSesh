@@ -126,8 +126,8 @@ const Profile = () => {
                 </p>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Deep Focus</span>
-                    <span>Banter</span>
+                    <span>Banter</span> {/* Flipped this label */}
+                    <span>Deep Focus</span> {/* Flipped this label */}
                   </div>
                   <div className="relative group">
                     <Slider
