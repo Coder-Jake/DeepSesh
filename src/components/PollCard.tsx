@@ -84,24 +84,9 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
     }
 
     onVote(poll.id, votesToSend, customTextToSend);
-    
-    // Determine the vote text for the toast message
-    let newVoteText = "";
-    if (poll.type === 'closed' && selectedOption) {
-      if (selectedOption === 'closed-yes') newVoteText = 'yes';
-      else if (selectedOption === 'closed-no') newVoteText = 'no';
-      else if (selectedOption === 'closed-dont-mind') newVoteText = 'neutral';
-    } else if (poll.type === 'choice' && selectedOption) {
-      newVoteText = poll.options.find(opt => opt.id === selectedOption)?.text || "";
-    } else if (poll.type === 'selection' && votesToSend.length > 0) {
-      newVoteText = votesToSend.map(id => poll.options.find(opt => opt.id === id)?.text || "").join(', ');
-    } else if (customTextToSend) {
-      newVoteText = customTextToSend;
-    }
-
     toast({
-      title: "Vote Cast",
-      description: `You voted "${newVoteText}" on the poll suggestion.`,
+      title: "Vote Submitted!",
+      description: `Your vote for "${poll.question}" has been recorded.`,
     });
     setCustomResponse(""); // Clear custom response after submission
   };
@@ -149,22 +134,22 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                   size="icon"
                   className={cn(
                     "rounded-full w-12 h-12",
-                    selectedOption === "closed-no" && "bg-destructive text-destructive-foreground"
+                    selectedOption === "closed-dont-mind" && "bg-blue-500 text-white" // Neutral blue
                   )}
-                  onClick={() => setSelectedOption("closed-no")}
+                  onClick={() => setSelectedOption("closed-dont-mind")}
                 >
-                  <ThumbsDown className="h-5 w-5" />
+                  <Minus className="h-5 w-5" />
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
                   className={cn(
                     "rounded-full w-12 h-12",
-                    selectedOption === "closed-dont-mind" && "bg-blue-500 text-white" // Neutral blue
+                    selectedOption === "closed-no" && "bg-destructive text-destructive-foreground"
                   )}
-                  onClick={() => setSelectedOption("closed-dont-mind")}
+                  onClick={() => setSelectedOption("closed-no")}
                 >
-                  <Minus className="h-5 w-5" />
+                  <ThumbsDown className="h-5 w-5" />
                 </Button>
               </div>
             )}
