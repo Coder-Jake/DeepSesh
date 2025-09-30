@@ -293,12 +293,12 @@ const Index = () => {
     if (isRunning || isPaused || isFlashing || isScheduleActive) return;
     
     if (timerType === 'focus') {
-      const minutes = Math.round((progress / 100) * 120);
+      const minutes = (progress / 100) * 120;
       const actualMinutes = Math.max(timerIncrement, Math.round(minutes / timerIncrement) * timerIncrement);
       setFocusMinutes(actualMinutes);
       setTimeLeft(actualMinutes * 60);
     } else {
-      const minutes = Math.round((progress / 100) * 30);
+      const minutes = (progress / 100) * 30;
       const actualMinutes = Math.max(timerIncrement, Math.round(minutes / timerIncrement) * timerIncrement);
       setBreakMinutes(actualMinutes);
       setTimeLeft(actualMinutes * 60);
@@ -585,11 +585,20 @@ const Index = () => {
                       </span>
                       <Input 
                         type="number" 
-                        value={focusMinutes} 
+                        value={focusMinutes === 0 ? "" : focusMinutes} 
                         onChange={e => {
-                          setFocusMinutes(parseInt(e.target.value) || timerIncrement);
+                          const value = e.target.value;
+                          if (value === "") {
+                            setFocusMinutes(0); // Temporarily set to 0 for empty input
+                          } else {
+                            setFocusMinutes(parseFloat(value) || 0);
+                          }
                         }} 
-                        // Removed onBlur handler
+                        onBlur={() => {
+                          if (focusMinutes === 0) { // If it's empty or was set to 0
+                            setFocusMinutes(timerIncrement);
+                          }
+                        }}
                         className="w-16 h-8 text-center" 
                         min={timerIncrement} 
                         max="120" 
@@ -608,11 +617,20 @@ const Index = () => {
                       </span>
                       <Input 
                         type="number" 
-                        value={breakMinutes} 
+                        value={breakMinutes === 0 ? "" : breakMinutes} 
                         onChange={e => {
-                          setBreakMinutes(parseInt(e.target.value) || timerIncrement);
+                          const value = e.target.value;
+                          if (value === "") {
+                            setBreakMinutes(0); // Temporarily set to 0 for empty input
+                          } else {
+                            setBreakMinutes(parseFloat(value) || 0);
+                          }
                         }} 
-                        // Removed onBlur handler
+                        onBlur={() => {
+                          if (breakMinutes === 0) { // If it's empty or was set to 0
+                            setBreakMinutes(timerIncrement);
+                          }
+                        }}
                         className="w-16 h-8 text-center" 
                         min={timerIncrement} 
                         max="60" 

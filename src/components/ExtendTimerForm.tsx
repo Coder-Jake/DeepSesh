@@ -37,11 +37,20 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
         <Input
           id="extend-minutes"
           type="number"
-          value={minutes}
+          value={minutes === 0 ? "" : minutes}
           onChange={(e) => {
-            setMinutes(parseInt(e.target.value) || timerIncrement);
+            const value = e.target.value;
+            if (value === "") {
+              setMinutes(0);
+            } else {
+              setMinutes(parseFloat(value) || 0);
+            }
           }}
-          // Removed onBlur handler
+          onBlur={() => {
+            if (minutes === 0) {
+              setMinutes(timerIncrement);
+            }
+          }}
           min={timerIncrement} // Set min to timerIncrement
           step={timerIncrement} // Set step to timerIncrement
           className="w-full"

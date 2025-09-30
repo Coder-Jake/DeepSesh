@@ -119,11 +119,20 @@ const ScheduleForm: React.FC = () => {
               <Input
                 type="number"
                 placeholder="Min"
-                value={timer.durationMinutes}
+                value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
                 onChange={(e) => {
-                  handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || timerIncrement);
+                  const value = e.target.value;
+                  if (value === "") {
+                    handleUpdateTimer(timer.id, 'durationMinutes', 0);
+                  } else {
+                    handleUpdateTimer(timer.id, 'durationMinutes', parseFloat(value) || 0);
+                  }
                 }}
-                // Removed onBlur handler
+                onBlur={() => {
+                  if (timer.durationMinutes === 0) {
+                    handleUpdateTimer(timer.id, 'durationMinutes', timerIncrement);
+                  }
+                }}
                 min={timerIncrement}
                 step={timerIncrement}
                 className="w-20 text-center flex-shrink-0"
