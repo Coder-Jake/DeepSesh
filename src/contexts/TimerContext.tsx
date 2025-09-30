@@ -103,7 +103,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [timerIncrement, setTimerIncrement] = useState(5);
   const [shouldPlayEndSound, setShouldPlayEndSound] = useState(true);
   const [shouldShowEndToast, setShouldShowEndToast] = useState(true);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false);
   const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
   const [customBatchMinutes, setCustomBatchMinutes] = useState(15);
