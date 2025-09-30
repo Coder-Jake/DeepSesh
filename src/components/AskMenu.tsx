@@ -52,11 +52,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          <DialogTitle className="text-center">
-            {currentAskOption === 'extend' ? 'Timer Extension' :
-             currentAskOption === 'poll' ? 'Poll' :
-             'What would you like to ask?'}
-          </DialogTitle>
+          
         </DialogHeader>
         
         {currentAskOption === 'none' && (
