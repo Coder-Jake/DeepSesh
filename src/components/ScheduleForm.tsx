@@ -105,12 +105,12 @@ const ScheduleForm: React.FC = () => {
           {localSchedule.map((timer, index) => (
             <div key={timer.id} className="flex items-center gap-4 p-3 border rounded-md bg-muted/50">
               <span className="font-semibold text-lg text-primary">{index + 1}.</span>
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-center"> {/* Adjusted grid columns */}
                 <Input
                   placeholder="Timer Title"
                   value={timer.title}
                   onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
-                  className="col-span-full sm:col-span-1"
+                  className="col-span-full" // Removed sm:col-span-1
                 />
                 <Input
                   type="number"
@@ -118,13 +118,13 @@ const ScheduleForm: React.FC = () => {
                   value={timer.durationMinutes}
                   onChange={(e) => handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || 0)}
                   min="1"
-                  className="w-20 text-center col-span-full sm:col-span-1"
+                  className="w-20 text-center col-span-full" // Removed sm:col-span-1
                 />
-                <div className="flex items-center justify-center col-span-full sm:col-span-1">
+                <div className="flex items-center justify-center col-span-full"> {/* Removed sm:col-span-1 */}
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full h-10 text-sm font-medium",
+                      "w-24 h-10 text-sm font-medium", // Added w-24
                       timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
                     )}
                     onClick={() => handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus')}
