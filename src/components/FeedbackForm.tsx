@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { createClient } from '@/integrations/supabase/client'; // Assuming this path
+import { supabase } from '@/integrations/supabase/client'; // Corrected import
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),
@@ -20,7 +20,7 @@ const formSchema = z.object({
 type FeedbackFormValues = z.infer<typeof formSchema>;
 
 const FeedbackForm = () => {
-  const supabase = createClient();
+  // Removed createClient call as supabase is already initialized and imported
   const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<FeedbackFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
