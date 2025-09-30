@@ -86,6 +86,14 @@ const Credits = () => {
                 <li>...and many more open-source projects!</li>
               </ul>
             </div>
+            <div>
+              <h3 className="font-medium text-foreground mb-2">Helpful people</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                {supporters.map((supporter, index) => (
+                  <li key={index}>{supporter.name} ({supporter.amount})</li>
+                ))}
+              </ul>
+            </div>
           </CardContent>
         </Card>
       </div>
