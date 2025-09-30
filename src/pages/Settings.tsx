@@ -9,6 +9,7 @@ import { Bell, Smartphone, Volume2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 import { Input } from "@/components/ui/input"; // Import Input
+import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 const Settings = () => {
   const { 
@@ -54,6 +55,9 @@ const Settings = () => {
   // Privacy settings
   const [profileVisibility, setProfileVisibility] = useState("friends");
   const [locationSharing, setLocationSharing] = useState("approximate");
+
+  // New state for global visibility toggle
+  const [isGlobalPublic, setIsGlobalPublic] = useState(true); 
   
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -81,6 +85,7 @@ const Settings = () => {
     verificationStandard,
     profileVisibility,
     locationSharing,
+    isGlobalPublic, // Add new state here
   });
 
   useEffect(() => {
@@ -107,6 +112,7 @@ const Settings = () => {
       verificationStandard,
       profileVisibility,
       locationSharing,
+      isGlobalPublic, // Add new state here
     };
 
     const changed = Object.keys(currentSettings).some(key => {
@@ -123,7 +129,8 @@ const Settings = () => {
     hideSessionsDuringTimer, delay, lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
     focusNotifications, breakNotifications, sessionInvites, friendActivity,
-    verificationStandard, profileVisibility, locationSharing
+    verificationStandard, profileVisibility, locationSharing,
+    isGlobalPublic // Add new state to dependencies
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -168,6 +175,7 @@ const Settings = () => {
       verificationStandard,
       profileVisibility,
       locationSharing,
+      isGlobalPublic, // Update initial state here
     };
     setHasChanges(false);
   };
@@ -268,6 +276,33 @@ const Settings = () => {
       </div>
 
       <Accordion type="multiple" className="space-y-4">
+        {/* Visibility */}
+        <AccordionItem value="global-visibility" className="border rounded-lg px-6">
+          <AccordionTrigger className="text-xl font-semibold">
+            Visibility
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6 pt-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="global-visibility-toggle">Global Session Visibility</Label>
+                <p className="text-sm text-muted-foreground">
+                  Control whether your sessions are discoverable by others.
+                </p>
+              </div>
+              <Button
+                id="global-visibility-toggle"
+                onClick={() => setIsGlobalPublic(prev => !prev)}
+                className={cn(
+                  "px-4 py-2 rounded-full transition-colors text-white",
+                  isGlobalPublic ? "bg-[hsl(var(--public-bg))] hover:opacity-90" : "bg-[hsl(var(--private-bg))] hover:opacity-90"
+                )}
+              >
+                {isGlobalPublic ? "Public" : "Private"}
+              </Button>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
         {/* Notifications */}
         <AccordionItem value="notifications" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
