@@ -192,7 +192,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
           const nextItem = schedule[nextIndex];
           setCurrentScheduleIndex(nextIndex);
           setTimerType(nextItem.type);
-          setTimeLeft(nextItem.durationMinutes * 60);
+          setTimeLeft(nextItem.durationMinutes * 60); // Automatically set time for next phase
           setIsRunning(true); // Automatically start next phase
           setIsFlashing(false); // Stop flashing
           // Optionally play a sound or show a toast for transition
@@ -205,12 +205,13 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         // Non-scheduled timer with automatic transition
         const nextType = timerType === 'focus' ? 'break' : 'focus';
         setTimerType(nextType);
-        setTimeLeft(nextType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
+        setTimeLeft(nextType === 'focus' ? focusMinutes * 60 : breakMinutes * 60); // Automatically set time for next phase
         setIsRunning(true); // Automatically start the next phase
         setIsFlashing(false); // No flashing for automatic transition
       } else {
         // Non-scheduled timer with manual transition (default behavior)
         setIsFlashing(true); // Start flashing to indicate completion
+        // timeLeft should remain 0 here, the other useEffect will be prevented from resetting it.
       }
     }
 
@@ -224,11 +225,12 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   ]);
 
   // Effect to update timeLeft when focusMinutes or breakMinutes change (if timer is not active)
+  // MODIFIED: Added !isFlashing to prevent resetting timeLeft when the timer has ended and is waiting for manual transition.
   useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive) {
+    if (!isRunning && !isPaused && !isScheduleActive && !isFlashing) {
       setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, setTimeLeft]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isFlashing, setTimeLeft]);
 
 
   // Load settings from local storage on initial mount
