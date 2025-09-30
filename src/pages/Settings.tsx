@@ -373,7 +373,7 @@ const Settings = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto-transition"> Manual Transitions</Label>
+                  <Label htmlFor="auto-transition"> Manual Transitions</Label> {/* Changed label here */}
                   <p className="text-sm text-muted-foreground">
                     Prompt for session ends?
                   </p>
