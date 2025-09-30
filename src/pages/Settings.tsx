@@ -283,10 +283,17 @@ const Settings = () => {
           </AccordionTrigger>
           <AccordionContent className="space-y-8 pt-4">
             <NotificationControl
-              type="focus"
+              type="ask"
               title="Asks"
               description="Get notified when others Ask"
               value={askNotifications}
+            />
+
+            <NotificationControl
+              type="join"
+              title="Joins"
+              description="Get notified when others Join"
+              value={joinNotifications}
             />
             
             <NotificationControl
