@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef } from "react";
-import { Globe, Lock, CalendarPlus } from "lucide-react"; // Import CalendarPlus
+import { Globe, Lock, CalendarPlus } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -13,15 +13,15 @@ import SessionCard from "@/components/SessionCard";
 import { cn } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
 import ActiveAskSection from "@/components/ActiveAskSection";
-import ScheduleForm from "@/components/ScheduleForm"; // Import ScheduleForm
-import Timeline from "@/components/Timeline"; // Import Timeline
+import ScheduleForm from "@/components/ScheduleForm";
+import Timeline from "@/components/Timeline";
 
 // Define types for Ask items
 interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
-  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[]; // Updated vote type
+  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
   status: 'pending' | 'accepted' | 'rejected';
 }
 
@@ -38,20 +38,20 @@ interface Poll {
   creator: string;
   options: PollOption[];
   status: 'active' | 'closed';
-  allowCustomResponses: boolean; // New prop
+  allowCustomResponses: boolean;
 }
 
 type ActiveAskItem = ExtendSuggestion | Poll;
-type PollType = 'closed' | 'choice' | 'selection'; // Re-define PollType for Index.tsx
+type PollType = 'closed' | 'choice' | 'selection';
 
 interface DemoSession {
   id: number;
   title: string;
-  type: 'focus' | 'break'; // The type of the session itself (e.g., "Deep Work Session")
-  totalDurationMinutes: number; // Total length of the session
-  currentPhase: 'focus' | 'break'; // What phase it's currently in
-  currentPhaseDurationMinutes: number; // Duration of the current phase
-  startTime: number; // Timestamp when the session "started" for demo purposes
+  type: 'focus' | 'break';
+  totalDurationMinutes: number;
+  currentPhase: 'focus' | 'break';
+  currentPhaseDurationMinutes: number;
+  startTime: number;
   location: string;
   workspaceImage: string;
   workspaceDescription: string;
@@ -65,8 +65,8 @@ const mockNearbySessions: DemoSession[] = [
     type: "focus",
     totalDurationMinutes: 90,
     currentPhase: "focus",
-    currentPhaseDurationMinutes: 75, // 75 min focus, 15 min break
-    startTime: Date.now() - (5.52 * 60 * 1000), // Started 10 minutes ago
+    currentPhaseDurationMinutes: 75,
+    startTime: Date.now() - (5.52 * 60 * 1000),
     location: "Engineering Library - Room 304",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Quiet study space with whiteboards",
@@ -82,8 +82,8 @@ const mockNearbySessions: DemoSession[] = [
     type: "focus",
     totalDurationMinutes: 120,
     currentPhase: "focus",
-    currentPhaseDurationMinutes: 100, // 100 min focus, 20 min break
-    startTime: Date.now() - (76.8 * 60 * 1000), // Started 76 minutes ago
+    currentPhaseDurationMinutes: 100,
+    startTime: Date.now() - (76.8 * 60 * 1000),
     location: "Science Building - Computer Lab 2B",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
@@ -103,9 +103,9 @@ const mockFriendsSessions: DemoSession[] = [
     title: "Psychology 101 Final Review",
     type: "focus",
     totalDurationMinutes: 90,
-    currentPhase: "break", // Currently on break
-    currentPhaseDurationMinutes: 15, // 75 min focus, 15 min break
-    startTime: Date.now() - (10.66 * 60 * 1000), // Started 8 minutes ago
+    currentPhase: "break",
+    currentPhaseDurationMinutes: 15,
+    startTime: Date.now() - (10.66 * 60 * 1000),
     location: "Main Library - Study Room 12",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
@@ -143,7 +143,6 @@ const Index = () => {
     formatTime,
     hideSessionsDuringTimer,
     
-    // New scheduling states and functions
     schedule,
     currentScheduleIndex,
     isSchedulingMode,
@@ -151,7 +150,6 @@ const Index = () => {
     isScheduleActive,
     startSchedule,
     resetSchedule,
-    // New states for schedule details
     scheduleTitle,
     commenceTime,
     commenceDay,
@@ -164,9 +162,8 @@ const Index = () => {
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
-  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]); // State for active asks
+  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]);
 
-  // Mock current user ID for voting
   const currentUserId = profile?.id || "mock-user-id-123"; 
   const currentUserName = profile?.first_name || "You";
 
@@ -233,15 +230,15 @@ const Index = () => {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      setActiveJoinedSession(null); // Clear joined session
-      if (isScheduleActive) resetSchedule(); // Reset schedule if active
+      setActiveJoinedSession(null);
+      if (isScheduleActive) resetSchedule();
     } else {
       if (confirm('Are you sure you want to stop the timer?')) {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
-        setActiveJoinedSession(null); // Clear joined session
-        if (isScheduleActive) resetSchedule(); // Reset schedule if active
+        setActiveJoinedSession(null);
+        if (isScheduleActive) resetSchedule();
       }
     }
   };
@@ -253,8 +250,8 @@ const Index = () => {
       setIsFlashing(false);
       const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
       setTimeLeft(initialTime);
-      setActiveJoinedSession(null); // Clear joined session
-      if (isScheduleActive) resetSchedule(); // Reset schedule if active
+      setActiveJoinedSession(null);
+      if (isScheduleActive) resetSchedule();
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
         setIsRunning(false);
@@ -262,8 +259,8 @@ const Index = () => {
         setIsFlashing(false);
         const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
         setTimeLeft(initialTime);
-        setActiveJoinedSession(null); // Clear joined session
-        if (isScheduleActive) resetSchedule(); // Reset schedule if active
+        setActiveJoinedSession(null);
+        if (isScheduleActive) resetSchedule();
       }
     }
   };
@@ -285,16 +282,16 @@ const Index = () => {
   };
 
   const handleCircularProgressChange = (progress: number) => {
-    if (isRunning || isPaused || isScheduleActive) return; // Don't allow changes during active timer or schedule
+    if (isRunning || isPaused || isFlashing || isScheduleActive) return;
     
     if (timerType === 'focus') {
-      const minutes = Math.round((progress / 100) * 120); // Max 120 minutes for focus
-      const actualMinutes = Math.max(1, minutes); // Minimum 1 minute
+      const minutes = Math.round((progress / 100) * 120);
+      const actualMinutes = Math.max(1, minutes);
       setFocusMinutes(actualMinutes);
       setTimeLeft(actualMinutes * 60);
     } else {
-      const minutes = Math.round((progress / 100) * 30); // Max 30 minutes for break
-      const actualMinutes = Math.max(1, minutes); // Minimum 1 minute
+      const minutes = Math.round((progress / 100) * 30);
+      const actualMinutes = Math.max(1, minutes);
       setBreakMinutes(actualMinutes);
       setTimeLeft(actualMinutes * 60);
     }
@@ -302,8 +299,8 @@ const Index = () => {
 
   const handleJoinSession = (session: DemoSession) => {
     setActiveJoinedSession(session);
-    setFocusMinutes(session.totalDurationMinutes); // Assuming total duration is focus for simplicity
-    setBreakMinutes(session.totalDurationMinutes / 6); // A common ratio, adjust as needed
+    setFocusMinutes(session.totalDurationMinutes);
+    setBreakMinutes(session.totalDurationMinutes / 6);
     setTimerType(session.currentPhase);
 
     const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
@@ -317,7 +314,7 @@ const Index = () => {
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
-    if (isRunning || isPaused || isScheduleActive) return; // Do nothing if timer is active or schedule is active
+    if (isRunning || isPaused || isScheduleActive) return;
 
     if (mode === 'focus') {
       setTimerType('focus');
@@ -330,10 +327,8 @@ const Index = () => {
 
   const shouldHideSessionLists = hideSessionsDuringTimer && (isRunning || isPaused || isScheduleActive);
 
-  // Determine which participants to show in the "Coworkers" section
   const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
 
-  // --- Ask Menu Handlers ---
   const handleExtendSubmit = (minutes: number) => {
     const newSuggestion: ExtendSuggestion = {
       id: `extend-${Date.now()}`,
@@ -342,7 +337,7 @@ const Index = () => {
       votes: [],
       status: 'pending',
     };
-    setActiveAsks(prev => [newSuggestion, ...prev]); // Add new ask to the beginning
+    setActiveAsks(prev => [newSuggestion, ...prev]);
   };
 
   const handlePollSubmit = (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => {
@@ -352,7 +347,6 @@ const Index = () => {
       votes: [],
     }));
 
-    // For 'closed' type, pre-define options
     if (pollType === 'closed') {
       pollOptions.push(
         { id: 'closed-yes', text: 'Yes', votes: [] },
@@ -368,42 +362,33 @@ const Index = () => {
       creator: currentUserName,
       options: pollOptions,
       status: 'active',
-      allowCustomResponses, // Store the setting
+      allowCustomResponses,
     };
-    setActiveAsks(prev => [newPoll, ...prev]); // Add new ask to the beginning
+    setActiveAsks(prev => [newPoll, ...prev]);
   };
 
-  const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => { // Updated newVote type
+  const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => {
     setActiveAsks(prevAsks => {
       return prevAsks.map(ask => {
         if (ask.id === id && 'minutes' in ask) {
-          let updatedVotes = ask.votes.filter(v => v.userId !== currentUserId); // Remove existing vote by current user
+          let updatedVotes = ask.votes.filter(v => v.userId !== currentUserId);
 
           if (newVote !== null) {
-            updatedVotes.push({ userId: currentUserId, vote: newVote }); // Add new vote
+            updatedVotes.push({ userId: currentUserId, vote: newVote });
           }
 
           const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
           const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
-          // Neutral votes are recorded but don't directly influence acceptance/rejection threshold
           
-          // Determine total participants for threshold.
-          // Using currentCoworkers.length + 1 (for current user) if in a session, else a mock value.
           const totalParticipants = (activeJoinedSession?.participants.length || 0) + 1; 
           const threshold = Math.ceil(totalParticipants / 2);
 
           let newStatus = ask.status;
           if (yesVotes >= threshold) {
             newStatus = 'accepted';
-            // Optionally, add the minutes to the timer here if accepted
-            // setTimeLeft(prev => prev + ask.minutes * 60);
-            // setFocusMinutes(prev => prev + ask.minutes); // Or breakMinutes
           } else if (noVotes >= threshold) {
             newStatus = 'rejected';
           } else {
-            // If neither yes nor no votes meet the threshold, and there are still pending votes, keep it pending.
-            // If all votes are neutral or removed, it might revert to pending or a new 'no consensus' state.
-            // For now, if it was accepted/rejected and votes change, it can revert to pending if thresholds are no longer met.
             if (ask.status !== 'pending' && yesVotes < threshold && noVotes < threshold) {
               newStatus = 'pending';
             }
@@ -424,9 +409,8 @@ const Index = () => {
     setActiveAsks(prevAsks =>
       prevAsks.map(ask => {
         if (ask.id === pollId && 'options' in ask) {
-          let currentPoll = ask as Poll; // Cast to Poll type for specific properties
+          let currentPoll = ask as Poll;
 
-          // Handle custom response first
           if (customOptionText && customOptionText.trim()) {
             const existingCustomOption = currentPoll.options.find(
               opt => opt.text.toLowerCase() === customOptionText.toLowerCase() && opt.id.startsWith('custom-')
@@ -439,25 +423,22 @@ const Index = () => {
                 votes: [],
               };
               currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
-              optionIds = [...optionIds, newCustomOption.id]; // Add new custom option to selected votes
+              optionIds = [...optionIds, newCustomOption.id];
             } else {
-              optionIds = [...optionIds, existingCustomOption.id]; // Add existing custom option to selected votes
+              optionIds = [...optionIds, existingCustomOption.id];
             }
           }
 
           const updatedOptions = currentPoll.options.map(option => {
-            // Remove current user's vote from all options first for single-choice polls
             if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
               option.votes = option.votes.filter(v => v.userId !== currentUserId);
             }
 
             if (optionIds.includes(option.id)) {
-              // Add vote if not already present
               if (!option.votes.some(v => v.userId === currentUserId)) {
                 return { ...option, votes: [...option.votes, { userId: currentUserId }] };
               }
             } else {
-              // For selection type, if an option was previously selected but is no longer in optionIds, remove the vote
               if (currentPoll.type === 'selection') {
                 return { ...option, votes: option.votes.filter(v => v.userId !== currentUserId) };
               }
@@ -474,7 +455,7 @@ const Index = () => {
 
 
   return (
-    <main className="max-w-4xl mx-auto py-4 px-1 lg:py-6 lg:px-1"> {/* Adjusted padding */}
+    <main className="max-w-4xl mx-auto py-4 px-1 lg:py-6 lg:px-1">
       <div className="mb-6">
         <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
       </div>
@@ -580,7 +561,7 @@ const Index = () => {
                   )}
                 </div>
 
-                {!isScheduleActive && ( // Hide manual duration controls if schedule is active
+                {!isScheduleActive && (
                   <div className="flex justify-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span 
@@ -608,7 +589,6 @@ const Index = () => {
                     </div>
                   </div>
                 )}
-                {/* Ask Menu */}
                 {(isRunning || isPaused || isScheduleActive) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
               </>
             )}
@@ -642,7 +622,6 @@ const Index = () => {
                   onClick={() => {
                     if (!isLongPress.current) {
                       // Optional: short press action, e.g., copy to clipboard or show full text
-                      // For now, we'll do nothing on short press to emphasize long press
                     }
                   }}
                 >
@@ -671,7 +650,7 @@ const Index = () => {
           {(isRunning || isPaused || isScheduleActive) && currentCoworkers.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Coworkers</CardTitle> {/* Renamed title */}
+                <CardTitle className="text-lg">Coworkers</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {currentCoworkers.map(participant => (
@@ -745,9 +724,9 @@ const Index = () => {
           currentScheduleIndex={currentScheduleIndex} 
           timeLeft={timeLeft} 
           formatTime={formatTime} 
-          scheduleTitle={scheduleTitle} // Pass scheduleTitle
-          commenceTime={commenceTime} // Pass commenceTime
-          commenceDay={commenceDay} // Pass commenceDay
+          scheduleTitle={scheduleTitle}
+          commenceTime={commenceTime}
+          commenceDay={commenceDay}
         />
       )}
     </main>
