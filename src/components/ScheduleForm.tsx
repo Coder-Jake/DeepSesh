@@ -105,7 +105,7 @@ const ScheduleForm: React.FC = () => {
           {localSchedule.map((timer, index) => (
             <div key={timer.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
               <div className="flex items-center gap-2 flex-grow"> {/* Group number and title, allow to grow */}
-                <span className="font-semibold text-lg text-primary flex-shrink-0">{index + 1}.</span>
+                <span className="font-semibold text-sm text-primary flex-shrink-0 self-start">{index + 1}.</span>
                 <Input
                   placeholder="Timer Title"
                   value={timer.title}
