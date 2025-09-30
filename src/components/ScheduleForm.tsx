@@ -121,8 +121,11 @@ const ScheduleForm: React.FC = () => {
                 placeholder="Min"
                 value={timer.durationMinutes}
                 onChange={(e) => {
-                  const value = parseInt(e.target.value) || timerIncrement;
-                  const roundedValue = Math.max(timerIncrement, Math.round(value / timerIncrement) * timerIncrement);
+                  handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || timerIncrement);
+                }}
+                onBlur={() => {
+                  const currentVal = timer.durationMinutes;
+                  const roundedValue = Math.max(timerIncrement, Math.round(currentVal / timerIncrement) * timerIncrement);
                   handleUpdateTimer(timer.id, 'durationMinutes', roundedValue);
                 }}
                 min={timerIncrement}

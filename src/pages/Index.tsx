@@ -293,31 +293,15 @@ const Index = () => {
     
     if (timerType === 'focus') {
       const minutes = Math.round((progress / 100) * 120);
-      const actualMinutes = Math.max(1, minutes);
+      const actualMinutes = Math.max(timerIncrement, Math.round(minutes / timerIncrement) * timerIncrement);
       setFocusMinutes(actualMinutes);
       setTimeLeft(actualMinutes * 60);
     } else {
       const minutes = Math.round((progress / 100) * 30);
-      const actualMinutes = Math.max(1, minutes);
+      const actualMinutes = Math.max(timerIncrement, Math.round(minutes / timerIncrement) * timerIncrement);
       setBreakMinutes(actualMinutes);
       setTimeLeft(actualMinutes * 60);
     }
-  };
-
-  const handleJoinSession = (session: DemoSession) => {
-    setActiveJoinedSession(session);
-    setFocusMinutes(session.totalDurationMinutes);
-    setBreakMinutes(session.totalDurationMinutes / 6);
-    setTimerType(session.currentPhase);
-
-    const elapsedSeconds = Math.floor((Date.now() - session.startTime) / 1000);
-    const remainingSecondsInPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSeconds);
-    setTimeLeft(remainingSecondsInPhase);
-    
-    setIsRunning(true);
-    setIsPaused(false);
-    setIsFlashing(false);
-    playStartSound();
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
@@ -589,10 +573,12 @@ const Index = () => {
                         type="number" 
                         value={focusMinutes} 
                         onChange={e => {
-                          const value = parseInt(e.target.value) || timerIncrement;
-                          const roundedValue = Math.max(timerIncrement, Math.round(value / timerIncrement) * timerIncrement);
-                          setFocusMinutes(roundedValue);
+                          setFocusMinutes(parseInt(e.target.value) || timerIncrement);
                         }} 
+                        onBlur={() => {
+                          const roundedValue = Math.max(timerIncrement, Math.round(focusMinutes / timerIncrement) * timerIncrement);
+                          setFocusMinutes(roundedValue);
+                        }}
                         className="w-16 h-8 text-center" 
                         min={timerIncrement} 
                         max="120" 
@@ -613,10 +599,12 @@ const Index = () => {
                         type="number" 
                         value={breakMinutes} 
                         onChange={e => {
-                          const value = parseInt(e.target.value) || timerIncrement;
-                          const roundedValue = Math.max(timerIncrement, Math.round(value / timerIncrement) * timerIncrement);
-                          setBreakMinutes(roundedValue);
+                          setBreakMinutes(parseInt(e.target.value) || timerIncrement);
                         }} 
+                        onBlur={() => {
+                          const roundedValue = Math.max(timerIncrement, Math.round(breakMinutes / timerIncrement) * timerIncrement);
+                          setBreakMinutes(roundedValue);
+                        }}
                         className="w-16 h-8 text-center" 
                         min={timerIncrement} 
                         max="60" 
