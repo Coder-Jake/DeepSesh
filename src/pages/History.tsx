@@ -13,7 +13,7 @@ const History = () => {
     {
       id: 1,
       title: "Deep Work Sprint",
-      date: "2024-01-15",
+      date: "2025-09-15",
       duration: "45 mins",
       participants: 3,
       type: "focus",
@@ -22,7 +22,7 @@ const History = () => {
     {
       id: 2,
       title: "Study Group Alpha",
-      date: "2024-01-14",
+      date: "2025-09-14",
       duration: "90 mins",
       participants: 5,
       type: "focus",
@@ -31,7 +31,7 @@ const History = () => {
     {
       id: 3,
       title: "Solo Focus",
-      date: "2024-01-13",
+      date: "2025-09-13",
       duration: "30 mins",
       participants: 1,
       type: "focus",
@@ -40,7 +40,7 @@ const History = () => {
     {
       id: 4,
       title: "Coding Session",
-      date: "2024-01-12",
+      date: "2025-09-12",
       duration: "120 mins",
       participants: 2,
       type: "focus",
@@ -49,7 +49,7 @@ const History = () => {
     {
       id: 5,
       title: "Research Deep Dive",
-      date: "2024-01-11",
+      date: "2025-09-11",
       duration: "60 mins",
       participants: 4,
       type: "focus",
