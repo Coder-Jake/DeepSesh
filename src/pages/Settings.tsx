@@ -17,7 +17,7 @@ const Settings = () => {
     setHideSessionsDuringTimer,
     focusMinutes, // Get current focusMinutes from context
     setFocusMinutes, // Setter for focusMinutes
-    breakMinutes, // Get current breakMinutes from context
+    breakMinutes, // Setter for breakMinutes
     setBreakMinutes, // Setter for breakMinutes
   } = useTimer();
 
@@ -276,33 +276,6 @@ const Settings = () => {
       </div>
 
       <Accordion type="multiple" className="space-y-4">
-        {/* Visibility */}
-        <AccordionItem value="global-visibility" className="border rounded-lg px-6">
-          <AccordionTrigger className="text-xl font-semibold">
-            Visibility
-          </AccordionTrigger>
-          <AccordionContent className="space-y-6 pt-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="global-visibility-toggle">Global Session Visibility</Label>
-                <p className="text-sm text-muted-foreground">
-                  Control whether your sessions are discoverable by others.
-                </p>
-              </div>
-              <Button
-                id="global-visibility-toggle"
-                onClick={() => setIsGlobalPublic(prev => !prev)}
-                className={cn(
-                  "px-4 py-2 rounded-full transition-colors text-white",
-                  isGlobalPublic ? "bg-[hsl(var(--public-bg))] hover:opacity-90" : "bg-[hsl(var(--private-bg))] hover:opacity-90"
-                )}
-              >
-                {isGlobalPublic ? "Public" : "Private"}
-              </Button>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
         {/* Notifications */}
         <AccordionItem value="notifications" className="border rounded-lg px-6">
           <AccordionTrigger className="text-xl font-semibold">
@@ -473,6 +446,26 @@ const Settings = () => {
             Session Defaults
           </AccordionTrigger>
           <AccordionContent className="space-y-6 pt-4">
+            {/* Global Session Visibility - Moved here */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="global-visibility-toggle">Global Session Visibility</Label>
+                <p className="text-sm text-muted-foreground">
+                  Control whether your sessions are discoverable by others.
+                </p>
+              </div>
+              <Button
+                id="global-visibility-toggle"
+                onClick={() => setIsGlobalPublic(prev => !prev)}
+                className={cn(
+                  "px-4 py-2 rounded-full transition-colors text-black", // Added text-black
+                  isGlobalPublic ? "bg-[hsl(var(--public-bg))] hover:opacity-90" : "bg-[hsl(var(--private-bg))] hover:opacity-90"
+                )}
+              >
+                {isGlobalPublic ? "Public" : "Private"}
+              </Button>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="focus-duration">Focus Duration (minutes)</Label>
               <Select value={selectedFocusDuration} onValueChange={setSelectedFocusDuration}>
