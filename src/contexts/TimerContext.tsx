@@ -50,6 +50,10 @@ interface TimerContextType {
   setShouldPlayEndSound: (value: boolean) => void;
   shouldShowEndToast: boolean;
   setShouldShowEndToast: (value: boolean) => void;
+
+  // Manual transition setting
+  manualTransition: boolean;
+  setManualTransition: (value: boolean) => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -80,6 +84,9 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   // New notification settings
   const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false);
   const [shouldShowEndToast, setShouldShowEndToast] = useState(false);
+
+  // Manual transition setting
+  const [manualTransition, setManualTransition] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const flashingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -153,8 +160,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
           if (prevTime <= 1) {
             clearInterval(intervalRef.current!);
             playEndSound();
-            setIsRunning(false);
-            setIsFlashing(true);
 
             if (isScheduleActive) {
               const nextIndex = currentScheduleIndex + 1;
@@ -162,8 +167,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
                 setCurrentScheduleIndex(nextIndex);
                 setTimerType(schedule[nextIndex].type);
                 setTimeLeft(schedule[nextIndex].durationMinutes * 60);
-                setIsRunning(true);
-                setIsFlashing(false);
+                setIsRunning(true); // Auto-start next schedule item
+                setIsFlashing(false); // No flashing
                 if (shouldShowEndToast) {
                   toast({
                     title: "Next in Schedule!",
@@ -171,8 +176,11 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
                   });
                 }
               } else {
+                // Schedule completed
                 setIsScheduleActive(false);
                 setCurrentScheduleIndex(0);
+                setIsRunning(false); // Stop timer
+                setIsFlashing(false); // No flashing
                 if (shouldShowEndToast) {
                   toast({
                     title: "Schedule Completed!",
@@ -180,13 +188,32 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
                   });
                 }
               }
-            } else {
-              if (shouldShowEndToast) {
-                toast({
-                  title: "Time's Up!",
-                  description: `Your ${timerType} session has ended.`,
-                  variant: "default",
+            } else { // Not a schedule, single timer
+              if (manualTransition) {
+                // Manual transition enabled: stop and flash, await user action
+                setIsRunning(false);
+                setIsFlashing(true);
+                if (shouldShowEndToast) {
+                  toast({
+                    title: "Time's Up!",
+                    description: `Your ${timerType} session has ended.`,
+                    variant: "default",
+                  });
+                }
+              } else {
+                // Auto-transition enabled: switch type and restart
+                const nextType = timerType === 'focus' ? 'break' : 'focus';
+                const nextDuration = nextType === 'focus' ? focusMinutes : breakMinutes;
+                setTimerType(nextType);
+                setTimeLeft(nextDuration * 60);
+                setIsRunning(true); // Auto-start next phase
+                setIsFlashing(false); // No flashing
+                if (shouldShowEndToast) {
+                  toast({
+                    title: "Transitioning!",
+                    description: `Starting your ${nextType} session for ${nextDuration} minutes.`,
                 });
+                }
               }
             }
             return 0;
@@ -199,7 +226,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return () => clearInterval(intervalRef.current!);
-  }, [isRunning, isPaused, isScheduleActive, currentScheduleIndex, schedule, timerType, playEndSound, shouldShowEndToast]);
+  }, [isRunning, isPaused, isScheduleActive, currentScheduleIndex, schedule, timerType, playEndSound, shouldShowEndToast, manualTransition, focusMinutes, breakMinutes]);
 
   useEffect(() => {
     if (isFlashing) {
@@ -265,6 +292,9 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setShouldPlayEndSound,
     shouldShowEndToast,
     setShouldShowEndToast,
+
+    manualTransition,
+    setManualTransition,
   };
 
   return (
