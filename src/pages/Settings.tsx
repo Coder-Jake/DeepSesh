@@ -615,10 +615,10 @@ const Settings = () => {
               <Label>Your Verification</Label>
               <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Anon" />
+                  <SelectValue placeholder="id" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Anon">None</SelectItem>
+                  <SelectItem value="anon">None</SelectItem>
                   <SelectItem value="phone">Phone</SelectItem>
                   <SelectItem value="organisation">Enterprise</SelectItem>
                   <SelectItem value="id">ID Verified</SelectItem>
