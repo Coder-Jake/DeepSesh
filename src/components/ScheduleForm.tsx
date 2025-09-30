@@ -147,19 +147,17 @@ const ScheduleForm: React.FC = () => {
           <Plus className="mr-2 h-4 w-4" /> Add Timer
         </Button>
 
-        {/* Start Time Toggle */}
+        {/* Start Time Toggle Button */}
         <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="start-time-toggle">Start Time</Label>
-            <p className="text-sm text-muted-foreground">
-              {isStartTimeNow ? 'Now' : 'Later'}
-            </p>
-          </div>
-          <Switch
+          <Label htmlFor="start-time-toggle">Start Time</Label>
+          <Button
             id="start-time-toggle"
-            checked={!isStartTimeNow} // Checked means 'Later'
-            onCheckedChange={(checked) => setIsStartTimeNow(!checked)}
-          />
+            variant={isStartTimeNow ? "default" : "outline"}
+            onClick={() => setIsStartTimeNow(prev => !prev)}
+            className="w-24"
+          >
+            {isStartTimeNow ? 'Now' : 'Later'}
+          </Button>
         </div>
 
         {/* Commencement Time and Day Selection (conditionally rendered) */}
