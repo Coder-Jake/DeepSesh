@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ThumbsUp, ThumbsDown, Minus } from "lucide-react"; // Import Minus icon
+import { PlusCircle, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils"; // Import cn for conditional styling
+import { cn } from "@/lib/utils";
 
 interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
-  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[]; // Updated vote type
+  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
   status: 'pending' | 'accepted' | 'rejected';
 }
 
 interface ExtendSuggestionCardProps {
   suggestion: ExtendSuggestion;
-  onVote: (id: string, vote: 'yes' | 'no' | 'neutral' | null) => void; // Updated prop type
-  currentUserId: string; // To prevent self-voting and show user's vote
+  onVote: (id: string, vote: 'yes' | 'no' | 'neutral' | null) => void;
+  currentUserId: string;
 }
 
 const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion, onVote, currentUserId }) => {
@@ -25,19 +25,13 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
 
   const yesVotes = suggestion.votes.filter(v => v.vote === 'yes').length;
   const noVotes = suggestion.votes.filter(v => v.vote === 'no').length;
-  const neutralVotes = suggestion.votes.filter(v => v.vote === 'neutral').length; // New: count neutral votes
+  const neutralVotes = suggestion.votes.filter(v => v.vote === 'neutral').length;
 
   const handleVoteClick = (voteType: 'yes' | 'no' | 'neutral') => {
-    // Removed the check for suggestion.status !== 'pending' to allow changing votes anytime.
-    
     let newVote: 'yes' | 'no' | 'neutral' | null = voteType;
 
     if (userVote === voteType) {
-      // User clicked the same thumb/icon again, so unvote
-      newVote = null;
-    } else {
-      // User clicked a different thumb/icon, or no thumb yet, so cast/change vote
-      newVote = voteType;
+      newVote = null; // User clicked the same thumb/icon again, so unvote
     }
     
     onVote(suggestion.id, newVote);
@@ -66,46 +60,44 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">Suggested by {suggestion.creator}</p>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Thumbs Up */}
-            <button 
-              onClick={() => handleVoteClick('yes')} 
-              className={cn(
-                "flex items-center gap-1 text-sm text-green-600 disabled:opacity-50",
-                userVote === 'yes' && "font-bold" // Highlight if user voted yes
-              )}
-            >
-              <ThumbsUp className="h-4 w-4" fill={userVote === 'yes' ? "currentColor" : "none"} /> {yesVotes}
-            </button>
-            {/* Neutral / Don't Mind */}
-            <button 
-              onClick={() => handleVoteClick('neutral')} 
-              className={cn(
-                "flex items-center gap-1 text-sm text-blue-500 disabled:opacity-50", // Blue for neutral
-                userVote === 'neutral' && "font-bold" // Highlight if user voted neutral
-              )}
-            >
-              <Minus className="h-4 w-4" fill={userVote === 'neutral' ? "currentColor" : "none"} /> {neutralVotes}
-            </button>
-            {/* Thumbs Down */}
-            <button 
-              onClick={() => handleVoteClick('no')} 
-              className={cn(
-                "flex items-center gap-1 text-sm text-red-600 disabled:opacity-50",
-                userVote === 'no' && "font-bold" // Highlight if user voted no
-              )}
-            >
-              <ThumbsDown className="h-4 w-4" fill={userVote === 'no' ? "currentColor" : "none"} /> {noVotes}
-            </button>
-          </div>
-          
-          {suggestion.status !== 'pending' && (
-            <span className={`text-sm font-medium ${suggestion.status === 'accepted' ? 'text-green-600' : 'text-red-600'}`}>
-              {suggestion.status === 'accepted' ? 'Accepted' : 'Rejected'}
-            </span>
-          )}
+        <div className="flex items-center justify-center gap-4"> {/* Centered the buttons */}
+          {/* Thumbs Up */}
+          <button 
+            onClick={() => handleVoteClick('yes')} 
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-green-600 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+              userVote === 'yes' && "font-bold bg-green-100 border-green-200"
+            )}
+          >
+            <ThumbsUp className="h-6 w-6" fill={userVote === 'yes' ? "currentColor" : "none"} /> {yesVotes}
+          </button>
+          {/* Neutral / Don't Mind */}
+          <button 
+            onClick={() => handleVoteClick('neutral')} 
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-blue-500 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+              userVote === 'neutral' && "font-bold bg-blue-100 border-blue-200"
+            )}
+          >
+            <Minus className="h-6 w-6" fill={userVote === 'neutral' ? "currentColor" : "none"} /> {neutralVotes}
+          </button>
+          {/* Thumbs Down */}
+          <button 
+            onClick={() => handleVoteClick('no')} 
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-red-600 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+              userVote === 'no' && "font-bold bg-red-100 border-red-200"
+            )}
+          >
+            <ThumbsDown className="h-6 w-6" fill={userVote === 'no' ? "currentColor" : "none"} /> {noVotes}
+          </button>
         </div>
+        
+        {suggestion.status !== 'pending' && (
+          <span className={`text-sm font-medium ${suggestion.status === 'accepted' ? 'text-green-600' : 'text-red-600'}`}>
+            {suggestion.status === 'accepted' ? 'Accepted' : 'Rejected'}
+          </span>
+        )}
       </CardContent>
     </Card>
   );
