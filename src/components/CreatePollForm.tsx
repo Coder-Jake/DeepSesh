@@ -94,7 +94,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
         <RadioGroup value={pollType} onValueChange={(value: PollType) => setPollType(value)} className="flex space-x-4">
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="closed" id="type-closed" />
-            <Label htmlFor="type-closed">Closed (Yes/No)</Label>
+            <Label htmlFor="type-closed">Closed</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="choice" id="type-choice" />
