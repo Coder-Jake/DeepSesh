@@ -58,6 +58,9 @@ const Settings = () => {
 
   // New state for global visibility toggle
   const [isGlobalPublic, setIsGlobalPublic] = useState(true); 
+
+  // New state for 'Your Verification'
+  const [yourVerificationStatus, setYourVerificationStatus] = useState("id");
   
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -86,6 +89,7 @@ const Settings = () => {
     profileVisibility,
     locationSharing,
     isGlobalPublic, // Add new state here
+    yourVerificationStatus, // Add new state here
   });
 
   useEffect(() => {
@@ -113,6 +117,7 @@ const Settings = () => {
       profileVisibility,
       locationSharing,
       isGlobalPublic, // Add new state here
+      yourVerificationStatus, // Add new state here
     };
 
     const changed = Object.keys(currentSettings).some(key => {
@@ -130,7 +135,8 @@ const Settings = () => {
     autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
     focusNotifications, breakNotifications, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
-    isGlobalPublic // Add new state to dependencies
+    isGlobalPublic, // Add new state to dependencies
+    yourVerificationStatus, // Add new state to dependencies
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -176,6 +182,7 @@ const Settings = () => {
       profileVisibility,
       locationSharing,
       isGlobalPublic, // Update initial state here
+      yourVerificationStatus, // Update initial state here
     };
     setHasChanges(false);
   };
@@ -587,11 +594,11 @@ const Settings = () => {
                 <p className="text-sm text-muted-foreground">
                   Get security clearance
                 </p>
-                <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
+                <p className="text-sm text-muted-foreground">Access private spaces</p>
                 <p className="text-sm text-muted-foreground">Build trust with peers</p>
                 <p className="text-sm text-muted-foreground">Compete for prizes! <br /> <br /> <br />  </p>
                 <Label>Your Verification</Label>
-                <Select value={profileVisibility} onValueChange={setProfileVisibility}>
+                <Select value={yourVerificationStatus} onValueChange={setYourVerificationStatus}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select verification status" />
                   </SelectTrigger>
@@ -615,7 +622,6 @@ const Settings = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="anyone">Anyone - No verification required</SelectItem>
-                    <SelectItem value="phone">Phone - Number verified</SelectItem>
                     <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
                     <SelectItem value="id">ID Verified - verified government ID</SelectItem>
                   </SelectContent>
