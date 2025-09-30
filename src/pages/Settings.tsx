@@ -492,7 +492,7 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Label htmlFor="timer-increments-toggle">Increments</Label>
                   <p className="text-sm text-muted-foreground">
-                    Timer buttons increase by 1 or 5 minutes.
+                    Adjust timer by 1 or 5 minutes.
                   </p>
                 </div>
                 <Button
