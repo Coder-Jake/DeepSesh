@@ -13,7 +13,7 @@ const Credits = () => {
     { name: "Grateful Giver", amount: "$120" },
     { name: "Community Champion", amount: "$85" },
     { name: "DeepSesh Diehard", amount: "$60" },
-    { name: "Anonymous Supporter", amount: "$55" },
+    { name: "Anonymous Ally", amount: "$55" },
   ];
 
   return (
