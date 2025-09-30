@@ -38,8 +38,8 @@ const ChipIn = () => {
 
     // In a real app, this would integrate with a payment processor
     toast({
-      title: "Thank you! 💜",
-      description: `Your support means the world to us. Donation processing would happen here.`,
+      title: "You're so sweet! 💜",
+      description: `However, I must ask you to donate a greater amount`,
     });
     
     setAmount("");
