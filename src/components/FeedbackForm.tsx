@@ -60,7 +60,7 @@ const FeedbackForm = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="feedback-name">Name</Label>
+        <Label htmlFor="feedback-name"> Name</Label>
         <Input
           id="feedback-name"
           {...register('name')}
