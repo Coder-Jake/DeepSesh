@@ -26,6 +26,15 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
   const noVotes = suggestion.votes.filter(v => v.vote === 'no').length;
   const totalVotes = suggestion.votes.length;
 
+ const handleVoteClick = (voteType: 'yes' | 'no') => {
+    if (suggestion.status !== 'pending') {
+      toast({
+        title: "Voting Closed",
+        description: `This suggestion has already been ${suggestion.status}.`,
+        variant: "default",
+      });
+      return;
+    }
     let newVote: 'yes' | 'no' | null = voteType;
 
     if (userVote === voteType) {
