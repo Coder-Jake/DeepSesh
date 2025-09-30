@@ -12,23 +12,31 @@ const Header = () => {
 
   const handleHeaderClick = () => {
     if (isHomePage) {
-      setSecretTextVisible(true);
+      // Clear any existing timeout to prevent multiple animations
+      // (This part is not strictly necessary for this specific request but good practice)
+      // if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+      // Delay showing the text by 1 second
       setTimeout(() => {
-        setSecretTextVisible(false);
-      }, 3000); // Text visible for 3 seconds
+        setSecretTextVisible(true);
+        // Hide the text after 3 seconds (total 4 seconds from click: 1s delay + 3s visible)
+        setTimeout(() => {
+          setSecretTextVisible(false);
+        }, 3000);
+      }, 1000); // 1 second delay before text appears
     }
   };
 
   return (
     <header className="border-b border-border p-4 lg:p-6">
       <div className="max-w-4xl mx-auto flex justify-between items-center">
-        <div className="relative"> {/* Added relative positioning for the secret text */}
+        <div className="relative">
           <Link to="/" className="hover:opacity-80 transition-opacity" onClick={handleHeaderClick}>
             <h1 className="text-3xl font-bold text-foreground">DeepSesh</h1>
           </Link>
           {secretTextVisible && (
             <div
-              className={`absolute left-0 top-full mt-1 text-sm font-medium text-muted-foreground transition-opacity duration-500 ${
+              className={`absolute left-0 top-full mt-1 text-sm font-medium text-muted-foreground transition-opacity duration-1000 ${
                 secretTextVisible ? "opacity-100" : "opacity-0"
               }`}
             >
