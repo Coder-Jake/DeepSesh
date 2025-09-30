@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup } from "@/components/ui/radio-group"; // Keep RadioGroup for semantic grouping if needed, but remove its state control
 import { DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquarePlus, CheckSquare } from "lucide-react"; // Import CheckSquare
+import { MessageSquarePlus, CheckSquare } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 interface CreatePollFormProps {
   onClose: () => void;
@@ -91,23 +92,39 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
 
       <div className="space-y-2">
         <Label>Poll Type</Label>
-        <RadioGroup value={pollType} onValueChange={(value: PollType) => setPollType(value)} className="flex space-x-4">
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="closed" id="type-closed" />
-            <Label htmlFor="type-closed">Closed</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="choice" id="type-choice" />
-            <Label htmlFor="type-choice">Choice</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="selection" id="type-selection" />
-            <Label htmlFor="type-selection" className="flex items-center space-x-1">
-              <CheckSquare size={16} /> {/* Added CheckSquare icon */}
-              <span>Selection</span>
-            </Label>
-          </div>
-        </RadioGroup>
+        <div className="flex space-x-2"> {/* Changed from RadioGroup to a simple div for layout */}
+          <Label
+            htmlFor="type-closed"
+            onClick={() => setPollType('closed')}
+            className={cn(
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors",
+              pollType === 'closed' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
+            )}
+          >
+            <span>Closed</span>
+          </Label>
+          <Label
+            htmlFor="type-choice"
+            onClick={() => setPollType('choice')}
+            className={cn(
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors",
+              pollType === 'choice' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
+            )}
+          >
+            <span>Choice</span>
+          </Label>
+          <Label
+            htmlFor="type-selection"
+            onClick={() => setPollType('selection')}
+            className={cn(
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors",
+              pollType === 'selection' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
+            )}
+          >
+            <CheckSquare size={16} />
+            <span>Selection</span>
+          </Label>
+        </div>
       </div>
 
       {(pollType === 'choice' || pollType === 'selection') && (
