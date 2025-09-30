@@ -56,7 +56,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
             className="flex-1"
           >
             <MessageSquarePlus className="mr-2 h-4 w-4" />
-            Create Poll
+            Poll
           </Button>
         </div>
 
