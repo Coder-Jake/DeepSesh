@@ -36,13 +36,16 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] min-h-[450px] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="text-center">Ask a Question</DialogTitle>
+        </DialogHeader>
         
         {/* Persistent tab-like buttons */}
-        <div className="flex border-b"> {/* Removed justify-center, gap-2, and p-4 */}
+        <div className="flex border-b">
           <Button
             variant={currentAskOption === 'extend' ? 'default' : 'ghost'}
             onClick={() => setCurrentAskOption('extend')}
-            className="flex-1 rounded-none" // Added rounded-none for tab-like appearance
+            className="flex-1 rounded-none"
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             Timer
@@ -50,7 +53,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
           <Button
             variant={currentAskOption === 'poll' ? 'default' : 'ghost'}
             onClick={() => setCurrentAskOption('poll')}
-            className="flex-1 rounded-none" // Added rounded-none for tab-like appearance
+            className="flex-1 rounded-none"
           >
             <MessageSquarePlus className="mr-2 h-4 w-4" />
             Poll
@@ -58,7 +61,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
         </div>
 
         {/* Form content, taking remaining space */}
-        <div className="flex-grow p-4">
+        <div className="flex-grow"> {/* Removed p-4 from here */}
           {currentAskOption === 'extend' && (
             <ExtendTimerForm onClose={handleCloseDialog} onSubmit={onExtendSubmit} />
           )}
