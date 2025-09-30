@@ -342,7 +342,7 @@ const Index = () => {
       votes: [],
       status: 'pending',
     };
-    setActiveAsks(prev => [...prev, newSuggestion]);
+    setActiveAsks(prev => [newSuggestion, ...prev]); // Add new ask to the beginning
   };
 
   const handlePollSubmit = (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => {
@@ -370,7 +370,7 @@ const Index = () => {
       status: 'active',
       allowCustomResponses, // Store the setting
     };
-    setActiveAsks(prev => [...prev, newPoll]);
+    setActiveAsks(prev => [newPoll, ...prev]); // Add new ask to the beginning
   };
 
   const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => { // Updated newVote type
