@@ -103,7 +103,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [timerIncrement, setTimerIncrement] = useState(5);
   const [shouldPlayEndSound, setShouldPlayEndSound] = useState(true);
   const [shouldShowEndToast, setShouldShowEndToast] = useState(true);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false);
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
   const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
   const [customBatchMinutes, setCustomBatchMinutes] = useState(15);
@@ -170,38 +170,59 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setIsPaused(false);
     setIsFlashing(false);
     setTimerType('focus');
-    setTimeLeft(focusMinutes * 60);
+    setTimeLeft(focusMinutes * 60); // Reset to default focus time
   };
 
-  // Timer logic for schedule
+  // Core Timer Countdown Logic
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
 
-    if (isRunning && !isPaused && isScheduleActive && timeLeft > 0) {
+    if (isRunning && !isPaused && timeLeft > 0) { // Timer counts down if running and not paused
       interval = setInterval(() => {
         setTimeLeft(prevTime => prevTime - 1);
       }, 1000);
-    } else if (timeLeft === 0 && isRunning && isScheduleActive) {
-      // Current timer phase ended
-      if (currentScheduleIndex < schedule.length - 1) {
-        // Move to next item in schedule
-        const nextIndex = currentScheduleIndex + 1;
-        const nextItem = schedule[nextIndex];
-        setCurrentScheduleIndex(nextIndex);
-        setTimerType(nextItem.type);
-        setTimeLeft(nextItem.durationMinutes * 60);
-        // Optionally play a sound or show a toast for transition
+    } else if (timeLeft === 0 && isRunning) { // Timer reached 0 and was running
+      setIsRunning(false); // Stop the timer
+      setIsFlashing(true); // Start flashing to indicate completion
+
+      // Handle transitions based on whether a schedule is active
+      if (isScheduleActive) {
+        if (currentScheduleIndex < schedule.length - 1) {
+          // Schedule: Move to next item
+          const nextIndex = currentScheduleIndex + 1;
+          const nextItem = schedule[nextIndex];
+          setCurrentScheduleIndex(nextIndex);
+          setTimerType(nextItem.type);
+          setTimeLeft(nextItem.durationMinutes * 60);
+          setIsRunning(true); // Automatically start next phase
+          setIsFlashing(false); // Stop flashing
+          // Optionally play a sound or show a toast for transition
+        } else {
+          // Schedule completed
+          resetSchedule();
+          // Optionally play a completion sound or show a final toast
+        }
       } else {
-        // Schedule completed
-        resetSchedule();
-        // Optionally play a completion sound or show a final toast
+        // Non-scheduled timer: Flash and wait for user action (Start Break/Focus)
+        // The flashing state will be handled by the UI in Index.tsx
       }
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, isPaused, timeLeft, isScheduleActive, currentScheduleIndex, schedule, setTimeLeft, setTimerType, setCurrentScheduleIndex]);
+  }, [
+    isRunning, isPaused, timeLeft, isScheduleActive, currentScheduleIndex, schedule,
+    setTimeLeft, setTimerType, setCurrentScheduleIndex, setIsRunning, setIsFlashing,
+    focusMinutes, breakMinutes // Added for resetting timeLeft if needed
+  ]);
+
+  // Effect to update timeLeft when focusMinutes or breakMinutes change (if timer is not active)
+  useEffect(() => {
+    if (!isRunning && !isPaused && !isScheduleActive) {
+      setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
+    }
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, setTimeLeft]);
 
 
   // Load settings from local storage on initial mount
@@ -238,8 +259,12 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       // Load timer/schedule specific states
       setIsRunning(settings.isRunning ?? false);
       setIsPaused(settings.isPaused ?? false);
-      setTimeLeft(settings.timeLeft ?? focusMinutes * 60);
-      setTimerType(settings.timerType ?? 'focus');
+      // Ensure timeLeft is initialized correctly based on loaded timerType and minutes
+      const loadedTimerType = settings.timerType ?? 'focus';
+      const loadedFocusMinutes = settings.focusMinutes ?? 25;
+      const loadedBreakMinutes = settings.breakMinutes ?? 5;
+      setTimeLeft(settings.timeLeft ?? (loadedTimerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60));
+      setTimerType(loadedTimerType);
       setIsFlashing(settings.isFlashing ?? false);
       setNotes(settings.notes ?? "");
       setSchedule(settings.schedule ?? []);

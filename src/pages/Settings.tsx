@@ -74,8 +74,6 @@ const Settings = () => {
   const [customBreakDuration, setCustomBreakDuration] = useState<string>(
     !['5', '10', '15', '20', '30'].includes(breakMinutes.toString()) ? breakMinutes.toString() : ''
   );
-  
-  // Initialize local state for currentTimerIncrement from context
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -83,12 +81,13 @@ const Settings = () => {
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
   const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
-  // Initial state for comparison to detect changes
-  const initialSettings = useRef({
+  // Ref to store the *last saved* or *initial loaded* state for comparison
+  // Initialize with current context values on first render
+  const savedSettingsRef = useRef({
     showSessionsWhileActive,
-    isBatchNotificationsEnabled, 
-    batchNotificationPreference, 
-    customBatchMinutes, 
+    isBatchNotificationsEnabled,
+    batchNotificationPreference,
+    customBatchMinutes,
     lock,
     exemptionsEnabled,
     phoneCalls,
@@ -96,23 +95,25 @@ const Settings = () => {
     workApps,
     intentionalBreaches,
     manualTransition,
-    focusMinutes, 
-    breakMinutes, 
-    maxDistance, // Use context value directly
+    focusMinutes,
+    breakMinutes,
+    maxDistance,
     askNotifications,
-    breakNotificationsVibrate, 
+    breakNotificationsVibrate,
     sessionInvites,
     friendActivity,
     verificationStandard,
     profileVisibility,
     locationSharing,
-    isGlobalPublic, 
-    timerIncrement, // Use context value directly
-    shouldPlayEndSound, 
-    shouldShowEndToast, 
+    isGlobalPublic,
+    timerIncrement,
+    shouldPlayEndSound,
+    shouldShowEndToast,
   });
 
-  // Effect to update local duration states when context values change (e.g., on initial load)
+  // Effect to sync local UI states with context on initial load
+  // This runs once on mount to set up local states from context.
+  // It does NOT update savedSettingsRef.current after initial mount.
   useEffect(() => {
     setSelectedFocusDuration(focusMinutes.toString());
     setCustomFocusDuration(
@@ -123,54 +124,23 @@ const Settings = () => {
       !['5', '10', '15', '20', '30'].includes(breakMinutes.toString()) ? breakMinutes.toString() : ''
     );
     setCurrentTimerIncrement(timerIncrement);
-
-    // Also update initial settings ref when context values are loaded/changed
-    initialSettings.current = {
-      showSessionsWhileActive,
-      isBatchNotificationsEnabled, 
-      batchNotificationPreference, 
-      customBatchMinutes, 
-      lock,
-      exemptionsEnabled,
-      phoneCalls,
-      favourites,
-      workApps,
-      intentionalBreaches,
-      manualTransition,
-      focusMinutes, 
-      breakMinutes, 
-      maxDistance,
-      askNotifications,
-      breakNotificationsVibrate, 
-      sessionInvites,
-      friendActivity,
-      verificationStandard,
-      profileVisibility,
-      locationSharing,
-      isGlobalPublic, 
-      timerIncrement, 
-      shouldPlayEndSound, 
-      shouldShowEndToast, 
-    };
+    // No update to savedSettingsRef.current here after initial render
   }, [
-    focusMinutes, breakMinutes, timerIncrement, showSessionsWhileActive,
-    isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
-    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, maxDistance, askNotifications, sessionInvites, friendActivity,
-    breakNotificationsVibrate, verificationStandard, profileVisibility, locationSharing,
-    isGlobalPublic, shouldPlayEndSound, shouldShowEndToast,
+    focusMinutes, breakMinutes, timerIncrement, // Only dependencies that affect local state initialization
+    // Other context values are directly used in the UI and don't need local state copies for display
   ]);
 
 
+  // Effect to detect changes in local UI states compared to saved settings
   useEffect(() => {
     const currentFocusVal = selectedFocusDuration === 'custom' ? (parseInt(customFocusDuration) || 0) : parseInt(selectedFocusDuration);
     const currentBreakVal = selectedBreakDuration === 'custom' ? (parseInt(customBreakDuration) || 0) : parseInt(selectedBreakDuration);
 
-    const currentSettings = {
+    const currentUiSettings = {
       showSessionsWhileActive,
-      isBatchNotificationsEnabled, 
-      batchNotificationPreference, 
-      customBatchMinutes, 
+      isBatchNotificationsEnabled,
+      batchNotificationPreference,
+      customBatchMinutes,
       lock,
       exemptionsEnabled,
       phoneCalls,
@@ -180,43 +150,38 @@ const Settings = () => {
       manualTransition,
       focusMinutes: currentFocusVal,
       breakMinutes: currentBreakVal,
-      maxDistance, // Use context value directly
+      maxDistance,
       askNotifications,
-      breakNotificationsVibrate, 
+      breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
       verificationStandard,
       profileVisibility,
       locationSharing,
-      isGlobalPublic, 
-      timerIncrement: currentTimerIncrement, // Compare with local state
-      shouldPlayEndSound, 
-      shouldShowEndToast, 
+      isGlobalPublic,
+      timerIncrement: currentTimerIncrement,
+      shouldPlayEndSound,
+      shouldShowEndToast,
     };
 
-    const changed = Object.keys(currentSettings).some(key => {
-      const currentVal = currentSettings[key as keyof typeof currentSettings];
-      const initialVal = initialSettings.current[key as keyof typeof initialSettings.current];
+    const changed = Object.keys(currentUiSettings).some(key => {
+      const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
+      const savedVal = savedSettingsRef.current[key as keyof typeof savedSettingsRef.current];
 
+      // Deep comparison for objects (like NotificationSettings)
       if (typeof currentVal === 'object' && currentVal !== null && !Array.isArray(currentVal)) {
-        return JSON.stringify(currentVal) !== JSON.stringify(initialVal);
+        return JSON.stringify(currentVal) !== JSON.stringify(savedVal);
       }
-      return currentVal !== initialVal;
+      return currentVal !== savedVal;
     });
     setHasChanges(changed);
   }, [
-    showSessionsWhileActive,
-    isBatchNotificationsEnabled, 
-    batchNotificationPreference, 
-    customBatchMinutes, 
+    showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     manualTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
-    askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
+    askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
-    isGlobalPublic, 
-    currentTimerIncrement, 
-    shouldPlayEndSound, 
-    shouldShowEndToast, 
+    isGlobalPublic, currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -240,13 +205,35 @@ const Settings = () => {
     setFocusMinutes(newFocusMinutes);
     setBreakMinutes(newBreakMinutes);
     setTimerIncrement(currentTimerIncrement);
+    setShowSessionsWhileActive(showSessionsWhileActive);
+    setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
+    setBatchNotificationPreference(batchNotificationPreference);
+    setCustomBatchMinutes(customBatchMinutes);
+    setLock(lock);
+    setExemptionsEnabled(exemptionsEnabled);
+    setPhoneCalls(phoneCalls);
+    setFavourites(favourites);
+    setWorkApps(workApps);
+    setIntentionalBreaches(intentionalBreaches);
+    setManualTransition(manualTransition);
+    setMaxDistance(maxDistance);
+    setAskNotifications(askNotifications);
+    setSessionInvites(sessionInvites);
+    setFriendActivity(friendActivity);
+    setBreakNotificationsVibrate(breakNotificationsVibrate);
+    setVerificationStandard(verificationStandard);
+    setProfileVisibility(profileVisibility);
+    setLocationSharing(locationSharing);
+    setIsGlobalPublic(isGlobalPublic);
+    setShouldPlayEndSound(shouldPlayEndSound);
+    setShouldShowEndToast(shouldShowEndToast);
 
-    // Update initial settings for change detection
-    initialSettings.current = {
+    // After saving, update the ref to reflect the new "saved" state
+    savedSettingsRef.current = {
       showSessionsWhileActive,
-      isBatchNotificationsEnabled, 
-      batchNotificationPreference, 
-      customBatchMinutes, 
+      isBatchNotificationsEnabled,
+      batchNotificationPreference,
+      customBatchMinutes,
       lock,
       exemptionsEnabled,
       phoneCalls,
@@ -258,45 +245,18 @@ const Settings = () => {
       breakMinutes: newBreakMinutes,
       maxDistance,
       askNotifications,
-      breakNotificationsVibrate, 
+      breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
       verificationStandard,
       profileVisibility,
       locationSharing,
-      isGlobalPublic, 
-      timerIncrement: currentTimerIncrement, 
-      shouldPlayEndSound, 
-      shouldShowEndToast, 
+      isGlobalPublic,
+      timerIncrement: currentTimerIncrement,
+      shouldPlayEndSound,
+      shouldShowEndToast,
     };
     setHasChanges(false);
-  };
-
-  const updateNotificationSetting = (type: 'ask' | 'break' | 'invites' | 'activity', key: 'push' | 'vibrate' | 'sound', value: boolean) => {
-    if (type === 'break') {
-      if (key === 'push') {
-        setShouldShowEndToast(value);
-      } else if (key === 'sound') {
-        setShouldPlayEndSound(value);
-      } else if (key === 'vibrate') {
-        setBreakNotificationsVibrate(value);
-      }
-    } else {
-      const setters = {
-        ask: setAskNotifications,
-        invites: setSessionInvites,
-        activity: setFriendActivity
-      };
-      
-      const currentValues = {
-        ask: askNotifications,
-        invites: sessionInvites,
-        activity: friendActivity
-      };
-      
-      setters[type]({ ...currentValues[type], [key]: value });
-    }
-    showMomentaryText(`${type}-${key}`, value ? 'On' : 'Off');
   };
 
   const NotificationControl = ({ 
