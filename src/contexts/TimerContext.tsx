@@ -189,21 +189,24 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
                 }
               }
             } else { // Not a schedule, single timer
+              const nextType = timerType === 'focus' ? 'break' : 'focus';
+              const nextDuration = nextType === 'focus' ? focusMinutes : breakMinutes; 
+
               if (manualTransition) {
                 // Manual transition enabled: stop and flash, await user action
+                setTimerType(nextType); // Pre-set for the next session
+                setTimeLeft(nextDuration * 60); // Pre-set for the next session
                 setIsRunning(false);
                 setIsFlashing(true);
                 if (shouldShowEndToast) {
                   toast({
                     title: "Time's Up!",
-                    description: `Your ${timerType} session has ended.`,
+                    description: `Your ${timerType} session has ended. Ready for ${nextType} (${nextDuration} minutes)?`, // Updated toast message
                     variant: "default",
                   });
                 }
               } else {
                 // Auto-transition enabled: switch type and restart
-                const nextType = timerType === 'focus' ? 'break' : 'focus';
-                const nextDuration = nextType === 'focus' ? focusMinutes : breakMinutes;
                 setTimerType(nextType);
                 setTimeLeft(nextDuration * 60);
                 setIsRunning(true); // Auto-start next phase
