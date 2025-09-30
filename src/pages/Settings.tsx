@@ -587,7 +587,7 @@ const Settings = () => {
                 <p className="text-sm text-muted-foreground">
                   Get security clearance
                 </p>
-                <p className="text-sm text-muted-foreground">Access private spaces</p>
+                <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
                 <p className="text-sm text-muted-foreground">Build trust with peers</p>
                 <p className="text-sm text-muted-foreground">Compete for prizes! <br /> <br /> <br />  </p>
                 <Label>Your Verification</Label>
