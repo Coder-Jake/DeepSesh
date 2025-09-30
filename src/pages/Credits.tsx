@@ -9,7 +9,7 @@ const Credits = () => {
   ];
 
   const supporters = [
-    { name: "Passionate Philanthropist", amount: "$1800" }
+    { name: "Passionate Philanthropist", amount: "$1800" },
     { name: "Grateful Giver", amount: "$100" },
     { name: "Community Champion", amount: "$75" },
     { name: "DeepSesh Diehard", amount: "$60" },
