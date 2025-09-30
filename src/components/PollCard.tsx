@@ -50,22 +50,53 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
   });
   const [customResponse, setCustomResponse] = useState("");
 
-  const handleClosedPollVote = (optionId: string) => {
-    let newVoteId: string | null = optionId;
+  // Helper to submit the current state of votes
+  const submitVote = (
+    newSelectedOption: string | null,
+    newSelectedOptions: string[],
+    newCustomResponse: string
+  ) => {
+    let votesToSend: string[] = [];
+    let customTextToSend: string | undefined;
 
-    if (selectedOption === optionId) {
-      newVoteId = null; // User clicked the same option again, so unvote
+    if (poll.type === 'closed' || poll.type === 'choice') {
+      if (newSelectedOption) {
+        votesToSend = [newSelectedOption];
+      }
+    } else if (poll.type === 'selection') {
+      votesToSend = newSelectedOptions;
     }
 
-    setSelectedOption(newVoteId); // Update local state immediately for visual feedback
-    onVote(poll.id, newVoteId ? [newVoteId] : [], undefined); // Call parent onVote
+    if (poll.allowCustomResponses && newCustomResponse.trim()) {
+      customTextToSend = newCustomResponse.trim();
+    }
 
+    // Determine if there was a previous vote state to compare for unvote messages
+    const hadPreviousVote = (selectedOption !== null || selectedOptions.length > 0 || customResponse.trim() !== '');
+    const hasCurrentVote = (votesToSend.length > 0 || customTextToSend);
+
+    if (!hasCurrentVote && !hadPreviousVote) {
+      // No vote to submit, and no previous vote to clear. Do nothing.
+      return;
+    }
+
+    onVote(poll.id, votesToSend, customTextToSend);
+
+    // Determine toast message
     let newVoteText = "";
-    if (newVoteId === 'closed-yes') newVoteText = 'yes';
-    else if (newVoteId === 'closed-no') newVoteText = 'no';
-    else if (newVoteId === 'closed-dont-mind') newVoteText = 'neutral';
+    if (poll.type === 'closed' && newSelectedOption) {
+      if (newSelectedOption === 'closed-yes') newVoteText = 'yes';
+      else if (newSelectedOption === 'closed-no') newVoteText = 'no';
+      else if (newSelectedOption === 'closed-dont-mind') newVoteText = 'neutral';
+    } else if (poll.type === 'choice' && newSelectedOption) {
+      newVoteText = poll.options.find(opt => opt.id === newSelectedOption)?.text || "";
+    } else if (poll.type === 'selection' && votesToSend.length > 0) {
+      newVoteText = votesToSend.map(id => poll.options.find(opt => opt.id === id)?.text || "").join(', ');
+    } else if (customTextToSend) {
+      newVoteText = customTextToSend;
+    }
 
-    if (newVoteId === null) {
+    if (!hasCurrentVote) { // This means an unvote that left nothing
       toast({
         title: "Vote Removed",
         description: `Your vote for the poll has been removed.`,
@@ -78,45 +109,35 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
     }
   };
 
-  const handleChoiceOrSelectionVote = () => {
-    let votesToSend: string[] = [];
-    let customTextToSend: string | undefined;
-
-    if (poll.type === 'selection') {
-      votesToSend = selectedOptions;
-    } else if (selectedOption) {
-      votesToSend = [selectedOption];
+  const handleClosedPollVote = (optionId: string) => {
+    let newVoteId: string | null = optionId;
+    if (selectedOption === optionId) {
+      newVoteId = null; // User clicked the same option again, so unvote
     }
+    setSelectedOption(newVoteId);
+    submitVote(newVoteId, selectedOptions, customResponse);
+  };
 
-    if (poll.allowCustomResponses && customResponse.trim()) {
-      customTextToSend = customResponse.trim();
-    }
+  const handleChoiceChange = (newOptionId: string) => {
+    setSelectedOption(newOptionId);
+    submitVote(newOptionId, selectedOptions, customResponse);
+  };
 
-    if (votesToSend.length === 0 && !customTextToSend) {
-      toast({
-        title: "No Option Selected",
-        description: "Please select an option or type a custom response before submitting your vote.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleSelectionChange = (optionId: string, checked: boolean) => {
+    const newSelectedOptions = checked
+      ? [...selectedOptions, optionId]
+      : selectedOptions.filter(id => id !== optionId);
+    setSelectedOptions(newSelectedOptions);
+    submitVote(selectedOption, newSelectedOptions, customResponse);
+  };
 
-    onVote(poll.id, votesToSend, customTextToSend);
-    
-    let newVoteText = "";
-    if (poll.type === 'choice' && selectedOption) {
-      newVoteText = poll.options.find(opt => opt.id === selectedOption)?.text || "";
-    } else if (poll.type === 'selection' && votesToSend.length > 0) {
-      newVoteText = votesToSend.map(id => poll.options.find(opt => opt.id === id)?.text || "").join(', ');
-    } else if (customTextToSend) {
-      newVoteText = customTextToSend;
-    }
+  const handleCustomResponseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomResponse(e.target.value);
+  };
 
-    toast({
-      title: "Vote Cast",
-      description: `You voted "${newVoteText}" on the poll suggestion.`,
-    });
-    setCustomResponse("");
+  const handleCustomResponseBlur = () => {
+    // Submit the current state when the custom response input loses focus
+    submitVote(selectedOption, selectedOptions, customResponse);
   };
 
   const getTotalVotes = (optionId: string) => {
@@ -154,7 +175,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                 <button 
                   onClick={() => handleClosedPollVote('closed-yes')} 
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 text-green-600 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+                    "flex flex-col items-center justify-center gap-1 text-green-600 disabled:opacity-50 w-16 h-16 rounded-lg border",
                     selectedOption === 'closed-yes' && "font-bold bg-green-100 border-green-200"
                   )}
                 >
@@ -164,7 +185,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                 <button 
                   onClick={() => handleClosedPollVote('closed-dont-mind')} 
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 text-blue-500 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+                    "flex flex-col items-center justify-center gap-1 text-blue-500 disabled:opacity-50 w-16 h-16 rounded-lg border",
                     selectedOption === 'closed-dont-mind' && "font-bold bg-blue-100 border-blue-200"
                   )}
                 >
@@ -174,7 +195,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                 <button 
                   onClick={() => handleClosedPollVote('closed-no')} 
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 text-red-600 disabled:opacity-50 w-16 h-16 rounded-lg border", // Larger, centered
+                    "flex flex-col items-center justify-center gap-1 text-red-600 disabled:opacity-50 w-16 h-16 rounded-lg border",
                     selectedOption === 'closed-no' && "font-bold bg-red-100 border-red-200"
                   )}
                 >
@@ -183,12 +204,32 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
               </div>
             )}
 
+            {/* Custom Response Input - Moved to top */}
+            {poll.allowCustomResponses && (poll.type === 'choice' || poll.type === 'selection') && (
+              <div className="space-y-2">
+                <Label htmlFor={`${poll.id}-custom-response`}>Your Custom Response</Label>
+                <Input
+                  id={`${poll.id}-custom-response`}
+                  placeholder="Type your own option..."
+                  value={customResponse}
+                  onChange={handleCustomResponseChange}
+                  onBlur={handleCustomResponseBlur}
+                />
+              </div>
+            )}
+
             {poll.type === 'choice' && (
-              <RadioGroup value={selectedOption || ''} onValueChange={setSelectedOption}>
+              <RadioGroup 
+                value={selectedOption || ''} 
+                onValueChange={handleChoiceChange}
+              >
                 {poll.options.map(option => (
-                  <div key={option.id} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.id} id={`${poll.id}-${option.id}`} />
-                    <Label htmlFor={`${poll.id}-${option.id}`}>{option.text}</Label>
+                  <div key={option.id} className="flex items-center justify-between space-x-2">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value={option.id} id={`${poll.id}-${option.id}`} />
+                      <Label htmlFor={`${poll.id}-${option.id}`}>{option.text}</Label>
+                    </div>
+                    <span className="text-muted-foreground text-sm">{getTotalVotes(option.id)} votes</span>
                   </div>
                 ))}
               </RadioGroup>
@@ -197,52 +238,20 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
             {poll.type === 'selection' && (
               <div className="space-y-2">
                 {poll.options.map(option => (
-                  <div key={option.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`${poll.id}-${option.id}`}
-                      checked={selectedOptions.includes(option.id)}
-                      onCheckedChange={(checked) => {
-                        setSelectedOptions(prev =>
-                          checked ? [...prev, option.id] : prev.filter(id => id !== option.id)
-                        );
-                      }}
-                    />
-                    <Label htmlFor={`${poll.id}-${option.id}`}>{option.text}</Label>
+                  <div key={option.id} className="flex items-center justify-between space-x-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`${poll.id}-${option.id}`}
+                        checked={selectedOptions.includes(option.id)}
+                        onCheckedChange={(checked) => handleSelectionChange(option.id, checked)}
+                      />
+                      <Label htmlFor={`${poll.id}-${option.id}`}>{option.text}</Label>
+                    </div>
+                    <span className="text-muted-foreground text-sm">{getTotalVotes(option.id)} votes</span>
                   </div>
                 ))}
               </div>
             )}
-
-            {poll.allowCustomResponses && (poll.type === 'choice' || poll.type === 'selection') && (
-              <div className="space-y-2">
-                <Label htmlFor={`${poll.id}-custom-response`}>Your Custom Response</Label>
-                <Input
-                  id={`${poll.id}-custom-response`}
-                  placeholder="Type your own option..."
-                  value={customResponse}
-                  onChange={(e) => setCustomResponse(e.target.value)}
-                />
-              </div>
-            )}
-
-            {(poll.type === 'choice' || poll.type === 'selection' || (poll.allowCustomResponses && customResponse.trim())) && (
-              <Button onClick={handleChoiceOrSelectionVote} className="w-full mt-4">Submit Vote</Button>
-            )}
-          </div>
-        )}
-
-        {/* Display Results - Only show for 'choice' and 'selection' polls */}
-        {(poll.type === 'choice' || poll.type === 'selection') && (
-          <div className="space-y-2 pt-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" /> {getOverallTotalVotes()} total votes
-            </div>
-            {poll.options.map(option => (
-              <div key={option.id} className="flex items-center justify-between text-sm">
-                <span className="font-medium">{option.text}</span>
-                <span className="text-muted-foreground">{getTotalVotes(option.id)} votes</span>
-              </div>
-            ))}
           </div>
         )}
       </CardContent>
