@@ -45,13 +45,13 @@ const CollaborateForm = () => {
         throw error;
       }
 
-      toast.success('Collaboration request sent!', {
+      toast.success('Collaboration offer sent!', {
         description: 'We will get back to you soon.',
       });
       reset();
     } catch (error: any) {
-      console.error('Error sending collaboration request:', error);
-      toast.error('Failed to send collaboration request.', {
+      console.error('Error sending collaboration offer:', error);
+      toast.error('Failed to send collaboration offer.', {
         description: error.message || 'Please try again later.',
       });
     }
