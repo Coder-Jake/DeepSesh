@@ -85,7 +85,7 @@ const FeedbackForm = () => {
         <Textarea
           id="feedback-message"
           {...register('message')}
-          placeholder="Report an idea or issue..."
+          placeholder="Report an idea or bug..."
           rows={5}
           disabled={isSubmitting}
         />
