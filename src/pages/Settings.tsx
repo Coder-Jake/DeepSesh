@@ -19,6 +19,8 @@ const Settings = () => {
     setFocusMinutes, // Setter for focusMinutes
     breakMinutes, // Setter for breakMinutes
     setBreakMinutes, // Setter for breakMinutes
+    timerIncrement, // Get current timerIncrement from context
+    setTimerIncrement, // Setter for timerIncrement
   } = useTimer();
 
   const [delay, setdelay] = useState(false);
@@ -59,6 +61,9 @@ const Settings = () => {
   // New state for global visibility toggle
   const [isGlobalPublic, setIsGlobalPublic] = useState(true); 
   
+  // New state for timer increments
+  const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
+
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
@@ -86,6 +91,7 @@ const Settings = () => {
     profileVisibility,
     locationSharing,
     isGlobalPublic, // Add new state here
+    timerIncrement, // Add new state here
   });
 
   useEffect(() => {
@@ -113,6 +119,7 @@ const Settings = () => {
       profileVisibility,
       locationSharing,
       isGlobalPublic, // Add new state here
+      timerIncrement: currentTimerIncrement, // Add new state here
     };
 
     const changed = Object.keys(currentSettings).some(key => {
@@ -130,7 +137,8 @@ const Settings = () => {
     autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
     askNotifications, breakNotifications, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
-    isGlobalPublic // Add new state to dependencies
+    isGlobalPublic, // Add new state to dependencies
+    currentTimerIncrement, // Add new state to dependencies
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -153,6 +161,7 @@ const Settings = () => {
 
     setFocusMinutes(newFocusMinutes);
     setBreakMinutes(newBreakMinutes);
+    setTimerIncrement(currentTimerIncrement); // Save the new timer increment
 
     // Update initial settings for change detection
     initialSettings.current = {
@@ -176,6 +185,7 @@ const Settings = () => {
       profileVisibility,
       locationSharing,
       isGlobalPublic, // Update initial state here
+      timerIncrement: currentTimerIncrement, // Update initial state here
     };
     setHasChanges(false);
   };
@@ -470,6 +480,25 @@ const Settings = () => {
                   )}
                 >
                   {isGlobalPublic ? "Public" : "Private"}
+                </Button>
+              </div>
+
+              {/* New Increments Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="timer-increments-toggle">Increments</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Timer buttons increase by 1 or 5 minutes.
+                  </p>
+                </div>
+                <Button
+                  id="timer-increments-toggle"
+                  onClick={() => setCurrentTimerIncrement(prev => prev === 1 ? 5 : 1)}
+                  className={cn(
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80"
+                  )}
+                >
+                  {currentTimerIncrement}
                 </Button>
               </div>
 
