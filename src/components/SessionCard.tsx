@@ -13,7 +13,7 @@ interface DemoSession {
   currentPhaseDurationMinutes: number;
   startTime: number;
   location: string;
-  workspaceImage: string;
+  workspaceImage: string; // This will now be replaced by a map placeholder
   workspaceDescription: string;
   participants: { id: number; name: string; sociability: number; intention?: string; bio?: string }[];
 }
@@ -63,7 +63,12 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
               <TooltipContent>
                 <div className="text-center">
                   <p className="mb-2 font-medium">{session.location}</p>
-                  <img src={session.workspaceImage} alt="Workspace" className="w-48 h-28 object-cover rounded" />
+                  {/* Replaced workspace image with a generic map placeholder. For a dynamic map, integration with a map service API would be needed. */}
+                  <img 
+                    src={`https://via.placeholder.com/192x112/f0f0f0/333333?text=Map`} 
+                    alt={`Map of ${session.location}`} 
+                    className="w-48 h-28 object-cover rounded" 
+                  />
                   <p className="text-xs text-muted-foreground mt-1">{session.workspaceDescription}</p>
                 </div>
               </TooltipContent>
