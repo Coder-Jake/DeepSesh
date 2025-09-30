@@ -21,7 +21,7 @@ interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
-  votes: { userId: string; vote: 'yes' | 'no' }[];
+  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[]; // Updated vote type
   status: 'pending' | 'accepted' | 'rejected';
 }
 
@@ -373,7 +373,7 @@ const Index = () => {
     setActiveAsks(prev => [...prev, newPoll]);
   };
 
-  const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | null) => {
+  const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => { // Updated newVote type
     setActiveAsks(prevAsks => {
       return prevAsks.map(ask => {
         if (ask.id === id && 'minutes' in ask) {
@@ -385,6 +385,7 @@ const Index = () => {
 
           const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
           const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
+          // Neutral votes are recorded but don't directly influence acceptance/rejection threshold
           
           // Determine total participants for threshold.
           // Using currentCoworkers.length + 1 (for current user) if in a session, else a mock value.
@@ -399,6 +400,13 @@ const Index = () => {
             // setFocusMinutes(prev => prev + ask.minutes); // Or breakMinutes
           } else if (noVotes >= threshold) {
             newStatus = 'rejected';
+          } else {
+            // If neither yes nor no votes meet the threshold, and there are still pending votes, keep it pending.
+            // If all votes are neutral or removed, it might revert to pending or a new 'no consensus' state.
+            // For now, if it was accepted/rejected and votes change, it can revert to pending if thresholds are no longer met.
+            if (ask.status !== 'pending' && yesVotes < threshold && noVotes < threshold) {
+              newStatus = 'pending';
+            }
           }
 
           return {
