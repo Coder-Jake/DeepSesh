@@ -140,11 +140,11 @@ const Profile = () => {
                     />
                   </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground">
-                    {sociability[0] <= 20 && "Minimal interaction even during breaks"}
-                    {sociability[0] > 20 && sociability[0] <= 40 && "Socialise only during breaks"}
+                    {sociability[0] <= 20 && "Looking to collaborate/brainstorm"}
+                    {sociability[0] > 20 && sociability[0] <= 40 && "Happy to chat while we work"}
                     {sociability[0] > 40 && sociability[0] <= 60 && "I don't mind"}
-                    {sociability[0] > 60 && sociability[0] <= 80 && "Happy to chat while we work"}
-                    {sociability[0] > 80 && "Looking to collaborate/brainstorm"}
+                    {sociability[0] > 60 && sociability[0] <= 80 && "Socialise only during breaks"}
+                    {sociability[0] > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
               </div>
