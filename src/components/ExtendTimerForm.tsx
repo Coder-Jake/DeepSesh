@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
+import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 
 interface ExtendTimerFormProps {
   onClose: () => void;
@@ -12,14 +13,15 @@ interface ExtendTimerFormProps {
 }
 
 const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) => {
-  const [minutes, setMinutes] = useState(10);
+  const { timerIncrement } = useTimer(); // Get timerIncrement from context
+  const [minutes, setMinutes] = useState(timerIncrement); // Default to timerIncrement
   const { toast } = useToast();
 
   const handleSubmit = () => {
-    if (minutes <= -61) {
+    if (minutes <= 0) { // Changed condition to be greater than 0
       toast({
         title: "Invalid minutes",
-        description: "Please enter a positive number of minutes to extend.",
+        description: `Please enter a positive number of minutes to extend (minimum ${timerIncrement}).`,
         variant: "destructive",
       });
       return;
@@ -36,8 +38,13 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
           id="extend-minutes"
           type="number"
           value={minutes}
-          onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
-          min="-60"
+          onChange={(e) => {
+            const value = parseInt(e.target.value) || timerIncrement;
+            const roundedValue = Math.max(timerIncrement, Math.round(value / timerIncrement) * timerIncrement);
+            setMinutes(roundedValue);
+          }}
+          min={timerIncrement} // Set min to timerIncrement
+          step={timerIncrement} // Set step to timerIncrement
           className="w-full"
         />
       </div>

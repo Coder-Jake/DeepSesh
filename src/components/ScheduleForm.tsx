@@ -21,7 +21,8 @@ const ScheduleForm: React.FC = () => {
     commenceTime, 
     setCommenceTime, 
     commenceDay, 
-    setCommenceDay 
+    setCommenceDay,
+    timerIncrement // Get timerIncrement from context
   } = useTimer();
   const { toast } = useToast();
 
@@ -42,7 +43,7 @@ const ScheduleForm: React.FC = () => {
   const handleAddTimer = () => {
     setLocalSchedule(prev => [
       ...prev,
-      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: 25 }
+      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement } // Default to timerIncrement
     ]);
   };
 
@@ -119,8 +120,13 @@ const ScheduleForm: React.FC = () => {
                 type="number"
                 placeholder="Min"
                 value={timer.durationMinutes}
-                onChange={(e) => handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || 0)}
-                min="1"
+                onChange={(e) => {
+                  const value = parseInt(e.target.value) || timerIncrement;
+                  const roundedValue = Math.max(timerIncrement, Math.round(value / timerIncrement) * timerIncrement);
+                  handleUpdateTimer(timer.id, 'durationMinutes', roundedValue);
+                }}
+                min={timerIncrement}
+                step={timerIncrement}
                 className="w-20 text-center flex-shrink-0"
               />
               
