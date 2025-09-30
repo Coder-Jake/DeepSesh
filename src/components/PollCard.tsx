@@ -172,7 +172,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">Created by {poll.creator}</p>
+        <p className="text-sm text-muted-foreground">Asked by {poll.creator}</p>
 
         {poll.status === 'active' && (
           <div className="space-y-3">
