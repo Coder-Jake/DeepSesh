@@ -284,8 +284,8 @@ const Settings = () => {
           <AccordionContent className="space-y-8 pt-4">
             <NotificationControl
               type="focus"
-              title="Focus Session Alerts"
-              description="Get notified when focus sessions start and end"
+              title="Asks"
+              description="Get notified when others Ask"
               value={focusNotifications}
             />
             
