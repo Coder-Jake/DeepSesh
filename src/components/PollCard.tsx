@@ -101,12 +101,8 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
         title: "Vote Removed",
         description: `Your vote for the poll has been removed.`,
       });
-    } else {
-      toast({
-        title: "Vote Cast",
-        description: `You voted "${newVoteText}" on the poll suggestion.`,
-      });
-    }
+    } 
+    // Removed the "Vote Cast" toast here
   };
 
   const handleClosedPollVote = (optionId: string) => {

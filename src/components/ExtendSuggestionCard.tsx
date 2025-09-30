@@ -41,12 +41,8 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
         title: "Vote Removed",
         description: `Your vote for the extension has been removed.`,
       });
-    } else {
-      toast({
-        title: "Vote Cast",
-        description: `You voted "${newVote}" on the extension suggestion.`,
-      });
-    }
+    } 
+    // Removed the "Vote Cast" toast here
   };
 
   return (
