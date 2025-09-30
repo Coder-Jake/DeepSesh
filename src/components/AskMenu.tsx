@@ -48,7 +48,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
             className="flex-1"
           >
             <PlusCircle className="mr-2 h-4 w-4" />
-            Extend Timer
+            Timer
           </Button>
           <Button
             variant={currentAskOption === 'poll' ? 'default' : 'ghost'}
