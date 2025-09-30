@@ -25,8 +25,7 @@ const FeedbackAndCollaborateSection = () => {
           className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg cursor-pointer"
         >
           <div className="text-center p-4">
-            <p className="text-lg font-semibold text-foreground">Form broken.</p>
-            <p className="text-sm text-muted-foreground">Click here to contact us directly.</p>
+            <p className="text-sm text-muted-foreground">Redirect to feedback form</p>
           </div>
         </a>
 
