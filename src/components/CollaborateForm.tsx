@@ -92,7 +92,7 @@ const CollaborateForm = () => {
         {errors.message && <p className="text-red-500 text-sm">{errors.message.message}</p>}
       </div>
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? 'Sending...' : 'Send Request'}
+        {isSubmitting ? 'Sending...' : 'Send Offer'}
       </Button>
     </form>
   );
