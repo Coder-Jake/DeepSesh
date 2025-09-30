@@ -41,7 +41,7 @@ const Settings = () => {
   const [maxDistance, setMaxDistance] = useState([2000]);
   
   // Notification preferences with detailed options
-  const [focusNotifications, setFocusNotifications] = useState({ push: false, vibrate: false, sound: false });
+  const [askNotifications, setaskNotifications] = useState({ push: false, vibrate: false, sound: false });
   const [breakNotifications, setBreakNotifications] = useState({ push: false, vibrate: false, sound: false });
   const [sessionInvites, setSessionInvites] = useState({ push: false, vibrate: false, sound: false });
   const [friendActivity, setFriendActivity] = useState({ push: false, vibrate: false, sound: false });
@@ -78,7 +78,7 @@ const Settings = () => {
     focusMinutes, // Use actual focusMinutes from context
     breakMinutes, // Use actual breakMinutes from context
     maxDistance: maxDistance[0],
-    focusNotifications,
+    askNotifications,
     breakNotifications,
     sessionInvites,
     friendActivity,
@@ -105,7 +105,7 @@ const Settings = () => {
       focusMinutes: currentFocusVal,
       breakMinutes: currentBreakVal,
       maxDistance: maxDistance[0],
-      focusNotifications,
+      askNotifications,
       breakNotifications,
       sessionInvites,
       friendActivity,
@@ -128,7 +128,7 @@ const Settings = () => {
   }, [
     hideSessionsDuringTimer, delay, lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     autoTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
-    focusNotifications, breakNotifications, sessionInvites, friendActivity,
+    askNotifications, breakNotifications, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPublic // Add new state to dependencies
   ]);
@@ -168,7 +168,7 @@ const Settings = () => {
       focusMinutes: newFocusMinutes,
       breakMinutes: newBreakMinutes,
       maxDistance: maxDistance[0],
-      focusNotifications,
+      askNotifications,
       breakNotifications,
       sessionInvites,
       friendActivity,
@@ -182,14 +182,14 @@ const Settings = () => {
 
   const updateNotificationSetting = (type: 'focus' | 'break' | 'invites' | 'activity', key: 'push' | 'vibrate' | 'sound', value: boolean) => {
     const setters = {
-      focus: setFocusNotifications,
+      ask: setaskNotifications,
       break: setBreakNotifications,
       invites: setSessionInvites,
       activity: setFriendActivity
     };
     
     const currentValues = {
-      focus: focusNotifications,
+      ask: focusNotifications,
       break: breakNotifications,
       invites: sessionInvites,
       activity: friendActivity
@@ -286,7 +286,7 @@ const Settings = () => {
               type="focus"
               title="Asks"
               description="Get notified when others Ask"
-              value={focusNotifications}
+              value={askNotifications}
             />
             
             <NotificationControl
