@@ -7,12 +7,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PlusCircle, MessageSquarePlus, HelpCircle, ArrowLeft } from "lucide-react"; // Import ArrowLeft
+import { PlusCircle, MessageSquarePlus, HelpCircle, ArrowLeft } from "lucide-react";
 import ExtendTimerForm from "./ExtendTimerForm";
 import CreatePollForm from "./CreatePollForm";
 
 type AskOption = 'none' | 'extend' | 'poll';
-type PollType = 'closed' | 'choice' | 'selection'; // Define PollType here for consistency
+type PollType = 'closed' | 'choice' | 'selection';
 
 interface AskMenuProps {
   onExtendSubmit: (minutes: number) => void;
@@ -40,7 +40,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
           Ask
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] min-h-[450px] flex flex-col"> {/* Added min-h-[450px] and flex flex-col */}
         <DialogHeader className="relative">
           {currentAskOption !== 'none' && (
             <Button
@@ -60,7 +60,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
         </DialogHeader>
         
         {currentAskOption === 'none' && (
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 flex-grow"> {/* Added flex-grow */}
             <Button 
               variant="outline" 
               className="justify-start" 
