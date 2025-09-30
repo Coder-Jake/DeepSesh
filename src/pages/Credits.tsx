@@ -88,7 +88,7 @@ const Credits = () => {
             </div>
             <div>
               <h3 className="font-medium text-foreground mb-2">Helpful people</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+              
                 {supporters.map((supporter, index) => (
                   <li key={index}>Angie Simmons</li>
                 ))}
