@@ -511,7 +511,7 @@ const Index = () => {
                           className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
                         >
                           <Share2 size={16} />
-                          <span className="text-sm font-medium">Share</span>
+                          <span className="text-sm font-medium"></span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
