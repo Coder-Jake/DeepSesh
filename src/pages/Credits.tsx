@@ -66,6 +66,13 @@ const Credits = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+             <div>
+              <h3 className="font-medium text-foreground mb-2">Helpful people</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                Angie Simmons
+              </ul>
+            </div>
+            
             <div>
               <h3 className="font-medium text-foreground mb-2">Our Generous Supporters (Donations over $50)</h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
@@ -86,12 +93,7 @@ const Credits = () => {
                 <li>...and many more open-source projects!</li>
               </ul>
             </div>
-            <div>
-              <h3 className="font-medium text-foreground mb-2">Helpful people</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                Angie Simmons
-              </ul>
-            </div>
+           
           </CardContent>
         </Card>
       </div>
