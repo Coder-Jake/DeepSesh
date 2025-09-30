@@ -1,20 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react"; // Import Search and X icons
+import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo } from "react"; // Import useMemo
-import { Input } from "@/components/ui/input"; // Import Input component
-import { Button } from "@/components/ui/button"; // Import Button component
+import { useState, useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const History = () => {
   // Sample data - in a real app this would come from a database
-  const sessions = [
+  const allSessions = [
     {
       id: 1,
       title: "Deep Work Sprint",
-      date: "2024-01-15",
-      duration: "45 mins",
+      date: "2024-07-25", // Recent
+      duration: 45, // in minutes
       participants: 3,
       type: "focus",
       notes: "Great session focusing on project documentation. Made significant progress on the API specs."
@@ -22,8 +22,8 @@ const History = () => {
     {
       id: 2,
       title: "Study Group Alpha",
-      date: "2024-01-14",
-      duration: "90 mins",
+      date: "2024-07-20", // Recent
+      duration: 90,
       participants: 5,
       type: "focus",
       notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
@@ -31,8 +31,8 @@ const History = () => {
     {
       id: 3,
       title: "Solo Focus",
-      date: "2024-01-13",
-      duration: "30 mins",
+      date: "2024-07-10", // Older (within month)
+      duration: 30,
       participants: 1,
       type: "focus",
       notes: "Quick focused session to review quarterly goals and plan next steps."
@@ -40,8 +40,8 @@ const History = () => {
     {
       id: 4,
       title: "Coding Session",
-      date: "2024-01-12",
-      duration: "120 mins",
+      date: "2024-06-28", // Older (within month)
+      duration: 120,
       participants: 2,
       type: "focus",
       notes: "Pair programming session working on the new user interface components. Fixed several bugs."
@@ -49,11 +49,29 @@ const History = () => {
     {
       id: 5,
       title: "Research Deep Dive",
-      date: "2024-01-11",
-      duration: "60 mins",
+      date: "2024-05-15", // Much older
+      duration: 60,
       participants: 4,
       type: "focus",
       notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
+    },
+    {
+      id: 6,
+      title: "Project Planning",
+      date: "2024-07-22", // Recent
+      duration: 75,
+      participants: 2,
+      type: "focus",
+      notes: "Detailed planning for the next sprint. Defined user stories and acceptance criteria."
+    },
+    {
+      id: 7,
+      title: "Brainstorming Session",
+      date: "2024-06-01", // Older
+      duration: 60,
+      participants: 6,
+      type: "focus",
+      notes: "Generated new ideas for marketing campaigns. Very productive and engaging."
     }
   ];
 
@@ -70,17 +88,61 @@ const History = () => {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const filterSessions = (sessions: typeof allSessions, period: 'week' | 'month' | 'all') => {
+    const now = new Date();
+    return sessions.filter(session => {
+      const sessionDate = new Date(session.date);
+      if (period === 'week') {
+        const one WeekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+        return sessionDate >= one WeekAgo;
+      } else if (period === 'month') {
+        const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return sessionDate >= oneMonthAgo;
+      }
+      return true; // 'all' period
+    });
+  };
+
+  const filteredByTime = useMemo(() => {
+    return filterSessions(allSessions, historyTimePeriod);
+  }, [allSessions, historyTimePeriod]);
+
   // Filtered sessions based on search query
   const filteredSessions = useMemo(() => {
     if (!searchQuery) {
-      return sessions;
+      return filteredByTime;
     }
     const lowerCaseQuery = searchQuery.toLowerCase();
-    return sessions.filter(session => 
+    return filteredByTime.filter(session => 
       session.title.toLowerCase().includes(lowerCaseQuery) ||
       session.notes.toLowerCase().includes(lowerCaseQuery)
     );
-  }, [sessions, searchQuery]);
+  }, [filteredByTime, searchQuery]);
+
+  const totalFocusTime = useMemo(() => {
+    const totalMinutes = filteredSessions.reduce((sum, session) => sum + session.duration, 0);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h ${minutes}m`;
+  }, [filteredSessions]);
+
+  const uniqueCoworkers = useMemo(() => {
+    const coworkerIds = new Set<number>();
+    filteredSessions.forEach(session => {
+      // Assuming 'participants' count is unique per session, but not across sessions
+      // For a real app, you'd need a list of actual participant IDs per session
+      // For this mock, we'll just sum up unique participants per session
+      // A more accurate count would require participant IDs in the mock data
+      if (session.participants > 1) { // Only count if it's a collaborative session
+        for (let i = 0; i < session.participants; i++) {
+          coworkerIds.add(session.id * 1000 + i); // Create unique mock IDs
+        }
+      }
+    });
+    // This is a simplified count. In a real app, you'd track actual unique user IDs.
+    return filteredSessions.reduce((sum, session) => sum + (session.participants > 1 ? session.participants : 0), 0);
+  }, [filteredSessions]);
+
 
   return (
     <main className="max-w-4xl mx-auto p-6">
@@ -100,7 +162,7 @@ const History = () => {
                   <div className="flex items-center gap-3">
                     <Clock className="h-8 w-8 text-primary" />
                     <div>
-                      <p className="text-2xl font-bold">16h 45m</p>
+                      <p className="text-2xl font-bold">{totalFocusTime}</p>
                       <p className="text-sm text-muted-foreground">Total Focus Time</p>
                     </div>
                   </div>
@@ -113,7 +175,7 @@ const History = () => {
                 <div className="flex items-center gap-3">
                   <Calendar className="h-8 w-8 text-primary" />
                   <div>
-                    <p className="text-2xl font-bold">{sessions.length}</p>
+                    <p className="text-2xl font-bold">{filteredSessions.length}</p>
                     <p className="text-sm text-muted-foreground">Sessions Completed</p>
                   </div>
                 </div>
@@ -126,7 +188,7 @@ const History = () => {
                   <div className="flex items-center gap-3">
                     <Users className="h-8 w-8 text-primary" />
                     <div>
-                      <p className="text-2xl font-bold">15</p>
+                      <p className="text-2xl font-bold">{uniqueCoworkers}</p>
                       <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
                     </div>
                   </div>
@@ -177,7 +239,7 @@ const History = () => {
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock size={14} />
-                            {session.duration}
+                            {session.duration} mins
                           </div>
                           <div className="flex items-center gap-1">
                             <Users size={14} />
