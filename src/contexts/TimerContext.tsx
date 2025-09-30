@@ -56,8 +56,8 @@ interface TimerContextType {
   setProfileVisibility: React.Dispatch<React.SetStateAction<string>>;
   locationSharing: string;
   setLocationSharing: React.Dispatch<React.SetStateAction<string>>;
-  isGlobalPublic: boolean;
-  setIsGlobalPublic: React.Dispatch<React.SetStateAction<boolean>>;
+  isGlobalPrivate: boolean; // Renamed from isGlobalPublic
+  setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>; // Renamed from setIsGlobalPublic
   formatTime: (seconds: number) => string;
 
   // New timer-related states
@@ -122,7 +122,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [verificationStandard, setVerificationStandard] = useState("anyone");
   const [profileVisibility, setProfileVisibility] = useState("friends");
   const [locationSharing, setLocationSharing] = useState("approximate");
-  const [isGlobalPublic, setIsGlobalPublic] = useState(false);
+  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false); // Renamed and default to false
 
   // Timer-related states
   const [isRunning, setIsRunning] = useState(false);
@@ -260,7 +260,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setVerificationStandard(settings.verificationStandard ?? "anyone");
       setProfileVisibility(settings.profileVisibility ?? "friends");
       setLocationSharing(settings.locationSharing ?? "approximate");
-      setIsGlobalPublic(settings.isGlobalPublic ?? false);
+      setIsGlobalPrivate(settings.isGlobalPrivate ?? false); // Renamed and default to false
 
       // Load timer/schedule specific states
       setIsRunning(settings.isRunning ?? false);
@@ -310,7 +310,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       verificationStandard,
       profileVisibility,
       locationSharing,
-      isGlobalPublic,
+      isGlobalPrivate, // Renamed
       // Timer/Schedule specific states
       isRunning,
       isPaused,
@@ -333,7 +333,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     manualTransition, maxDistance, askNotifications, sessionInvites, friendActivity,
     breakNotificationsVibrate, verificationStandard, profileVisibility, locationSharing,
-    isGlobalPublic,
+    isGlobalPrivate, // Renamed
     // Timer/Schedule specific dependencies
     isRunning, isPaused, timeLeft, timerType, isFlashing, notes,
     schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
@@ -365,7 +365,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     verificationStandard, setVerificationStandard,
     profileVisibility, setProfileVisibility,
     locationSharing, setLocationSharing,
-    isGlobalPublic, setIsGlobalPublic,
+    isGlobalPrivate, setIsGlobalPrivate, // Renamed
     formatTime,
     // Timer-related states
     isRunning, setIsRunning,

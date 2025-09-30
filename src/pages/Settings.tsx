@@ -61,8 +61,8 @@ const Settings = () => {
     setProfileVisibility,
     locationSharing,
     setLocationSharing,
-    isGlobalPublic,
-    setIsGlobalPublic,
+    isGlobalPrivate, // Renamed from isGlobalPublic
+    setIsGlobalPrivate, // Renamed from setIsGlobalPublic
   } = useTimer();
 
   // Local state for temporary UI interactions or derived values
@@ -105,7 +105,7 @@ const Settings = () => {
     verificationStandard,
     profileVisibility,
     locationSharing,
-    isGlobalPublic,
+    isGlobalPrivate, // Renamed
     timerIncrement,
     shouldPlayEndSound,
     shouldShowEndToast,
@@ -158,7 +158,7 @@ const Settings = () => {
       verificationStandard,
       profileVisibility,
       locationSharing,
-      isGlobalPublic,
+      isGlobalPrivate, // Renamed
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
@@ -181,7 +181,8 @@ const Settings = () => {
     manualTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
     askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
-    isGlobalPublic, currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
+    isGlobalPrivate, // Renamed
+    currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -194,69 +195,25 @@ const Settings = () => {
     }, 1500); // Text visible for 1.5 seconds
   };
 
-  const handleSave = () => {
-    const newFocusMinutes = selectedFocusDuration === 'custom' 
-      ? Math.max(1, parseInt(customFocusDuration) || 1) 
-      : parseInt(selectedFocusDuration);
-    const newBreakMinutes = selectedBreakDuration === 'custom' 
-      ? Math.max(1, parseInt(customBreakDuration) || 1) 
-      : parseInt(selectedBreakDuration);
+  const updateNotificationSetting = (
+    type: 'ask' | 'break' | 'invites' | 'activity',
+    field: 'push' | 'vibrate' | 'sound',
+    value: boolean
+  ) => {
+    const text = value ? 'Enabled' : 'Disabled';
+    showMomentaryText(`${type}-${field}`, text);
 
-    setFocusMinutes(newFocusMinutes);
-    setBreakMinutes(newBreakMinutes);
-    setTimerIncrement(currentTimerIncrement);
-    setShowSessionsWhileActive(showSessionsWhileActive);
-    setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
-    setBatchNotificationPreference(batchNotificationPreference);
-    setCustomBatchMinutes(customBatchMinutes);
-    setLock(lock);
-    setExemptionsEnabled(exemptionsEnabled);
-    setPhoneCalls(phoneCalls);
-    setFavourites(favourites);
-    setWorkApps(workApps);
-    setIntentionalBreaches(intentionalBreaches);
-    setManualTransition(manualTransition);
-    setMaxDistance(maxDistance);
-    setAskNotifications(askNotifications);
-    setSessionInvites(sessionInvites);
-    setFriendActivity(friendActivity);
-    setBreakNotificationsVibrate(breakNotificationsVibrate);
-    setVerificationStandard(verificationStandard);
-    setProfileVisibility(profileVisibility);
-    setLocationSharing(locationSharing);
-    setIsGlobalPublic(isGlobalPublic);
-    setShouldPlayEndSound(shouldPlayEndSound);
-    setShouldShowEndToast(shouldShowEndToast);
-
-    // After saving, update the ref to reflect the new "saved" state
-    savedSettingsRef.current = {
-      showSessionsWhileActive,
-      isBatchNotificationsEnabled,
-      batchNotificationPreference,
-      customBatchMinutes,
-      lock,
-      exemptionsEnabled,
-      phoneCalls,
-      favourites,
-      workApps,
-      intentionalBreaches,
-      manualTransition,
-      focusMinutes: newFocusMinutes,
-      breakMinutes: newBreakMinutes,
-      maxDistance,
-      askNotifications,
-      breakNotificationsVibrate,
-      sessionInvites,
-      friendActivity,
-      verificationStandard,
-      profileVisibility,
-      locationSharing,
-      isGlobalPublic,
-      timerIncrement: currentTimerIncrement,
-      shouldPlayEndSound,
-      shouldShowEndToast,
-    };
-    setHasChanges(false);
+    if (type === 'ask') {
+      setAskNotifications(prev => ({ ...prev, [field]: value }));
+    } else if (type === 'break') {
+      if (field === 'push') setShouldShowEndToast(value);
+      if (field === 'vibrate') setBreakNotificationsVibrate(value);
+      if (field === 'sound') setShouldPlayEndSound(value);
+    } else if (type === 'invites') {
+      setSessionInvites(prev => ({ ...prev, [field]: value }));
+    } else if (type === 'activity') {
+      setFriendActivity(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const NotificationControl = ({ 
@@ -334,6 +291,71 @@ const Settings = () => {
     </div>
   );
 
+  const handleSave = () => {
+    const newFocusMinutes = selectedFocusDuration === 'custom' 
+      ? Math.max(1, parseInt(customFocusDuration) || 1) 
+      : parseInt(selectedFocusDuration);
+    const newBreakMinutes = selectedBreakDuration === 'custom' 
+      ? Math.max(1, parseInt(customBreakDuration) || 1) 
+      : parseInt(selectedBreakDuration);
+
+    setFocusMinutes(newFocusMinutes);
+    setBreakMinutes(newBreakMinutes);
+    setTimerIncrement(currentTimerIncrement);
+    setShowSessionsWhileActive(showSessionsWhileActive);
+    setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
+    setBatchNotificationPreference(batchNotificationPreference);
+    setCustomBatchMinutes(customBatchMinutes);
+    setLock(lock);
+    setExemptionsEnabled(exemptionsEnabled);
+    setPhoneCalls(phoneCalls);
+    setFavourites(favourites);
+    setWorkApps(workApps);
+    setIntentionalBreaches(intentionalBreaches);
+    setManualTransition(manualTransition);
+    setMaxDistance(maxDistance);
+    setAskNotifications(askNotifications);
+    setSessionInvites(sessionInvites);
+    setFriendActivity(friendActivity);
+    setBreakNotificationsVibrate(breakNotificationsVibrate);
+    setVerificationStandard(verificationStandard);
+    setProfileVisibility(profileVisibility);
+    setLocationSharing(locationSharing);
+    setIsGlobalPrivate(isGlobalPrivate); // Renamed
+    setShouldPlayEndSound(shouldPlayEndSound);
+    setShouldShowEndToast(shouldShowEndToast);
+
+    // After saving, update the ref to reflect the new "saved" state
+    savedSettingsRef.current = {
+      showSessionsWhileActive,
+      isBatchNotificationsEnabled,
+      batchNotificationPreference,
+      customBatchMinutes,
+      lock,
+      exemptionsEnabled,
+      phoneCalls,
+      favourites,
+      workApps,
+      intentionalBreaches,
+      manualTransition,
+      focusMinutes: newFocusMinutes,
+      breakMinutes: newBreakMinutes,
+      maxDistance,
+      askNotifications,
+      breakNotificationsVibrate,
+      sessionInvites,
+      friendActivity,
+      verificationStandard,
+      profileVisibility,
+      locationSharing,
+      isGlobalPrivate, // Renamed
+      timerIncrement: currentTimerIncrement,
+      shouldPlayEndSound,
+      shouldShowEndToast,
+    };
+    setHasChanges(false);
+  };
+
   return (
     <main className="max-w-4xl mx-auto p-4 lg:p-6">
       <div className="mb-6">
@@ -406,7 +428,7 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground">
                     Prompt for session ends?
                   </p>
-                </div>
+                </div >
                 <Switch
                   id="manual-transition"
                   checked={manualTransition}
@@ -565,13 +587,13 @@ const Settings = () => {
                 </div >
                 <Button
                   id="global-visibility-toggle"
-                  onClick={() => setIsGlobalPublic(prev => !prev)}
+                  onClick={() => setIsGlobalPrivate(prev => !prev)} // Toggle isGlobalPrivate
                   className={cn(
                     "px-4 py-2 rounded-full transition-colors text-black select-none",
-                    isGlobalPublic ? "bg-[hsl(var(--public-bg))] hover:bg-white" : "bg-[hsl(var(--private-bg))] hover:bg-white"
+                    !isGlobalPrivate ? "bg-[hsl(var(--public-bg))] hover:bg-white" : "bg-[hsl(var(--private-bg))] hover:bg-white" // Display Public when false, Private when true
                   )}
                 >
-                  {isGlobalPublic ? "Public" : "Private"}
+                  {!isGlobalPrivate ? "Public" : "Private"} {/* Display Public when false, Private when true */}
                 </Button>
               </div>
 

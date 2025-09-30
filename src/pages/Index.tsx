@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Globe, Lock, CalendarPlus, Share2 } from "lucide-react"; // Added Share2
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -161,12 +161,14 @@ const Index = () => {
     scheduleTitle,
     commenceTime,
     commenceDay,
+    isGlobalPrivate, // Get global private setting from context
   } = useTimer();
   
   const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
 
-  const [isPublic, setIsPublic] = useState(true);
+  // Initialize local isPrivate state from global setting
+  const [isPrivate, setIsPrivate] = useState(isGlobalPrivate); // Renamed from isPublic
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
@@ -174,6 +176,11 @@ const Index = () => {
 
   const currentUserId = profile?.id || "mock-user-id-123"; 
   const currentUserName = profile?.first_name || "You";
+
+  // Effect to update local isPrivate when isGlobalPrivate changes
+  useEffect(() => {
+    setIsPrivate(isGlobalPrivate);
+  }, [isGlobalPrivate]);
 
   const playStartSound = () => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -205,10 +212,10 @@ const Index = () => {
   
   const handlePublicPrivateToggle = () => {
     if (isLongPress.current) {
-      setIsPublic(!isPublic);
+      setIsPrivate(!isPrivate); // Toggle local isPrivate state
     } else {
-      if (confirm(`Switch to ${isPublic ? 'Private' : 'Public'} mode?`)) {
-        setIsPublic(!isPublic);
+      if (confirm(`Switch to ${isPrivate ? 'Public' : 'Private'} mode?`)) { // Adjusted text
+        setIsPrivate(!isPrivate); // Toggle local isPrivate state
       }
     }
   };
@@ -471,7 +478,7 @@ const Index = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Timer Section */}
         <div className="space-y-6">
-          <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${isPublic ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
+          <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${!isPrivate ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}> {/* Use !isPrivate for public background */}
             {isSchedulingMode ? (
               <ScheduleForm />
             ) : (
@@ -496,7 +503,7 @@ const Index = () => {
                       onClick={handlePublicPrivateToggle}
                       className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
                     >
-                      {isPublic ? <>
+                      {!isPrivate ? <> {/* Use !isPrivate for Public */}
                           <Globe size={16} />
                           <span className="text-sm font-medium">Public</span>
                         </> : <>
@@ -735,7 +742,7 @@ const Index = () => {
           {/* Sessions List */}
           <TooltipProvider>
             {/* Nearby Sessions */}
-            {!shouldHideSessionLists && isPublic && (
+            {!shouldHideSessionLists && !isPrivate && ( // Use !isPrivate to show when not private (i.e., public)
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-3">Nearby</h3>
                 <div className="space-y-3">
