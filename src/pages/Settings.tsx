@@ -627,9 +627,9 @@ const Settings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Minimum Verification Status</Label>
+              <Label>Others' Verification</Label>
               <p className="text-sm text-muted-foreground">
-                for users to join sessions you host
+                 to join sessions you host
               </p>
               <Select value={verificationStandard} onValueChange={setVerificationStandard}>
                 <SelectTrigger>
