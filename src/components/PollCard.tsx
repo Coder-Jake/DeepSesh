@@ -52,10 +52,6 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
   });
   const [customResponse, setCustomResponse] = useState("");
 
-  const userHasVotedForExistingOption = poll.options.some(option => 
-    option.votes.some(vote => vote.userId === currentUserId)
-  );
-
   const handleVote = () => {
     let votesToSend: string[] = [];
     let customTextToSend: string | undefined;
@@ -84,9 +80,24 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
     }
 
     onVote(poll.id, votesToSend, customTextToSend);
+    
+    // Determine the vote text for the toast message
+    let newVoteText = "";
+    if (poll.type === 'closed' && selectedOption) {
+      if (selectedOption === 'closed-yes') newVoteText = 'yes';
+      else if (selectedOption === 'closed-no') newVoteText = 'no';
+      else if (selectedOption === 'closed-dont-mind') newVoteText = 'neutral';
+    } else if (poll.type === 'choice' && selectedOption) {
+      newVoteText = poll.options.find(opt => opt.id === selectedOption)?.text || "";
+    } else if (poll.type === 'selection' && votesToSend.length > 0) {
+      newVoteText = votesToSend.map(id => poll.options.find(opt => opt.id === id)?.text || "").join(', ');
+    } else if (customTextToSend) {
+      newVoteText = customTextToSend;
+    }
+
     toast({
-      title: "Vote Submitted!",
-      description: `Your vote for "${poll.question}" has been recorded.`,
+      title: "Vote Cast",
+      description: `You voted "${newVoteText}" on the poll suggestion.`,
     });
     setCustomResponse(""); // Clear custom response after submission
   };
@@ -103,6 +114,11 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
     return uniqueVoters.size;
   };
 
+  // Get specific vote counts for closed poll options
+  const yesVotes = getTotalVotes('closed-yes');
+  const noVotes = getTotalVotes('closed-no');
+  const neutralVotes = getTotalVotes('closed-dont-mind');
+
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-2">
@@ -118,39 +134,36 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
           <div className="space-y-3">
             {poll.type === 'closed' && (
               <div className="flex justify-center gap-4">
-                <Button
-                  variant="outline"
-                  size="icon"
+                {/* Thumbs Up */}
+                <button 
+                  onClick={() => setSelectedOption("closed-yes")} 
                   className={cn(
-                    "rounded-full w-12 h-12",
-                    selectedOption === "closed-yes" && "bg-primary text-primary-foreground"
+                    "flex items-center gap-1 text-sm text-green-600 disabled:opacity-50",
+                    selectedOption === 'closed-yes' && "font-bold"
                   )}
-                  onClick={() => setSelectedOption("closed-yes")}
                 >
-                  <ThumbsUp className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
+                  <ThumbsUp className="h-4 w-4" fill={selectedOption === 'closed-yes' ? "currentColor" : "none"} /> {yesVotes}
+                </button>
+                {/* Neutral / Don't Mind */}
+                <button 
+                  onClick={() => setSelectedOption("closed-dont-mind")} 
                   className={cn(
-                    "rounded-full w-12 h-12",
-                    selectedOption === "closed-dont-mind" && "bg-blue-500 text-white" // Neutral blue
+                    "flex items-center gap-1 text-sm text-blue-500 disabled:opacity-50",
+                    selectedOption === 'closed-dont-mind' && "font-bold"
                   )}
-                  onClick={() => setSelectedOption("closed-dont-mind")}
                 >
-                  <Minus className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
+                  <Minus className="h-4 w-4" fill={selectedOption === 'closed-dont-mind' ? "currentColor" : "none"} /> {neutralVotes}
+                </button>
+                {/* Thumbs Down */}
+                <button 
+                  onClick={() => setSelectedOption("closed-no")} 
                   className={cn(
-                    "rounded-full w-12 h-12",
-                    selectedOption === "closed-no" && "bg-destructive text-destructive-foreground"
+                    "flex items-center gap-1 text-sm text-red-600 disabled:opacity-50",
+                    selectedOption === 'closed-no' && "font-bold"
                   )}
-                  onClick={() => setSelectedOption("closed-no")}
                 >
-                  <ThumbsDown className="h-5 w-5" />
-                </Button>
+                  <ThumbsDown className="h-4 w-4" fill={selectedOption === 'closed-no' ? "currentColor" : "none"} /> {noVotes}
+                </button>
               </div>
             )}
 
