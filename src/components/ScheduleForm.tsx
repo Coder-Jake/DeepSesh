@@ -103,9 +103,9 @@ const ScheduleForm: React.FC = () => {
       <CardContent className="space-y-6 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
         <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
           {localSchedule.map((timer, index) => (
-            <div key={timer.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
+            <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50"> {/* Removed justify-between here */}
               <div className="flex items-center gap-2 flex-grow"> {/* Group number and title, allow to grow */}
-                <span className="font-semibold text-sm text-primary flex-shrink-0 self-start">{index + 1}.</span>
+                <span className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start">{index + 1}.</span> {/* Changed text-primary to text-gray-500 */}
                 <Input
                   placeholder="Timer Title"
                   value={timer.title}
@@ -114,31 +114,31 @@ const ScheduleForm: React.FC = () => {
                 />
               </div>
               
-              <div className="flex items-center gap-3 flex-shrink-0"> {/* Group duration, type, trash */}
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={timer.durationMinutes}
-                  onChange={(e) => handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || 0)}
-                  min="1"
-                  className="w-20 text-center"
-                />
-                
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-24 h-10 text-sm font-medium",
-                    timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
-                  )}
-                  onClick={() => handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus')}
-                >
-                  {timer.type === 'focus' ? 'Focus' : 'Break'}
-                </Button>
-                
-                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
+              {/* Duration and Type buttons */}
+              <Input
+                type="number"
+                placeholder="Min"
+                value={timer.durationMinutes}
+                onChange={(e) => handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || 0)}
+                min="1"
+                className="w-20 text-center flex-shrink-0"
+              />
+              
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-24 h-10 text-sm font-medium flex-shrink-0",
+                  timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
+                )}
+                onClick={() => handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus')}
+              >
+                {timer.type === 'focus' ? 'Focus' : 'Break'}
+              </Button>
+              
+              {/* Trash button, pushed to the far right */}
+              <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0"> {/* Added ml-auto */}
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
             </div>
           ))}
         </div>
