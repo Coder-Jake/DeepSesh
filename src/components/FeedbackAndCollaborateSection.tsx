@@ -10,11 +10,18 @@ import { MessageSquare, Users } from 'lucide-react';
 const FeedbackAndCollaborateSection = () => {
   return (
     <Card className="mt-8">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5" />
-          Get in Touch
-        </CardTitle>
+      <CardHeader className="p-0"> {/* Remove default padding to allow anchor to fill */}
+        <a
+          href="https://deepsesh.com.au/#contact"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block p-6 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer" // Apply padding and hover styles to the anchor
+        >
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            Get in Touch
+          </CardTitle>
+        </a>
       </CardHeader>
       <CardContent className="relative"> {/* Added relative positioning */}
         {/* Overlay for redirection and visual disable */}
@@ -24,7 +31,9 @@ const FeedbackAndCollaborateSection = () => {
           rel="noopener noreferrer"
           className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg cursor-pointer"
         >
-          <div><h2> Feedback Form</h2>
+          <div className="text-center p-4">
+            <p className="text-lg font-semibold text-foreground">This feature is currently unavailable.</p>
+            <p className="text-sm text-muted-foreground">Click here to contact us directly.</p>
           </div>
         </a>
 
