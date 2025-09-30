@@ -103,39 +103,42 @@ const ScheduleForm: React.FC = () => {
       <CardContent className="space-y-6 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
         <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
           {localSchedule.map((timer, index) => (
-            <div key={timer.id} className="flex items-center gap-4 p-3 border rounded-md bg-muted/50">
-              <span className="font-semibold text-lg text-primary">{index + 1}.</span>
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-center"> {/* Adjusted grid columns */}
+            <div key={timer.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
+              <div className="flex items-center gap-2 flex-grow"> {/* Group number and title, allow to grow */}
+                <span className="font-semibold text-lg text-primary flex-shrink-0">{index + 1}.</span>
                 <Input
                   placeholder="Timer Title"
                   value={timer.title}
                   onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
-                  // Removed col-span-full
+                  className="flex-grow min-w-0" // Allow title to take available space, but can shrink
                 />
+              </div>
+              
+              <div className="flex items-center gap-3 flex-shrink-0"> {/* Group duration, type, trash */}
                 <Input
                   type="number"
                   placeholder="Min"
                   value={timer.durationMinutes}
                   onChange={(e) => handleUpdateTimer(timer.id, 'durationMinutes', parseInt(e.target.value) || 0)}
                   min="1"
-                  className="w-20 text-center" // Removed col-span-full
+                  className="w-20 text-center"
                 />
-                <div className="flex items-center justify-center"> {/* Removed col-span-full */}
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-24 h-10 text-sm font-medium", // Added w-24
-                      timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
-                    )}
-                    onClick={() => handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus')}
-                  >
-                    {timer.type === 'focus' ? 'Focus' : 'Break'}
-                  </Button>
-                </div>
+                
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-24 h-10 text-sm font-medium",
+                    timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
+                  )}
+                  onClick={() => handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus')}
+                >
+                  {timer.type === 'focus' ? 'Focus' : 'Break'}
+                </Button>
+                
+                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
             </div>
           ))}
         </div>
