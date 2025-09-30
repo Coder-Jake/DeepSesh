@@ -6,7 +6,7 @@ import { useState } from "react";
 const Leaderboard = () => {
   // Sample data - in a real app this would come from a database
   const focusHoursLeaderboard = [
-    { id: 1, name: "Alice", focusHours: 120 },
+    { id: 1, name: "Angie", focusHours: 120 },
     { id: 2, name: "Bob", focusHours: 110 },
     { id: 3, name: "Charlie", focusHours: 95 },
     { id: 4, name: "Diana", focusHours: 80 },
@@ -14,7 +14,7 @@ const Leaderboard = () => {
   ];
 
   const collaboratedUsersLeaderboard = [
-    { id: 1, name: "Alice", collaboratedUsers: 25 },
+    { id: 1, name: "Angie", collaboratedUsers: 25 },
     { id: 2, name: "Frank", collaboratedUsers: 22 },
     { id: 3, name: "Grace", collaboratedUsers: 18 },
     { id: 4, name: "Bob", collaboratedUsers: 15 },
