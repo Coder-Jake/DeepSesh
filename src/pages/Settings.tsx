@@ -567,7 +567,7 @@ const Settings = () => {
               <Label>Profile Visibility</Label>
               <Select value={profileVisibility} onValueChange={setProfileVisibility}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select visibility" />
+                  <SelectValue placeholder="public" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
