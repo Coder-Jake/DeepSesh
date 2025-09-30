@@ -1,310 +1,196 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback } from 'react';
-import { ScheduledTimer } from '@/types/timer';
-import { toast } from '@/hooks/use-toast';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+interface NotificationSettings {
+  push: boolean;
+  vibrate: boolean;
+  sound: boolean;
+}
 
 interface TimerContextType {
   focusMinutes: number;
   setFocusMinutes: (minutes: number) => void;
   breakMinutes: number;
   setBreakMinutes: (minutes: number) => void;
-  showSessionsWhileActive: boolean; // Renamed
-  setShowSessionsWhileActive: (show: boolean) => void; // Renamed
   timerIncrement: number;
   setTimerIncrement: (increment: number) => void;
-  formatTime: (seconds: number) => string;
-
-  // Timer control states
-  isRunning: boolean;
-  setIsRunning: (running: boolean) => void;
-  isPaused: boolean;
-  setIsPaused: (paused: boolean) => void;
-  timeLeft: number;
-  setTimeLeft: (time: number) => void;
-  timerType: 'focus' | 'break';
-  setTimerType: (type: 'focus' | 'break') => void;
-  isFlashing: boolean;
-  setIsFlashing: (flashing: boolean) => void;
-  notes: string;
-  setNotes: (notes: string) => void;
-
-  // Scheduling states and functions
-  schedule: ScheduledTimer[];
-  setSchedule: (schedule: ScheduledTimer[]) => void;
-  currentScheduleIndex: number;
-  setCurrentScheduleIndex: (index: number) => void;
-  isSchedulingMode: boolean;
-  setIsSchedulingMode: (mode: boolean) => void;
-  isScheduleActive: boolean;
-  setIsScheduleActive: (active: boolean) => void;
-  scheduleTitle: string;
-  setScheduleTitle: (title: string) => void;
-  commenceTime: string;
-  setCommenceTime: (time: string) => void;
-  commenceDay: number;
-  setCommenceDay: (day: number) => void;
-  startSchedule: () => void;
-  resetSchedule: () => void;
-
-  // New notification settings for timer end
   shouldPlayEndSound: boolean;
-  setShouldPlayEndSound: (value: boolean) => void;
+  setShouldPlayEndSound: (shouldPlay: boolean) => void;
   shouldShowEndToast: boolean;
-  setShouldShowEndToast: (value: boolean) => void;
-
-  // Manual transition setting
+  setShouldShowEndToast: (shouldShow: boolean) => void;
+  showSessionsWhileActive: boolean;
+  setShowSessionsWhileActive: (show: boolean) => void;
+  isBatchNotificationsEnabled: boolean;
+  setIsBatchNotificationsEnabled: (enabled: boolean) => void;
+  batchNotificationPreference: 'break' | 'sesh_end' | 'custom';
+  setBatchNotificationPreference: (preference: 'break' | 'sesh_end' | 'custom') => void;
+  customBatchMinutes: number;
+  setCustomBatchMinutes: (minutes: number) => void;
+  lock: boolean;
+  setLock: (locked: boolean) => void;
+  exemptionsEnabled: boolean;
+  setExemptionsEnabled: (enabled: boolean) => void;
+  phoneCalls: boolean;
+  setPhoneCalls: (enabled: boolean) => void;
+  favourites: boolean;
+  setFavourites: (enabled: boolean) => void;
+  workApps: boolean;
+  setWorkApps: (enabled: boolean) => void;
+  intentionalBreaches: boolean;
+  setIntentionalBreaches: (enabled: boolean) => void;
   manualTransition: boolean;
-  setManualTransition: (value: boolean) => void;
+  setManualTransition: (manual: boolean) => void;
+  maxDistance: number;
+  setMaxDistance: (distance: number) => void;
+  askNotifications: NotificationSettings;
+  setAskNotifications: (settings: NotificationSettings) => void;
+  sessionInvites: NotificationSettings;
+  setSessionInvites: (settings: NotificationSettings) => void;
+  friendActivity: NotificationSettings;
+  setFriendActivity: (settings: NotificationSettings) => void;
+  breakNotificationsVibrate: boolean;
+  setBreakNotificationsVibrate: (vibrate: boolean) => void;
+  verificationStandard: string;
+  setVerificationStandard: (standard: string) => void;
+  profileVisibility: string;
+  setProfileVisibility: (visibility: string) => void;
+  locationSharing: string;
+  setLocationSharing: (sharing: string) => void;
+  isGlobalPublic: boolean;
+  setIsGlobalPublic: (isPublic: boolean) => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
+const LOCAL_STORAGE_KEY = 'flowsesh_settings';
+
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false); // Renamed and default to true
   const [timerIncrement, setTimerIncrement] = useState(5);
-
-  // Timer control states
-  const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(focusMinutes * 60);
-  const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
-  const [isFlashing, setIsFlashing] = useState(false);
-  const [notes, setNotes] = useState("");
-
-  // Scheduling states
-  const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
-  const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
-  const [isSchedulingMode, setIsSchedulingMode] = useState(false);
-  const [isScheduleActive, setIsScheduleActive] = useState(false);
-  const [scheduleTitle, setScheduleTitle] = useState("My DeepSesh Schedule");
-  const [commenceTime, setCommenceTime] = useState(new Date().toTimeString().slice(0, 5)); // HH:MM format
-  const [commenceDay, setCommenceDay] = useState(new Date().getDay()); // 0 for Sunday, 1 for Monday, etc.
-
-  // New notification settings
-  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false);
-  const [shouldShowEndToast, setShouldShowEndToast] = useState(false);
-
-  // Manual transition setting
+  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(true);
+  const [shouldShowEndToast, setShouldShowEndToast] = useState(true);
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
+  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
+  const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
+  const [customBatchMinutes, setCustomBatchMinutes] = useState(15);
+  const [lock, setLock] = useState(false);
+  const [exemptionsEnabled, setExemptionsEnabled] = useState(false);
+  const [phoneCalls, setPhoneCalls] = useState(false);
+  const [favourites, setFavourites] = useState(false);
+  const [workApps, setWorkApps] = useState(false);
+  const [intentionalBreaches, setIntentionalBreaches] = useState(false);
   const [manualTransition, setManualTransition] = useState(false);
+  const [maxDistance, setMaxDistance] = useState(2000);
+  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false });
+  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
+  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false });
+  const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false);
+  const [verificationStandard, setVerificationStandard] = useState("anyone");
+  const [profileVisibility, setProfileVisibility] = useState("friends");
+  const [locationSharing, setLocationSharing] = useState("approximate");
+  const [isGlobalPublic, setIsGlobalPublic] = useState(false);
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const flashingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Utility function to format time
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const playEndSound = useCallback(() => {
-    if (!shouldPlayEndSound) return;
-
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    oscillator.frequency.value = 440; // A4 note
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
-  }, [shouldPlayEndSound]);
-
-  const startSchedule = useCallback(() => {
-    if (schedule.length > 0) {
-      setIsScheduleActive(true);
-      setCurrentScheduleIndex(0);
-      setTimerType(schedule[0].type);
-      setTimeLeft(schedule[0].durationMinutes * 60);
-      setIsRunning(true);
-      setIsPaused(false);
-      setIsFlashing(false);
-      setIsSchedulingMode(false);
-      if (shouldShowEndToast) {
-        toast({
-          title: "Schedule Commenced!",
-          description: `Starting "${schedule[0].title}" for ${schedule[0].durationMinutes} minutes.`,
-        });
-      }
-    }
-  }, [schedule, shouldShowEndToast]);
-
-  const resetSchedule = useCallback(() => {
-    setIsScheduleActive(false);
-    setCurrentScheduleIndex(0);
-    setSchedule([]);
-    setIsRunning(false);
-    setIsPaused(false);
-    setIsFlashing(false);
-    setTimerType('focus');
-    setTimeLeft(focusMinutes * 60);
-    setScheduleTitle("My DeepSesh Schedule");
-    setCommenceTime(new Date().toTimeString().slice(0, 5));
-    setCommenceDay(new Date().getDay());
-    if (shouldShowEndToast) {
-      toast({
-        title: "Schedule Reset",
-        description: "Your current schedule has been cleared.",
-      });
-    }
-  }, [focusMinutes, shouldShowEndToast]);
-
+  // Load settings from local storage on initial mount
   useEffect(() => {
-    if (isRunning && !isPaused) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          if (prevTime <= 1) {
-            clearInterval(intervalRef.current!);
-            playEndSound();
-
-            if (isScheduleActive) {
-              const nextIndex = currentScheduleIndex + 1;
-              if (nextIndex < schedule.length) {
-                setCurrentScheduleIndex(nextIndex);
-                setTimerType(schedule[nextIndex].type);
-                setTimeLeft(schedule[nextIndex].durationMinutes * 60);
-                setIsRunning(true); // Auto-start next schedule item
-                setIsFlashing(false); // No flashing
-                if (shouldShowEndToast) {
-                  toast({
-                    title: "Next in Schedule!",
-                    description: `Starting "${schedule[nextIndex].title}" for ${schedule[nextIndex].durationMinutes} minutes.`,
-                  });
-                }
-              } else {
-                // Schedule completed
-                setIsScheduleActive(false);
-                setCurrentScheduleIndex(0);
-                setIsRunning(false); // Stop timer
-                setIsFlashing(false); // No flashing
-                if (shouldShowEndToast) {
-                  toast({
-                    title: "Schedule Completed!",
-                    description: "All timers in your schedule have finished.",
-                  });
-                }
-              }
-            } else { // Not a schedule, single timer
-              const nextType = timerType === 'focus' ? 'break' : 'focus';
-              const nextDuration = nextType === 'focus' ? focusMinutes : breakMinutes; 
-
-              if (manualTransition) {
-                // Manual transition enabled: stop and flash, await user action
-                setTimerType(nextType); // Pre-set for the next session
-                setTimeLeft(nextDuration * 60); // Pre-set for the next session
-                setIsRunning(false);
-                setIsFlashing(true);
-                if (shouldShowEndToast) {
-                  toast({
-                    title: "Time's Up!",
-                    description: `Your ${timerType} session has ended. Ready for ${nextType} (${nextDuration} minutes)?`, // Updated toast message
-                    variant: "default",
-                  });
-                }
-              } else {
-                // Auto-transition enabled: switch type and restart
-                setTimerType(nextType);
-                setTimeLeft(nextDuration * 60);
-                setIsRunning(true); // Auto-start next phase
-                setIsFlashing(false); // No flashing
-                if (shouldShowEndToast) {
-                  toast({
-                    title: "Transitioning!",
-                    description: `Starting your ${nextType} session for ${nextDuration} minutes.`,
-                });
-                }
-              }
-            }
-            return 0;
-          }
-          return prevTime - 1;
-        });
-      }, 1000);
-    } else {
-      clearInterval(intervalRef.current!);
+    const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (storedSettings) {
+      const settings = JSON.parse(storedSettings);
+      setFocusMinutes(settings.focusMinutes ?? 25);
+      setBreakMinutes(settings.breakMinutes ?? 5);
+      setTimerIncrement(settings.timerIncrement ?? 5);
+      setShouldPlayEndSound(settings.shouldPlayEndSound ?? true);
+      setShouldShowEndToast(settings.shouldShowEndToast ?? true);
+      setShowSessionsWhileActive(settings.showSessionsWhileActive ?? true);
+      setIsBatchNotificationsEnabled(settings.isBatchNotificationsEnabled ?? false);
+      setBatchNotificationPreference(settings.batchNotificationPreference ?? 'break');
+      setCustomBatchMinutes(settings.customBatchMinutes ?? 15);
+      setLock(settings.lock ?? false);
+      setExemptionsEnabled(settings.exemptionsEnabled ?? false);
+      setPhoneCalls(settings.phoneCalls ?? false);
+      setFavourites(settings.favourites ?? false);
+      setWorkApps(settings.workApps ?? false);
+      setIntentionalBreaches(settings.intentionalBreaches ?? false);
+      setManualTransition(settings.manualTransition ?? false);
+      setMaxDistance(settings.maxDistance ?? 2000);
+      setAskNotifications(settings.askNotifications ?? { push: true, vibrate: false, sound: false });
+      setSessionInvites(settings.sessionInvites ?? { push: true, vibrate: true, sound: true });
+      setFriendActivity(settings.friendActivity ?? { push: true, vibrate: false, sound: false });
+      setBreakNotificationsVibrate(settings.breakNotificationsVibrate ?? false);
+      setVerificationStandard(settings.verificationStandard ?? "anyone");
+      setProfileVisibility(settings.profileVisibility ?? "friends");
+      setLocationSharing(settings.locationSharing ?? "approximate");
+      setIsGlobalPublic(settings.isGlobalPublic ?? false);
     }
+  }, []);
 
-    return () => clearInterval(intervalRef.current!);
-  }, [isRunning, isPaused, isScheduleActive, currentScheduleIndex, schedule, timerType, playEndSound, shouldShowEndToast, manualTransition, focusMinutes, breakMinutes]);
-
+  // Save settings to local storage whenever they change
   useEffect(() => {
-    if (isFlashing) {
-      flashingIntervalRef.current = setInterval(() => {
-        // Toggle a class or state for visual flashing effect
-      }, 500);
-    } else {
-      clearInterval(flashingIntervalRef.current!);
-    }
-    return () => clearInterval(flashingIntervalRef.current!);
-  }, [isFlashing]);
-
-  // Update timeLeft when focusMinutes or breakMinutes change, but only if timer is not running/paused
-  useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive) {
-      setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
-    }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive]);
-
+    const settingsToSave = {
+      focusMinutes,
+      breakMinutes,
+      timerIncrement,
+      shouldPlayEndSound,
+      shouldShowEndToast,
+      showSessionsWhileActive,
+      isBatchNotificationsEnabled,
+      batchNotificationPreference,
+      customBatchMinutes,
+      lock,
+      exemptionsEnabled,
+      phoneCalls,
+      favourites,
+      workApps,
+      intentionalBreaches,
+      manualTransition,
+      maxDistance,
+      askNotifications,
+      sessionInvites,
+      friendActivity,
+      breakNotificationsVibrate,
+      verificationStandard,
+      profileVisibility,
+      locationSharing,
+      isGlobalPublic,
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settingsToSave));
+  }, [
+    focusMinutes, breakMinutes, timerIncrement, shouldPlayEndSound, shouldShowEndToast,
+    showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
+    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
+    manualTransition, maxDistance, askNotifications, sessionInvites, friendActivity,
+    breakNotificationsVibrate, verificationStandard, profileVisibility, locationSharing,
+    isGlobalPublic,
+  ]);
 
   const value = {
-    focusMinutes,
-    setFocusMinutes,
-    breakMinutes,
-    setBreakMinutes,
-    showSessionsWhileActive, // Renamed
-    setShowSessionsWhileActive, // Renamed
-    timerIncrement,
-    setTimerIncrement,
-    formatTime,
-
-    isRunning,
-    setIsRunning,
-    isPaused,
-    setIsPaused,
-    timeLeft,
-    setTimeLeft,
-    timerType,
-    setTimerType,
-    isFlashing,
-    setIsFlashing,
-    notes,
-    setNotes,
-
-    schedule,
-    setSchedule,
-    currentScheduleIndex,
-    setCurrentScheduleIndex,
-    isSchedulingMode,
-    setIsSchedulingMode,
-    isScheduleActive,
-    setIsScheduleActive,
-    scheduleTitle,
-    setScheduleTitle,
-    commenceTime,
-    setCommenceTime,
-    commenceDay,
-    setCommenceDay,
-    startSchedule,
-    resetSchedule,
-
-    shouldPlayEndSound,
-    setShouldPlayEndSound,
-    shouldShowEndToast,
-    setShouldShowEndToast,
-
-    manualTransition,
-    setManualTransition,
+    focusMinutes, setFocusMinutes,
+    breakMinutes, setBreakMinutes,
+    timerIncrement, setTimerIncrement,
+    shouldPlayEndSound, setShouldPlayEndSound,
+    shouldShowEndToast, setShouldShowEndToast,
+    showSessionsWhileActive, setShowSessionsWhileActive,
+    isBatchNotificationsEnabled, setIsBatchNotificationsEnabled,
+    batchNotificationPreference, setBatchNotificationPreference,
+    customBatchMinutes, setCustomBatchMinutes,
+    lock, setLock,
+    exemptionsEnabled, setExemptionsEnabled,
+    phoneCalls, setPhoneCalls,
+    favourites, setFavourites,
+    workApps, setWorkApps,
+    intentionalBreaches, setIntentionalBreaches,
+    manualTransition, setManualTransition,
+    maxDistance, setMaxDistance,
+    askNotifications, setAskNotifications,
+    sessionInvites, setSessionInvites,
+    friendActivity, setFriendActivity,
+    breakNotificationsVibrate, setBreakNotificationsVibrate,
+    verificationStandard, setVerificationStandard,
+    profileVisibility, setProfileVisibility,
+    locationSharing, setLocationSharing,
+    isGlobalPublic, setIsGlobalPublic,
   };
 
-  return (
-    <TimerContext.Provider value={value}>
-      {children}
-    </TimerContext.Provider>
-  );
+  return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
 };
 
 export const useTimer = () => {

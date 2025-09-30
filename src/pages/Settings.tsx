@@ -13,8 +13,8 @@ import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 const Settings = () => {
   const { 
-    showSessionsWhileActive, // Renamed
-    setShowSessionsWhileActive, // Renamed
+    showSessionsWhileActive, 
+    setShowSessionsWhileActive, 
     focusMinutes, 
     setFocusMinutes, 
     breakMinutes, 
@@ -25,18 +25,47 @@ const Settings = () => {
     setShouldPlayEndSound, 
     shouldShowEndToast, 
     setShouldShowEndToast, 
+    isBatchNotificationsEnabled,
+    setIsBatchNotificationsEnabled,
+    batchNotificationPreference,
+    setBatchNotificationPreference,
+    customBatchMinutes,
+    setCustomBatchMinutes,
+    lock,
+    setLock,
+    exemptionsEnabled,
+    setExemptionsEnabled,
+    phoneCalls,
+    setPhoneCalls,
+    favourites,
+    setFavourites,
+    workApps,
+    setWorkApps,
+    intentionalBreaches,
+    setIntentionalBreaches,
+    manualTransition,
+    setManualTransition,
+    maxDistance,
+    setMaxDistance,
+    askNotifications,
+    setAskNotifications,
+    sessionInvites,
+    setSessionInvites,
+    friendActivity,
+    setFriendActivity,
+    breakNotificationsVibrate,
+    setBreakNotificationsVibrate,
+    verificationStandard,
+    setVerificationStandard,
+    profileVisibility,
+    setProfileVisibility,
+    locationSharing,
+    setLocationSharing,
+    isGlobalPublic,
+    setIsGlobalPublic,
   } = useTimer();
 
-  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
-  const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
-  const [customBatchMinutes, setCustomBatchMinutes] = useState(15);
-  const [lock, setlock] = useState(false);
-  const [exemptionsEnabled, setExemptionsEnabled] = useState(false);
-  const [phoneCalls, setPhoneCalls] = useState(false);
-  const [favourites, setFavourites] = useState(false);
-  const [workApps, setWorkApps] = useState(false);
-  const [intentionalBreaches, setIntentionalBreaches] = useState(false);
-
+  // Local state for temporary UI interactions or derived values
   const [selectedFocusDuration, setSelectedFocusDuration] = useState<string>(focusMinutes.toString());
   const [customFocusDuration, setCustomFocusDuration] = useState<string>(
     !['15', '25', '45', '55', '75', '90'].includes(focusMinutes.toString()) ? focusMinutes.toString() : ''
@@ -45,33 +74,18 @@ const Settings = () => {
   const [customBreakDuration, setCustomBreakDuration] = useState<string>(
     !['5', '10', '15', '20', '30'].includes(breakMinutes.toString()) ? breakMinutes.toString() : ''
   );
-
-  const [maxDistance, setMaxDistance] = useState([2000]);
   
-  const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false); 
-  const [askNotifications, setaskNotifications] = useState({ push: false, vibrate: false, sound: false });
-  const [sessionInvites, setSessionInvites] = useState({ push: false, vibrate: false, sound: false });
-  const [friendActivity, setFriendActivity] = useState({ push: false, vibrate: false, sound: false });
-  
-  const [manualTransition, setManualTransition] = useState(false); // Renamed from autoTransition
-  
-  const [verificationStandard, setVerificationStandard] = useState("anyone");
-  
-  const [profileVisibility, setProfileVisibility] = useState("friends");
-  const [locationSharing, setLocationSharing] = useState("approximate");
-
-  const [isGlobalPublic, setIsGlobalPublic] = useState(false);
-  
+  // Initialize local state for currentTimerIncrement from context
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
 
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({}); // Fixed: Initialized with an empty object
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   // Initial state for comparison to detect changes
   const initialSettings = useRef({
-    showSessionsWhileActive, // Directly use context value
+    showSessionsWhileActive,
     isBatchNotificationsEnabled, 
     batchNotificationPreference, 
     customBatchMinutes, 
@@ -81,10 +95,10 @@ const Settings = () => {
     favourites,
     workApps,
     intentionalBreaches,
-    manualTransition, // Renamed
+    manualTransition,
     focusMinutes, 
     breakMinutes, 
-    maxDistance: maxDistance[0],
+    maxDistance, // Use context value directly
     askNotifications,
     breakNotificationsVibrate, 
     sessionInvites,
@@ -93,17 +107,26 @@ const Settings = () => {
     profileVisibility,
     locationSharing,
     isGlobalPublic, 
-    timerIncrement, 
+    timerIncrement, // Use context value directly
     shouldPlayEndSound, 
     shouldShowEndToast, 
   });
 
+  // Effect to update local duration states when context values change (e.g., on initial load)
   useEffect(() => {
-    const currentFocusVal = selectedFocusDuration === 'custom' ? (parseInt(customFocusDuration) || 0) : parseInt(selectedFocusDuration);
-    const currentBreakVal = selectedBreakDuration === 'custom' ? (parseInt(customBreakDuration) || 0) : parseInt(selectedBreakDuration);
+    setSelectedFocusDuration(focusMinutes.toString());
+    setCustomFocusDuration(
+      !['15', '25', '45', '55', '75', '90'].includes(focusMinutes.toString()) ? focusMinutes.toString() : ''
+    );
+    setSelectedBreakDuration(breakMinutes.toString());
+    setCustomBreakDuration(
+      !['5', '10', '15', '20', '30'].includes(breakMinutes.toString()) ? breakMinutes.toString() : ''
+    );
+    setCurrentTimerIncrement(timerIncrement);
 
-    const currentSettings = {
-      showSessionsWhileActive, // Directly use context value
+    // Also update initial settings ref when context values are loaded/changed
+    initialSettings.current = {
+      showSessionsWhileActive,
       isBatchNotificationsEnabled, 
       batchNotificationPreference, 
       customBatchMinutes, 
@@ -113,10 +136,10 @@ const Settings = () => {
       favourites,
       workApps,
       intentionalBreaches,
-      manualTransition, // Renamed
-      focusMinutes: currentFocusVal,
-      breakMinutes: currentBreakVal,
-      maxDistance: maxDistance[0],
+      manualTransition,
+      focusMinutes, 
+      breakMinutes, 
+      maxDistance,
       askNotifications,
       breakNotificationsVibrate, 
       sessionInvites,
@@ -125,7 +148,48 @@ const Settings = () => {
       profileVisibility,
       locationSharing,
       isGlobalPublic, 
-      timerIncrement: currentTimerIncrement, 
+      timerIncrement, 
+      shouldPlayEndSound, 
+      shouldShowEndToast, 
+    };
+  }, [
+    focusMinutes, breakMinutes, timerIncrement, showSessionsWhileActive,
+    isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
+    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
+    manualTransition, maxDistance, askNotifications, sessionInvites, friendActivity,
+    breakNotificationsVibrate, verificationStandard, profileVisibility, locationSharing,
+    isGlobalPublic, shouldPlayEndSound, shouldShowEndToast,
+  ]);
+
+
+  useEffect(() => {
+    const currentFocusVal = selectedFocusDuration === 'custom' ? (parseInt(customFocusDuration) || 0) : parseInt(selectedFocusDuration);
+    const currentBreakVal = selectedBreakDuration === 'custom' ? (parseInt(customBreakDuration) || 0) : parseInt(selectedBreakDuration);
+
+    const currentSettings = {
+      showSessionsWhileActive,
+      isBatchNotificationsEnabled, 
+      batchNotificationPreference, 
+      customBatchMinutes, 
+      lock,
+      exemptionsEnabled,
+      phoneCalls,
+      favourites,
+      workApps,
+      intentionalBreaches,
+      manualTransition,
+      focusMinutes: currentFocusVal,
+      breakMinutes: currentBreakVal,
+      maxDistance, // Use context value directly
+      askNotifications,
+      breakNotificationsVibrate, 
+      sessionInvites,
+      friendActivity,
+      verificationStandard,
+      profileVisibility,
+      locationSharing,
+      isGlobalPublic, 
+      timerIncrement: currentTimerIncrement, // Compare with local state
       shouldPlayEndSound, 
       shouldShowEndToast, 
     };
@@ -141,12 +205,12 @@ const Settings = () => {
     });
     setHasChanges(changed);
   }, [
-    showSessionsWhileActive, // Directly use context value
+    showSessionsWhileActive,
     isBatchNotificationsEnabled, 
     batchNotificationPreference, 
     customBatchMinutes, 
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance, // Renamed
+    manualTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
     askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPublic, 
@@ -179,7 +243,7 @@ const Settings = () => {
 
     // Update initial settings for change detection
     initialSettings.current = {
-      showSessionsWhileActive, // Directly use context value
+      showSessionsWhileActive,
       isBatchNotificationsEnabled, 
       batchNotificationPreference, 
       customBatchMinutes, 
@@ -189,10 +253,10 @@ const Settings = () => {
       favourites,
       workApps,
       intentionalBreaches,
-      manualTransition, // Renamed
+      manualTransition,
       focusMinutes: newFocusMinutes,
       breakMinutes: newBreakMinutes,
-      maxDistance: maxDistance[0],
+      maxDistance,
       askNotifications,
       breakNotificationsVibrate, 
       sessionInvites,
@@ -219,7 +283,7 @@ const Settings = () => {
       }
     } else {
       const setters = {
-        ask: setaskNotifications,
+        ask: setAskNotifications,
         invites: setSessionInvites,
         activity: setFriendActivity
       };
@@ -372,21 +436,21 @@ const Settings = () => {
                 </div>
                 <Switch
                   id="show-sessions-while-active"
-                  checked={showSessionsWhileActive} // Directly use context value
-                  onCheckedChange={setShowSessionsWhileActive} // Directly update context
+                  checked={showSessionsWhileActive}
+                  onCheckedChange={setShowSessionsWhileActive}
                 />
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="manual-transition"> Manual Transitions</Label> {/* Renamed label */}
+                  <Label htmlFor="manual-transition"> Manual Transitions</Label>
                   <p className="text-sm text-muted-foreground">
                     Prompt for session ends?
                   </p>
                 </div>
                 <Switch
-                  id="manual-transition" // Renamed id
+                  id="manual-transition"
                   checked={manualTransition}
-                  onCheckedChange={setManualTransition} // Renamed setter
+                  onCheckedChange={setManualTransition}
                 />
               </div>
 
@@ -400,7 +464,7 @@ const Settings = () => {
                 <Switch
                   id="lock"
                   checked={lock}
-                  onCheckedChange={setlock}
+                  onCheckedChange={setLock}
                 />
               </div>
 
@@ -642,22 +706,22 @@ const Settings = () => {
                   </div>
                   <div className="relative group">
                     <Slider
-                      value={maxDistance}
-                      onValueChange={setMaxDistance}
+                      value={[maxDistance]} // Slider expects an array
+                      onValueChange={(val) => setMaxDistance(val[0])} // Extract single value
                       max={5000}
                       min={100}
                       step={100}
                       className="w-full"
                     />
                     <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none select-none">
-                      {maxDistance[0] >= 1000 ? `${(maxDistance[0] / 1000).toFixed(1)}km` : `${maxDistance[0]}m`}
+                      {maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`}
                     </div>
                   </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground select-none">
-                    {maxDistance[0] <= 300 && "Very close proximity only"}
-                    {maxDistance[0] > 300 && maxDistance[0] <= 1000 && "Walking distance"}
-                    {maxDistance[0] > 1000 && maxDistance[0] <= 2000 && "Short bike ride"}
-                    {maxDistance[0] > 2000 && "Wider area search"}
+                    {maxDistance <= 300 && "Very close proximity only"}
+                    {maxDistance > 300 && maxDistance <= 1000 && "Walking distance"}
+                    {maxDistance > 1000 && maxDistance <= 2000 && "Short bike ride"}
+                    {maxDistance > 2000 && "Wider area search"}
                   </div>
                 </div>
               </div>
