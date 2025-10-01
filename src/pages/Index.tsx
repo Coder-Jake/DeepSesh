@@ -704,6 +704,7 @@ const Index = () => {
                         min={timerIncrement} 
                         max="120" 
                         step={timerIncrement}
+                        onFocus={(e) => e.target.select()}
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -736,6 +737,7 @@ const Index = () => {
                         min={timerIncrement} 
                         max="60" 
                         step={timerIncrement}
+                        onFocus={(e) => e.target.select()}
                       />
                     </div>
                   </div>
@@ -794,6 +796,7 @@ const Index = () => {
                   onBlur={handleTitleInputBlur}
                   placeholder="Sesh Title"
                   className="text-lg font-semibold h-auto py-1 px-2"
+                  onFocus={(e) => e.target.select()}
                 />
               ) : (
                 <CardTitle 
@@ -815,6 +818,7 @@ const Index = () => {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="min-h-[120px] resize-none"
+                onFocus={(e) => e.target.select()}
               />
             </CardContent>
           </Card>

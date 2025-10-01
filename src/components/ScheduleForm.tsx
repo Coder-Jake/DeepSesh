@@ -72,6 +72,7 @@ const ScheduleForm: React.FC = () => {
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
       scheduleTitleInputRef.current.focus();
+      scheduleTitleInputRef.current.select(); // Select the text when focused
     }
   }, [isEditingScheduleTitle]);
 
@@ -156,6 +157,7 @@ const ScheduleForm: React.FC = () => {
             onBlur={handleScheduleTitleInputBlur}
             placeholder="Schedule Title"
             className="text-2xl font-bold h-auto py-2"
+            onFocus={(e) => e.target.select()}
           />
         ) : (
           <CardTitle
@@ -180,6 +182,7 @@ const ScheduleForm: React.FC = () => {
                   value={timer.title}
                   onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
                   className="flex-grow min-w-0" // Allow title to take available space, but can shrink
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
               
@@ -204,6 +207,7 @@ const ScheduleForm: React.FC = () => {
                 min={timerIncrement}
                 step={timerIncrement}
                 className="w-20 text-center flex-shrink-0"
+                onFocus={(e) => e.target.select()}
               />
               
               <Button
@@ -251,6 +255,7 @@ const ScheduleForm: React.FC = () => {
                 type="time"
                 value={commenceTime}
                 onChange={(e) => setCommenceTime(e.target.value)}
+                onFocus={(e) => e.target.select()}
               />
             </div>
             <div className="space-y-2">

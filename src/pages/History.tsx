@@ -115,6 +115,7 @@ const History = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full"
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
             )}

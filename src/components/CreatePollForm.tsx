@@ -88,6 +88,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           className="w-full"
+          onFocus={(e) => e.target.select()}
         />
       </div>
 
@@ -140,6 +141,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
             onChange={(e) => setOptions(e.target.value)}
             rows={3}
             className="w-full"
+            onFocus={(e) => e.target.select()}
           />
         </div>
       )}

@@ -101,6 +101,7 @@ const ChipIn = () => {
                 onChange={(e) => handleCustomAmount(e.target.value)}
                 min="1"
                 step="0.01"
+                onFocus={(e) => e.target.select()}
               />
             </div>
 
@@ -112,6 +113,7 @@ const ChipIn = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
+                onFocus={(e) => e.target.select()}
               />
             </div>
 

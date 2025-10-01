@@ -507,6 +507,7 @@ const Settings = () => {
                         min={timerIncrement}
                         step={timerIncrement}
                         className="mt-2"
+                        onFocus={(e) => e.target.select()}
                       />
                     )}
                   </div>
@@ -652,6 +653,7 @@ const Settings = () => {
                     onChange={(e) => setCustomFocusDuration(e.target.value)}
                     min="1"
                     className="mt-2"
+                    onFocus={(e) => e.target.select()}
                   />
                 )}
               </div>
@@ -679,6 +681,7 @@ const Settings = () => {
                     onChange={(e) => setCustomBreakDuration(e.target.value)}
                     min="1"
                     className="mt-2"
+                    onFocus={(e) => e.target.select()}
                   />
                 )}
               </div>

@@ -219,6 +219,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
                   onChange={handleCustomResponseChange}
                   onBlur={handleCustomResponseBlur}
                   onKeyDown={handleCustomResponseKeyDown}
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
             )}
