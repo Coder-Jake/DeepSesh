@@ -1,35 +1,68 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Users, Clock, Award, Gift } from "lucide-react"; // Added Award and Gift icons
+import { Trophy, Users, Clock, Award, Gift } from "lucide-react";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
 import { useState } from "react";
 
 const Leaderboard = () => {
-  // Sample data - in a real app this would come from a database
-  const focusHoursLeaderboard = [
-    { id: 1, name: "Angie", focusHours: 120 },
-    { id: 2, name: "Bob", focusHours: 110 },
-    { id: 3, name: "Charlie", focusHours: 95 },
-    { id: 4, name: "Diana", focusHours: 80 },
-    { id: 5, name: "Eve", focusHours: 75 },
-  ];
+  // Sample data for Focus Hours Leaderboard, categorized by time period
+  const focusHoursLeaderboardData = {
+    week: [
+      { id: 1, name: "Angie", focusHours: 30 },
+      { id: 2, name: "Bob", focusHours: 25 },
+      { id: 3, name: "Charlie", focusHours: 20 },
+      { id: 4, name: "Diana", focusHours: 18 },
+      { id: 5, name: "Eve", focusHours: 15 },
+    ],
+    month: [
+      { id: 1, name: "Angie", focusHours: 120 },
+      { id: 2, name: "Bob", focusHours: 110 },
+      { id: 3, name: "Diana", focusHours: 95 },
+      { id: 4, name: "Charlie", focusHours: 80 },
+      { id: 5, name: "Frank", focusHours: 70 },
+    ],
+    all: [
+      { id: 1, name: "Angie", focusHours: 500 },
+      { id: 2, name: "Bob", focusHours: 450 },
+      { id: 3, name: "Charlie", focusHours: 400 },
+      { id: 4, name: "Diana", focusHours: 350 },
+      { id: 5, name: "Eve", focusHours: 300 },
+    ],
+  };
 
-  const collaboratedUsersLeaderboard = [
-    { id: 1, name: "Angie", collaboratedUsers: 25 },
-    { id: 2, name: "Frank", collaboratedUsers: 22 },
-    { id: 3, name: "Grace", collaboratedUsers: 18 },
-    { id: 4, name: "Bob", collaboratedUsers: 15 },
-    { id: 5, name: "Heidi", collaboratedUsers: 12 },
-  ];
+  // Sample data for Collaborated Users Leaderboard, categorized by time period
+  const collaboratedUsersLeaderboardData = {
+    week: [
+      { id: 1, name: "Angie", collaboratedUsers: 8 },
+      { id: 2, name: "Frank", collaboratedUsers: 7 },
+      { id: 3, name: "Grace", collaboratedUsers: 6 },
+      { id: 4, name: "Bob", collaboratedUsers: 5 },
+      { id: 5, name: "Heidi", collaboratedUsers: 4 },
+    ],
+    month: [
+      { id: 1, name: "Angie", collaboratedUsers: 25 },
+      { id: 2, name: "Frank", collaboratedUsers: 22 },
+      { id: 3, name: "Grace", collaboratedUsers: 18 },
+      { id: 4, name: "Bob", collaboratedUsers: 15 },
+      { id: 5, name: "Heidi", collaboratedUsers: 12 },
+    ],
+    all: [
+      { id: 1, name: "Angie", collaboratedUsers: 100 },
+      { id: 2, name: "Frank", collaboratedUsers: 90 },
+      { id: 3, name: "Grace", collaboratedUsers: 80 },
+      { id: 4, name: "Bob", collaboratedUsers: 70 },
+      { id: 5, name: "Heidi", collaboratedUsers: 60 },
+    ],
+  };
 
   const [focusTimePeriod, setFocusTimePeriod] = useState<'week' | 'month' | 'all'>('all');
   const [collaborationTimePeriod, setCollaborationTimePeriod] = useState<'week' | 'month' | 'all'>('all');
 
-  // In a real app, you would filter the data based on focusTimePeriod and collaborationTimePeriod
-  console.log("Focus Leaderboard Period:", focusTimePeriod);
-  console.log("Collaboration Leaderboard Period:", collaborationTimePeriod);
+  // Get the data for the currently selected time period
+  const currentFocusHoursLeaderboard = focusHoursLeaderboardData[focusTimePeriod];
+  const currentCollaboratedUsersLeaderboard = collaboratedUsersLeaderboardData[collaborationTimePeriod];
 
   return (
-    <main className="max-w-4xl mx-auto p-4 lg:p-6"> {/* Adjusted padding */}
+    <main className="max-w-4xl mx-auto p-4 lg:p-6">
       <div className="mb-6 text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
           <Trophy className="h-8 w-8 text-primary" />
@@ -40,7 +73,7 @@ const Leaderboard = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"> {/* Added mb-8 for spacing */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Focus Hours Leaderboard */}
         <Card id="focus-hours-leaderboard">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -51,11 +84,11 @@ const Leaderboard = () => {
             <TimeFilterToggle onValueChange={setFocusTimePeriod} />
           </CardHeader>
           <CardContent className="space-y-3">
-            {focusHoursLeaderboard.map((user, index) => (
+            {currentFocusHoursLeaderboard.map((user, index) => (
               <div key={user.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-lg text-primary">{index + 1}.</span>
-                  <p className="font-medium text-foreground">{user.name}</p> {/* Added user.name */}
+                  <p className="font-medium text-foreground">{user.name}</p>
                 </div>
                 <p className="text-muted-foreground">{user.focusHours} hours</p>
               </div>
@@ -73,7 +106,7 @@ const Leaderboard = () => {
             <TimeFilterToggle onValueChange={setCollaborationTimePeriod} />
           </CardHeader>
           <CardContent className="space-y-3">
-            {collaboratedUsersLeaderboard.map((user, index) => (
+            {currentCollaboratedUsersLeaderboard.map((user, index) => (
               <div key={user.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-lg text-primary">{index + 1}.</span>
