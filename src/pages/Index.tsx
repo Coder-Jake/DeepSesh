@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
 
-// Define types for Ask items
+// Define types for Ask items (copied from TimerContext to ensure consistency)
 interface ExtendSuggestion {
   id: string;
   minutes: number;
@@ -177,6 +177,11 @@ const Index = () => {
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
     saveSessionToHistory,
+
+    // Active Asks from TimerContext
+    activeAsks,
+    addAsk,
+    updateAsk,
   } = useTimer();
   
   const { profile, loading: profileLoading } = useProfile();
@@ -186,7 +191,7 @@ const Index = () => {
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
-  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]);
+  // Removed local activeAsks state, now using context
 
   const currentUserId = profile?.id || "mock-user-id-123"; 
   const currentUserName = profile?.first_name || "You";
@@ -349,7 +354,7 @@ const Index = () => {
         setActiveJoinedSession(null);
         if (isScheduleActive) resetSchedule();
         setSessionStartTime(null);
-        setCurrentPhaseStartTime(null);
+        setCurrentPhaseStartTime(0); // Reset current phase start time
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
         setNotes("");
@@ -444,7 +449,7 @@ const Index = () => {
       votes: [],
       status: 'pending',
     };
-    setActiveAsks(prev => [newSuggestion, ...prev]);
+    addAsk(newSuggestion); // Use context function
   };
 
   const handlePollSubmit = (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => {
@@ -471,93 +476,85 @@ const Index = () => {
       status: 'active',
       allowCustomResponses,
     };
-    setActiveAsks(prev => [newPoll, ...prev]);
+    addAsk(newPoll); // Use context function
   };
 
   const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => {
-    setActiveAsks(prevAsks => {
-      return prevAsks.map(ask => {
-        if (ask.id === id && 'minutes' in ask) {
-          let updatedVotes = ask.votes.filter(v => v.userId !== currentUserId);
+    const currentAsk = activeAsks.find(ask => ask.id === id);
+    if (!currentAsk || !('minutes' in currentAsk)) return;
 
-          if (newVote !== null) {
-            updatedVotes.push({ userId: currentUserId, vote: newVote });
-          }
+    let updatedVotes = currentAsk.votes.filter(v => v.userId !== currentUserId);
 
-          const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
-          const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
-          
-          const totalParticipants = (activeJoinedSession?.participants.length || 0) + 1; 
-          const threshold = Math.ceil(totalParticipants / 2);
+    if (newVote !== null) {
+      updatedVotes.push({ userId: currentUserId, vote: newVote });
+    }
 
-          let newStatus = ask.status;
-          if (yesVotes >= threshold) {
-            newStatus = 'accepted';
-          } else if (noVotes >= threshold) {
-            newStatus = 'rejected';
-          } else {
-            if (ask.status !== 'pending' && yesVotes < threshold && noVotes < threshold) {
-              newStatus = 'pending';
-            }
-          }
+    const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
+    const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
+    
+    const totalParticipants = (activeJoinedSession?.participants.length || 0) + 1; 
+    const threshold = Math.ceil(totalParticipants / 2);
 
-          return {
-            ...ask,
-            votes: updatedVotes,
-            status: newStatus,
-          };
-        }
-        return ask;
-      });
+    let newStatus = currentAsk.status;
+    if (yesVotes >= threshold) {
+      newStatus = 'accepted';
+    } else if (noVotes >= threshold) {
+      newStatus = 'rejected';
+    } else {
+      if (currentAsk.status !== 'pending' && yesVotes < threshold && noVotes < threshold) {
+        newStatus = 'pending';
+      }
+    }
+
+    updateAsk({ // Use context function
+      ...currentAsk,
+      votes: updatedVotes,
+      status: newStatus,
     });
   };
 
   const handleVotePoll = (pollId: string, optionIds: string[], customOptionText?: string) => {
-    setActiveAsks(prevAsks =>
-      prevAsks.map(ask => {
-        if (ask.id === pollId && 'options' in ask) {
-          let currentPoll = ask as Poll;
+    const currentAsk = activeAsks.find(ask => ask.id === pollId);
+    if (!currentAsk || !('options' in currentAsk)) return;
 
-          if (customOptionText && customOptionText.trim()) {
-            const existingCustomOption = currentPoll.options.find(
-              opt => opt.text.toLowerCase() === customOptionText.toLowerCase() && opt.id.startsWith('custom-')
-            );
+    let currentPoll = currentAsk as Poll;
 
-            if (!existingCustomOption) {
-              const newCustomOption: PollOption = {
-                id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                text: customOptionText.trim(),
-                votes: [],
-              };
-              currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
-              optionIds = [...optionIds, newCustomOption.id];
-            } else {
-              optionIds = [...optionIds, existingCustomOption.id];
-            }
-          }
+    if (customOptionText && customOptionText.trim()) {
+      const existingCustomOption = currentPoll.options.find(
+        opt => opt.text.toLowerCase() === customOptionText.toLowerCase() && opt.id.startsWith('custom-')
+      );
 
-          const updatedOptions = currentPoll.options.map(option => {
-            if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
-              option.votes = option.votes.filter(v => v.userId !== currentUserId);
-            }
+      if (!existingCustomOption) {
+        const newCustomOption: PollOption = {
+          id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+          text: customOptionText.trim(),
+          votes: [],
+        };
+        currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
+        optionIds = [...optionIds, newCustomOption.id];
+      } else {
+        optionIds = [...optionIds, existingCustomOption.id];
+      }
+    }
 
-            if (optionIds.includes(option.id)) {
-              if (!option.votes.some(v => v.userId === currentUserId)) {
-                return { ...option, votes: [...option.votes, { userId: currentUserId }] };
-              }
-            } else {
-              if (currentPoll.type === 'selection') {
-                return { ...option, votes: option.votes.filter(v => v.userId !== currentUserId) };
-              }
-            }
-            return option;
-          });
-          
-          return { ...currentPoll, options: updatedOptions };
+    const updatedOptions = currentPoll.options.map(option => {
+      if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
+        option.votes = option.votes.filter(v => v.userId !== currentUserId);
+      }
+
+      if (optionIds.includes(option.id)) {
+        if (!option.votes.some(v => v.userId === currentUserId)) {
+          return { ...option, votes: [...option.votes, { userId: currentUserId }] };
         }
-        return ask;
-      })
-    );
+      } else {
+        if (currentPoll.type === 'selection') {
+          return { ...option, votes: option.votes.filter(v => v.userId !== currentUserId) };
+        }
+      }
+      return option;
+    });
+    
+    updateAsk({ ...currentPoll, options: updatedOptions }); // Use context function
   };
 
   // Determine the total duration of the current timer phase for CircularProgress

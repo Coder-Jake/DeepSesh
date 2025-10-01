@@ -63,6 +63,8 @@ const Settings = () => {
     setLocationSharing,
     isGlobalPrivate, // Renamed from isGlobalPublic
     setIsGlobalPrivate, // Renamed from setIsGlobalPublic
+    openSettingsAccordions, // Get from context
+    setOpenSettingsAccordions, // Get from context
   } = useTimer();
 
   // Local state for temporary UI interactions or derived values
@@ -364,7 +366,12 @@ const Settings = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Accordion type="multiple" className="space-y-4">
+        <Accordion 
+          type="multiple" 
+          className="space-y-4" 
+          value={openSettingsAccordions} // Bind to context state
+          onValueChange={setOpenSettingsAccordions} // Update context state
+        >
           {/* Notifications */}
           <AccordionItem value="notifications" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
@@ -573,7 +580,12 @@ const Settings = () => {
           </AccordionItem>
         </Accordion>
 
-        <Accordion type="multiple" className="space-y-4">
+        <Accordion 
+          type="multiple" 
+          className="space-y-4"
+          value={openSettingsAccordions} // Bind to context state
+          onValueChange={setOpenSettingsAccordions} // Update context state
+        >
           {/* Session Defaults */}
           <AccordionItem value="session-defaults" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">

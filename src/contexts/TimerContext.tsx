@@ -4,6 +4,33 @@ import { supabase } from '@/integrations/supabase/client'; // Import Supabase cl
 import { toast } from 'sonner'; // Using sonner for notifications
 import { useProfile } from './ProfileContext'; // Import useProfile
 
+// Define types for Ask items (copied from Index.tsx to be available in context)
+interface ExtendSuggestion {
+  id: string;
+  minutes: number;
+  creator: string;
+  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
+  status: 'pending' | 'accepted' | 'rejected';
+}
+
+interface PollOption {
+  id: string;
+  text: string;
+  votes: { userId: string }[];
+}
+
+interface Poll {
+  id: string;
+  question: string;
+  type: 'closed' | 'choice' | 'selection';
+  creator: string;
+  options: PollOption[];
+  status: 'active' | 'closed';
+  allowCustomResponses: boolean;
+}
+
+type ActiveAskItem = ExtendSuggestion | Poll;
+
 interface NotificationSettings {
   push: boolean;
   vibrate: boolean;
@@ -109,6 +136,15 @@ interface TimerContextType {
   commenceDay: number;
   setCommenceDay: React.Dispatch<React.SetStateAction<number>>;
 
+  // Active Asks states and functions
+  activeAsks: ActiveAskItem[];
+  addAsk: (ask: ActiveAskItem) => void;
+  updateAsk: (updatedAsk: ActiveAskItem) => void;
+
+  // Settings Accordion state
+  openSettingsAccordions: string[];
+  setOpenSettingsAccordions: React.Dispatch<React.SetStateAction<string[]>>;
+
   // Function to save session
   saveSessionToHistory: () => Promise<void>;
 }
@@ -171,6 +207,12 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [commenceTime, setCommenceTime] = useState("09:00"); // Default value
   const [commenceDay, setCommenceDay] = useState(0); // Default to Sunday
 
+  // Active Asks states
+  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]);
+
+  // Settings Accordion state
+  const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]);
+
   // Utility function for formatting time
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -199,6 +241,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setScheduleTitle("");
     setCommenceTime("09:00");
     setCommenceDay(0);
+    setActiveAsks([]); // Clear active asks on full reset
   };
 
   // Function to save session to Supabase (now calls ProfileContext's saveSession)
@@ -265,6 +308,15 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
 
   const resetSchedule = () => {
     resetAllTimerStates(); // Use the comprehensive reset function
+  };
+
+  // Functions to manage active asks
+  const addAsk = (ask: ActiveAskItem) => {
+    setActiveAsks(prev => [ask, ...prev]);
+  };
+
+  const updateAsk = (updatedAsk: ActiveAskItem) => {
+    setActiveAsks(prev => prev.map(ask => ask.id === updatedAsk.id ? updatedAsk : ask));
   };
 
   // Core Timer Countdown Logic
@@ -390,6 +442,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setScheduleTitle(settings.scheduleTitle ?? "");
       setCommenceTime(settings.commenceTime ?? "09:00");
       setCommenceDay(settings.commenceDay ?? 0);
+      setActiveAsks(settings.activeAsks ?? []); // Load active asks
+      setOpenSettingsAccordions(settings.openSettingsAccordions ?? []); // Load open settings accordions
     }
   }, []);
 
@@ -426,6 +480,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
       schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
       scheduleTitle, commenceTime, commenceDay,
+      activeAsks, // Save active asks
+      openSettingsAccordions, // Save open settings accordions
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settingsToSave));
   }, [
@@ -440,6 +496,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
     schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
     scheduleTitle, commenceTime, commenceDay,
+    activeAsks, // Dependency for active asks
+    openSettingsAccordions, // Dependency for open settings accordions
   ]);
 
   const value = {
@@ -492,6 +550,10 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     scheduleTitle, setScheduleTitle,
     commenceTime, setCommenceTime,
     commenceDay, setCommenceDay,
+    // Active Asks states and functions
+    activeAsks, addAsk, updateAsk,
+    // Settings Accordion state
+    openSettingsAccordions, setOpenSettingsAccordions,
     // Function to save session
     saveSessionToHistory,
   };
