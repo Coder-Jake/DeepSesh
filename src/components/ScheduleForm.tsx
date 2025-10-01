@@ -42,6 +42,9 @@ const ScheduleForm: React.FC = () => {
   } = useTimer();
   const { toast } = useToast();
 
+  // State to track if the user has manually adjusted commence time/day
+  const [isCommenceTimeAdjusted, setIsCommenceTimeAdjusted] = useState(false);
+
   // Initialize schedule if it's empty (e.g., first time opening schedule form)
   useEffect(() => {
     if (schedule.length === 0) {
@@ -73,12 +76,23 @@ const ScheduleForm: React.FC = () => {
 
   const currentDayIndex = new Date().getDay(); // Get current day index
 
-  // Initialize commenceTime and commenceDay to the current live time and day
+  // Effect to keep commenceTime and commenceDay live until adjusted by the user
   useEffect(() => {
-    const now = new Date();
-    setCommenceTime(getCurrentTimeHHMM());
-    setCommenceDay(now.getDay());
-  }, [setCommenceTime, setCommenceDay]);
+    let intervalId: NodeJS.Timeout;
+    if (!isCommenceTimeAdjusted) {
+      const updateLiveTime = () => {
+        const now = new Date();
+        setCommenceTime(getCurrentTimeHHMM());
+        setCommenceDay(now.getDay());
+      };
+      updateLiveTime(); // Set immediately on mount
+      intervalId = setInterval(updateLiveTime, 1000); // Update every second
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isCommenceTimeAdjusted, setCommenceTime, setCommenceDay]);
 
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
@@ -321,13 +335,19 @@ const ScheduleForm: React.FC = () => {
                 id="commence-time"
                 type="time"
                 value={commenceTime}
-                onChange={(e) => setCommenceTime(e.target.value)}
+                onChange={(e) => {
+                  setCommenceTime(e.target.value);
+                  setIsCommenceTimeAdjusted(true); // User adjusted, stop live updates
+                }}
                 onFocus={(e) => e.target.select()}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="commence-day">Commence Day</Label>
-              <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
+              <Select value={commenceDay.toString()} onValueChange={(value) => {
+                setCommenceDay(parseInt(value));
+                setIsCommenceTimeAdjusted(true); // User adjusted, stop live updates
+              }}>
                 <SelectTrigger id="commence-day">
                   <SelectValue>
                     {commenceDay === currentDayIndex ? "Today" : daysOfWeek[commenceDay]}
