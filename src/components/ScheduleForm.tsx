@@ -47,7 +47,9 @@ const ScheduleForm: React.FC = () => {
     isRecurring,
     setIsRecurring,
     recurrenceFrequency,
-    setRecurrenceFrequency
+    setRecurrenceFrequency,
+    isSchedulePending, // Get from context
+    setIsSchedulePending, // Get from context
   } = useTimer();
   const { toast } = useToast();
 
@@ -65,7 +67,7 @@ const ScheduleForm: React.FC = () => {
     }
   }, [schedule, setSchedule]);
 
-  const [isStartTimeNow, setIsStartTimeNow] = useState(true);
+  const [isStartTimeNow, setIsStartTimeNow] = useState(true); // State for 'Start Time' toggle
   const [activeTab, setActiveTab] = useState("plan");
 
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
@@ -81,10 +83,20 @@ const ScheduleForm: React.FC = () => {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
 
-  React.useEffect(() => {
-    setCommenceTime(getNextHalfHourIncrement());
-    setCommenceDay(new Date().getDay());
-  }, [setCommenceTime, setCommenceDay]);
+  // Initialize commenceTime and commenceDay to the next 30-minute increment and current day
+  // This effect now depends on isStartTimeNow to only update if "Start Now" is selected
+  useEffect(() => {
+    if (isStartTimeNow) {
+      const now = new Date();
+      const currentHours = now.getHours().toString().padStart(2, '0');
+      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
+      setCommenceTime(`${currentHours}:${currentMinutes}`);
+      setCommenceDay(now.getDay());
+    } else {
+      setCommenceTime(getNextHalfHourIncrement());
+      setCommenceDay(new Date().getDay());
+    }
+  }, [isStartTimeNow, setCommenceTime, setCommenceDay]);
 
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
@@ -173,6 +185,9 @@ const ScheduleForm: React.FC = () => {
       });
       return;
     }
+
+    // If "Start Now" is selected, commence immediately
+    // Otherwise, set pending state and let Timeline handle countdown
     startSchedule();
   };
 
@@ -319,9 +334,19 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
+          <div className="flex items-center justify-between space-x-2 mt-6">
+            <Label htmlFor="start-time-toggle" className="text-base">Start Schedule Now</Label>
+            <Switch
+              id="start-time-toggle"
+              checked={isStartTimeNow}
+              onCheckedChange={setIsStartTimeNow}
+            />
+          </div>
+
           {!isStartTimeNow && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="space-y-2">
+                <Label htmlFor="commence-time">Commence Time</Label>
                 <Input
                   id="commence-time"
                   type="time"
@@ -331,6 +356,7 @@ const ScheduleForm: React.FC = () => {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="commence-day">Commence Day</Label>
                 <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
                   <SelectTrigger id="commence-day">
                     <SelectValue placeholder="Select day" />
@@ -347,8 +373,9 @@ const ScheduleForm: React.FC = () => {
             </div>
           )}
 
-          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg">
-            <Play className="mr-2 h-5 w-5" />Commence
+          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending}>
+            <Play className="mr-2 h-5 w-5" />
+            {isSchedulePending ? "Pending..." : "Commence"}
           </Button>
         </TabsContent>
         <TabsContent value="saved" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">

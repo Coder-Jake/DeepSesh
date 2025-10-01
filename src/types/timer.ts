@@ -3,8 +3,8 @@ export interface ScheduledTimer {
   title: string;
   type: 'focus' | 'break';
   durationMinutes: number;
-  isCustom: boolean; // Added missing property
-  customTitle?: string; // Added missing property
+  isCustom: boolean;
+  customTitle?: string;
 }
 
 // Define types for Ask items (copied from Index.tsx to ensure consistency)
@@ -47,7 +47,7 @@ export interface TimerContextType {
   isSchedulingMode: boolean;
   setIsSchedulingMode: (isScheduling: boolean) => void;
   startSchedule: () => void;
-  resetSchedule: () => void; // Added resetSchedule
+  resetSchedule: () => void;
   scheduleTitle: string;
   setScheduleTitle: (title: string) => void;
   commenceTime: string;
@@ -60,8 +60,8 @@ export interface TimerContextType {
   setRecurrenceFrequency: (frequency: 'daily' | 'weekly' | 'monthly') => void;
   isScheduleActive: boolean;
   currentScheduleIndex: number;
-  isSchedulePending: boolean;
-  setIsSchedulePending: (isPending: boolean) => void;
+  isSchedulePending: boolean; // Added new state
+  setIsSchedulePending: (isPending: boolean) => void; // Added new setter
 
   // Core Timer states
   focusMinutes: number;
@@ -84,7 +84,7 @@ export interface TimerContextType {
   setSeshTitle: (title: string) => void;
   formatTime: (seconds: number) => string;
   timerIncrement: number;
-  setTimerIncrement: (increment: number) => void; // Added setTimerIncrement
+  setTimerIncrement: (increment: number) => void;
 
   // Session management states
   showSessionsWhileActive: boolean;
