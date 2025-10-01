@@ -57,8 +57,8 @@ const History = () => {
     return sessions.filter(session => {
       const sessionDate = new Date(session.session_start_time);
       if (period === 'week') {
-        const one WeekAgo = new Date(now.setDate(now.getDate() - 7));
-        return sessionDate >= one WeekAgo;
+        const oneWeekAgo = new Date(now.setDate(now.getDate() - 7)); // Corrected variable name
+        return sessionDate >= oneWeekAgo;
       } else if (period === 'month') {
         const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
         return sessionDate >= oneMonthAgo;
