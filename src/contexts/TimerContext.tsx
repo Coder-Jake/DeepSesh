@@ -7,6 +7,8 @@ interface NotificationSettings {
   sound: boolean;
 }
 
+type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
+
 interface TimerContextType {
   focusMinutes: number;
   setFocusMinutes: React.Dispatch<React.SetStateAction<number>>;
@@ -91,6 +93,14 @@ interface TimerContextType {
   setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
   commenceDay: number;
   setCommenceDay: React.Dispatch<React.SetStateAction<number>>;
+
+  // New persistent states for History and Leaderboard time filters
+  historyTimePeriod: TimePeriod;
+  setHistoryTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
+  leaderboardFocusTimePeriod: TimePeriod;
+  setLeaderboardFocusTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
+  leaderboardCollaborationTimePeriod: TimePeriod;
+  setLeaderboardCollaborationTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -140,6 +150,11 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [scheduleTitle, setScheduleTitle] = useState("");
   const [commenceTime, setCommenceTime] = useState("09:00"); // Default value
   const [commenceDay, setCommenceDay] = useState(0); // Default to Sunday
+
+  // New persistent states for History and Leaderboard time filters
+  const [historyTimePeriod, setHistoryTimePeriod] = useState<TimePeriod>('week');
+  const [leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod] = useState<TimePeriod>('week');
+  const [leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod] = useState<TimePeriod>('week');
 
   // Utility function for formatting time
   const formatTime = (seconds: number) => {
@@ -282,6 +297,11 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setScheduleTitle(settings.scheduleTitle ?? "");
       setCommenceTime(settings.commenceTime ?? "09:00");
       setCommenceDay(settings.commenceDay ?? 0);
+
+      // Load new persistent states for History and Leaderboard time filters
+      setHistoryTimePeriod(settings.historyTimePeriod ?? 'week');
+      setLeaderboardFocusTimePeriod(settings.leaderboardFocusTimePeriod ?? 'week');
+      setLeaderboardCollaborationTimePeriod(settings.leaderboardCollaborationTimePeriod ?? 'week');
     }
   }, []);
 
@@ -327,6 +347,10 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       scheduleTitle,
       commenceTime,
       commenceDay,
+      // New persistent states for History and Leaderboard time filters
+      historyTimePeriod,
+      leaderboardFocusTimePeriod,
+      leaderboardCollaborationTimePeriod,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settingsToSave));
   }, [
@@ -340,6 +364,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     isRunning, isPaused, timeLeft, timerType, isFlashing, notes,
     schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
     scheduleTitle, commenceTime, commenceDay,
+    // New persistent states for History and Leaderboard time filters
+    historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
   ]);
 
   const value = {
@@ -385,6 +411,10 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     scheduleTitle, setScheduleTitle,
     commenceTime, setCommenceTime,
     commenceDay, setCommenceDay,
+    // New persistent states for History and Leaderboard time filters
+    historyTimePeriod, setHistoryTimePeriod,
+    leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod,
+    leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

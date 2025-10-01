@@ -1,13 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react"; // Import Search and X icons
+import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo } from "react"; // Import useMemo
-import { Input } from "@/components/ui/input"; // Import Input component
-import { Button } from "@/components/ui/button"; // Import Button component
+import { useState, useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 
 const History = () => {
+  const { historyTimePeriod, setHistoryTimePeriod } = useTimer(); // Use persistent state from context
+
   // Sample data - in a real app this would come from a database
   const sessions = [
     {
@@ -91,7 +94,6 @@ const History = () => {
     });
   };
 
-  const [historyTimePeriod, setHistoryTimePeriod] = useState<'week' | 'month' | 'all'>('all');
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 

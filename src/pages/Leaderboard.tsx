@@ -2,8 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users, Clock, Award, Gift } from "lucide-react";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
 import { useState } from "react";
+import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 
 const Leaderboard = () => {
+  const { 
+    leaderboardFocusTimePeriod, 
+    setLeaderboardFocusTimePeriod, 
+    leaderboardCollaborationTimePeriod, 
+    setLeaderboardCollaborationTimePeriod 
+  } = useTimer(); // Use persistent states from context
+
   // Sample data for Focus Hours Leaderboard, categorized by time period
   const focusHoursLeaderboardData = {
     week: [
@@ -54,12 +62,9 @@ const Leaderboard = () => {
     ],
   };
 
-  const [focusTimePeriod, setFocusTimePeriod] = useState<'week' | 'month' | 'all'>('all');
-  const [collaborationTimePeriod, setCollaborationTimePeriod] = useState<'week' | 'month' | 'all'>('all');
-
   // Get the data for the currently selected time period
-  const currentFocusHoursLeaderboard = focusHoursLeaderboardData[focusTimePeriod];
-  const currentCollaboratedUsersLeaderboard = collaboratedUsersLeaderboardData[collaborationTimePeriod];
+  const currentFocusHoursLeaderboard = focusHoursLeaderboardData[leaderboardFocusTimePeriod];
+  const currentCollaboratedUsersLeaderboard = collaboratedUsersLeaderboardData[leaderboardCollaborationTimePeriod];
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
@@ -81,7 +86,7 @@ const Leaderboard = () => {
               <Clock className="h-5 w-5" />
               Total Focus Hours
             </CardTitle>
-            <TimeFilterToggle onValueChange={setFocusTimePeriod} />
+            <TimeFilterToggle onValueChange={setLeaderboardFocusTimePeriod} defaultValue={leaderboardFocusTimePeriod} />
           </CardHeader>
           <CardContent className="space-y-3">
             {currentFocusHoursLeaderboard.map((user, index) => (
@@ -103,7 +108,7 @@ const Leaderboard = () => {
               <Users className="h-5 w-5" />
               Unique Coworkers
             </CardTitle>
-            <TimeFilterToggle onValueChange={setCollaborationTimePeriod} />
+            <TimeFilterToggle onValueChange={setLeaderboardCollaborationTimePeriod} defaultValue={leaderboardCollaborationTimePeriod} />
           </CardHeader>
           <CardContent className="space-y-3">
             {currentCollaboratedUsersLeaderboard.map((user, index) => (
