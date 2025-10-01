@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ScheduledTimer } from "@/types/timer";
 import { useTimer } from "@/contexts/TimerContext";
 import { cn } from "@/lib/utils";
 import { Clock, Play, Pause, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // Import Input component
 
 interface TimelineProps {
   schedule: ScheduledTimer[];
@@ -15,7 +16,16 @@ interface TimelineProps {
 }
 
 const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, timeLeft, scheduleTitle, commenceTime, commenceDay }) => {
-  const { isRunning, isPaused, setIsRunning, setIsPaused, resetSchedule, formatTime } = useTimer(); // Destructure formatTime from useTimer
+  const { isRunning, isPaused, setIsRunning, setIsPaused, resetSchedule, formatTime, setScheduleTitle } = useTimer(); // Destructure formatTime and setScheduleTitle from useTimer
+
+  const [isEditingTimelineTitle, setIsEditingTimelineTitle] = useState(false);
+  const timelineTitleInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditingTimelineTitle && timelineTitleInputRef.current) {
+      timelineTitleInputRef.current.focus();
+    }
+  }, [isEditingTimelineTitle]);
 
   if (schedule.length === 0) {
     return null;
@@ -42,10 +52,48 @@ const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, tim
     return `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
   };
 
+  const handleTimelineTitleClick = () => {
+    setIsEditingTimelineTitle(true);
+  };
+
+  const handleTimelineTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingTimelineTitle(false);
+      e.currentTarget.blur();
+      if (scheduleTitle.trim() === "") {
+        setScheduleTitle("My Schedule"); // Revert to default if empty
+      }
+    }
+  };
+
+  const handleTimelineTitleInputBlur = () => {
+    setIsEditingTimelineTitle(false);
+    if (scheduleTitle.trim() === "") {
+      setScheduleTitle("My Schedule"); // Revert to default if empty
+    }
+  };
+
   return (
     <div className="mt-8 p-4 border rounded-lg bg-card shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground">{scheduleTitle}</h3> {/* Display schedule title */}
+        {isEditingTimelineTitle ? (
+          <Input
+            ref={timelineTitleInputRef}
+            value={scheduleTitle}
+            onChange={(e) => setScheduleTitle(e.target.value)}
+            onKeyDown={handleTimelineTitleInputKeyDown}
+            onBlur={handleTimelineTitleInputBlur}
+            placeholder="Schedule Title"
+            className="text-lg font-semibold h-auto py-1 px-2"
+          />
+        ) : (
+          <h3 
+            className="text-lg font-semibold text-foreground cursor-pointer select-none"
+            onClick={handleTimelineTitleClick}
+          >
+            {scheduleTitle}
+          </h3>
+        )}
       </div>
       
       <div className="flex overflow-x-auto pb-2 space-x-3">
