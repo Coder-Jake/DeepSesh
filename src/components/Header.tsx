@@ -1,3 +1,5 @@
+"use client";
+
 import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import Navigation from "@/components/Navigation";
@@ -36,7 +38,7 @@ const Header = () => {
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <div className="relative">
           <Link to="/" className="hover:opacity-80 transition-opacity" onClick={handleHeaderClick}>
-            <h1 className="text-3xl font-bold text-foreground select-none">DeepSesh</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#AA6DC7] via-[#6767C2] to-[#149183] text-transparent bg-clip-text select-none">DeepSesh</h1>
           </Link>
           {showSecretTextDiv && ( // Conditionally render the div
             <div
