@@ -213,32 +213,7 @@ const ScheduleForm: React.FC = () => {
   };
 
   return (
-    <Card className="py-6 px-0"> {/* Removed horizontal padding from the main Card */}
-      <CardHeader className="flex flex-row items-center justify-between pb-4 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
-        {isEditingScheduleTitle ? (
-          <Input
-            ref={scheduleTitleInputRef}
-            value={scheduleTitle}
-            onChange={(e) => setScheduleTitle(e.target.value)}
-            onKeyDown={handleScheduleTitleInputKeyDown}
-            onBlur={handleScheduleTitleInputBlur}
-            placeholder="Schedule Title"
-            className="text-2xl font-bold h-auto py-2"
-            onFocus={(e) => e.target.select()}
-          />
-        ) : (
-          <CardTitle
-            className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
-            onClick={handleScheduleTitleClick}
-          >
-            {scheduleTitle || "My Schedule"}
-          </CardTitle>
-        )}
-        <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
-          <X className="h-5 w-5" />
-        </Button>
-      </CardHeader>
-      {/* Moved Tabs component here, applying padding directly to its children */}
+    <Card className="py-6 px-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 px-4 lg:px-6">
           <TabsTrigger value="new">New</TabsTrigger>
@@ -247,19 +222,18 @@ const ScheduleForm: React.FC = () => {
         <TabsContent value="new" className="mt-6 space-y-6 px-4 lg:px-6">
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {localSchedule.map((timer, index) => (
-              <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50"> {/* Removed justify-between here */}
-                <div className="flex items-center gap-2 flex-grow"> {/* Group number and title, allow to grow */}
-                  <span className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start">{index + 1}.</span> {/* Changed text-primary to text-gray-500 */}
+              <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
+                <div className="flex items-center gap-2 flex-grow">
+                  <span className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start">{index + 1}.</span>
                   <Input
                     placeholder="Timer Title"
                     value={timer.title}
                     onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
-                    className="flex-grow min-w-0" // Allow title to take available space, but can shrink
+                    className="flex-grow min-w-0"
                     onFocus={(e) => e.target.select()}
                   />
                 </div>
                 
-                {/* Duration and Type buttons */}
                 <Input
                   type="number"
                   placeholder="Min"
@@ -312,8 +286,7 @@ const ScheduleForm: React.FC = () => {
                   </Button>
                 )}
                 
-                {/* Trash button, pushed to the far right */}
-                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0"> {/* Added ml-auto */}
+                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0">
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
@@ -324,7 +297,6 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          {/* Commencement Time and Day Selection (conditionally rendered) */}
           {!isStartTimeNow && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -361,6 +333,30 @@ const ScheduleForm: React.FC = () => {
           <ScheduleTemplates />
         </TabsContent>
       </Tabs>
+      <CardHeader className="flex flex-row items-center justify-between pt-4 mt-4 px-4 lg:px-6">
+        {isEditingScheduleTitle ? (
+          <Input
+            ref={scheduleTitleInputRef}
+            value={scheduleTitle}
+            onChange={(e) => setScheduleTitle(e.target.value)}
+            onKeyDown={handleScheduleTitleInputKeyDown}
+            onBlur={handleScheduleTitleInputBlur}
+            placeholder="Schedule Title"
+            className="text-2xl font-bold h-auto py-2"
+            onFocus={(e) => e.target.select()}
+          />
+        ) : (
+          <CardTitle
+            className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
+            onClick={handleScheduleTitleClick}
+          >
+            {scheduleTitle || "My Schedule"}
+          </CardTitle>
+        )}
+        <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
+          <X className="h-5 w-5" />
+        </Button>
+      </CardHeader>
     </Card>
   );
 };
