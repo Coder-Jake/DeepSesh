@@ -58,7 +58,7 @@ const Header = () => {
         {/* Timer display on non-home pages */}
         {!isHomePage && (isRunning || isPaused || isFlashing) && (
           <Link to="/" className="hover:opacity-80 transition-opacity">
-            <div className={`text-2xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'animate-pulse' : ''} select-none`}>
+            <div className={`text-lg font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'animate-pulse' : ''} select-none`}>
               {formatTime(timeLeft)}
             </div>
           </Link>
