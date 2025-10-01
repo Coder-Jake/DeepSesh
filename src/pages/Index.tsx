@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect } from "react";
-import { Globe, Lock, CalendarPlus, Share2 } from "lucide-react"; // Added Share2
+import { Globe, Lock, CalendarPlus, Share2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -20,8 +20,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // Added DropdownMenu components
-import { toast } from "@/hooks/use-toast"; // Import toast for notifications
+} from "@/components/ui/dropdown-menu";
+import { toast } from "@/hooks/use-toast";
 
 // Define types for Ask items
 interface ExtendSuggestion {
@@ -147,8 +147,8 @@ const Index = () => {
     setIsFlashing,
     notes,
     setNotes,
-    formatTime, // Destructure formatTime from useTimer
-    showSessionsWhileActive, // Renamed
+    formatTime,
+    showSessionsWhileActive,
     timerIncrement,
     
     schedule,
@@ -161,14 +161,13 @@ const Index = () => {
     scheduleTitle,
     commenceTime,
     commenceDay,
-    isGlobalPrivate, // Get global private setting from context
+    isGlobalPrivate,
   } = useTimer();
   
   const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
 
-  // Initialize local isPrivate state from global setting
-  const [isPrivate, setIsPrivate] = useState(isGlobalPrivate); // Renamed from isPublic
+  const [isPrivate, setIsPrivate] = useState(isGlobalPrivate);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
@@ -177,10 +176,22 @@ const Index = () => {
   const currentUserId = profile?.id || "mock-user-id-123"; 
   const currentUserName = profile?.first_name || "You";
 
+  // State for editable Sesh Title
+  const [seshTitle, setSeshTitle] = useState("Notes");
+  const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
   // Effect to update local isPrivate when isGlobalPrivate changes
   useEffect(() => {
     setIsPrivate(isGlobalPrivate);
   }, [isGlobalPrivate]);
+
+  // Effect to focus the input when isEditingSeshTitle becomes true
+  useEffect(() => {
+    if (isEditingSeshTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, [isEditingSeshTitle]);
 
   const playStartSound = () => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -212,10 +223,10 @@ const Index = () => {
   
   const handlePublicPrivateToggle = () => {
     if (isLongPress.current) {
-      setIsPrivate(!isPrivate); // Toggle local isPrivate state
+      setIsPrivate(!isPrivate);
     } else {
-      if (confirm(`Switch to ${isPrivate ? 'Public' : 'Private'} mode?`)) { // Adjusted text
-        setIsPrivate(!isPrivate); // Toggle local isPrivate state
+      if (confirm(`Switch to ${isPrivate ? 'Public' : 'Private'} mode?`)) {
+        setIsPrivate(!isPrivate);
       }
     }
   };
@@ -223,6 +234,36 @@ const Index = () => {
   const handleIntentionLongPress = () => {
     if (isLongPress.current) {
       navigate('/profile');
+    }
+  };
+
+  // Handlers for Sesh Title editing
+  const handleTitleClick = () => {
+    if (!isLongPress.current) {
+      setIsEditingSeshTitle(true);
+    }
+  };
+
+  const handleTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingSeshTitle(false);
+      e.currentTarget.blur();
+      if (seshTitle.trim() === "") {
+        setSeshTitle("Notes"); // Revert to default if empty
+      }
+    }
+  };
+
+  const handleTitleInputBlur = () => {
+    setIsEditingSeshTitle(false);
+    if (seshTitle.trim() === "") {
+      setSeshTitle("Notes"); // Revert to default if empty
+    }
+  };
+
+  const handleTitleLongPress = () => {
+    if (isLongPress.current) {
+      setIsEditingSeshTitle(true);
     }
   };
   
@@ -337,7 +378,7 @@ const Index = () => {
     });
   };
 
-  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive); // Updated logic
+  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive);
 
   const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
 
@@ -478,7 +519,7 @@ const Index = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Timer Section */}
         <div className="space-y-6">
-          <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${!isPrivate ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}> {/* Use !isPrivate for public background */}
+          <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${!isPrivate ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
             {isSchedulingMode ? (
               <ScheduleForm />
             ) : (
@@ -503,7 +544,7 @@ const Index = () => {
                       onClick={handlePublicPrivateToggle}
                       className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
                     >
-                      {!isPrivate ? <> {/* Use !isPrivate for Public */}
+                      {!isPrivate ? <>
                           <Globe size={16} />
                           <span className="text-sm font-medium">Public</span>
                         </> : <>
@@ -691,8 +732,30 @@ const Index = () => {
 
           {/* Notes Section - Always visible */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Notes</CardTitle>
+            <CardHeader className="pb-2"> {/* Reduced bottom padding */}
+              {isEditingSeshTitle ? (
+                <Input
+                  ref={titleInputRef}
+                  value={seshTitle}
+                  onChange={(e) => setSeshTitle(e.target.value)}
+                  onKeyDown={handleTitleInputKeyDown}
+                  onBlur={handleTitleInputBlur}
+                  placeholder="Sesh Title"
+                  className="text-lg font-semibold h-auto py-1 px-2"
+                />
+              ) : (
+                <CardTitle 
+                  className="text-lg cursor-pointer select-none"
+                  onClick={handleTitleClick}
+                  onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
+                  onMouseUp={handleLongPressEnd}
+                  onMouseLeave={handleLongPressEnd}
+                  onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
+                  onTouchEnd={handleLongPressEnd}
+                >
+                  {seshTitle}
+                </CardTitle>
+              )}
             </CardHeader>
             <CardContent>
               <Textarea
@@ -742,7 +805,7 @@ const Index = () => {
           {/* Sessions List */}
           <TooltipProvider>
             {/* Nearby Sessions */}
-            {!shouldHideSessionLists && !isPrivate && ( // Use !isPrivate to show when not private (i.e., public)
+            {!shouldHideSessionLists && !isPrivate && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-3">Nearby</h3>
                 <div className="space-y-3">
