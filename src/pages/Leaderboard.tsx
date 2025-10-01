@@ -35,22 +35,22 @@ const Leaderboard = () => {
       { id: 1, name: "Angie", collaboratedUsers: 8 },
       { id: 2, name: "Frank", collaboratedUsers: 7 },
       { id: 3, name: "Grace", collaboratedUsers: 6 },
-      { id: 4, name: "Bob", collaboratedUsers: 5 },
-      { id: 5, name: "Heidi", collaboratedUsers: 4 },
+      { id: 4, name: "Heidi", collaboratedUsers: 5 }, // Changed
+      { id: 5, name: "Ivan", collaboratedUsers: 4 }, // Changed
     ],
     month: [
       { id: 1, name: "Angie", collaboratedUsers: 25 },
-      { id: 2, name: "Frank", collaboratedUsers: 22 },
-      { id: 3, name: "Grace", collaboratedUsers: 18 },
-      { id: 4, name: "Bob", collaboratedUsers: 15 },
-      { id: 5, name: "Heidi", collaboratedUsers: 12 },
+      { id: 2, name: "Liam", collaboratedUsers: 22 }, // Changed
+      { id: 3, name: "Mia", collaboratedUsers: 18 }, // Changed
+      { id: 4, name: "Noah", collaboratedUsers: 15 }, // Changed
+      { id: 5, name: "Olivia", collaboratedUsers: 12 }, // Changed
     ],
     all: [
       { id: 1, name: "Angie", collaboratedUsers: 100 },
-      { id: 2, name: "Frank", collaboratedUsers: 90 },
-      { id: 3, name: "Grace", collaboratedUsers: 80 },
-      { id: 4, name: "Bob", collaboratedUsers: 70 },
-      { id: 5, name: "Heidi", collaboratedUsers: 60 },
+      { id: 2, name: "Peter", collaboratedUsers: 90 }, // Changed
+      { id: 3, name: "Quinn", collaboratedUsers: 80 }, // Changed
+      { id: 4, name: "Rachel", collaboratedUsers: 70 }, // Changed
+      { id: 5, name: "Sam", collaboratedUsers: 60 }, // Changed
     ],
   };
 
