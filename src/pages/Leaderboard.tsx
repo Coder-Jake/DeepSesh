@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"; // Import cn for conditional class names
 const Leaderboard = () => {
   const { 
     profile, // Get profile from context
+    localFirstName, // Get localFirstName from context
     leaderboardFocusTimePeriod, 
     setLeaderboardFocusTimePeriod, 
     leaderboardCollaborationTimePeriod, 
@@ -15,7 +16,7 @@ const Leaderboard = () => {
     statsData // Get statsData from ProfileContext
   } = useProfile(); // Use persistent states from context
 
-  const currentUserName = profile?.first_name || "You";
+  const currentUserName = profile?.first_name || localFirstName || "You"; // Prioritize Supabase, then local, then default
   const currentUserId = profile?.id || "mock-user-id-999"; // Use a consistent mock ID if not logged in
 
   console.log("Leaderboard rendering. currentUserName:", currentUserName, "profile:", profile);

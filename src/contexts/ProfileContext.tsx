@@ -115,6 +115,10 @@ interface ProfileContextType {
   updateProfile: (data: ProfileUpdate) => Promise<void>;
   fetchProfile: () => Promise<void>;
   
+  // Local first name for unauthenticated users
+  localFirstName: string;
+  setLocalFirstName: React.Dispatch<React.SetStateAction<string>>;
+
   // Session history and stats data
   sessions: SessionHistory[];
   setSessions: React.Dispatch<React.SetStateAction<SessionHistory[]>>;
@@ -156,11 +160,13 @@ interface ProfileProviderProps {
 }
 
 const LOCAL_STORAGE_KEY = 'flowsesh_profile_data'; // New local storage key for profile data
+const LOCAL_FIRST_NAME_KEY = 'flowsesh_local_first_name'; // New local storage key for local first name
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [localFirstName, setLocalFirstName] = useState("You"); // New state for local first name
 
   // Session history and stats data states
   const [sessions, setSessions] = useState<SessionHistory[]>(initialSessions);
@@ -330,6 +336,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setLeaderboardFocusTimePeriod(data.leaderboardFocusTimePeriod ?? 'week');
       setLeaderboardCollaborationTimePeriod(data.leaderboardCollaborationTimePeriod ?? 'week');
     }
+
+    const storedLocalFirstName = localStorage.getItem(LOCAL_FIRST_NAME_KEY);
+    if (storedLocalFirstName) {
+      setLocalFirstName(storedLocalFirstName);
+    }
+    
     fetchProfile(); // Always try to fetch the latest profile from Supabase
     
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -362,12 +374,19 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
   ]);
 
+  // Save localFirstName to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(LOCAL_FIRST_NAME_KEY, localFirstName);
+  }, [localFirstName]);
+
   const value = {
     profile,
     loading,
     error,
     updateProfile,
     fetchProfile,
+    localFirstName,
+    setLocalFirstName,
     sessions,
     setSessions,
     statsData,

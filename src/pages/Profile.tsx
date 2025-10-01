@@ -9,16 +9,15 @@ import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const Profile = () => {
-  const { profile, loading, updateProfile } = useProfile(); // Use profile context
+  const { profile, loading, updateProfile, localFirstName, setLocalFirstName } = useProfile(); // Use profile context and localFirstName
   const { toast } = useToast();
 
-  const [firstName, setFirstName] = useState("");
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([30]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
-    firstName: "",
+    firstName: "", // This will now track localFirstName
     bio: "",
     intention: "",
     sociability: [30]
@@ -28,20 +27,21 @@ const Profile = () => {
   const firstNameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (profile) {
-      setFirstName(profile.first_name || "");
-      setBio(profile.bio || "");
-      setIntention(profile.intention || "");
-      setSociability([profile.sociability || 50]);
-      setOriginalValues({
-        firstName: profile.first_name || "",
-        bio: profile.bio || "",
-        intention: profile.intention || "",
-        sociability: [profile.sociability || 50]
-      });
-      setHasChanges(false);
-    }
-  }, [profile]);
+    // Initialize local states from profile or defaults
+    setLocalFirstName(profile?.first_name || localStorage.getItem('flowsesh_local_first_name') || "You");
+    setBio(profile?.bio || "");
+    setIntention(profile?.intention || "");
+    setSociability([profile?.sociability || 50]);
+    
+    // Set original values for change detection
+    setOriginalValues({
+      firstName: profile?.first_name || localStorage.getItem('flowsesh_local_first_name') || "You",
+      bio: profile?.bio || "",
+      intention: profile?.intention || "",
+      sociability: [profile?.sociability || 50]
+    });
+    setHasChanges(false);
+  }, [profile, setLocalFirstName]); // Depend on profile and setLocalFirstName
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -58,23 +58,23 @@ const Profile = () => {
   };
 
   const handleFirstNameChange = (value: string) => {
-    setFirstName(value);
+    setLocalFirstName(value); // Update local state
     checkForChanges(value, bio, intention, sociability);
   };
 
   const handleBioChange = (value: string) => {
     setBio(value);
-    checkForChanges(firstName, value, intention, sociability);
+    checkForChanges(localFirstName, value, intention, sociability);
   };
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
-    checkForChanges(firstName, bio, value, sociability);
+    checkForChanges(localFirstName, bio, value, sociability);
   };
 
   const handleSociabilityChange = (value: number[]) => {
     setSociability(value);
-    checkForChanges(firstName, bio, intention, value);
+    checkForChanges(localFirstName, bio, intention, value);
   };
 
   const handleFirstNameClick = () => {
@@ -85,8 +85,11 @@ const Profile = () => {
     if (e.key === 'Enter') {
       setIsEditingFirstName(false);
       e.currentTarget.blur();
-      const nameToSave = firstName.trim() === "" ? "" : firstName.trim();
-      await updateProfile({ first_name: nameToSave });
+      const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
+      setLocalFirstName(nameToSave); // Ensure local state is updated
+      if (profile) { // Only update Supabase if logged in
+        await updateProfile({ first_name: nameToSave });
+      }
       setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
       checkForChanges(nameToSave, bio, intention, sociability);
     }
@@ -94,22 +97,36 @@ const Profile = () => {
 
   const handleFirstNameInputBlur = async () => {
     setIsEditingFirstName(false);
-    const nameToSave = firstName.trim() === "" ? "" : firstName.trim();
-    await updateProfile({ first_name: nameToSave });
+    const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
+    setLocalFirstName(nameToSave); // Ensure local state is updated
+    if (profile) { // Only update Supabase if logged in
+      await updateProfile({ first_name: nameToSave });
+    }
     setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
     checkForChanges(nameToSave, bio, intention, sociability);
   };
 
   const handleSave = async () => {
-    await updateProfile({
-      first_name: firstName,
-      bio,
-      intention,
-      sociability: sociability[0],
-      updated_at: new Date().toISOString(),
-    });
+    const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
+    setLocalFirstName(nameToSave); // Ensure local state is updated
+
+    if (profile) { // Only update Supabase if logged in
+      await updateProfile({
+        first_name: nameToSave,
+        bio,
+        intention,
+        sociability: sociability[0],
+        updated_at: new Date().toISOString(),
+      });
+    } else {
+      // If not logged in, just update local storage (already handled by useEffect for localFirstName)
+      toast({
+        title: "Profile Saved Locally",
+        description: "Your profile changes have been saved to this browser.",
+      });
+    }
     // After successful update, reset original values and hasChanges
-    setOriginalValues({ firstName, bio, intention, sociability });
+    setOriginalValues({ firstName: nameToSave, bio, intention, sociability });
     setHasChanges(false);
   };
 
@@ -135,7 +152,7 @@ const Profile = () => {
                 {isEditingFirstName ? (
                   <Input
                     ref={firstNameInputRef}
-                    value={firstName}
+                    value={localFirstName} // Use localFirstName
                     onChange={(e) => handleFirstNameChange(e.target.value)}
                     onKeyDown={handleFirstNameInputKeyDown}
                     onBlur={handleFirstNameInputBlur}
@@ -147,7 +164,7 @@ const Profile = () => {
                     className="cursor-pointer select-none"
                     onClick={handleFirstNameClick}
                   >
-                    {firstName || "You"}
+                    {localFirstName || "You"} {/* Use localFirstName */}
                   </span>
                 )}
               </CardTitle>

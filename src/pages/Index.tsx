@@ -184,7 +184,7 @@ const Index = () => {
     updateAsk,
   } = useTimer();
   
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, localFirstName } = useProfile(); // Get localFirstName from context
   const navigate = useNavigate();
 
   const [isPrivate, setIsPrivate] = useState(isGlobalPrivate);
@@ -194,7 +194,7 @@ const Index = () => {
   // Removed local activeAsks state, now using context
 
   const currentUserId = profile?.id || "mock-user-id-123"; 
-  const currentUserName = profile?.first_name || "You";
+  const currentUserName = profile?.first_name || localFirstName || "You"; // Use localFirstName as fallback
 
   // State for editable Sesh Title
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
