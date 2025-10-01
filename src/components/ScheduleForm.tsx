@@ -214,6 +214,30 @@ const ScheduleForm: React.FC = () => {
 
   return (
     <Card className="py-6 px-0"> {/* Removed horizontal padding from the main Card */}
+      <CardHeader className="flex flex-row items-center justify-between pb-4 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
+        {isEditingScheduleTitle ? (
+          <Input
+            ref={scheduleTitleInputRef}
+            value={scheduleTitle}
+            onChange={(e) => setScheduleTitle(e.target.value)}
+            onKeyDown={handleScheduleTitleInputKeyDown}
+            onBlur={handleScheduleTitleInputBlur}
+            placeholder="Schedule Title"
+            className="text-2xl font-bold h-auto py-2"
+            onFocus={(e) => e.target.select()}
+          />
+        ) : (
+          <CardTitle
+            className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
+            onClick={handleScheduleTitleClick}
+          >
+            {scheduleTitle || "My Schedule"}
+          </CardTitle>
+        )}
+        <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
+          <X className="h-5 w-5" />
+        </Button>
+      </CardHeader>
       <CardContent className="space-y-6 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -338,30 +362,6 @@ const ScheduleForm: React.FC = () => {
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardHeader className="flex flex-row items-center justify-between pb-4 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
-        {isEditingScheduleTitle ? (
-          <Input
-            ref={scheduleTitleInputRef}
-            value={scheduleTitle}
-            onChange={(e) => setScheduleTitle(e.target.value)}
-            onKeyDown={handleScheduleTitleInputKeyDown}
-            onBlur={handleScheduleTitleInputBlur}
-            placeholder="Schedule Title"
-            className="text-2xl font-bold h-auto py-2"
-            onFocus={(e) => e.target.select()}
-          />
-        ) : (
-          <CardTitle
-            className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
-            onClick={handleScheduleTitleClick}
-          >
-            {scheduleTitle || "My Schedule"}
-          </CardTitle>
-        )}
-        <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
-          <X className="h-5 w-5" />
-        </Button>
-      </CardHeader>
     </Card>
   );
 };
