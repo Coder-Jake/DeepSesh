@@ -13,22 +13,12 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
 
-// Utility function to get the next 30-minute increment
-const getNextHalfHourIncrement = () => {
+// Utility function to get the current time in HH:MM format
+const getCurrentTimeHHMM = () => {
   const now = new Date();
-  let minutes = now.getMinutes();
-  let hours = now.getHours();
-
-  if (minutes < 30) {
-    minutes = 30;
-  } else {
-    minutes = 0;
-    hours = (hours + 1) % 24;
-  }
-
-  const formattedHours = hours.toString().padStart(2, '0');
-  const formattedMinutes = minutes.toString().padStart(2, '0');
-  return `${formattedHours}:${formattedMinutes}`;
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
 };
 
 const ScheduleForm: React.FC = () => {
@@ -48,8 +38,7 @@ const ScheduleForm: React.FC = () => {
     setIsRecurring,
     recurrenceFrequency,
     setRecurrenceFrequency,
-    isSchedulePending, // Get from context
-    setIsSchedulePending, // Get from context
+    isSchedulePending,
   } = useTimer();
   const { toast } = useToast();
 
@@ -67,7 +56,7 @@ const ScheduleForm: React.FC = () => {
     }
   }, [schedule, setSchedule]);
 
-  const [isStartTimeNow, setIsStartTimeNow] = useState(true); // State for 'Start Time' toggle
+  // Removed isStartTimeNow state
   const [activeTab, setActiveTab] = useState("plan");
 
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
@@ -83,20 +72,12 @@ const ScheduleForm: React.FC = () => {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
 
-  // Initialize commenceTime and commenceDay to the next 30-minute increment and current day
-  // This effect now depends on isStartTimeNow to only update if "Start Now" is selected
+  // Initialize commenceTime and commenceDay to the current live time and day
   useEffect(() => {
-    if (isStartTimeNow) {
-      const now = new Date();
-      const currentHours = now.getHours().toString().padStart(2, '0');
-      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
-      setCommenceTime(`${currentHours}:${currentMinutes}`);
-      setCommenceDay(now.getDay());
-    } else {
-      setCommenceTime(getNextHalfHourIncrement());
-      setCommenceDay(new Date().getDay());
-    }
-  }, [isStartTimeNow, setCommenceTime, setCommenceDay]);
+    const now = new Date();
+    setCommenceTime(getCurrentTimeHHMM());
+    setCommenceDay(now.getDay());
+  }, [setCommenceTime, setCommenceDay]); // Removed isStartTimeNow from dependencies
 
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
@@ -186,8 +167,6 @@ const ScheduleForm: React.FC = () => {
       return;
     }
 
-    // If "Start Now" is selected, commence immediately
-    // Otherwise, set pending state and let Timeline handle countdown
     startSchedule();
   };
 
@@ -334,44 +313,35 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          <div className="flex items-center justify-between space-x-2 mt-6">
-            <Label htmlFor="start-time-toggle" className="text-base">Start Schedule Now</Label>
-            <Switch
-              id="start-time-toggle"
-              checked={isStartTimeNow}
-              onCheckedChange={setIsStartTimeNow}
-            />
-          </div>
+          {/* Removed the "Start Schedule Now" Switch */}
 
-          {!isStartTimeNow && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="commence-time">Commence Time</Label>
-                <Input
-                  id="commence-time"
-                  type="time"
-                  value={commenceTime}
-                  onChange={(e) => setCommenceTime(e.target.value)}
-                  onFocus={(e) => e.target.select()}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="commence-day">Commence Day</Label>
-                <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
-                  <SelectTrigger id="commence-day">
-                    <SelectValue placeholder="Select day" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {daysOfWeek.map((day, index) => (
-                      <SelectItem key={day} value={index.toString()}>
-                        {day}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="commence-time">Commence Time</Label>
+              <Input
+                id="commence-time"
+                type="time"
+                value={commenceTime}
+                onChange={(e) => setCommenceTime(e.target.value)}
+                onFocus={(e) => e.target.select()}
+              />
             </div>
-          )}
+            <div className="space-y-2">
+              <Label htmlFor="commence-day">Commence Day</Label>
+              <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
+                <SelectTrigger id="commence-day">
+                  <SelectValue placeholder="Select day" />
+                </SelectTrigger>
+                <SelectContent>
+                  {daysOfWeek.map((day, index) => (
+                    <SelectItem key={day} value={index.toString()}>
+                      {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending}>
             <Play className="mr-2 h-5 w-5" />

@@ -231,7 +231,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const timeUntilStart = targetDate.getTime() - now.getTime();
 
-    if (timeUntilStart <= 1000) { // If within 1 second, start immediately
+    // Determine if it should start immediately or go into pending countdown
+    // A small threshold (e.g., 5 seconds) to account for minor time differences or quick clicks
+    if (timeUntilStart <= 5000) { // If within 5 seconds, start immediately
+      setIsSchedulePending(false); // Ensure pending is false
       setIsScheduleActive(true);
       setIsSchedulingMode(false);
       setCurrentScheduleIndex(0);
@@ -315,7 +318,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     focusMinutes, setFocusMinutes,
     breakMinutes, setBreakMinutes,
     isRunning, setIsRunning,
-    isPaused, setIsPaused,
+        isPaused, setIsPaused,
     timeLeft, setTimeLeft,
     timerType, setTimerType,
     isFlashing, setIsFlashing,
@@ -335,7 +338,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     recurrenceFrequency, setRecurrenceFrequency,
     isScheduleActive,
     currentScheduleIndex,
-    isSchedulePending, setIsSchedulePending, // Provide new state
+    isSchedulePending, setIsSchedulePending,
 
     showSessionsWhileActive, setShowSessionsWhileActive,
     sessionStartTime, setSessionStartTime,
