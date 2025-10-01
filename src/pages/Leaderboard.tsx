@@ -1,88 +1,23 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users, Clock, Award, Gift } from "lucide-react";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useMemo } from "react";
-import { useTimer } from "@/contexts/TimerContext";
-import { useProfile } from "@/contexts/ProfileContext";
-import { Tables } from "@/integrations/supabase/types";
-
-interface LeaderboardEntry {
-  id: number | string;
-  name: string;
-  focusHours?: number;
-  collaboratedUsers?: number;
-}
+import { useState } from "react";
+import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 
 const Leaderboard = () => {
   const { 
-    localSessions,
     leaderboardFocusTimePeriod, 
     setLeaderboardFocusTimePeriod, 
     leaderboardCollaborationTimePeriod, 
-    setLeaderboardCollaborationTimePeriod,
-    formatTime
-  } = useTimer();
-  const { profile } = useProfile();
+    setLeaderboardCollaborationTimePeriod 
+  } = useTimer(); // Use persistent states from context
 
-  const currentUserId = profile?.id || "anonymous-user";
-  const currentUserName = profile?.first_name || "You";
-
-  // Helper to filter sessions by time period
-  const filterSessionsByPeriod = (sessions: Tables<'sessions'>[], period: 'week' | 'month' | 'all') => {
-    const now = new Date();
-    let filtered = sessions;
-
-    if (period === 'week') {
-      const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
-      filtered = sessions.filter(s => new Date(s.session_start_time) >= oneWeekAgo);
-    } else if (period === 'month') {
-      const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
-      filtered = sessions.filter(s => new Date(s.session_start_time) >= oneMonthAgo);
-    }
-    return filtered;
-  };
-
-  // Calculate user's focus hours for a given period
-  const calculateUserFocusHours = (sessions: Tables<'sessions'>[], period: 'week' | 'month' | 'all') => {
-    const filtered = filterSessionsByPeriod(sessions, period);
-    const userSessions = filtered.filter(s => s.user_id === currentUserId || s.user_id === null); // Include anonymous sessions for 'You'
-    const totalFocusSeconds = userSessions.reduce((sum, s) => sum + s.focus_duration_seconds, 0);
-    return Math.round(totalFocusSeconds / 3600); // Convert seconds to hours
-  };
-
-  // Calculate user's collaborated users (sum of coworker_count) for a given period
-  const calculateUserCollaboratedUsers = (sessions: Tables<'sessions'>[], period: 'week' | 'month' | 'all') => {
-    const filtered = filterSessionsByPeriod(sessions, period);
-    const userSessions = filtered.filter(s => s.user_id === currentUserId || s.user_id === null); // Include anonymous sessions for 'You'
-    const totalCoworkers = userSessions.reduce((sum, s) => sum + s.coworker_count, 0);
-    return totalCoworkers;
-  };
-
-  // Function to integrate user's data into a sample leaderboard
-  const integrateUserIntoLeaderboard = (
-    sampleData: LeaderboardEntry[],
-    userId: string | number,
-    userName: string,
-    userValue: number,
-    key: 'focusHours' | 'collaboratedUsers'
-  ): LeaderboardEntry[] => {
-    let updatedLeaderboard = sampleData.filter(entry => entry.id !== userId); // Remove existing user entry
-
-    const userEntry: LeaderboardEntry = { id: userId, name: userName, [key]: userValue };
-    
-    updatedLeaderboard.push(userEntry);
-    
-    updatedLeaderboard.sort((a, b) => (b[key] || 0) - (a[key] || 0)); // Sort descending
-
-    // Ensure only top 5 are shown
-    return updatedLeaderboard.slice(0, 5);
-  };
-
-  // Sample data for Focus Hours Leaderboard
-  const initialFocusHoursLeaderboardData = {
+  // Sample data for Focus Hours Leaderboard, categorized by time period
+  const focusHoursLeaderboardData = {
     week: [
       { id: 1, name: "Angie", focusHours: 30 },
       { id: 2, name: "Bob", focusHours: 25 },
+      { id: 99, name: "You", focusHours: 22 }, // You are 3rd
       { id: 3, name: "Charlie", focusHours: 20 },
       { id: 4, name: "Diana", focusHours: 18 },
     ],
@@ -91,26 +26,30 @@ const Leaderboard = () => {
       { id: 2, name: "Bob", focusHours: 110 },
       { id: 3, name: "Diana", focusHours: 95 },
       { id: 4, name: "Charlie", focusHours: 80 },
+      { id: 99, name: "You", focusHours: 70 }, // You are 5th
     ],
     all: [
       { id: 1, name: "Angie", focusHours: 500 },
       { id: 2, name: "Bob", focusHours: 450 },
       { id: 3, name: "Charlie", focusHours: 400 },
+      { id: 99, name: "You", focusHours: 380 }, // You are 4th
       { id: 4, name: "Diana", focusHours: 350 },
     ],
   };
 
-  // Sample data for Collaborated Users Leaderboard
-  const initialCollaboratedUsersLeaderboardData = {
+  // Sample data for Collaborated Users Leaderboard, categorized by time period
+  const collaboratedUsersLeaderboardData = {
     week: [
       { id: 1, name: "Angie", collaboratedUsers: 8 },
       { id: 2, name: "Frank", collaboratedUsers: 7 },
       { id: 3, name: "Grace", collaboratedUsers: 6 },
+      { id: 99, name: "You", collaboratedUsers: 5 }, // You are 4th
       { id: 4, name: "Heidi", collaboratedUsers: 4 }, 
     ],
     month: [
       { id: 1, name: "Angie", collaboratedUsers: 25 },
       { id: 2, name: "Liam", collaboratedUsers: 22 }, 
+      { id: 99, name: "You", collaboratedUsers: 18 }, // You are 3rd
       { id: 3, name: "Mia", collaboratedUsers: 17 }, 
       { id: 4, name: "Noah", collaboratedUsers: 15 }, 
     ],
@@ -119,44 +58,13 @@ const Leaderboard = () => {
       { id: 2, name: "Peter", collaboratedUsers: 90 }, 
       { id: 3, name: "Quinn", collaboratedUsers: 80 }, 
       { id: 4, name: "Rachel", collaboratedUsers: 70 }, 
+      { id: 99, name: "You", collaboratedUsers: 65 }, // You are 5th
     ],
   };
 
-  // Calculate user's focus hours for the current period
-  const yourFocusHours = useMemo(() => 
-    calculateUserFocusHours(localSessions, leaderboardFocusTimePeriod), 
-    [localSessions, leaderboardFocusTimePeriod]
-  );
-
-  // Calculate user's collaborated users for the current period
-  const yourCollaboratedUsers = useMemo(() => 
-    calculateUserCollaboratedUsers(localSessions, leaderboardCollaborationTimePeriod), 
-    [localSessions, leaderboardCollaborationTimePeriod]
-  );
-
-  // Integrate user's data into the focus hours leaderboard
-  const currentFocusHoursLeaderboard = useMemo(() => 
-    integrateUserIntoLeaderboard(
-      initialFocusHoursLeaderboardData[leaderboardFocusTimePeriod], 
-      currentUserId, 
-      currentUserName, 
-      yourFocusHours, 
-      'focusHours'
-    ), 
-    [initialFocusHoursLeaderboardData, leaderboardFocusTimePeriod, currentUserId, currentUserName, yourFocusHours]
-  );
-
-  // Integrate user's data into the collaborated users leaderboard
-  const currentCollaboratedUsersLeaderboard = useMemo(() => 
-    integrateUserIntoLeaderboard(
-      initialCollaboratedUsersLeaderboardData[leaderboardCollaborationTimePeriod], 
-      currentUserId, 
-      currentUserName, 
-      yourCollaboratedUsers, 
-      'collaboratedUsers'
-    ), 
-    [initialCollaboratedUsersLeaderboardData, leaderboardCollaborationTimePeriod, currentUserId, currentUserName, yourCollaboratedUsers]
-  );
+  // Get the data for the currently selected time period
+  const currentFocusHoursLeaderboard = focusHoursLeaderboardData[leaderboardFocusTimePeriod];
+  const currentCollaboratedUsersLeaderboard = collaboratedUsersLeaderboardData[leaderboardCollaborationTimePeriod];
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
@@ -198,7 +106,7 @@ const Leaderboard = () => {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Total Coworkers
+              Unique Coworkers
             </CardTitle>
             <TimeFilterToggle onValueChange={setLeaderboardCollaborationTimePeriod} defaultValue={leaderboardCollaborationTimePeriod} />
           </CardHeader>
@@ -209,7 +117,7 @@ const Leaderboard = () => {
                   <span className="font-bold text-lg text-primary">{index + 1}.</span>
                   <p className="font-medium text-foreground">{user.name}</p>
                 </div>
-                <p className="text-muted-foreground">{user.collaboratedUsers} coworkers</p>
+                <p className="text-muted-foreground">{user.collaboratedUsers} users</p>
               </div>
             ))}
           </CardContent>

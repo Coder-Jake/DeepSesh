@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ScheduledTimer } from "@/types/timer";
-import { supabase } from '@/integrations/supabase/client';
-import { Tables, TablesInsert } from '@/integrations/supabase/types';
-import { toast } from 'sonner';
+import { ScheduledTimer } from "@/types/timer"; // Import ScheduledTimer type
+import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
+import { TablesInsert } from '@/integrations/supabase/types'; // Import Supabase types
+import { toast } from 'sonner'; // Using sonner for notifications
 
 interface NotificationSettings {
   push: boolean;
@@ -10,7 +10,7 @@ interface NotificationSettings {
   sound: boolean;
 }
 
-type TimePeriod = 'week' | 'month' | 'all';
+type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
 
 interface TimerContextType {
   focusMinutes: number;
@@ -61,10 +61,11 @@ interface TimerContextType {
   setProfileVisibility: React.Dispatch<React.SetStateAction<string>>;
   locationSharing: string;
   setLocationSharing: React.Dispatch<React.SetStateAction<string>>;
-  isGlobalPrivate: boolean;
-  setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>;
+  isGlobalPrivate: boolean; // Renamed from isGlobalPublic
+  setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>; // Renamed from setIsGlobalPublic
   formatTime: (seconds: number) => string;
 
+  // New timer-related states
   isRunning: boolean;
   setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
   isPaused: boolean;
@@ -77,9 +78,10 @@ interface TimerContextType {
   setIsFlashing: React.Dispatch<React.SetStateAction<boolean>>;
   notes: string;
   setNotes: React.Dispatch<React.SetStateAction<string>>;
-  seshTitle: string;
-  setSeshTitle: React.Dispatch<React.SetStateAction<string>>;
+  seshTitle: string; // Added seshTitle
+  setSeshTitle: React.Dispatch<React.SetStateAction<string>>; // Added setSeshTitle
 
+  // New session tracking states
   sessionStartTime: number | null;
   setSessionStartTime: React.Dispatch<React.SetStateAction<number | null>>;
   currentPhaseStartTime: number | null;
@@ -88,9 +90,10 @@ interface TimerContextType {
   setAccumulatedFocusSeconds: React.Dispatch<React.SetStateAction<number>>;
   accumulatedBreakSeconds: number;
   setAccumulatedBreakSeconds: React.Dispatch<React.SetStateAction<number>>;
-  activeJoinedSessionCoworkerCount: number;
+  activeJoinedSessionCoworkerCount: number; // To store coworker count from joined session
   setActiveJoinedSessionCoworkerCount: React.Dispatch<React.SetStateAction<number>>;
 
+  // New schedule-related states
   schedule: ScheduledTimer[];
   setSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>;
   currentScheduleIndex: number;
@@ -108,6 +111,7 @@ interface TimerContextType {
   commenceDay: number;
   setCommenceDay: React.Dispatch<React.SetStateAction<number>>;
 
+  // New persistent states for History and Leaderboard time filters
   historyTimePeriod: TimePeriod;
   setHistoryTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
   leaderboardFocusTimePeriod: TimePeriod;
@@ -115,9 +119,7 @@ interface TimerContextType {
   leaderboardCollaborationTimePeriod: TimePeriod;
   setLeaderboardCollaborationTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
 
-  localSessions: Tables<'sessions'>[]; // New state for local sessions
-  setLocalSessions: React.Dispatch<React.SetStateAction<Tables<'sessions'>[]>>; // Setter for local sessions
-
+  // Function to save session
   saveSessionToHistory: () => Promise<void>;
 }
 
@@ -125,76 +127,7 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'flowsesh_settings';
 
-// Define initial sample sessions outside the component
-const initialSampleSessions: Tables<'sessions'>[] = [
-  {
-    id: "sample-session-1",
-    title: "Deep Work Sprint",
-    created_at: new Date("2025-09-15T10:00:00Z").toISOString(),
-    focus_duration_seconds: 45 * 60,
-    break_duration_seconds: 0,
-    total_session_seconds: 45 * 60,
-    coworker_count: 3,
-    notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
-    session_start_time: new Date("2025-09-15T09:15:00Z").toISOString(),
-    session_end_time: new Date("2025-09-15T10:00:00Z").toISOString(),
-    user_id: null,
-  },
-  {
-    id: "sample-session-2",
-    title: "Study Group Alpha",
-    created_at: new Date("2025-09-14T14:00:00Z").toISOString(),
-    focus_duration_seconds: 90 * 60,
-    break_duration_seconds: 15 * 60,
-    total_session_seconds: 105 * 60,
-    coworker_count: 5,
-    notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive.",
-    session_start_time: new Date("2025-09-14T12:15:00Z").toISOString(),
-    session_end_time: new Date("2025-09-14T14:00:00Z").toISOString(),
-    user_id: null,
-  },
-  {
-    id: "sample-session-3",
-    title: "Solo Focus",
-    created_at: new Date("2025-09-13T08:30:00Z").toISOString(),
-    focus_duration_seconds: 30 * 60,
-    break_duration_seconds: 0,
-    total_session_seconds: 30 * 60,
-    coworker_count: 1,
-    notes: "Quick focused session to review quarterly goals and plan next steps.",
-    session_start_time: new Date("2025-09-13T08:00:00Z").toISOString(),
-    session_end_time: new Date("2025-09-13T08:30:00Z").toISOString(),
-    user_id: null,
-  },
-  {
-    id: "sample-session-4",
-    title: "Coding Session",
-    created_at: new Date("2025-09-12T11:00:00Z").toISOString(),
-    focus_duration_seconds: 120 * 60,
-    break_duration_seconds: 20 * 60,
-    total_session_seconds: 140 * 60,
-    coworker_count: 2,
-    notes: "Pair programming session working on the new user interface components. Fixed several bugs.",
-    session_start_time: new Date("2025-09-12T08:40:00Z").toISOString(),
-    session_end_time: new Date("2025-09-12T11:00:00Z").toISOString(),
-    user_id: null,
-  },
-  {
-    id: "sample-session-5",
-    title: "Research Deep Dive",
-    created_at: new Date("2025-09-11T16:00:00Z").toISOString(),
-    focus_duration_seconds: 60 * 60,
-    break_duration_seconds: 10 * 60,
-    total_session_seconds: 70 * 60,
-    coworker_count: 4,
-    notes: "Market research session for the new product launch. Gathered valuable competitive intelligence.",
-    session_start_time: new Date("2025-09-11T14:50:00Z").toISOString(),
-    session_end_time: new Date("2025-09-11T16:00:00Z").toISOString(),
-    user_id: null,
-  },
-];
-
-export const TimerProvider = ({ children }: { children: ReactNode }) => {
+export const TimerProvider = ({ children }: { ReactNode }) => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [timerIncrement, setTimerIncrement] = useState(5);
@@ -210,7 +143,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [favourites, setFavourites] = useState(false);
   const [workApps, setWorkApps] = useState(false);
   const [intentionalBreaches, setIntentionalBreaches] = useState(false);
-  const [manualTransition, setManualTransition] = useState(false);
+  const [manualTransition, setManualTransition] = useState(false); // Default to false
   const [maxDistance, setMaxDistance] = useState(2000);
   const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false });
   const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
@@ -219,48 +152,52 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [verificationStandard, setVerificationStandard] = useState("anyone");
   const [profileVisibility, setProfileVisibility] = useState("friends");
   const [locationSharing, setLocationSharing] = useState("approximate");
-  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
+  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false); // Renamed and default to false
 
+  // Timer-related states
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(focusMinutes * 60);
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
-  const [seshTitle, setSeshTitle] = useState("Notes");
+  const [seshTitle, setSeshTitle] = useState("Notes"); // Default Sesh Title
 
+  // Session tracking states
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [currentPhaseStartTime, setCurrentPhaseStartTime] = useState<number | null>(null);
   const [accumulatedFocusSeconds, setAccumulatedFocusSeconds] = useState(0);
   const [accumulatedBreakSeconds, setAccumulatedBreakSeconds] = useState(0);
   const [activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount] = useState(0);
 
+  // Schedule-related states
   const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
   const [isSchedulingMode, setIsSchedulingMode] = useState(false);
   const [isScheduleActive, setIsScheduleActive] = useState(false);
   const [scheduleTitle, setScheduleTitle] = useState("");
-  const [commenceTime, setCommenceTime] = useState("09:00");
-  const [commenceDay, setCommenceDay] = useState(0);
+  const [commenceTime, setCommenceTime] = useState("09:00"); // Default value
+  const [commenceDay, setCommenceDay] = useState(0); // Default to Sunday
 
+  // New persistent states for History and Leaderboard time filters
   const [historyTimePeriod, setHistoryTimePeriod] = useState<TimePeriod>('week');
   const [leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod] = useState<TimePeriod>('week');
   const [leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod] = useState<TimePeriod>('week');
 
-  const [localSessions, setLocalSessions] = useState<Tables<'sessions'>[]>([]); // New state for local sessions
-
+  // Utility function for formatting time
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // Function to reset all timer-related states to defaults
   const resetAllTimerStates = () => {
     setIsRunning(false);
     setIsPaused(false);
     setIsFlashing(false);
     setTimerType('focus');
-    setTimeLeft(focusMinutes * 60);
+    setTimeLeft(focusMinutes * 60); // Reset to default focus time
     setNotes("");
     setSeshTitle("Notes");
     setSessionStartTime(null);
@@ -277,9 +214,10 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setCommenceDay(0);
   };
 
+  // Function to save session to Supabase
   const saveSessionToHistory = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id || null;
+    const userId = user?.id || null; // Get user ID if logged in, otherwise null
 
     if (sessionStartTime === null) {
       toast.error("Failed to save session", {
@@ -288,6 +226,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    // Ensure current phase time is added before saving
     let finalAccumulatedFocusSeconds = accumulatedFocusSeconds;
     let finalAccumulatedBreakSeconds = accumulatedBreakSeconds;
 
@@ -298,7 +237,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       } else {
         finalAccumulatedBreakSeconds += elapsed;
       }
-      setCurrentPhaseStartTime(null); // Ensure current phase time is accounted for
     }
 
     const totalSessionSeconds = finalAccumulatedFocusSeconds + finalAccumulatedBreakSeconds;
@@ -307,12 +245,11 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       toast.info("Session too short", {
         description: "Session was too short to be saved.",
       });
-      resetAllTimerStates();
       return;
     }
 
     const sessionData: TablesInsert<'sessions'> = {
-      user_id: userId,
+      user_id: userId, // Use userId (can be null)
       title: seshTitle,
       notes: notes,
       focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
@@ -323,31 +260,28 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       session_end_time: new Date().toISOString(),
     };
 
-    // Add to local sessions
-    setLocalSessions(prev => [...prev, sessionData]);
+    const { error } = await supabase.from('sessions').insert(sessionData);
 
-    // Attempt to save to Supabase if user is logged in
-    if (userId) {
-      const { error } = await supabase.from('sessions').insert(sessionData);
-
-      if (error) {
-        console.error("Error saving session to Supabase:", error);
-        toast.error("Failed to save session to cloud", {
-          description: error.message,
-        });
-      } else {
+    if (error) {
+      console.error("Error saving session:", error);
+      toast.error("Failed to save session", {
+        description: error.message,
+      });
+    } else {
+      if (userId) {
         toast.success("Session saved!", {
           description: `Your session "${seshTitle}" has been added to your history.`,
         });
+      } else {
+        toast.success("Anonymous session saved!", {
+          description: `Your session "${seshTitle}" has been saved anonymously. Log in to see it in your history.`,
+        });
       }
-    } else {
-      toast.success("Anonymous session saved!", {
-        description: `Your session "${seshTitle}" has been saved locally. Log in to sync it to your history.`,
-      });
     }
-    resetAllTimerStates();
+    resetAllTimerStates(); // Reset all states after saving
   };
 
+  // Schedule functions
   const startSchedule = () => {
     if (schedule.length > 0) {
       setIsScheduleActive(true);
@@ -356,29 +290,31 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setTimeLeft(schedule[0].durationMinutes * 60);
       setIsRunning(true);
       setIsPaused(false);
-      setIsSchedulingMode(false);
-      setSessionStartTime(Date.now());
-      setCurrentPhaseStartTime(Date.now());
+      setIsSchedulingMode(false); // Exit scheduling mode once started
+      setSessionStartTime(Date.now()); // Start overall session timer
+      setCurrentPhaseStartTime(Date.now()); // Start current phase timer
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
     }
   };
 
   const resetSchedule = () => {
-    resetAllTimerStates();
+    resetAllTimerStates(); // Use the comprehensive reset function
   };
 
+  // Core Timer Countdown Logic
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
 
     if (isRunning && !isPaused && timeLeft > 0) {
-      if (currentPhaseStartTime === null) {
+      if (currentPhaseStartTime === null) { // If resuming from pause or starting new phase
         setCurrentPhaseStartTime(Date.now());
       }
       interval = setInterval(() => {
         setTimeLeft(prevTime => prevTime - 1);
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
+      // Phase ended, accumulate time
       if (currentPhaseStartTime !== null) {
         const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
         if (timerType === 'focus') {
@@ -386,10 +322,10 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setAccumulatedBreakSeconds(prev => prev + elapsed);
         }
-        setCurrentPhaseStartTime(null);
+        setCurrentPhaseStartTime(null); // Reset phase start time
       }
 
-      setIsRunning(false);
+      setIsRunning(false); // Stop the timer
 
       if (isScheduleActive) {
         if (currentScheduleIndex < schedule.length - 1) {
@@ -400,9 +336,9 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
           setTimeLeft(nextItem.durationMinutes * 60);
           setIsRunning(true);
           setIsFlashing(false);
-          setCurrentPhaseStartTime(Date.now());
+          setCurrentPhaseStartTime(Date.now()); // Start new phase timer
         } else {
-          saveSessionToHistory();
+          saveSessionToHistory(); // Schedule completed, save session
         }
       } else if (!manualTransition) {
         const nextType = timerType === 'focus' ? 'break' : 'focus';
@@ -410,7 +346,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         setTimeLeft(nextType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
         setIsRunning(true);
         setIsFlashing(false);
-        setCurrentPhaseStartTime(Date.now());
+        setCurrentPhaseStartTime(Date.now()); // Start new phase timer
       } else {
         setIsFlashing(true);
       }
@@ -423,15 +359,18 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     isRunning, isPaused, timeLeft, isScheduleActive, currentScheduleIndex, schedule,
     setTimeLeft, setTimerType, setCurrentScheduleIndex, setIsRunning, setIsFlashing,
     focusMinutes, breakMinutes, manualTransition, currentPhaseStartTime,
-    accumulatedFocusSeconds, accumulatedBreakSeconds, saveSessionToHistory
+    accumulatedFocusSeconds, accumulatedBreakSeconds, saveSessionToHistory // Added saveSessionToHistory
   ]);
 
+  // Effect to update timeLeft when focusMinutes or breakMinutes change (if timer is not active)
   useEffect(() => {
     if (!isRunning && !isPaused && !isScheduleActive && !isFlashing) {
       setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     }
   }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isFlashing, setTimeLeft]);
 
+
+  // Load settings from local storage on initial mount
   useEffect(() => {
     const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedSettings) {
@@ -450,7 +389,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setPhoneCalls(settings.phoneCalls ?? false);
       setFavourites(settings.favourites ?? false);
       setWorkApps(settings.workApps ?? false);
-      setIntentionalBreaches(settings.intentionalBreaks ?? false); // Corrected typo
+      setIntentionalBreaches(settings.intentionalBreaches ?? false);
       setManualTransition(settings.manualTransition ?? false);
       setMaxDistance(settings.maxDistance ?? 2000);
       setAskNotifications(settings.askNotifications ?? { push: true, vibrate: false, sound: false });
@@ -460,10 +399,12 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setVerificationStandard(settings.verificationStandard ?? "anyone");
       setProfileVisibility(settings.profileVisibility ?? "friends");
       setLocationSharing(settings.locationSharing ?? "approximate");
-      setIsGlobalPrivate(settings.isGlobalPrivate ?? false);
+      setIsGlobalPrivate(settings.isGlobalPrivate ?? false); // Renamed and default to false
 
+      // Load timer/schedule specific states
       setIsRunning(settings.isRunning ?? false);
       setIsPaused(settings.isPaused ?? false);
+      // Ensure timeLeft is initialized correctly based on loaded timerType and minutes
       const loadedTimerType = settings.timerType ?? 'focus';
       const loadedFocusMinutes = settings.focusMinutes ?? 25;
       const loadedBreakMinutes = settings.breakMinutes ?? 5;
@@ -471,7 +412,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setTimerType(loadedTimerType);
       setIsFlashing(settings.isFlashing ?? false);
       setNotes(settings.notes ?? "");
-      setSeshTitle(settings.seshTitle ?? "Notes");
+      setSeshTitle(settings.seshTitle ?? "Notes"); // Load seshTitle
       setSessionStartTime(settings.sessionStartTime ?? null);
       setCurrentPhaseStartTime(settings.currentPhaseStartTime ?? null);
       setAccumulatedFocusSeconds(settings.accumulatedFocusSeconds ?? 0);
@@ -485,16 +426,14 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setCommenceTime(settings.commenceTime ?? "09:00");
       setCommenceDay(settings.commenceDay ?? 0);
 
+      // Load new persistent states for History and Leaderboard time filters
       setHistoryTimePeriod(settings.historyTimePeriod ?? 'week');
       setLeaderboardFocusTimePeriod(settings.leaderboardFocusTimePeriod ?? 'week');
       setLeaderboardCollaborationTimePeriod(settings.leaderboardCollaborationTimePeriod ?? 'week');
-      
-      setLocalSessions(settings.localSessions ?? initialSampleSessions); // Load local sessions, or initialize with samples
-    } else {
-      setLocalSessions(initialSampleSessions); // Initialize with sample data if no settings exist
     }
   }, []);
 
+  // Save settings to local storage whenever they change
   useEffect(() => {
     const settingsToSave = {
       focusMinutes,
@@ -521,14 +460,15 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       verificationStandard,
       profileVisibility,
       locationSharing,
-      isGlobalPrivate,
+      isGlobalPrivate, // Renamed
+      // Timer/Schedule specific states
       isRunning,
       isPaused,
       timeLeft,
       timerType,
       isFlashing,
       notes,
-      seshTitle,
+      seshTitle, // Save seshTitle
       sessionStartTime,
       currentPhaseStartTime,
       accumulatedFocusSeconds,
@@ -541,10 +481,10 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       scheduleTitle,
       commenceTime,
       commenceDay,
+      // New persistent states for History and Leaderboard time filters
       historyTimePeriod,
       leaderboardFocusTimePeriod,
       leaderboardCollaborationTimePeriod,
-      localSessions, // Save local sessions
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settingsToSave));
   }, [
@@ -553,13 +493,14 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     manualTransition, maxDistance, askNotifications, sessionInvites, friendActivity,
     breakNotificationsVibrate, verificationStandard, profileVisibility, locationSharing,
-    isGlobalPrivate,
-    isRunning, isPaused, timeLeft, timerType, isFlashing, notes, seshTitle,
+    isGlobalPrivate, // Renamed
+    // Timer/Schedule specific dependencies
+    isRunning, isPaused, timeLeft, timerType, isFlashing, notes, seshTitle, // Added seshTitle
     sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
     schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
     scheduleTitle, commenceTime, commenceDay,
+    // New persistent states for History and Leaderboard time filters
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
-    localSessions, // Add localSessions as a dependency
   ]);
 
   const value = {
@@ -587,20 +528,23 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     verificationStandard, setVerificationStandard,
     profileVisibility, setProfileVisibility,
     locationSharing, setLocationSharing,
-    isGlobalPrivate, setIsGlobalPrivate,
+    isGlobalPrivate, setIsGlobalPrivate, // Renamed
     formatTime,
+    // Timer-related states
     isRunning, setIsRunning,
     isPaused, setIsPaused,
     timeLeft, setTimeLeft,
     timerType, setTimerType,
     isFlashing, setIsFlashing,
     notes, setNotes,
-    seshTitle, setSeshTitle,
+    seshTitle, setSeshTitle, // Added seshTitle
+    // Session tracking states
     sessionStartTime, setSessionStartTime,
     currentPhaseStartTime, setCurrentPhaseStartTime,
     accumulatedFocusSeconds, setAccumulatedFocusSeconds,
     accumulatedBreakSeconds, setAccumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount,
+    // Schedule-related states
     schedule, setSchedule,
     currentScheduleIndex, setCurrentScheduleIndex,
     isSchedulingMode, setIsSchedulingMode,
@@ -609,10 +553,11 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     scheduleTitle, setScheduleTitle,
     commenceTime, setCommenceTime,
     commenceDay, setCommenceDay,
+    // New persistent states for History and Leaderboard time filters
     historyTimePeriod, setHistoryTimePeriod,
     leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod,
     leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod,
-    localSessions, setLocalSessions, // Provide local sessions
+    // Function to save session
     saveSessionToHistory,
   };
 
