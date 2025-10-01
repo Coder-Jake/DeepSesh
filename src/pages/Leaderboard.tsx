@@ -9,23 +9,23 @@ const Leaderboard = () => {
     week: [
       { id: 1, name: "Angie", focusHours: 30 },
       { id: 2, name: "Bob", focusHours: 25 },
+      { id: 99, name: "You", focusHours: 22 }, // You are 3rd
       { id: 3, name: "Charlie", focusHours: 20 },
       { id: 4, name: "Diana", focusHours: 18 },
-      { id: 5, name: "Eve", focusHours: 15 },
     ],
     month: [
       { id: 1, name: "Angie", focusHours: 120 },
       { id: 2, name: "Bob", focusHours: 110 },
       { id: 3, name: "Diana", focusHours: 95 },
       { id: 4, name: "Charlie", focusHours: 80 },
-      { id: 5, name: "Frank", focusHours: 70 },
+      { id: 99, name: "You", focusHours: 70 }, // You are 5th
     ],
     all: [
       { id: 1, name: "Angie", focusHours: 500 },
       { id: 2, name: "Bob", focusHours: 450 },
       { id: 3, name: "Charlie", focusHours: 400 },
+      { id: 99, name: "You", focusHours: 380 }, // You are 4th
       { id: 4, name: "Diana", focusHours: 350 },
-      { id: 5, name: "Eve", focusHours: 300 },
     ],
   };
 
@@ -35,22 +35,22 @@ const Leaderboard = () => {
       { id: 1, name: "Angie", collaboratedUsers: 8 },
       { id: 2, name: "Frank", collaboratedUsers: 7 },
       { id: 3, name: "Grace", collaboratedUsers: 6 },
-      { id: 4, name: "Heidi", collaboratedUsers: 5 }, // Changed
-      { id: 5, name: "Ivan", collaboratedUsers: 4 }, // Changed
+      { id: 99, name: "You", collaboratedUsers: 5 }, // You are 4th
+      { id: 4, name: "Heidi", collaboratedUsers: 4 }, 
     ],
     month: [
       { id: 1, name: "Angie", collaboratedUsers: 25 },
-      { id: 2, name: "Liam", collaboratedUsers: 22 }, // Changed
-      { id: 3, name: "Mia", collaboratedUsers: 18 }, // Changed
-      { id: 4, name: "Noah", collaboratedUsers: 15 }, // Changed
-      { id: 5, name: "Olivia", collaboratedUsers: 12 }, // Changed
+      { id: 2, name: "Liam", collaboratedUsers: 22 }, 
+      { id: 99, name: "You", collaboratedUsers: 18 }, // You are 3rd
+      { id: 3, name: "Mia", collaboratedUsers: 17 }, 
+      { id: 4, name: "Noah", collaboratedUsers: 15 }, 
     ],
     all: [
       { id: 1, name: "Angie", collaboratedUsers: 100 },
-      { id: 2, name: "Peter", collaboratedUsers: 90 }, // Changed
-      { id: 3, name: "Quinn", collaboratedUsers: 80 }, // Changed
-      { id: 4, name: "Rachel", collaboratedUsers: 70 }, // Changed
-      { id: 5, name: "Sam", collaboratedUsers: 60 }, // Changed
+      { id: 2, name: "Peter", collaboratedUsers: 90 }, 
+      { id: 3, name: "Quinn", collaboratedUsers: 80 }, 
+      { id: 4, name: "Rachel", collaboratedUsers: 70 }, 
+      { id: 99, name: "You", collaboratedUsers: 65 }, // You are 5th
     ],
   };
 

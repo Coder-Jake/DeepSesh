@@ -60,23 +60,23 @@ const History = () => {
   // Sample stats data for different time periods
   const statsData = {
     week: {
-      totalFocusTime: "16h 45m",
+      totalFocusTime: "22h 0m", // Adjusted for 3rd place
       sessionsCompleted: 5,
-      uniqueCoworkers: 8,
+      uniqueCoworkers: 5, // Adjusted for 4th place
       focusRank: "3rd",
       coworkerRank: "4th",
     },
     month: {
-      totalFocusTime: "65h 30m",
+      totalFocusTime: "70h 0m", // Adjusted for 5th place
       sessionsCompleted: 22,
-      uniqueCoworkers: 15,
+      uniqueCoworkers: 18, // Adjusted for 3rd place
       focusRank: "5th",
       coworkerRank: "3rd",
     },
     all: {
-      totalFocusTime: "240h 15m",
+      totalFocusTime: "380h 0m", // Adjusted for 4th place
       sessionsCompleted: 80,
-      uniqueCoworkers: 30,
+      uniqueCoworkers: 65, // Adjusted for 5th place
       focusRank: "4th",
       coworkerRank: "5th",
     },
