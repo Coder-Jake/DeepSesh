@@ -219,7 +219,7 @@ const ScheduleForm: React.FC = () => {
           <TabsTrigger value="new">New</TabsTrigger>
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
-        <TabsContent value="new" className="mt-6 space-y-6 px-4 lg:px-6">
+        <TabsContent value="new" className="space-y-6 px-4 lg:px-6"> {/* Removed mt-6 */}
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {localSchedule.map((timer, index) => (
               <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
@@ -329,7 +329,7 @@ const ScheduleForm: React.FC = () => {
             <Play className="mr-2 h-5 w-5" />Commence
           </Button>
         </TabsContent>
-        <TabsContent value="saved" className="mt-6 px-4 lg:px-6">
+        <TabsContent value="saved" className="space-y-6 px-4 lg:px-6"> {/* Removed mt-6 */}
           <ScheduleTemplates />
         </TabsContent>
       </Tabs>
