@@ -22,7 +22,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
-import { mockNearbySessions, mockFriendsSessions, DemoSession } from "@/lib/mockData"; // Import mock data
 
 // Define types for Ask items
 interface ExtendSuggestion {
@@ -51,6 +50,84 @@ interface Poll {
 
 type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
+
+interface DemoSession {
+  id: number;
+  title: string;
+  type: 'focus' | 'break';
+  totalDurationMinutes: number;
+  currentPhase: 'focus' | 'break';
+  currentPhaseDurationMinutes: number;
+  startTime: number;
+  location: string;
+  workspaceImage: string;
+  workspaceDescription: string;
+  participants: { id: number; name: string; sociability: number; intention?: string; bio?: string }[];
+}
+
+const mockNearbySessions: DemoSession[] = [
+  {
+    id: 101,
+    title: "Advanced Calculus Study Group",
+    type: "focus",
+    totalDurationMinutes: 90,
+    currentPhase: "focus",
+    currentPhaseDurationMinutes: 75,
+    startTime: Date.now() - (5.52 * 60 * 1000),
+    location: "Engineering Library - Room 304",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Quiet study space with whiteboards",
+    participants: [
+      { id: 1, name: "Alex", sociability: 90, intention: "Reviewing differential equations." },
+      { id: 2, name: "Sam", sociability: 80, intention: "Working on problem set 3." },
+      { id: 3, name: "Taylor", sociability: 90, intention: "Preparing for the midterm exam." },
+    ],
+  },
+  {
+    id: 102,
+    title: "Computer Science Lab",
+    type: "focus",
+    totalDurationMinutes: 120,
+    currentPhase: "focus",
+    currentPhaseDurationMinutes: 100,
+    startTime: Date.now() - (76.8 * 60 * 1000),
+    location: "Science Building - Computer Lab 2B",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Modern lab with dual monitors",
+    participants: [
+      { id: 4, name: "Morgan", sociability: 20, intention: "Debugging a Python script." },
+      { id: 5, name: "Jordan", sociability: 10, intention: "Writing documentation for API." },
+      { id: 6, name: "Casey", sociability: 20, intention: "Learning new framework." },
+      { id: 7, name: "Riley", sociability: 20, intention: "Code refactoring." },
+      { id: 8, name: "Avery", sociability: 30, intention: "Designing database schema." },
+    ],
+  },
+];
+
+const mockFriendsSessions: DemoSession[] = [
+  {
+    id: 201,
+    title: "Psychology 101 Final Review",
+    type: "focus",
+    totalDurationMinutes: 90,
+    currentPhase: "break",
+    currentPhaseDurationMinutes: 15,
+    startTime: Date.now() - (10.66 * 60 * 1000),
+    location: "Main Library - Study Room 12",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Private group study room",
+    participants: [
+      { id: 9, name: "Jamie", sociability: 60, intention: "Reviewing cognitive psychology." },
+      { id: 10, name: "Quinn", sociability: 60, intention: "Memorizing key terms." },
+      { id: 11, name: "Blake", sociability: 70, intention: "Practicing essay questions." },
+      { id: 12, name: "Drew", sociability: 60, intention: "Summarizing research papers." },
+      { id: 13, name: "Chris", sociability: 50, intention: "Creating flashcards." },
+      { id: 14, name: "Pat", sociability: 55, intention: "Discussing theories." },
+      { id: 15, name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
+      { id: 16, name: "Jess", sociability: 70, intention: "Peer teaching." },
+    ],
+  },
+];
 
 const Index = () => {
   const {
@@ -285,11 +362,7 @@ const Index = () => {
     // Accumulate time for the phase just ended
     if (currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-      if (timerType === 'focus') {
-        setAccumulatedFocusSeconds(prev => prev + elapsed);
-      } else {
-        setAccumulatedBreakSeconds(prev => prev + elapsed);
-      }
+      setAccumulatedFocusSeconds(prev => prev + elapsed);
     }
     setTimerType('break');
     setTimeLeft(breakMinutes * 60);
@@ -303,11 +376,7 @@ const Index = () => {
     // Accumulate time for the phase just ended
     if (currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-      if (timerType === 'focus') {
-        setAccumulatedFocusSeconds(prev => prev + elapsed);
-      } else {
-        setAccumulatedBreakSeconds(prev => prev + elapsed);
-      }
+      setAccumulatedBreakSeconds(prev => prev + elapsed);
     }
     setTimerType('focus');
     setTimeLeft(focusMinutes * 60);
