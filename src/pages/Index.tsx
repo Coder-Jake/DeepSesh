@@ -209,6 +209,7 @@ const Index = () => {
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
       titleInputRef.current.focus();
+      titleInputRef.current.select(); // Select the text when focused
     }
   }, [isEditingSeshTitle]);
 

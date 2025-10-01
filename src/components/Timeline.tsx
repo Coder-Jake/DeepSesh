@@ -24,6 +24,7 @@ const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, tim
   useEffect(() => {
     if (isEditingTimelineTitle && timelineTitleInputRef.current) {
       timelineTitleInputRef.current.focus();
+      timelineTitleInputRef.current.select(); // Select the text when focused
     }
   }, [isEditingTimelineTitle]);
 
