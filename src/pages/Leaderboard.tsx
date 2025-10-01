@@ -1,61 +1,23 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users, Clock, Award, Gift } from "lucide-react";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useMemo } from "react";
+import { useState } from "react";
 import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
-import { Tables } from "@/integrations/supabase/types"; // Import Tables type
 
 const Leaderboard = () => {
   const { 
     leaderboardFocusTimePeriod, 
     setLeaderboardFocusTimePeriod, 
     leaderboardCollaborationTimePeriod, 
-    setLeaderboardCollaborationTimePeriod,
-    localAnonymousSessions
+    setLeaderboardCollaborationTimePeriod 
   } = useTimer(); // Use persistent states from context
-
-  // For now, we'll use localAnonymousSessions. In a real app, this would be combined with Supabase data.
-  const allSessions: Tables<'sessions'>[] = localAnonymousSessions;
-
-  // Helper to filter sessions by time period
-  const filterSessionsByTimePeriod = (sessions: Tables<'sessions'>[], period: 'week' | 'month' | 'all') => {
-    const now = new Date();
-    return sessions.filter(session => {
-      const sessionDate = new Date(session.session_start_time);
-      if (period === 'all') return true;
-
-      const diffTime = Math.abs(now.getTime() - sessionDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (period === 'week') {
-        return diffDays <= 7;
-      }
-      if (period === 'month') {
-        return diffDays <= 30;
-      }
-      return true;
-    });
-  };
-
-  // Calculate "Your" stats dynamically
-  const yourStats = useMemo(() => {
-    const filteredByFocusTime = filterSessionsByTimePeriod(allSessions, leaderboardFocusTimePeriod);
-    const filteredByCollaborationTime = filterSessionsByTimePeriod(allSessions, leaderboardCollaborationTimePeriod);
-
-    const yourFocusHours = Math.floor(filteredByFocusTime.reduce((sum, session) => sum + (session.focus_duration_seconds || 0), 0) / 3600);
-    const yourCollaboratedUsers = new Set(filteredByCollaborationTime.filter(s => s.coworker_count > 0).map(s => s.id)).size; // Placeholder for unique coworkers
-
-    return {
-      focusHours: yourFocusHours,
-      collaboratedUsers: yourCollaboratedUsers,
-    };
-  }, [allSessions, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod]);
 
   // Sample data for Focus Hours Leaderboard, categorized by time period
   const focusHoursLeaderboardData = {
     week: [
       { id: 1, name: "Angie", focusHours: 30 },
       { id: 2, name: "Bob", focusHours: 25 },
+      { id: 99, name: "You", focusHours: 22 }, // You are 3rd
       { id: 3, name: "Charlie", focusHours: 20 },
       { id: 4, name: "Diana", focusHours: 18 },
     ],
@@ -64,11 +26,13 @@ const Leaderboard = () => {
       { id: 2, name: "Bob", focusHours: 110 },
       { id: 3, name: "Diana", focusHours: 95 },
       { id: 4, name: "Charlie", focusHours: 80 },
+      { id: 99, name: "You", focusHours: 70 }, // You are 5th
     ],
     all: [
       { id: 1, name: "Angie", focusHours: 500 },
       { id: 2, name: "Bob", focusHours: 450 },
       { id: 3, name: "Charlie", focusHours: 400 },
+      { id: 99, name: "You", focusHours: 380 }, // You are 4th
       { id: 4, name: "Diana", focusHours: 350 },
     ],
   };
@@ -79,11 +43,13 @@ const Leaderboard = () => {
       { id: 1, name: "Angie", collaboratedUsers: 8 },
       { id: 2, name: "Frank", collaboratedUsers: 7 },
       { id: 3, name: "Grace", collaboratedUsers: 6 },
+      { id: 99, name: "You", collaboratedUsers: 5 }, // You are 4th
       { id: 4, name: "Heidi", collaboratedUsers: 4 }, 
     ],
     month: [
       { id: 1, name: "Angie", collaboratedUsers: 25 },
       { id: 2, name: "Liam", collaboratedUsers: 22 }, 
+      { id: 99, name: "You", collaboratedUsers: 18 }, // You are 3rd
       { id: 3, name: "Mia", collaboratedUsers: 17 }, 
       { id: 4, name: "Noah", collaboratedUsers: 15 }, 
     ],
@@ -92,47 +58,13 @@ const Leaderboard = () => {
       { id: 2, name: "Peter", collaboratedUsers: 90 }, 
       { id: 3, name: "Quinn", collaboratedUsers: 80 }, 
       { id: 4, name: "Rachel", collaboratedUsers: 70 }, 
+      { id: 99, name: "You", collaboratedUsers: 65 }, // You are 5th
     ],
   };
 
-  // Get the data for the currently selected time period and insert "You"
-  const currentFocusHoursLeaderboard = useMemo(() => {
-    const data = [...focusHoursLeaderboardData[leaderboardFocusTimePeriod]];
-    const yourEntry = { id: 99, name: "You", focusHours: yourStats.focusHours };
-    
-    // Find the correct position for "You"
-    let inserted = false;
-    for (let i = 0; i < data.length; i++) {
-      if (yourEntry.focusHours >= data[i].focusHours) {
-        data.splice(i, 0, yourEntry);
-        inserted = true;
-        break;
-      }
-    }
-    if (!inserted) {
-      data.push(yourEntry);
-    }
-    return data;
-  }, [leaderboardFocusTimePeriod, yourStats.focusHours]);
-
-  const currentCollaboratedUsersLeaderboard = useMemo(() => {
-    const data = [...collaboratedUsersLeaderboardData[leaderboardCollaborationTimePeriod]];
-    const yourEntry = { id: 99, name: "You", collaboratedUsers: yourStats.collaboratedUsers };
-
-    // Find the correct position for "You"
-    let inserted = false;
-    for (let i = 0; i < data.length; i++) {
-      if (yourEntry.collaboratedUsers >= data[i].collaboratedUsers) {
-        data.splice(i, 0, yourEntry);
-        inserted = true;
-        break;
-      }
-    }
-    if (!inserted) {
-      data.push(yourEntry);
-    }
-    return data;
-  }, [leaderboardCollaborationTimePeriod, yourStats.collaboratedUsers]);
+  // Get the data for the currently selected time period
+  const currentFocusHoursLeaderboard = focusHoursLeaderboardData[leaderboardFocusTimePeriod];
+  const currentCollaboratedUsersLeaderboard = collaboratedUsersLeaderboardData[leaderboardCollaborationTimePeriod];
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">

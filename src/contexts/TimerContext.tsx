@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ScheduledTimer } from "@/types/timer"; // Import ScheduledTimer type
 import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
-import { TablesInsert, Tables } from '@/integrations/supabase/types'; // Import Supabase types
+import { TablesInsert } from '@/integrations/supabase/types'; // Import Supabase types
 import { toast } from 'sonner'; // Using sonner for notifications
 
 interface NotificationSettings {
@@ -119,10 +119,6 @@ interface TimerContextType {
   leaderboardCollaborationTimePeriod: TimePeriod;
   setLeaderboardCollaborationTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
 
-  // Local storage for anonymous sessions
-  localAnonymousSessions: Tables<'sessions'>[];
-  setLocalAnonymousSessions: React.Dispatch<React.SetStateAction<Tables<'sessions'>[]>>;
-
   // Function to save session
   saveSessionToHistory: () => Promise<void>;
 }
@@ -131,7 +127,7 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'flowsesh_settings';
 
-export const TimerProvider = ({ children }: { children: ReactNode }) => {
+export const TimerProvider = ({ children }: { ReactNode }) => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [timerIncrement, setTimerIncrement] = useState(5);
@@ -188,9 +184,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod] = useState<TimePeriod>('week');
   const [leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod] = useState<TimePeriod>('week');
 
-  // Local storage for anonymous sessions
-  const [localAnonymousSessions, setLocalAnonymousSessions] = useState<Tables<'sessions'>[]>([]);
-
   // Utility function for formatting time
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -221,7 +214,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setCommenceDay(0);
   };
 
-  // Function to save session to Supabase or local storage
+  // Function to save session to Supabase
   const saveSessionToHistory = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id || null; // Get user ID if logged in, otherwise null
@@ -267,31 +260,23 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       session_end_time: new Date().toISOString(),
     };
 
-    if (userId) {
-      const { error } = await supabase.from('sessions').insert(sessionData);
+    const { error } = await supabase.from('sessions').insert(sessionData);
 
-      if (error) {
-        console.error("Error saving session to Supabase:", error);
-        toast.error("Failed to save session", {
-          description: error.message,
-        });
-      } else {
+    if (error) {
+      console.error("Error saving session:", error);
+      toast.error("Failed to save session", {
+        description: error.message,
+      });
+    } else {
+      if (userId) {
         toast.success("Session saved!", {
           description: `Your session "${seshTitle}" has been added to your history.`,
         });
+      } else {
+        toast.success("Anonymous session saved!", {
+          description: `Your session "${seshTitle}" has been saved anonymously. Log in to see it in your history.`,
+        });
       }
-    } else {
-      // Save to local storage for anonymous users
-      const newLocalSession: Tables<'sessions'> = { 
-        ...sessionData, 
-        id: crypto.randomUUID(), // Assign a local ID
-        created_at: new Date().toISOString(), // Ensure created_at is set for local sessions
-        user_id: null, // Explicitly null for anonymous
-      };
-      setLocalAnonymousSessions(prev => [...prev, newLocalSession]);
-      toast.success("Anonymous session saved!", {
-        description: `Your session "${seshTitle}" has been saved locally.`,
-      });
     }
     resetAllTimerStates(); // Reset all states after saving
   };
@@ -374,7 +359,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     isRunning, isPaused, timeLeft, isScheduleActive, currentScheduleIndex, schedule,
     setTimeLeft, setTimerType, setCurrentScheduleIndex, setIsRunning, setIsFlashing,
     focusMinutes, breakMinutes, manualTransition, currentPhaseStartTime,
-    accumulatedFocusSeconds, accumulatedBreakSeconds, saveSessionToHistory, timerType // Added timerType
+    accumulatedFocusSeconds, accumulatedBreakSeconds, saveSessionToHistory // Added saveSessionToHistory
   ]);
 
   // Effect to update timeLeft when focusMinutes or breakMinutes change (if timer is not active)
@@ -445,9 +430,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setHistoryTimePeriod(settings.historyTimePeriod ?? 'week');
       setLeaderboardFocusTimePeriod(settings.leaderboardFocusTimePeriod ?? 'week');
       setLeaderboardCollaborationTimePeriod(settings.leaderboardCollaborationTimePeriod ?? 'week');
-
-      // Load local anonymous sessions
-      setLocalAnonymousSessions(settings.localAnonymousSessions ?? []);
     }
   }, []);
 
@@ -503,8 +485,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       historyTimePeriod,
       leaderboardFocusTimePeriod,
       leaderboardCollaborationTimePeriod,
-      // Local anonymous sessions
-      localAnonymousSessions,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settingsToSave));
   }, [
@@ -521,8 +501,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     scheduleTitle, commenceTime, commenceDay,
     // New persistent states for History and Leaderboard time filters
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
-    // Local anonymous sessions
-    localAnonymousSessions,
   ]);
 
   const value = {
@@ -579,8 +557,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     historyTimePeriod, setHistoryTimePeriod,
     leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod,
     leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod,
-    // Local anonymous sessions
-    localAnonymousSessions, setLocalAnonymousSessions,
     // Function to save session
     saveSessionToHistory,
   };

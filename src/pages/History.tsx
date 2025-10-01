@@ -7,13 +7,83 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
-import { Tables } from "@/integrations/supabase/types"; // Import Tables type
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, localAnonymousSessions } = useTimer(); // Use persistent state from context
+  const { historyTimePeriod, setHistoryTimePeriod } = useTimer(); // Use persistent state from context
 
-  // For now, we'll use localAnonymousSessions. In a real app, this would be combined with Supabase data.
-  const allSessions: Tables<'sessions'>[] = localAnonymousSessions;
+  // Sample data - in a real app this would come from a database
+  const sessions = [
+    {
+      id: 1,
+      title: "Deep Work Sprint",
+      date: "2025-09-15",
+      duration: "45 mins",
+      participants: 3,
+      type: "focus",
+      notes: "Great session focusing on project documentation. Made significant progress on the API specs."
+    },
+    {
+      id: 2,
+      title: "Study Group Alpha",
+      date: "2025-09-14",
+      duration: "90 mins",
+      participants: 5,
+      type: "focus",
+      notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
+    },
+    {
+      id: 3,
+      title: "Solo Focus",
+      date: "2025-09-13",
+      duration: "30 mins",
+      participants: 1,
+      type: "focus",
+      notes: "Quick focused session to review quarterly goals and plan next steps."
+    },
+    {
+      id: 4,
+      title: "Coding Session",
+      date: "2025-09-12",
+      duration: "120 mins",
+      participants: 2,
+      type: "focus",
+      notes: "Pair programming session working on the new user interface components. Fixed several bugs."
+    },
+    {
+      id: 5,
+      title: "Research Deep Dive",
+      date: "2025-09-11",
+      duration: "60 mins",
+      participants: 4,
+      type: "focus",
+      notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
+    }
+  ];
+
+  // Sample stats data for different time periods
+  const statsData = {
+    week: {
+      totalFocusTime: "22h 0m", // Adjusted for 3rd place
+      sessionsCompleted: 5,
+      uniqueCoworkers: 5, // Adjusted for 4th place
+      focusRank: "3rd",
+      coworkerRank: "4th",
+    },
+    month: {
+      totalFocusTime: "70h 0m", // Adjusted for 5th place
+      sessionsCompleted: 22,
+      uniqueCoworkers: 18, // Adjusted for 3rd place
+      focusRank: "5th",
+      coworkerRank: "3rd",
+    },
+    all: {
+      totalFocusTime: "380h 0m", // Adjusted for 4th place
+      sessionsCompleted: 80,
+      uniqueCoworkers: 65, // Adjusted for 5th place
+      focusRank: "4th",
+      coworkerRank: "5th",
+    },
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -27,63 +97,20 @@ const History = () => {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Helper to filter sessions by time period
-  const filterSessionsByTimePeriod = (sessions: Tables<'sessions'>[], period: 'week' | 'month' | 'all') => {
-    const now = new Date();
-    return sessions.filter(session => {
-      const sessionDate = new Date(session.session_start_time);
-      if (period === 'all') return true;
-
-      const diffTime = Math.abs(now.getTime() - sessionDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (period === 'week') {
-        return diffDays <= 7;
-      }
-      if (period === 'month') {
-        return diffDays <= 30;
-      }
-      return true;
-    });
-  };
-
-  // Dynamically calculate stats based on filtered sessions
-  const currentStats = useMemo(() => {
-    const filteredByTime = filterSessionsByTimePeriod(allSessions, historyTimePeriod);
-
-    const totalFocusSeconds = filteredByTime.reduce((sum, session) => sum + (session.focus_duration_seconds || 0), 0);
-    const totalFocusTime = `${Math.floor(totalFocusSeconds / 3600)}h ${Math.floor((totalFocusSeconds % 3600) / 60)}m`;
-    const sessionsCompleted = filteredByTime.length;
-    
-    // For unique coworkers, we'll just count sessions with >1 coworker for now,
-    // as actual unique coworker IDs would require more complex data.
-    const uniqueCoworkers = new Set(filteredByTime.filter(s => s.coworker_count > 0).map(s => s.id)).size; // Placeholder for unique coworkers
-
-    // Ranks are still mock for now as there's no global data to compare against
-    const focusRank = "N/A"; 
-    const coworkerRank = "N/A";
-
-    return {
-      totalFocusTime,
-      sessionsCompleted,
-      uniqueCoworkers,
-      focusRank,
-      coworkerRank,
-    };
-  }, [allSessions, historyTimePeriod]);
+  // Get current stats based on selected time period
+  const currentStats = statsData[historyTimePeriod];
 
   // Filtered sessions based on search query
   const filteredSessions = useMemo(() => {
-    const sessionsByTime = filterSessionsByTimePeriod(allSessions, historyTimePeriod);
     if (!searchQuery) {
-      return sessionsByTime;
+      return sessions;
     }
     const lowerCaseQuery = searchQuery.toLowerCase();
-    return sessionsByTime.filter(session => 
+    return sessions.filter(session => 
       session.title.toLowerCase().includes(lowerCaseQuery) ||
-      (session.notes?.toLowerCase().includes(lowerCaseQuery) ?? false)
+      session.notes.toLowerCase().includes(lowerCaseQuery)
     );
-  }, [allSessions, historyTimePeriod, searchQuery]);
+  }, [sessions, searchQuery]);
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
@@ -178,19 +205,19 @@ const History = () => {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
                           <div className="flex items-center gap-1">
                             <Calendar size={14} />
-                            {formatDate(session.session_start_time)}
+                            {formatDate(session.date)}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock size={14} />
-                            {`${Math.floor((session.total_session_seconds || 0) / 60)} mins`}
+                            {session.duration}
                           </div>
                           <div className="flex items-center gap-1">
                             <Users size={14} />
-                            {session.coworker_count} Coworker{session.coworker_count !== 1 ? 's' : ''}
+                            {session.participants} Coworker{session.participants !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </div>
-                      <Badge variant="secondary">Focus</Badge> {/* Assuming all saved sessions are focus for now */}
+                      <Badge variant="secondary">{session.type}</Badge>
                     </div>
                   </CardHeader>
                   
