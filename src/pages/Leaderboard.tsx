@@ -18,6 +18,8 @@ const Leaderboard = () => {
   const currentUserName = profile?.first_name || "You";
   const currentUserId = profile?.id || "mock-user-id-999"; // Use a consistent mock ID if not logged in
 
+  console.log("Leaderboard rendering. currentUserName:", currentUserName, "profile:", profile);
+
   // Helper function to parse "XXh YYm" to total hours (number)
   const parseFocusTime = (timeString: string): number => {
     const match = timeString.match(/(\d+)h\s*(\d+)m/);

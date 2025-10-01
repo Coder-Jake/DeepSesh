@@ -196,7 +196,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         description: error.message,
       });
     } else if (data) {
-      setProfile(data);
+      // Ensure first_name is always a string
+      setProfile({ ...data, first_name: data.first_name || "" });
+      console.log("Profile fetched from Supabase:", { ...data, first_name: data.first_name || "" });
     } else {
       // If no profile exists, create a basic one (this should ideally be handled by the trigger)
       const { data: newProfile, error: insertError } = await supabase
@@ -212,7 +214,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           description: insertError.message,
         });
       } else if (newProfile) {
-        setProfile(newProfile);
+        // Ensure first_name is always a string
+        setProfile({ ...newProfile, first_name: newProfile.first_name || "" });
+        console.log("New profile created in Supabase:", { ...newProfile, first_name: newProfile.first_name || "" });
       }
     }
     setLoading(false);
@@ -246,91 +250,14 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         description: error.message,
       });
     } else if (updatedData) {
-      setProfile(updatedData);
+      // Ensure first_name is always a string
+      setProfile({ ...updatedData, first_name: updatedData.first_name || "" });
+      console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
       toast.success("Profile updated!", {
         description: "Your profile has been successfully saved.",
       });
     }
     setLoading(false);
-  };
-
-  // Function to save session to Supabase and update local state
-  const saveSession = async (
-    seshTitle: string,
-    notes: string,
-    finalAccumulatedFocusSeconds: number,
-    finalAccumulatedBreakSeconds: number,
-    totalSessionSeconds: number,
-    activeJoinedSessionCoworkerCount: number,
-    sessionStartTime: number,
-  ) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id || null; // Get user ID if logged in, otherwise null
-
-    if (sessionStartTime === null) {
-      toast.error("Failed to save session", {
-        description: "Session start time was not recorded.",
-      });
-      return;
-    }
-
-    if (totalSessionSeconds <= 0) {
-      toast.info("Session too short", {
-        description: "Session was too short to be saved.",
-      });
-      return;
-    }
-
-    const sessionData: TablesInsert<'public', 'sessions'> = {
-      user_id: userId, // Use userId (can be null)
-      title: seshTitle,
-      notes: notes,
-      focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
-      break_duration_seconds: Math.round(finalAccumulatedBreakSeconds),
-      total_session_seconds: Math.round(totalSessionSeconds),
-      coworker_count: activeJoinedSessionCoworkerCount,
-      session_start_time: new Date(sessionStartTime).toISOString(),
-      session_end_time: new Date().toISOString(),
-    };
-
-    const { error } = await supabase.from('sessions').insert(sessionData);
-
-    if (error) {
-      console.error("Error saving session:", error);
-      toast.error("Failed to save session", {
-        description: error.message,
-      });
-    } else {
-      const newSessionEntry: SessionHistory = {
-        id: Date.now(), // Mock ID for local state, actual ID from DB would be better
-        title: seshTitle,
-        date: new Date().toISOString(),
-        duration: `${Math.round(totalSessionSeconds / 60)} mins`,
-        participants: activeJoinedSessionCoworkerCount,
-        type: finalAccumulatedFocusSeconds > finalAccumulatedBreakSeconds ? 'focus' : 'break', // Determine type based on longer duration
-        notes: notes,
-      };
-      setSessions(prev => [newSessionEntry, ...prev]); // Add to local sessions state
-
-      // Update stats data (simplified for demo)
-      setStatsData(prev => {
-        const updated = { ...prev };
-        // Example: Increment sessions completed for 'all' time
-        updated.all.sessionsCompleted += 1;
-        // More complex logic would be needed to update focus time, unique coworkers, and ranks
-        return updated;
-      });
-
-      if (userId) {
-        toast.success("Session saved!", {
-          description: `Your session "${seshTitle}" has been added to your history.`,
-        });
-      } else {
-        toast.success("Anonymous session saved!", {
-          description: `Your session "${seshTitle}" has been saved anonymously. Log in to see it in your history.`,
-        });
-      }
-    }
   };
 
   // Load profile and related data from local storage on initial mount
@@ -339,6 +266,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (storedData) {
       const data = JSON.parse(storedData);
       setProfile(data.profile ?? null);
+      console.log("Profile loaded from local storage:", data.profile?.first_name);
       setSessions(data.sessions ?? initialSessions);
       setStatsData(data.statsData ?? initialStatsData);
       setHistoryTimePeriod(data.historyTimePeriod ?? 'week');
@@ -371,6 +299,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       leaderboardCollaborationTimePeriod,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+    console.log("Profile saved to local storage:", profile?.first_name);
   }, [
     profile, sessions, statsData,
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
