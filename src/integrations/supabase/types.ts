@@ -67,7 +67,7 @@ export type Database = {
           session_start_time: string
           title: string
           total_session_seconds: number
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           break_duration_seconds?: number
@@ -80,7 +80,7 @@ export type Database = {
           session_start_time: string
           title: string
           total_session_seconds?: number
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           break_duration_seconds?: number
@@ -93,7 +93,7 @@ export type Database = {
           session_start_time?: string
           title?: string
           total_session_seconds?: number
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -133,7 +133,7 @@ export type Tables<
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternas
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
@@ -189,8 +189,8 @@ export type TablesUpdate<
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

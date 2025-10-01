@@ -127,7 +127,7 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'flowsesh_settings';
 
-export const TimerProvider = ({ children }: { children: ReactNode }) => {
+export const TimerProvider = ({ children }: { ReactNode }) => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [timerIncrement, setTimerIncrement] = useState(5);
@@ -217,13 +217,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   // Function to save session to Supabase
   const saveSessionToHistory = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      toast.error("Failed to save session", {
-        description: "You must be logged in to save sessions.",
-      });
-      return;
-    }
+    const userId = user?.id || null; // Get user ID if logged in, otherwise null
 
     if (sessionStartTime === null) {
       toast.error("Failed to save session", {
@@ -255,7 +249,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const sessionData: TablesInsert<'sessions'> = {
-      user_id: user.id,
+      user_id: userId, // Use userId (can be null)
       title: seshTitle,
       notes: notes,
       focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
@@ -274,9 +268,15 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         description: error.message,
       });
     } else {
-      toast.success("Session saved!", {
-        description: `Your session "${seshTitle}" has been added to your history.`,
-      });
+      if (userId) {
+        toast.success("Session saved!", {
+          description: `Your session "${seshTitle}" has been added to your history.`,
+        });
+      } else {
+        toast.success("Anonymous session saved!", {
+          description: `Your session "${seshTitle}" has been saved anonymously. Log in to see it in your history.`,
+        });
+      }
     }
     resetAllTimerStates(); // Reset all states after saving
   };
