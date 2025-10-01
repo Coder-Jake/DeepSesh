@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 
@@ -12,22 +12,29 @@ const Profile = () => {
   const { profile, loading, updateProfile } = useProfile(); // Use profile context
   const { toast } = useToast();
 
+  const [firstName, setFirstName] = useState("");
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([30]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
+    firstName: "",
     bio: "",
     intention: "",
     sociability: [30]
   });
 
+  const [isEditingFirstName, setIsEditingFirstName] = useState(false);
+  const firstNameInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (profile) {
+      setFirstName(profile.first_name || "");
       setBio(profile.bio || "");
       setIntention(profile.intention || "");
       setSociability([profile.sociability || 50]);
       setOriginalValues({
+        firstName: profile.first_name || "",
         bio: profile.bio || "",
         intention: profile.intention || "",
         sociability: [profile.sociability || 50]
@@ -36,37 +43,73 @@ const Profile = () => {
     }
   }, [profile]);
 
-  const checkForChanges = (newBio: string, newIntention: string, newSociability: number[]) => {
-    const changed = newBio !== originalValues.bio || 
+  useEffect(() => {
+    if (isEditingFirstName && firstNameInputRef.current) {
+      firstNameInputRef.current.focus();
+    }
+  }, [isEditingFirstName]);
+
+  const checkForChanges = (newFirstName: string, newBio: string, newIntention: string, newSociability: number[]) => {
+    const changed = newFirstName !== originalValues.firstName ||
+                   newBio !== originalValues.bio || 
                    newIntention !== originalValues.intention || 
                    newSociability[0] !== originalValues.sociability[0];
     setHasChanges(changed);
   };
 
+  const handleFirstNameChange = (value: string) => {
+    setFirstName(value);
+    checkForChanges(value, bio, intention, sociability);
+  };
+
   const handleBioChange = (value: string) => {
     setBio(value);
-    checkForChanges(value, intention, sociability);
+    checkForChanges(firstName, value, intention, sociability);
   };
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
-    checkForChanges(bio, value, sociability);
+    checkForChanges(firstName, bio, value, sociability);
   };
 
   const handleSociabilityChange = (value: number[]) => {
     setSociability(value);
-    checkForChanges(bio, intention, value);
+    checkForChanges(firstName, bio, intention, value);
+  };
+
+  const handleFirstNameClick = () => {
+    setIsEditingFirstName(true);
+  };
+
+  const handleFirstNameInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingFirstName(false);
+      e.currentTarget.blur();
+      const nameToSave = firstName.trim() === "" ? "" : firstName.trim();
+      await updateProfile({ first_name: nameToSave });
+      setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
+      checkForChanges(nameToSave, bio, intention, sociability);
+    }
+  };
+
+  const handleFirstNameInputBlur = async () => {
+    setIsEditingFirstName(false);
+    const nameToSave = firstName.trim() === "" ? "" : firstName.trim();
+    await updateProfile({ first_name: nameToSave });
+    setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
+    checkForChanges(nameToSave, bio, intention, sociability);
   };
 
   const handleSave = async () => {
     await updateProfile({
+      first_name: firstName,
       bio,
       intention,
       sociability: sociability[0],
       updated_at: new Date().toISOString(),
     });
     // After successful update, reset original values and hasChanges
-    setOriginalValues({ bio, intention, sociability });
+    setOriginalValues({ firstName, bio, intention, sociability });
     setHasChanges(false);
   };
 
@@ -87,7 +130,27 @@ const Profile = () => {
           {/* Bio Section */}
           <Card>
             <CardHeader>
-              <CardTitle>About Me</CardTitle>
+              <CardTitle className="flex items-center gap-1">
+                <span>About</span>
+                {isEditingFirstName ? (
+                  <Input
+                    ref={firstNameInputRef}
+                    value={firstName}
+                    onChange={(e) => handleFirstNameChange(e.target.value)}
+                    onKeyDown={handleFirstNameInputKeyDown}
+                    onBlur={handleFirstNameInputBlur}
+                    placeholder="your name"
+                    className="text-lg font-semibold h-auto py-1 px-2 italic"
+                  />
+                ) : (
+                  <span
+                    className="cursor-pointer select-none"
+                    onClick={handleFirstNameClick}
+                  >
+                    {firstName || "Me"}
+                  </span>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
