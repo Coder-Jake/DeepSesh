@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ScheduledTimer } from "@/types/timer"; // Import ScheduledTimer type
 import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
-import { TablesInsert } from '@/integrations/supabase/types'; // Import Supabase types
+import { Tables, TablesInsert } from '@/integrations/supabase/types'; // Import Supabase types
 import { toast } from 'sonner'; // Using sonner for notifications
 
 interface NotificationSettings {
@@ -119,6 +119,10 @@ interface TimerContextType {
   leaderboardCollaborationTimePeriod: TimePeriod;
   setLeaderboardCollaborationTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
 
+  // Local session history
+  localSessionHistory: Tables<'sessions'>[];
+  setLocalSessionHistory: React.Dispatch<React.SetStateAction<Tables<'sessions'>[]>>;
+
   // Function to save session
   saveSessionToHistory: () => Promise<void>;
 }
@@ -126,8 +130,9 @@ interface TimerContextType {
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'flowsesh_settings';
+const LOCAL_HISTORY_KEY = 'flowsesh_local_history';
 
-export const TimerProvider = ({ children }: { ReactNode }) => {
+export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [timerIncrement, setTimerIncrement] = useState(5);
@@ -184,6 +189,9 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
   const [leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod] = useState<TimePeriod>('week');
   const [leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod] = useState<TimePeriod>('week');
 
+  // Local session history state
+  const [localSessionHistory, setLocalSessionHistory] = useState<Tables<'sessions'>[]>([]);
+
   // Utility function for formatting time
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -214,7 +222,7 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
     setCommenceDay(0);
   };
 
-  // Function to save session to Supabase
+  // Function to save session to Supabase or local storage
   const saveSessionToHistory = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id || null; // Get user ID if logged in, otherwise null
@@ -260,23 +268,32 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
       session_end_time: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from('sessions').insert(sessionData);
+    if (userId) {
+      // Save to Supabase if logged in
+      const { error } = await supabase.from('sessions').insert(sessionData);
 
-    if (error) {
-      console.error("Error saving session:", error);
-      toast.error("Failed to save session", {
-        description: error.message,
-      });
-    } else {
-      if (userId) {
+      if (error) {
+        console.error("Error saving session to Supabase:", error);
+        toast.error("Failed to save session to cloud", {
+          description: error.message,
+        });
+      } else {
         toast.success("Session saved!", {
           description: `Your session "${seshTitle}" has been added to your history.`,
         });
-      } else {
-        toast.success("Anonymous session saved!", {
-          description: `Your session "${seshTitle}" has been saved anonymously. Log in to see it in your history.`,
-        });
       }
+    } else {
+      // Save to local storage if not logged in
+      const newLocalSession: Tables<'sessions'> = {
+        ...sessionData,
+        id: crypto.randomUUID(), // Generate a local ID
+        created_at: new Date().toISOString(),
+      } as Tables<'sessions'>; // Cast to Tables<'sessions'> for consistency
+
+      setLocalSessionHistory(prev => [...prev, newLocalSession]);
+      toast.success("Anonymous session saved!", {
+        description: `Your session "${seshTitle}" has been saved locally. Log in to sync.`,
+      });
     }
     resetAllTimerStates(); // Reset all states after saving
   };
@@ -370,7 +387,7 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
   }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isFlashing, setTimeLeft]);
 
 
-  // Load settings from local storage on initial mount
+  // Load settings and local history from local storage on initial mount
   useEffect(() => {
     const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedSettings) {
@@ -431,9 +448,14 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
       setLeaderboardFocusTimePeriod(settings.leaderboardFocusTimePeriod ?? 'week');
       setLeaderboardCollaborationTimePeriod(settings.leaderboardCollaborationTimePeriod ?? 'week');
     }
+
+    const storedLocalHistory = localStorage.getItem(LOCAL_HISTORY_KEY);
+    if (storedLocalHistory) {
+      setLocalSessionHistory(JSON.parse(storedLocalHistory));
+    }
   }, []);
 
-  // Save settings to local storage whenever they change
+  // Save settings and local history to local storage whenever they change
   useEffect(() => {
     const settingsToSave = {
       focusMinutes,
@@ -503,6 +525,11 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
   ]);
 
+  // Effect to save localSessionHistory to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(localSessionHistory));
+  }, [localSessionHistory]);
+
   const value = {
     focusMinutes, setFocusMinutes,
     breakMinutes, setBreakMinutes,
@@ -557,6 +584,8 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
     historyTimePeriod, setHistoryTimePeriod,
     leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod,
     leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod,
+    // Local session history
+    localSessionHistory, setLocalSessionHistory,
     // Function to save session
     saveSessionToHistory,
   };

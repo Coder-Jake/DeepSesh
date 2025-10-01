@@ -7,83 +7,13 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
+import { isWithinInterval, subWeeks, subMonths, parseISO } from 'date-fns';
+import type { Tables } from "@/integrations/supabase/types"; // Import Tables type
+
+type Session = Tables<'sessions'>;
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod } = useTimer(); // Use persistent state from context
-
-  // Sample data - in a real app this would come from a database
-  const sessions = [
-    {
-      id: 1,
-      title: "Deep Work Sprint",
-      date: "2025-09-15",
-      duration: "45 mins",
-      participants: 3,
-      type: "focus",
-      notes: "Great session focusing on project documentation. Made significant progress on the API specs."
-    },
-    {
-      id: 2,
-      title: "Study Group Alpha",
-      date: "2025-09-14",
-      duration: "90 mins",
-      participants: 5,
-      type: "focus",
-      notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
-    },
-    {
-      id: 3,
-      title: "Solo Focus",
-      date: "2025-09-13",
-      duration: "30 mins",
-      participants: 1,
-      type: "focus",
-      notes: "Quick focused session to review quarterly goals and plan next steps."
-    },
-    {
-      id: 4,
-      title: "Coding Session",
-      date: "2025-09-12",
-      duration: "120 mins",
-      participants: 2,
-      type: "focus",
-      notes: "Pair programming session working on the new user interface components. Fixed several bugs."
-    },
-    {
-      id: 5,
-      title: "Research Deep Dive",
-      date: "2025-09-11",
-      duration: "60 mins",
-      participants: 4,
-      type: "focus",
-      notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
-    }
-  ];
-
-  // Sample stats data for different time periods
-  const statsData = {
-    week: {
-      totalFocusTime: "22h 0m", // Adjusted for 3rd place
-      sessionsCompleted: 5,
-      uniqueCoworkers: 5, // Adjusted for 4th place
-      focusRank: "3rd",
-      coworkerRank: "4th",
-    },
-    month: {
-      totalFocusTime: "70h 0m", // Adjusted for 5th place
-      sessionsCompleted: 22,
-      uniqueCoworkers: 18, // Adjusted for 3rd place
-      focusRank: "5th",
-      coworkerRank: "3rd",
-    },
-    all: {
-      totalFocusTime: "380h 0m", // Adjusted for 4th place
-      sessionsCompleted: 80,
-      uniqueCoworkers: 65, // Adjusted for 5th place
-      focusRank: "4th",
-      coworkerRank: "5th",
-    },
-  };
+  const { historyTimePeriod, setHistoryTimePeriod, localSessionHistory } = useTimer(); // Use persistent state from context
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -97,20 +27,120 @@ const History = () => {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get current stats based on selected time period
-  const currentStats = statsData[historyTimePeriod];
+  // Function to calculate stats based on sessions and time period
+  const calculateStats = (sessions: Session[], period: 'week' | 'month' | 'all') => {
+    const now = new Date();
+    let startDate: Date;
 
-  // Filtered sessions based on search query
-  const filteredSessions = useMemo(() => {
-    if (!searchQuery) {
-      return sessions;
+    if (period === 'week') {
+      startDate = subWeeks(now, 1);
+    } else if (period === 'month') {
+      startDate = subMonths(now, 1);
+    } else {
+      startDate = new Date(0); // All time
     }
-    const lowerCaseQuery = searchQuery.toLowerCase();
-    return sessions.filter(session => 
-      session.title.toLowerCase().includes(lowerCaseQuery) ||
-      session.notes.toLowerCase().includes(lowerCaseQuery)
+
+    const filteredSessions = sessions.filter(session => 
+      session.session_start_time && isWithinInterval(parseISO(session.session_start_time), { start: startDate, end: now })
     );
-  }, [sessions, searchQuery]);
+
+    const totalFocusSeconds = filteredSessions.reduce((sum, session) => sum + (session.focus_duration_seconds || 0), 0);
+    const totalFocusHours = (totalFocusSeconds / 3600).toFixed(1);
+    const sessionsCompleted = filteredSessions.length;
+    
+    const uniqueCoworkers = new Set<string>();
+    filteredSessions.forEach(session => {
+      // For local sessions, coworker_count is a simple number.
+      // For mock data, we'll just use the number directly.
+      // In a real scenario with actual coworker IDs, we'd add unique IDs to the set.
+      if (session.coworker_count && session.coworker_count > 0) {
+        // For simplicity, if a session had N coworkers, we count N unique coworkers for that session.
+        // This is a simplification for mock data; real implementation would track actual unique user IDs.
+        for (let i = 0; i < session.coworker_count; i++) {
+          uniqueCoworkers.add(`${session.id}-coworker-${i}`);
+        }
+      }
+    });
+
+    // Mock ranks (these would come from a global leaderboard in a real app)
+    const focusRank = period === 'week' ? "3rd" : (period === 'month' ? "5th" : "4th");
+    const coworkerRank = period === 'week' ? "4th" : (period === 'month' ? "3rd" : "5th");
+
+    return {
+      totalFocusTime: `${totalFocusHours}h`,
+      sessionsCompleted: sessionsCompleted,
+      uniqueCoworkers: uniqueCoworkers.size,
+      focusRank: focusRank,
+      coworkerRank: coworkerRank,
+    };
+  };
+
+  // Combine mock sessions with local sessions
+  const allSessions: Session[] = useMemo(() => {
+    // Convert mock sessions to the Tables<'sessions'> type for consistency
+    const mockSessionsTyped: Session[] = [
+      {
+        id: "mock-1", title: "Deep Work Sprint", session_start_time: "2025-09-15T09:00:00Z", session_end_time: "2025-09-15T09:45:00Z",
+        focus_duration_seconds: 45 * 60, break_duration_seconds: 0, total_session_seconds: 45 * 60,
+        coworker_count: 3, notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
+        user_id: null, created_at: "2025-09-15T09:45:00Z"
+      },
+      {
+        id: "mock-2", title: "Study Group Alpha", session_start_time: "2025-09-14T10:00:00Z", session_end_time: "2025-09-14T11:30:00Z",
+        focus_duration_seconds: 90 * 60, break_duration_seconds: 0, total_session_seconds: 90 * 60,
+        coworker_count: 5, notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive.",
+        user_id: null, created_at: "2025-09-14T11:30:00Z"
+      },
+      {
+        id: "mock-3", title: "Solo Focus", session_start_time: "2025-09-13T14:00:00Z", session_end_time: "2025-09-13T14:30:00Z",
+        focus_duration_seconds: 30 * 60, break_duration_seconds: 0, total_session_seconds: 30 * 60,
+        coworker_count: 1, notes: "Quick focused session to review quarterly goals and plan next steps.",
+        user_id: null, created_at: "2025-09-13T14:30:00Z"
+      },
+      {
+        id: "mock-4", title: "Coding Session", session_start_time: "2025-09-12T11:00:00Z", session_end_time: "2025-09-12T13:00:00Z",
+        focus_duration_seconds: 120 * 60, break_duration_seconds: 0, total_session_seconds: 120 * 60,
+        coworker_count: 2, notes: "Pair programming session working on the new user interface components. Fixed several bugs.",
+        user_id: null, created_at: "2025-09-12T13:00:00Z"
+      },
+      {
+        id: "mock-5", title: "Research Deep Dive", session_start_time: "2025-09-11T10:00:00Z", session_end_time: "2025-09-11T11:00:00Z",
+        focus_duration_seconds: 60 * 60, break_duration_seconds: 0, total_session_seconds: 60 * 60,
+        coworker_count: 4, notes: "Market research session for the new product launch. Gathered valuable competitive intelligence.",
+        user_id: null, created_at: "2025-09-11T11:00:00Z"
+      }
+    ];
+    return [...localSessionHistory, ...mockSessionsTyped].sort((a, b) => 
+      parseISO(b.session_start_time).getTime() - parseISO(a.session_start_time).getTime()
+    );
+  }, [localSessionHistory]);
+
+  // Get current stats based on selected time period
+  const currentStats = useMemo(() => calculateStats(allSessions, historyTimePeriod), [allSessions, historyTimePeriod]);
+
+  // Filtered sessions based on search query and time period
+  const filteredAndTimedSessions = useMemo(() => {
+    const now = new Date();
+    let startDate: Date;
+
+    if (historyTimePeriod === 'week') {
+      startDate = subWeeks(now, 1);
+    } else if (historyTimePeriod === 'month') {
+      startDate = subMonths(now, 1);
+    } else {
+      startDate = new Date(0); // All time
+    }
+
+    return allSessions.filter(session => {
+      const sessionDate = parseISO(session.session_start_time);
+      const matchesTimePeriod = isWithinInterval(sessionDate, { start: startDate, end: now });
+      const matchesSearch = searchQuery 
+        ? (session.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           session.notes?.toLowerCase().includes(searchQuery.toLowerCase()))
+        : true;
+      return matchesTimePeriod && matchesSearch;
+    });
+  }, [allSessions, historyTimePeriod, searchQuery]);
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
@@ -193,10 +223,10 @@ const History = () => {
               </div>
             )}
             
-            {filteredSessions.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No sessions found matching your search.</p>
+            {filteredAndTimedSessions.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No sessions found matching your criteria.</p>
             ) : (
-              filteredSessions.map((session) => (
+              filteredAndTimedSessions.map((session) => (
                 <Card key={session.id}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
@@ -205,19 +235,19 @@ const History = () => {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
                           <div className="flex items-center gap-1">
                             <Calendar size={14} />
-                            {formatDate(session.date)}
+                            {formatDate(session.session_start_time)}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock size={14} />
-                            {session.duration}
+                            {session.total_session_seconds ? `${Math.round(session.total_session_seconds / 60)} mins` : 'N/A'}
                           </div>
                           <div className="flex items-center gap-1">
                             <Users size={14} />
-                            {session.participants} Coworker{session.participants !== 1 ? 's' : ''}
+                            {session.coworker_count} Coworker{session.coworker_count !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </div>
-                      <Badge variant="secondary">{session.type}</Badge>
+                      <Badge variant="secondary">{session.focus_duration_seconds > session.break_duration_seconds ? 'focus' : 'break'}</Badge>
                     </div>
                   </CardHeader>
                   
