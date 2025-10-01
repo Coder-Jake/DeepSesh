@@ -83,7 +83,7 @@ const History = () => {
   }, [sessions, searchQuery]);
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
+    <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">History</h1>

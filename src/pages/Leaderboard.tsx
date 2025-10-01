@@ -62,7 +62,7 @@ const Leaderboard = () => {
   const currentCollaboratedUsersLeaderboard = collaboratedUsersLeaderboardData[collaborationTimePeriod];
 
   return (
-    <main className="max-w-4xl mx-auto p-4 lg:p-6">
+    <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
       <div className="mb-6 text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
           <Trophy className="h-8 w-8 text-primary" />

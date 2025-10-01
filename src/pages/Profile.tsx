@@ -72,14 +72,14 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <main className="max-w-4xl mx-auto p-4 lg:p-6 text-center text-muted-foreground"> {/* Adjusted padding */}
+      <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6 text-center text-muted-foreground">
         Loading profile...
       </main>
     );
   }
 
   return (
-    <main className="max-w-4xl mx-auto p-4 lg:p-6"> {/* Adjusted padding */}
+    <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
       </div>

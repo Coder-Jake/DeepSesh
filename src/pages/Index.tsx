@@ -471,7 +471,7 @@ const Index = () => {
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
   return (
-    <main className="max-w-4xl mx-auto py-4 px-1 lg:py-6 lg:px-1">
+    <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
       <div className="mb-6">
         <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
       </div>
