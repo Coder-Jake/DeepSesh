@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Globe, Lock, CalendarPlus, Share2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -57,7 +57,6 @@ interface DemoSession {
   type: 'focus' | 'break';
   totalDurationMinutes: number;
   currentPhase: 'focus' | 'break';
-  currentPhaseDurationMinutes: number;
   startTime: number;
   location: string;
   workspaceImage: string;
@@ -182,6 +181,10 @@ const Index = () => {
     activeAsks,
     addAsk,
     updateAsk,
+
+    // New: Schedule pending state
+    isSchedulePending,
+    setIsSchedulePending,
   } = useTimer();
   
   const { profile, loading: profileLoading, localFirstName } = useProfile(); // Get localFirstName from context
@@ -393,7 +396,7 @@ const Index = () => {
   };
 
   const handleCircularProgressChange = (progress: number) => {
-    if (isRunning || isPaused || isFlashing || isScheduleActive) return;
+    if (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) return; // Prevent interaction if pending
     
     if (timerType === 'focus') {
       const minutes = (progress / 100) * 120;
@@ -409,7 +412,7 @@ const Index = () => {
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
-    if (isRunning || isPaused || isScheduleActive) return;
+    if (isRunning || isPaused || isScheduleActive || isSchedulePending) return; // Prevent interaction if pending
 
     if (mode === 'focus') {
       setTimerType('focus');
@@ -443,7 +446,7 @@ const Index = () => {
     });
   };
 
-  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive);
+  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive || isSchedulePending);
 
   const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
 
@@ -563,6 +566,19 @@ const Index = () => {
     updateAsk({ ...currentPoll, options: updatedOptions }); // Use context function
   };
 
+  // Callback for when the schedule countdown ends in Timeline
+  const handleCountdownEnd = useCallback(() => {
+    setIsSchedulePending(false);
+    setIsRunning(true);
+    setIsPaused(false);
+    // playStartSound(); // Play sound when schedule actually starts
+    setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
+    toast({
+      title: "Schedule Commenced!",
+      description: "Your scheduled session has now begun.",
+    });
+  }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, toast]);
+
   // Determine the total duration of the current timer phase for CircularProgress
   const currentItemDuration = isScheduleActive && schedule[currentScheduleIndex]
     ? schedule[currentScheduleIndex].durationMinutes
@@ -635,7 +651,7 @@ const Index = () => {
                     size={280}
                     strokeWidth={12}
                     progress={(timeLeft / (currentItemDuration * 60)) * 100}
-                    interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive}
+                    interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive && !isSchedulePending} // Disable interaction if pending
                     onInteract={handleCircularProgressChange}
                     className={isFlashing ? 'animate-pulse' : ''}
                   >
@@ -655,13 +671,14 @@ const Index = () => {
                       size="lg" 
                       className="px-8" 
                       onClick={isRunning ? pauseTimer : startTimer}
+                      disabled={isSchedulePending} // Disable start/pause if schedule is pending
                     >
                       {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
                   )}
                 </div>
 
-                {(isPaused || isRunning || isScheduleActive) && (
+                {(isPaused || isRunning || isScheduleActive || isSchedulePending) && ( // Show stop button if pending
                   <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                     <button
                       onMouseDown={() => handleLongPressStart(stopTimer)}
@@ -677,7 +694,7 @@ const Index = () => {
                   </div>
                 )}
 
-                {!isScheduleActive && (
+                {!isScheduleActive && !isSchedulePending && ( // Hide timer settings if schedule is active or pending
                   <div className="flex justify-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span 
@@ -747,7 +764,7 @@ const Index = () => {
                     </div>
                   </div>
                 )}
-                {(isRunning || isPaused || isScheduleActive) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
+                {(isRunning || isPaused || isScheduleActive || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
               </>
             )}
           </div>
@@ -829,7 +846,7 @@ const Index = () => {
           </Card>
 
           {/* Coworkers Section - Show when running or paused */}
-          {(isRunning || isPaused || isScheduleActive) && currentCoworkers.length > 0 && (
+          {(isRunning || isPaused || isScheduleActive || isSchedulePending) && currentCoworkers.length > 0 && ( // Show if pending
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Coworkers</CardTitle>
@@ -908,6 +925,8 @@ const Index = () => {
           scheduleTitle={scheduleTitle}
           commenceTime={commenceTime}
           commenceDay={commenceDay}
+          isSchedulePending={isSchedulePending} // Pass new prop
+          onCountdownEnd={handleCountdownEnd}    // Pass new prop
         />
       )}
     </main>

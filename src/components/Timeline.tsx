@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScheduledTimer } from '@/types/timer';
 import { cn } from '@/lib/utils';
 
@@ -9,11 +9,27 @@ interface TimelineProps {
   scheduleTitle: string;
   commenceTime: string;
   commenceDay: number;
+  isSchedulePending: boolean; // New prop
+  onCountdownEnd: () => void; // New prop
 }
 
 const daysOfWeek = [
   "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 ];
+
+const formatCountdown = (seconds: number) => {
+  if (seconds <= 0) return "00:00:00:00";
+  const days = Math.floor(seconds / (3600 * 24));
+  seconds %= (3600 * 24);
+  const hours = Math.floor(seconds / 3600);
+  seconds %= 3600;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return [days, hours, minutes, remainingSeconds]
+    .map(unit => unit.toString().padStart(2, '0'))
+    .join(':');
+};
 
 const Timeline: React.FC<TimelineProps> = ({
   schedule,
@@ -22,19 +38,11 @@ const Timeline: React.FC<TimelineProps> = ({
   scheduleTitle,
   commenceTime,
   commenceDay,
+  isSchedulePending,
+  onCountdownEnd,
 }) => {
   const totalScheduleDuration = schedule.reduce((sum, item) => sum + item.durationMinutes, 0);
-
-  // Calculate the total elapsed time in minutes for the schedule up to the current item
-  const elapsedScheduleMinutes = schedule
-    .slice(0, currentScheduleIndex)
-    .reduce((sum, item) => sum + item.durationMinutes, 0);
-
-  // Calculate the remaining time for the current item in minutes
-  const currentItemRemainingMinutes = Math.ceil(timeLeft / 60);
-
-  // Calculate the total elapsed time including the current item's elapsed portion
-  const totalElapsedMinutes = elapsedScheduleMinutes + (schedule[currentScheduleIndex]?.durationMinutes || 0) - currentItemRemainingMinutes;
+  const [countdownSeconds, setCountdownSeconds] = useState(0);
 
   // Calculate the estimated end time
   const now = new Date();
@@ -43,7 +51,7 @@ const Timeline: React.FC<TimelineProps> = ({
   
   // Adjust commenceDateTime to the selected day of the week
   const currentDay = now.getDay();
-  const diff = commenceDay - currentDay;
+  let diff = commenceDay - currentDay;
   commenceDateTime.setDate(commenceDateTime.getDate() + diff);
 
   // If the commence time has already passed for the selected day, move to next week
@@ -53,12 +61,45 @@ const Timeline: React.FC<TimelineProps> = ({
 
   const estimatedEndTime = new Date(commenceDateTime.getTime() + totalScheduleDuration * 60 * 1000);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (isSchedulePending) {
+      const updateCountdown = () => {
+        const now = new Date();
+        const remaining = Math.max(0, Math.floor((commenceDateTime.getTime() - now.getTime()) / 1000));
+        setCountdownSeconds(remaining);
+
+        if (remaining <= 0) {
+          if (interval) clearInterval(interval);
+          onCountdownEnd(); // Notify parent that countdown has finished
+        }
+      };
+
+      updateCountdown(); // Initial call
+      interval = setInterval(updateCountdown, 1000);
+    } else {
+      setCountdownSeconds(0); // Reset countdown if not pending
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isSchedulePending, commenceDateTime, onCountdownEnd]);
+
   return (
     <div className="mt-8 p-4 border rounded-lg bg-card text-card-foreground shadow-sm">
       <h2 className="text-xl font-bold mb-2">{scheduleTitle}</h2>
-      <p className="text-sm text-muted-foreground mb-4">
-        Commencing: {daysOfWeek[commenceDay]} at {commenceTime} (Estimated End: {estimatedEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
-      </p>
+      {isSchedulePending && countdownSeconds > 0 ? (
+        <div className="text-center mb-4">
+          <p className="text-sm text-muted-foreground">Schedule starts in:</p>
+          <p className="text-2xl font-bold text-foreground">{formatCountdown(countdownSeconds)}</p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground mb-4">
+          Commencing: {daysOfWeek[commenceDay]} at {commenceTime} (Estimated End: {estimatedEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+        </p>
+      )}
       <div className="space-y-4">
         {schedule.map((item, index) => {
           const isCurrent = index === currentScheduleIndex;

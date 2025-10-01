@@ -1,195 +1,103 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ScheduledTimer } from "@/types/timer"; // Import ScheduledTimer type
-import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
-import { toast } from 'sonner'; // Using sonner for notifications
-import { useProfile } from './ProfileContext'; // Import useProfile
-
-// Define types for Ask items (copied from Index.tsx to be available in context)
-interface ExtendSuggestion {
-  id: string;
-  minutes: number;
-  creator: string;
-  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
-  status: 'pending' | 'accepted' | 'rejected';
-}
-
-interface PollOption {
-  id: string;
-  text: string;
-  votes: { userId: string }[];
-}
-
-interface Poll {
-  id: string;
-  question: string;
-  type: 'closed' | 'choice' | 'selection';
-  creator: string;
-  options: PollOption[];
-  status: 'active' | 'closed';
-  allowCustomResponses: boolean;
-}
-
-type ActiveAskItem = ExtendSuggestion | Poll;
-
-interface NotificationSettings {
-  push: boolean;
-  vibrate: boolean;
-  sound: boolean;
-}
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { ScheduledTimer } from '@/types/timer';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from './AuthContext'; // Import useAuth
+import { supabase } from '@/integrations/supabase/client'; // Import supabase client
 
 interface TimerContextType {
   focusMinutes: number;
-  setFocusMinutes: React.Dispatch<React.SetStateAction<number>>;
+  setFocusMinutes: (minutes: number) => void;
   breakMinutes: number;
-  setBreakMinutes: React.Dispatch<React.SetStateAction<number>>;
-  timerIncrement: number;
-  setTimerIncrement: React.Dispatch<React.SetStateAction<number>>;
-  shouldPlayEndSound: boolean;
-  setShouldPlayEndSound: React.Dispatch<React.SetStateAction<boolean>>;
-  shouldShowEndToast: boolean;
-  setShouldShowEndToast: React.Dispatch<React.SetStateAction<boolean>>;
-  showSessionsWhileActive: boolean;
-  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<boolean>>;
-  isBatchNotificationsEnabled: boolean;
-  setIsBatchNotificationsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-  batchNotificationPreference: 'break' | 'sesh_end' | 'custom';
-  setBatchNotificationPreference: React.Dispatch<React.SetStateAction<'break' | 'sesh_end' | 'custom'>>;
-  customBatchMinutes: number;
-  setCustomBatchMinutes: React.Dispatch<React.SetStateAction<number>>;
-  lock: boolean;
-  setLock: React.Dispatch<React.SetStateAction<boolean>>;
-  exemptionsEnabled: boolean;
-  setExemptionsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-  phoneCalls: boolean;
-  setPhoneCalls: React.Dispatch<React.SetStateAction<boolean>>;
-  favourites: boolean;
-  setFavourites: React.Dispatch<React.SetStateAction<boolean>>;
-  workApps: boolean;
-  setWorkApps: React.Dispatch<React.SetStateAction<boolean>>;
-  intentionalBreaches: boolean;
-  setIntentionalBreaches: React.Dispatch<React.SetStateAction<boolean>>;
-  manualTransition: boolean;
-  setManualTransition: React.Dispatch<React.SetStateAction<boolean>>;
-  maxDistance: number;
-  setMaxDistance: React.Dispatch<React.SetStateAction<number>>;
-  askNotifications: NotificationSettings;
-  setAskNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
-  sessionInvites: NotificationSettings;
-  setSessionInvites: React.Dispatch<React.SetStateAction<NotificationSettings>>;
-  friendActivity: NotificationSettings;
-  setFriendActivity: React.Dispatch<React.SetStateAction<NotificationSettings>>;
-  breakNotificationsVibrate: boolean;
-  setBreakNotificationsVibrate: React.Dispatch<React.SetStateAction<boolean>>;
-  verificationStandard: string;
-  setVerificationStandard: React.Dispatch<React.SetStateAction<string>>;
-  profileVisibility: string;
-  setProfileVisibility: React.Dispatch<React.SetStateAction<string>>;
-  locationSharing: string;
-  setLocationSharing: React.Dispatch<React.SetStateAction<string>>;
-  isGlobalPrivate: boolean; // Renamed from isGlobalPublic
-  setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>; // Renamed from setIsGlobalPublic
-  formatTime: (seconds: number) => string;
-
-  // New timer-related states
+  setBreakMinutes: (minutes: number) => void;
   isRunning: boolean;
-  setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRunning: (running: boolean) => void;
   isPaused: boolean;
-  setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsPaused: (paused: boolean) => void;
   timeLeft: number;
-  setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
+  setTimeLeft: (seconds: number) => void;
   timerType: 'focus' | 'break';
-  setTimerType: React.Dispatch<React.SetStateAction<'focus' | 'break'>>;
+  setTimerType: (type: 'focus' | 'break') => void;
   isFlashing: boolean;
-  setIsFlashing: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsFlashing: (flashing: boolean) => void;
   notes: string;
-  setNotes: React.Dispatch<React.SetStateAction<string>>;
-  seshTitle: string; // Added seshTitle
-  setSeshTitle: React.Dispatch<React.SetStateAction<string>>; // Added setSeshTitle
+  setNotes: (notes: string) => void;
+  seshTitle: string;
+  setSeshTitle: (title: string) => void;
+  formatTime: (seconds: number) => string;
+  showSessionsWhileActive: boolean;
+  setShowSessionsWhileActive: (show: boolean) => void;
+  timerIncrement: number;
 
-  // New session tracking states
-  sessionStartTime: number | null;
-  setSessionStartTime: React.Dispatch<React.SetStateAction<number | null>>;
-  currentPhaseStartTime: number | null;
-  setCurrentPhaseStartTime: React.Dispatch<React.SetStateAction<number | null>>;
-  accumulatedFocusSeconds: number;
-  setAccumulatedFocusSeconds: React.Dispatch<React.SetStateAction<number>>;
-  accumulatedBreakSeconds: number;
-  setAccumulatedBreakSeconds: React.Dispatch<React.SetStateAction<number>>;
-  activeJoinedSessionCoworkerCount: number; // To store coworker count from joined session
-  setActiveJoinedSessionCoworkerCount: React.Dispatch<React.SetStateAction<number>>;
-
-  // New schedule-related states
+  // Schedule-related states and functions
   schedule: ScheduledTimer[];
-  setSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>;
+  setSchedule: (schedule: ScheduledTimer[]) => void;
   currentScheduleIndex: number;
-  setCurrentScheduleIndex: React.Dispatch<React.SetStateAction<number>>;
+  setCurrentScheduleIndex: (index: number) => void;
   isSchedulingMode: boolean;
-  setIsSchedulingMode: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsSchedulingMode: (mode: boolean) => void;
   isScheduleActive: boolean;
-  setIsScheduleActive: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsScheduleActive: (active: boolean) => void;
   startSchedule: () => void;
   resetSchedule: () => void;
   scheduleTitle: string;
-  setScheduleTitle: React.Dispatch<React.SetStateAction<string>>;
+  setScheduleTitle: (title: string) => void;
   commenceTime: string;
-  setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
+  setCommenceTime: (time: string) => void;
   commenceDay: number;
-  setCommenceDay: React.Dispatch<React.SetStateAction<number>>;
+  setCommenceDay: (day: number) => void;
+  isGlobalPrivate: boolean;
+  setIsGlobalPrivate: (isPrivate: boolean) => void;
+
+  // Session tracking states
+  sessionStartTime: number | null;
+  setSessionStartTime: (time: number | null) => void;
+  currentPhaseStartTime: number | null;
+  setCurrentPhaseStartTime: (time: number | null) => void;
+  accumulatedFocusSeconds: number;
+  setAccumulatedFocusSeconds: (seconds: number) => void;
+  accumulatedBreakSeconds: number;
+  setAccumulatedBreakSeconds: (seconds: number) => void;
+  activeJoinedSessionCoworkerCount: number;
+  setActiveJoinedSessionCoworkerCount: (count: number) => void;
+  saveSessionToHistory: () => Promise<void>;
 
   // Active Asks states and functions
-  activeAsks: ActiveAskItem[];
-  addAsk: (ask: ActiveAskItem) => void;
-  updateAsk: (updatedAsk: ActiveAskItem) => void;
+  activeAsks: any[]; // Using 'any' for now, will refine with specific types later
+  addAsk: (ask: any) => void;
+  updateAsk: (ask: any) => void;
 
-  // Settings Accordion state
-  openSettingsAccordions: string[];
-  setOpenSettingsAccordions: React.Dispatch<React.SetStateAction<string[]>>;
-
-  // Function to save session
-  saveSessionToHistory: () => Promise<void>;
+  // New: Schedule pending state
+  isSchedulePending: boolean;
+  setIsSchedulePending: (pending: boolean) => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'flowsesh_timer_settings'; // New local storage key for timer data
-
-export const TimerProvider = ({ children }: { children: ReactNode }) => {
-  const { saveSession } = useProfile(); // Use saveSession from ProfileContext
+export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
-  const [timerIncrement, setTimerIncrement] = useState(5);
-  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(true);
-  const [shouldShowEndToast, setShouldShowEndToast] = useState(true);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false);
-  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
-  const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
-  const [customBatchMinutes, setCustomBatchMinutes] = useState(15);
-  const [lock, setLock] = useState(false);
-  const [exemptionsEnabled, setExemptionsEnabled] = useState(false);
-  const [phoneCalls, setPhoneCalls] = useState(false);
-  const [favourites, setFavourites] = useState(false);
-  const [workApps, setWorkApps] = useState(false);
-  const [intentionalBreaches, setIntentionalBreaches] = useState(false);
-  const [manualTransition, setManualTransition] = useState(false); // Default to false
-  const [maxDistance, setMaxDistance] = useState(2000);
-  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false });
-  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
-  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false });
-  const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false);
-  const [verificationStandard, setVerificationStandard] = useState("anyone");
-  const [profileVisibility, setProfileVisibility] = useState("friends");
-  const [locationSharing, setLocationSharing] = useState("approximate");
-  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false); // Renamed and default to false
-
-  // Timer-related states
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(focusMinutes * 60);
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
-  const [seshTitle, setSeshTitle] = useState("Notes"); // Default Sesh Title
+  const [seshTitle, setSeshTitle] = useState("Notes");
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
+  const timerIncrement = 5; // Default increment for timer settings
+
+  // Schedule states
+  const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
+  const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
+  const [isSchedulingMode, setIsSchedulingMode] = useState(false);
+  const [isScheduleActive, setIsScheduleActive] = useState(false);
+  const [scheduleTitle, setScheduleTitle] = useState("My Schedule");
+  const [commenceTime, setCommenceTime] = useState("09:00"); // Default to 9 AM
+  const [commenceDay, setCommenceDay] = useState(new Date().getDay()); // Default to current day
+  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
 
   // Session tracking states
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
@@ -198,367 +106,281 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [accumulatedBreakSeconds, setAccumulatedBreakSeconds] = useState(0);
   const [activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount] = useState(0);
 
-  // Schedule-related states
-  const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
-  const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
-  const [isSchedulingMode, setIsSchedulingMode] = useState(false);
-  const [isScheduleActive, setIsScheduleActive] = useState(false);
-  const [scheduleTitle, setScheduleTitle] = useState("");
-  const [commenceTime, setCommenceTime] = useState("09:00"); // Default value
-  const [commenceDay, setCommenceDay] = useState(0); // Default to Sunday
+  // Active Asks state
+  const [activeAsks, setActiveAsks] = useState<any[]>([]); // Using 'any' for now
 
-  // Active Asks states
-  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]);
+  // New: Schedule pending state
+  const [isSchedulePending, setIsSchedulePending] = useState(false);
 
-  // Settings Accordion state
-  const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Utility function for formatting time
-  const formatTime = (seconds: number) => {
+  const playSound = useCallback(() => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = 440;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  }, []);
+
+  const formatTime = useCallback((seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  // Function to reset all timer-related states to defaults
-  const resetAllTimerStates = () => {
-    setIsRunning(false);
-    setIsPaused(false);
-    setIsFlashing(false);
-    setTimerType('focus');
-    setTimeLeft(focusMinutes * 60); // Reset to default focus time
-    setNotes("");
-    setSeshTitle("Notes");
+  const saveSessionToHistory = useCallback(async () => {
+    if (!user || !sessionStartTime || !currentPhaseStartTime) {
+      console.log("Skipping session save: User not logged in or session not started.");
+      return;
+    }
+
+    // Accumulate time for the phase that just ended or was stopped
+    const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+    let finalAccumulatedFocus = accumulatedFocusSeconds;
+    let finalAccumulatedBreak = accumulatedBreakSeconds;
+
+    if (timerType === 'focus') {
+      finalAccumulatedFocus += elapsed;
+    } else {
+      finalAccumulatedBreak += elapsed;
+    }
+
+    const totalSessionSeconds = (Date.now() - sessionStartTime) / 1000;
+
+    const { data, error } = await supabase
+      .from('sessions')
+      .insert([
+        {
+          user_id: user.id,
+          title: seshTitle,
+          notes: notes,
+          focus_duration_seconds: Math.round(finalAccumulatedFocus),
+          break_duration_seconds: Math.round(finalAccumulatedBreak),
+          total_session_seconds: Math.round(totalSessionSeconds),
+          coworker_count: activeJoinedSessionCoworkerCount,
+          session_start_time: new Date(sessionStartTime).toISOString(),
+          session_end_time: new Date().toISOString(),
+        },
+      ]);
+
+    if (error) {
+      console.error("Error saving session:", error);
+      toast({
+        title: "Error saving session",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      console.log("Session saved:", data);
+      toast({
+        title: "Session saved!",
+        description: "Your session has been added to your history.",
+      });
+    }
+
+    // Reset session tracking states after saving
     setSessionStartTime(null);
     setCurrentPhaseStartTime(null);
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
     setActiveJoinedSessionCoworkerCount(0);
-    setSchedule([]);
-    setCurrentScheduleIndex(0);
-    setIsSchedulingMode(false);
+    setNotes("");
+    setSeshTitle("Notes");
+    setIsRunning(false);
+    setIsPaused(false);
+    setIsFlashing(false);
+    setTimeLeft(focusMinutes * 60); // Reset to initial focus time
+    setTimerType('focus');
     setIsScheduleActive(false);
-    setScheduleTitle("");
-    setCommenceTime("09:00");
-    setCommenceDay(0);
-    setActiveAsks([]); // Clear active asks on full reset
-  };
+    setCurrentScheduleIndex(0);
+    setSchedule([]);
+    setIsSchedulePending(false); // Reset pending state
+  }, [user, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, timerType, seshTitle, notes, activeJoinedSessionCoworkerCount, focusMinutes, toast]);
 
-  // Function to save session to Supabase (now calls ProfileContext's saveSession)
-  const saveSessionToHistory = async () => {
-    if (sessionStartTime === null) {
-      toast.error("Failed to save session", {
-        description: "Session start time was not recorded.",
+
+  const startSchedule = useCallback(() => {
+    if (schedule.length === 0) return;
+
+    const now = new Date();
+    const commenceDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                      parseInt(commenceTime.split(':')[0]), parseInt(commenceTime.split(':')[1]));
+    
+    const currentDay = now.getDay();
+    let diff = commenceDay - currentDay;
+    commenceDateTime.setDate(commenceDateTime.getDate() + diff);
+
+    // If the commence time has already passed for the selected day, move to next week
+    if (commenceDateTime.getTime() < now.getTime() && diff <= 0) {
+      commenceDateTime.setDate(commenceDateTime.getDate() + 7);
+    }
+
+    const isFutureCommencement = commenceDateTime.getTime() > now.getTime();
+
+    setIsScheduleActive(true);
+    setCurrentScheduleIndex(0);
+    setTimerType(schedule[0].type);
+    setTimeLeft(schedule[0].durationMinutes * 60);
+    setIsSchedulingMode(false);
+    setSessionStartTime(Date.now()); // Overall session start time
+    setAccumulatedFocusSeconds(0);
+    setAccumulatedBreakSeconds(0);
+
+    if (isFutureCommencement) {
+      setIsRunning(false);
+      setIsPaused(true); // Timer is paused until commencement
+      setIsSchedulePending(true); // Mark schedule as pending
+      toast({
+        title: "Schedule Set!",
+        description: `Your schedule will commence on ${new Date(commenceDateTime).toLocaleDateString()} at ${new Date(commenceDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
       });
-      return;
-    }
-
-    // Ensure current phase time is added before saving
-    let finalAccumulatedFocusSeconds = accumulatedFocusSeconds;
-    let finalAccumulatedBreakSeconds = accumulatedBreakSeconds;
-
-    if (isRunning && currentPhaseStartTime !== null) {
-      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-      if (timerType === 'focus') {
-        finalAccumulatedFocusSeconds += elapsed;
-      } else {
-        finalAccumulatedBreakSeconds += elapsed;
-      }
-      setCurrentPhaseStartTime(null); // Reset phase start time
-    }
-
-    const totalSessionSeconds = finalAccumulatedFocusSeconds + finalAccumulatedBreakSeconds;
-
-    if (totalSessionSeconds <= 0) {
-      toast.info("Session too short", {
-        description: "Session was too short to be saved.",
-      });
-      resetAllTimerStates(); // Reset states even if not saved
-      return;
-    }
-
-    await saveSession(
-      seshTitle,
-      notes,
-      finalAccumulatedFocusSeconds,
-      finalAccumulatedBreakSeconds,
-      totalSessionSeconds,
-      activeJoinedSessionCoworkerCount,
-      sessionStartTime
-    );
-    resetAllTimerStates(); // Reset all states after saving
-  };
-
-  // Schedule functions
-  const startSchedule = () => {
-    if (schedule.length > 0) {
-      setIsScheduleActive(true);
-      setCurrentScheduleIndex(0);
-      setTimerType(schedule[0].type);
-      setTimeLeft(schedule[0].durationMinutes * 60);
+    } else {
       setIsRunning(true);
       setIsPaused(false);
-      setIsSchedulingMode(false); // Exit scheduling mode once started
-      setSessionStartTime(Date.now()); // Start overall session timer
-      setCurrentPhaseStartTime(Date.now()); // Start current phase timer
-      setAccumulatedFocusSeconds(0);
-      setAccumulatedBreakSeconds(0);
+      setIsSchedulePending(false); // Not pending, starts now
+      setCurrentPhaseStartTime(Date.now()); // Current phase starts now
+      playSound();
     }
-  };
+  }, [schedule, commenceTime, commenceDay, playSound, toast]);
 
-  const resetSchedule = () => {
-    resetAllTimerStates(); // Use the comprehensive reset function
-  };
+  const resetSchedule = useCallback(() => {
+    setIsScheduleActive(false);
+    setCurrentScheduleIndex(0);
+    setSchedule([]);
+    setIsRunning(false);
+    setIsPaused(false);
+    setIsFlashing(false);
+    setTimeLeft(focusMinutes * 60);
+    setTimerType('focus');
+    setSessionStartTime(null);
+    setCurrentPhaseStartTime(null);
+    setAccumulatedFocusSeconds(0);
+    setAccumulatedBreakSeconds(0);
+    setIsSchedulePending(false); // Reset pending state
+  }, [focusMinutes]);
 
-  // Functions to manage active asks
-  const addAsk = (ask: ActiveAskItem) => {
-    setActiveAsks(prev => [ask, ...prev]);
-  };
-
-  const updateAsk = (updatedAsk: ActiveAskItem) => {
-    setActiveAsks(prev => prev.map(ask => ask.id === updatedAsk.id ? updatedAsk : ask));
-  };
-
-  // Core Timer Countdown Logic
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
+    if (isRunning && !isPaused && !isSchedulePending) { // Only run if not pending
+      intervalRef.current = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(intervalRef.current!);
+            playSound();
+            setIsFlashing(true);
 
-    if (isRunning && !isPaused && timeLeft > 0) {
-      if (currentPhaseStartTime === null) { // If resuming from pause or starting new phase
-        setCurrentPhaseStartTime(Date.now());
-      }
-      interval = setInterval(() => {
-        setTimeLeft(prevTime => prevTime - 1);
+            // Accumulate time for the phase that just ended
+            if (currentPhaseStartTime !== null) {
+              const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+              if (timerType === 'focus') {
+                setAccumulatedFocusSeconds(prev => prev + elapsed);
+              } else {
+                setAccumulatedBreakSeconds(prev => prev + elapsed);
+              }
+            }
+
+            if (isScheduleActive) {
+              const nextIndex = currentScheduleIndex + 1;
+              if (nextIndex < schedule.length) {
+                setCurrentScheduleIndex(nextIndex);
+                setTimerType(schedule[nextIndex].type);
+                setTimeLeft(schedule[nextIndex].durationMinutes * 60);
+                setIsFlashing(false);
+                setCurrentPhaseStartTime(Date.now()); // Start new phase timer
+                return schedule[nextIndex].durationMinutes * 60;
+              } else {
+                // Schedule finished
+                saveSessionToHistory(); // Save the completed schedule
+                setIsScheduleActive(false);
+                setCurrentScheduleIndex(0);
+                setIsRunning(false);
+                setIsPaused(false);
+                setTimerType('focus');
+                setTimeLeft(focusMinutes * 60);
+                setIsFlashing(false);
+                return 0;
+              }
+            } else {
+              // Regular timer finished
+              setIsRunning(false);
+              setIsPaused(true); // Pause after completion
+              return 0;
+            }
+          }
+          return prevTime - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0 && isRunning) {
-      // Phase ended, accumulate time
-      if (currentPhaseStartTime !== null) {
-        const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-        if (timerType === 'focus') {
-          setAccumulatedFocusSeconds(prev => prev + elapsed);
-        } else {
-          setAccumulatedBreakSeconds(prev => prev + elapsed);
-        }
-        setCurrentPhaseStartTime(null); // Reset phase start time
-      }
-
-      setIsRunning(false); // Stop the timer
-
-      if (isScheduleActive) {
-        if (currentScheduleIndex < schedule.length - 1) {
-          const nextIndex = currentScheduleIndex + 1;
-          const nextItem = schedule[nextIndex];
-          setCurrentScheduleIndex(nextIndex);
-          setTimerType(nextItem.type);
-          setTimeLeft(nextItem.durationMinutes * 60);
-          setIsRunning(true);
-          setIsFlashing(false);
-          setCurrentPhaseStartTime(Date.now()); // Start new phase timer
-        } else {
-          saveSessionToHistory(); // Schedule completed, save session
-        }
-      } else if (!manualTransition) {
-        const nextType = timerType === 'focus' ? 'break' : 'focus';
-        setTimerType(nextType);
-        setTimeLeft(nextType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
-        setIsRunning(true);
-        setIsFlashing(false);
-        setCurrentPhaseStartTime(Date.now()); // Start new phase timer
-      } else {
-        setIsFlashing(true);
-      }
+    } else if (!isRunning && intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-  }, [
-    isRunning, isPaused, timeLeft, isScheduleActive, currentScheduleIndex, schedule,
-    setTimeLeft, setTimerType, setCurrentScheduleIndex, setIsRunning, setIsFlashing,
-    focusMinutes, breakMinutes, manualTransition, currentPhaseStartTime,
-    accumulatedFocusSeconds, accumulatedBreakSeconds, saveSessionToHistory
-  ]);
+  }, [isRunning, isPaused, isScheduleActive, currentScheduleIndex, schedule, timerType, focusMinutes, playSound, saveSessionToHistory, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, isSchedulePending]);
 
-  // Effect to update timeLeft when focusMinutes or breakMinutes change (if timer is not active)
+  // Initialize timeLeft when focusMinutes or breakMinutes change and timer is not running/paused
   useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive && !isFlashing) {
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
       setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isFlashing, setTimeLeft]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending]);
 
-
-  // Load settings from local storage on initial mount
-  useEffect(() => {
-    const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedSettings) {
-      const settings = JSON.parse(storedSettings);
-      setFocusMinutes(settings.focusMinutes ?? 25);
-      setBreakMinutes(settings.breakMinutes ?? 5);
-      setTimerIncrement(settings.timerIncrement ?? 5);
-      setShouldPlayEndSound(settings.shouldPlayEndSound ?? true);
-      setShouldShowEndToast(settings.shouldShowEndToast ?? true);
-      setShowSessionsWhileActive(settings.showSessionsWhileActive ?? true);
-      setIsBatchNotificationsEnabled(settings.isBatchNotificationsEnabled ?? false);
-      setBatchNotificationPreference(settings.batchNotificationPreference ?? 'break');
-      setCustomBatchMinutes(settings.customBatchMinutes ?? 15);
-      setLock(settings.lock ?? false);
-      setExemptionsEnabled(settings.exemptionsEnabled ?? false);
-      setPhoneCalls(settings.phoneCalls ?? false);
-      setFavourites(settings.favourites ?? false);
-      setWorkApps(settings.workApps ?? false);
-      setIntentionalBreaches(settings.intentionalBreaches ?? false);
-      setManualTransition(settings.manualTransition ?? false);
-      setMaxDistance(settings.maxDistance ?? 2000);
-      setAskNotifications(settings.askNotifications ?? { push: true, vibrate: false, sound: false });
-      setSessionInvites(settings.sessionInvites ?? { push: true, vibrate: true, sound: true });
-      setFriendActivity(settings.friendActivity ?? { push: true, vibrate: false, sound: false });
-      setBreakNotificationsVibrate(settings.breakNotificationsVibrate ?? false);
-      setVerificationStandard(settings.verificationStandard ?? "anyone");
-      setProfileVisibility(settings.profileVisibility ?? "friends");
-      setLocationSharing(settings.locationSharing ?? "approximate");
-      setIsGlobalPrivate(settings.isGlobalPrivate ?? false); // Renamed and default to false
-
-      // Load timer/schedule specific states
-      setIsRunning(settings.isRunning ?? false);
-      setIsPaused(settings.isPaused ?? false);
-      // Ensure timeLeft is initialized correctly based on loaded timerType and minutes
-      const loadedTimerType = settings.timerType ?? 'focus';
-      const loadedFocusMinutes = settings.focusMinutes ?? 25;
-      const loadedBreakMinutes = settings.breakMinutes ?? 5;
-      setTimeLeft(settings.timeLeft ?? (loadedTimerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60));
-      setTimerType(loadedTimerType);
-      setIsFlashing(settings.isFlashing ?? false);
-      setNotes(settings.notes ?? "");
-      setSeshTitle(settings.seshTitle ?? "Notes"); // Load seshTitle
-      setSessionStartTime(settings.sessionStartTime ?? null);
-      setCurrentPhaseStartTime(settings.currentPhaseStartTime ?? null);
-      setAccumulatedFocusSeconds(settings.accumulatedFocusSeconds ?? 0);
-      setAccumulatedBreakSeconds(settings.accumulatedBreakSeconds ?? 0);
-      setActiveJoinedSessionCoworkerCount(settings.activeJoinedSessionCoworkerCount ?? 0);
-      setSchedule(settings.schedule ?? []);
-      setCurrentScheduleIndex(settings.currentScheduleIndex ?? 0);
-      setIsSchedulingMode(settings.isSchedulingMode ?? false);
-      setIsScheduleActive(settings.isScheduleActive ?? false);
-      setScheduleTitle(settings.scheduleTitle ?? "");
-      setCommenceTime(settings.commenceTime ?? "09:00");
-      setCommenceDay(settings.commenceDay ?? 0);
-      setActiveAsks(settings.activeAsks ?? []); // Load active asks
-      setOpenSettingsAccordions(settings.openSettingsAccordions ?? []); // Load open settings accordions
-    }
+  const addAsk = useCallback((ask: any) => {
+    setActiveAsks(prev => [...prev, ask]);
   }, []);
 
-  // Save settings to local storage whenever they change
-  useEffect(() => {
-    const settingsToSave = {
-      focusMinutes,
-      breakMinutes,
-      timerIncrement,
-      shouldPlayEndSound,
-      shouldShowEndToast,
-      showSessionsWhileActive,
-      isBatchNotificationsEnabled,
-      batchNotificationPreference,
-      customBatchMinutes,
-      lock,
-      exemptionsEnabled,
-      phoneCalls,
-      favourites,
-      workApps,
-      intentionalBreaches,
-      manualTransition,
-      maxDistance,
-      askNotifications,
-      sessionInvites,
-      friendActivity,
-      breakNotificationsVibrate,
-      verificationStandard,
-      profileVisibility,
-      locationSharing,
-      isGlobalPrivate, // Renamed
-      // Timer/Schedule specific states
-      isRunning, isPaused, timeLeft, timerType, isFlashing, notes, seshTitle, // Added seshTitle
-      sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
-      schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
-      scheduleTitle, commenceTime, commenceDay,
-      activeAsks, // Save active asks
-      openSettingsAccordions, // Save open settings accordions
-    };
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settingsToSave));
-  }, [
-    focusMinutes, breakMinutes, timerIncrement, shouldPlayEndSound, shouldShowEndToast,
-    showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
-    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, maxDistance, askNotifications, sessionInvites, friendActivity,
-    breakNotificationsVibrate, verificationStandard, profileVisibility, locationSharing,
-    isGlobalPrivate, // Renamed
-    // Timer/Schedule specific dependencies
-    isRunning, isPaused, timeLeft, timerType, isFlashing, notes, seshTitle, // Added seshTitle
-    sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
-    schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
-    scheduleTitle, commenceTime, commenceDay,
-    activeAsks, // Dependency for active asks
-    openSettingsAccordions, // Dependency for open settings accordions
-  ]);
+  const updateAsk = useCallback((updatedAsk: any) => {
+    setActiveAsks(prev => prev.map(ask => ask.id === updatedAsk.id ? updatedAsk : ask));
+  }, []);
 
-  const value = {
-    focusMinutes, setFocusMinutes,
-    breakMinutes, setBreakMinutes,
-    timerIncrement, setTimerIncrement,
-    shouldPlayEndSound, setShouldPlayEndSound,
-    shouldShowEndToast, setShouldShowEndToast,
-    showSessionsWhileActive, setShowSessionsWhileActive,
-    isBatchNotificationsEnabled, setIsBatchNotificationsEnabled,
-    batchNotificationPreference, setBatchNotificationPreference,
-    customBatchMinutes, setCustomBatchMinutes,
-    lock, setLock,
-    exemptionsEnabled, setExemptionsEnabled,
-    phoneCalls, setPhoneCalls,
-    favourites, setFavourites,
-    workApps, setWorkApps,
-    intentionalBreaches, setIntentionalBreaches,
-    manualTransition, setManualTransition,
-    maxDistance, setMaxDistance,
-    askNotifications, setAskNotifications,
-    sessionInvites, setSessionInvites,
-    friendActivity, setFriendActivity,
-    breakNotificationsVibrate, setBreakNotificationsVibrate,
-    verificationStandard, setVerificationStandard,
-    profileVisibility, setProfileVisibility,
-    locationSharing, setLocationSharing,
-    isGlobalPrivate, setIsGlobalPrivate, // Renamed
-    formatTime,
-    // Timer-related states
-    isRunning, setIsRunning,
-    isPaused, setIsPaused,
-    timeLeft, setTimeLeft,
-    timerType, setTimerType,
-    isFlashing, setIsFlashing,
-    notes, setNotes,
-    seshTitle, setSeshTitle, // Added seshTitle
-    // Session tracking states
-    sessionStartTime, setSessionStartTime,
-    currentPhaseStartTime, setCurrentPhaseStartTime,
-    accumulatedFocusSeconds, setAccumulatedFocusSeconds,
-    accumulatedBreakSeconds, setAccumulatedBreakSeconds,
-    activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount,
-    // Schedule-related states
-    schedule, setSchedule,
-    currentScheduleIndex, setCurrentScheduleIndex,
-    isSchedulingMode, setIsSchedulingMode,
-    isScheduleActive, setIsScheduleActive,
-    startSchedule, resetSchedule,
-    scheduleTitle, setScheduleTitle,
-    commenceTime, setCommenceTime,
-    commenceDay, setCommenceDay,
-    // Active Asks states and functions
-    activeAsks, addAsk, updateAsk,
-    // Settings Accordion state
-    openSettingsAccordions, setOpenSettingsAccordions,
-    // Function to save session
-    saveSessionToHistory,
-  };
+  return (
+    <TimerContext.Provider
+      value={{
+        focusMinutes, setFocusMinutes,
+        breakMinutes, setBreakMinutes,
+        isRunning, setIsRunning,
+        isPaused, setIsPaused,
+        timeLeft, setTimeLeft,
+        timerType, setTimerType,
+        isFlashing, setIsFlashing,
+        notes, setNotes,
+        seshTitle, setSeshTitle,
+        formatTime,
+        showSessionsWhileActive, setShowSessionsWhileActive,
+        timerIncrement,
 
-  return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
+        schedule, setSchedule,
+        currentScheduleIndex, setCurrentScheduleIndex,
+        isSchedulingMode, setIsSchedulingMode,
+        isScheduleActive, setIsScheduleActive,
+        startSchedule,
+        resetSchedule,
+        scheduleTitle, setScheduleTitle,
+        commenceTime, setCommenceTime,
+        commenceDay, setCommenceDay,
+        isGlobalPrivate, setIsGlobalPrivate,
+
+        sessionStartTime, setSessionStartTime,
+        currentPhaseStartTime, setCurrentPhaseStartTime,
+        accumulatedFocusSeconds, setAccumulatedFocusSeconds,
+        accumulatedBreakSeconds, setAccumulatedBreakSeconds,
+        activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount,
+        saveSessionToHistory,
+
+        activeAsks, addAsk, updateAsk,
+        isSchedulePending, setIsSchedulePending,
+      }}
+    >
+      {children}
+    </TimerContext.Provider>
+  );
 };
 
 export const useTimer = () => {
