@@ -10,12 +10,12 @@ import { MessageSquare, Users } from 'lucide-react';
 const FeedbackAndCollaborateSection = () => {
   return (
     <Card className="mt-8">
-      <CardHeader className="p-0">
+      <CardHeader className="p-0"> {/* Remove default padding to allow anchor to fill */}
         <a
           href="https://deepsesh.com.au/#contact"
           target="_blank"
           rel="noopener noreferrer"
-          className="block py-2 px-6 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer" // Reduced py-6 to py-2
+          className="block p-6 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer" // Apply padding and hover styles to the anchor
         >
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
@@ -23,7 +23,7 @@ const FeedbackAndCollaborateSection = () => {
           </CardTitle>
         </a>
       </CardHeader>
-      <CardContent className="relative py-2 px-6"> {/* Reduced p-4 to py-2 px-6 */}
+      <CardContent className="relative"> {/* Added relative positioning */}
         {/* Overlay for redirection and visual disable */}
         <a
           href="https://deepsesh.com.au/#contact"
