@@ -56,7 +56,6 @@ const ScheduleForm: React.FC = () => {
     }
   }, [schedule, setSchedule]);
 
-  // Removed isStartTimeNow state
   const [activeTab, setActiveTab] = useState("plan");
 
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
@@ -72,12 +71,14 @@ const ScheduleForm: React.FC = () => {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
 
+  const currentDayIndex = new Date().getDay(); // Get current day index
+
   // Initialize commenceTime and commenceDay to the current live time and day
   useEffect(() => {
     const now = new Date();
     setCommenceTime(getCurrentTimeHHMM());
     setCommenceDay(now.getDay());
-  }, [setCommenceTime, setCommenceDay]); // Removed isStartTimeNow from dependencies
+  }, [setCommenceTime, setCommenceDay]);
 
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
@@ -313,8 +314,6 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          {/* Removed the "Start Schedule Now" Switch */}
-
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="commence-time">Commence Time</Label>
@@ -330,12 +329,14 @@ const ScheduleForm: React.FC = () => {
               <Label htmlFor="commence-day">Commence Day</Label>
               <Select value={commenceDay.toString()} onValueChange={(value) => setCommenceDay(parseInt(value))}>
                 <SelectTrigger id="commence-day">
-                  <SelectValue placeholder="Select day" />
+                  <SelectValue>
+                    {commenceDay === currentDayIndex ? "Today" : daysOfWeek[commenceDay]}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {daysOfWeek.map((day, index) => (
                     <SelectItem key={day} value={index.toString()}>
-                      {day}
+                      {index === currentDayIndex ? "Today" : day}
                     </SelectItem>
                   ))}
                 </SelectContent>
