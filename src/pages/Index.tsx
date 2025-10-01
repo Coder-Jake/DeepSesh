@@ -616,9 +616,9 @@ const Index = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => console.log('Share QR')}>QR</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => console.log('Share Link')}>Link</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => console.log('Share NFC')}>NFC</DropdownMenuItem>
+                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')}>QR</DropdownMenuItem>
+                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')}>Link</DropdownMenuItem>
+                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')}>NFC</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
