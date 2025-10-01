@@ -213,13 +213,38 @@ const ScheduleForm: React.FC = () => {
   };
 
   return (
-    <Card className="px-0"> {/* Removed py-6 from the main Card */}
+    <Card className="px-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 px-4 lg:px-6">
           <TabsTrigger value="new">New</TabsTrigger>
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
-        <TabsContent value="new" className="pt-6 space-y-6 px-4 lg:px-6"> {/* Removed pb-6 */}
+        {/* Moved CardHeader here, between TabsList and TabsContent */}
+        <CardHeader className="flex flex-row items-center justify-between py-4 px-4 lg:px-6">
+          {isEditingScheduleTitle ? (
+            <Input
+              ref={scheduleTitleInputRef}
+              value={scheduleTitle}
+              onChange={(e) => setScheduleTitle(e.target.value)}
+              onKeyDown={handleScheduleTitleInputKeyDown}
+              onBlur={handleScheduleTitleInputBlur}
+              placeholder="Schedule Title"
+              className="text-2xl font-bold h-auto py-2"
+              onFocus={(e) => e.target.select()}
+            />
+          ) : (
+            <CardTitle
+              className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
+              onClick={handleScheduleTitleClick}
+            >
+              {scheduleTitle || "My Schedule"}
+            </CardTitle>
+          )}
+          <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
+            <X className="h-5 w-5" />
+          </Button>
+        </CardHeader>
+        <TabsContent value="new" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {localSchedule.map((timer, index) => (
               <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
@@ -329,34 +354,10 @@ const ScheduleForm: React.FC = () => {
             <Play className="mr-2 h-5 w-5" />Commence
           </Button>
         </TabsContent>
-        <TabsContent value="saved" className="pt-6 space-y-6 px-4 lg:px-6"> {/* Removed pb-6 */}
+        <TabsContent value="saved" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
           <ScheduleTemplates />
         </TabsContent>
       </Tabs>
-      <CardHeader className="flex flex-row items-center justify-between pb-4 px-4 lg:px-6"> {/* Changed py-4 to pb-4 */}
-        {isEditingScheduleTitle ? (
-          <Input
-            ref={scheduleTitleInputRef}
-            value={scheduleTitle}
-            onChange={(e) => setScheduleTitle(e.target.value)}
-            onKeyDown={handleScheduleTitleInputKeyDown}
-            onBlur={handleScheduleTitleInputBlur}
-            placeholder="Schedule Title"
-            className="text-2xl font-bold h-auto py-2"
-            onFocus={(e) => e.target.select()}
-          />
-        ) : (
-          <CardTitle
-            className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
-            onClick={handleScheduleTitleClick}
-          >
-            {scheduleTitle || "My Schedule"}
-          </CardTitle>
-        )}
-        <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
-          <X className="h-5 w-5" />
-        </Button>
-      </CardHeader>
     </Card>
   );
 };
