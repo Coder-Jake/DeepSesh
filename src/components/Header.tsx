@@ -34,7 +34,7 @@ const Header = () => {
   };
 
   return (
-    <header className="border-b border-border p-4 lg:p-6">
+    <header className="fixed top-0 w-full z-50 border-b border-border px-4 py-2 lg:px-6 lg:py-3 bg-background">
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <div className="relative">
           <Link 
