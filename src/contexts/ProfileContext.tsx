@@ -3,9 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from 'sonner'; // Using sonner for notifications
 
-type Profile = Tables<'profiles'>;
-type ProfileInsert = TablesInsert<'profiles'>;
-type ProfileUpdate = TablesUpdate<'profiles'>;
+type Profile = Tables<'public', 'profiles'>;
+type ProfileInsert = TablesInsert<'public', 'profiles'>;
+type ProfileUpdate = TablesUpdate<'public', 'profiles'>;
 
 type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
 
@@ -281,7 +281,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       return;
     }
 
-    const sessionData: TablesInsert<'sessions'> = {
+    const sessionData: TablesInsert<'public', 'sessions'> = {
       user_id: userId, // Use userId (can be null)
       title: seshTitle,
       notes: notes,
