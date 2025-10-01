@@ -10,12 +10,12 @@ import { MessageSquare, Users } from 'lucide-react';
 const FeedbackAndCollaborateSection = () => {
   return (
     <Card className="mt-8">
-      <CardHeader className="p-0"> {/* Remove default padding to allow anchor to fill */}
+      <CardHeader className="p-0">
         <a
           href="https://deepsesh.com.au/#contact"
           target="_blank"
           rel="noopener noreferrer"
-          className="block p-6 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer" // Apply padding and hover styles to the anchor
+          className="block p-6 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer"
         >
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
@@ -23,21 +23,9 @@ const FeedbackAndCollaborateSection = () => {
           </CardTitle>
         </a>
       </CardHeader>
-      <CardContent className="relative"> {/* Added relative positioning */}
-        {/* Overlay for redirection and visual disable */}
-        <a
-          href="https://deepsesh.com.au/#contact"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg cursor-pointer"
-        >
-          <div className="text-center p-4">
-            <p className="text-lg font-semibold text-foreground">Feedback Form</p>
-          </div>
-        </a>
-
-        {/* Original content, visually greyed out and non-interactive */}
-        <div className="opacity-50 pointer-events-none">
+      <CardContent className="relative">
+        {/* Original content, now fully interactive */}
+        <div>
           <Tabs defaultValue="feedback" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="feedback" className="flex items-center gap-2">
