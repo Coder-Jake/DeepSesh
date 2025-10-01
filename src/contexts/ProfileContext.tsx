@@ -7,7 +7,7 @@ type Profile = Tables<'public', 'profiles'>;
 type ProfileInsert = TablesInsert<'public', 'profiles'>;
 type ProfileUpdate = TablesUpdate<'public', 'profiles'>;
 
-type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
+export type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
 
 // New types for session history and stats data
 export interface SessionHistory {
@@ -33,6 +33,32 @@ export interface StatsData {
   month: StatsPeriodData;
   all: StatsPeriodData;
 }
+
+// Helper function to format seconds into a duration string (e.g., "1h 30m" or "45 mins")
+const formatSecondsToDurationString = (totalSeconds: number): string => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.round((totalSeconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes} mins`;
+};
+
+// Helper function to parse "XXh YYm" to total seconds
+const parseDurationStringToSeconds = (durationString: string): number => {
+  const matchHours = durationString.match(/(\d+)h/);
+  const matchMinutes = durationString.match(/(\d+)m/);
+  let totalSeconds = 0;
+  if (matchHours) {
+    totalSeconds += parseInt(matchHours[1], 10) * 3600;
+  }
+  if (matchMinutes) {
+    totalSeconds += parseInt(matchMinutes[1], 10) * 60;
+  }
+  return totalSeconds;
+};
+
 
 // Initial data for sessions
 const initialSessions: SessionHistory[] = [
@@ -280,14 +306,44 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("User not authenticated.");
-      setLoading(false);
-      toast.error("Authentication required", {
-        description: "Please log in to save your session.",
+      // User not authenticated, save locally
+      const newSession: SessionHistory = {
+        id: Date.now(), // Unique ID for local session
+        title: seshTitle,
+        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+        duration: formatSecondsToDurationString(totalSessionSeconds),
+        participants: activeJoinedSessionCoworkerCount,
+        type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break', // Determine type based on focus time
+        notes: notes,
+      };
+
+      setSessions(prevSessions => [newSession, ...prevSessions]);
+
+      // Update local stats data for 'all' time
+      setStatsData(prevStats => {
+        const currentAllStats = prevStats.all;
+        const updatedTotalFocusSeconds = parseDurationStringToSeconds(currentAllStats.totalFocusTime) + finalAccumulatedFocusSeconds;
+        const updatedUniqueCoworkers = currentAllStats.uniqueCoworkers + activeJoinedSessionCoworkerCount; // Simple addition for demo
+
+        return {
+          ...prevStats,
+          all: {
+            ...currentAllStats,
+            totalFocusTime: formatSecondsToDurationString(updatedTotalFocusSeconds),
+            sessionsCompleted: currentAllStats.sessionsCompleted + 1,
+            uniqueCoworkers: updatedUniqueCoworkers,
+          },
+        };
       });
-      return;
+
+      toast.success("Session saved locally!", {
+        description: "Your session has been recorded in this browser.",
+      });
+      setLoading(false);
+      return; // Exit function after local save
     }
 
+    // If user is authenticated, save to Supabase
     const sessionData: TablesInsert<'public', 'sessions'> = {
       user_id: user.id,
       title: seshTitle,
