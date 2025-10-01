@@ -59,7 +59,7 @@ const ScheduleForm: React.FC = () => {
     { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
   ]);
   const [isStartTimeNow, setIsStartTimeNow] = useState(true); // State for 'Start Time' toggle
-  const [activeTab, setActiveTab] = useState("new"); // State for active tab
+  const [activeTab, setActiveTab] = useState("plan"); // State for active tab, changed from "new" to "plan"
 
   // New state and ref for editable schedule title
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
@@ -216,7 +216,7 @@ const ScheduleForm: React.FC = () => {
     <Card className="px-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 px-4 lg:px-6">
-          <TabsTrigger value="new">New</TabsTrigger>
+          <TabsTrigger value="plan">Plan</TabsTrigger> {/* Changed value from "new" to "plan" and text from "New" to "Plan" */}
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
         {/* Moved CardHeader here, between TabsList and TabsContent */}
@@ -244,7 +244,7 @@ const ScheduleForm: React.FC = () => {
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
-        <TabsContent value="new" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
+        <TabsContent value="plan" className="pt-6 pb-6 space-y-6 px-4 lg:px-6"> {/* Changed value from "new" to "plan" */}
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {localSchedule.map((timer, index) => (
               <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
