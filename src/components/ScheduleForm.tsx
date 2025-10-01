@@ -213,13 +213,13 @@ const ScheduleForm: React.FC = () => {
   };
 
   return (
-    <Card className="py-6 px-0">
+    <Card className="px-0"> {/* Removed py-6 from the main Card */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 px-4 lg:px-6">
           <TabsTrigger value="new">New</TabsTrigger>
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
-        <TabsContent value="new" className="space-y-6 px-4 lg:px-6"> {/* Removed mt-6 */}
+        <TabsContent value="new" className="pt-6 pb-6 space-y-6 px-4 lg:px-6"> {/* Added pt-6 pb-6 */}
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {localSchedule.map((timer, index) => (
               <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
@@ -329,11 +329,11 @@ const ScheduleForm: React.FC = () => {
             <Play className="mr-2 h-5 w-5" />Commence
           </Button>
         </TabsContent>
-        <TabsContent value="saved" className="space-y-6 px-4 lg:px-6"> {/* Removed mt-6 */}
+        <TabsContent value="saved" className="pt-6 pb-6 space-y-6 px-4 lg:px-6"> {/* Added pt-6 pb-6 */}
           <ScheduleTemplates />
         </TabsContent>
       </Tabs>
-      <CardHeader className="flex flex-row items-center justify-between pt-4 mt-4 px-4 lg:px-6">
+      <CardHeader className="flex flex-row items-center justify-between py-4 px-4 lg:px-6"> {/* Changed pb-4 pt-4 mt-4 to py-4 */}
         {isEditingScheduleTitle ? (
           <Input
             ref={scheduleTitleInputRef}
