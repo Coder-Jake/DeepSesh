@@ -84,6 +84,7 @@ export interface TimerContextType {
   setSeshTitle: (title: string) => void;
   formatTime: (seconds: number) => string;
   timerIncrement: number;
+  setTimerIncrement: (increment: number) => void; // Added setTimerIncrement
 
   // Session management states
   showSessionsWhileActive: boolean;

@@ -21,7 +21,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
   const [seshTitle, setSeshTitle] = useState("Notes");
-  const timerIncrement = 5; // Default increment
+  const [timerIncrement, setTimerIncrement] = useState(5); // Changed to state variable
 
   // Session Management States
   const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
@@ -332,8 +332,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setAccumulatedBreakSeconds(settings.accumulatedBreakSeconds ?? 0);
       setActiveJoinedSessionCoworkerCount(settings.activeJoinedSessionCoworkerCount ?? 0);
       setActiveAsks(settings.activeAsks ?? []);
+      setTimerIncrement(settings.timerIncrement ?? 5); // Load timerIncrement
     }
-  }, [timerIncrement]);
+  }, []);
 
   // Save settings to local storage whenever they change
   useEffect(() => {
@@ -385,6 +386,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount,
       activeAsks,
+      timerIncrement, // Save timerIncrement
     };
     localStorage.setItem('flowsesh_settings', JSON.stringify(settingsToSave));
   }, [
@@ -396,7 +398,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     seshTitle, notes, schedule, isScheduleActive, currentScheduleIndex, scheduleTitle, commenceTime,
     commenceDay, isRecurring, recurrenceFrequency, isSchedulePending, timerType, timeLeft, isRunning,
     isPaused, isFlashing, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds,
-    accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, activeAsks,
+    accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, activeAsks, timerIncrement,
   ]);
 
   // Ask/Poll functions
@@ -420,7 +422,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     notes, setNotes,
     seshTitle, setSeshTitle,
     formatTime,
-    timerIncrement,
+    timerIncrement, setTimerIncrement, // Expose setTimerIncrement
 
     // Session Management States & Functions
     showSessionsWhileActive, setShowSessionsWhileActive,
