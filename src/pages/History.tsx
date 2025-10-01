@@ -11,6 +11,7 @@ import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { Tables } from "@/integrations/supabase/types"; // Import Tables type
 import { useQuery } from "@tanstack/react-query"; // Import useQuery
+import { mockSessions } from "@/lib/mockData"; // Import mock sessions
 
 const History = () => {
   const { 
@@ -45,9 +46,9 @@ const History = () => {
     enabled: !!userId, // Only run query if userId exists
   });
 
-  // Combine authenticated and anonymous sessions
+  // Combine authenticated, anonymous, and mock sessions
   const allSessions = useMemo(() => {
-    const combined = [...authenticatedSessions, ...anonymousSessions];
+    const combined = [...authenticatedSessions, ...anonymousSessions, ...mockSessions];
     // Sort by session_start_time in descending order
     return combined.sort((a, b) => new Date(b.session_start_time).getTime() - new Date(a.session_start_time).getTime());
   }, [authenticatedSessions, anonymousSessions]);
@@ -57,7 +58,7 @@ const History = () => {
     return sessions.filter(session => {
       const sessionDate = new Date(session.session_start_time);
       if (period === 'week') {
-        const oneWeekAgo = new Date(now.setDate(now.getDate() - 7)); // Corrected variable name
+        const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
         return sessionDate >= oneWeekAgo;
       } else if (period === 'month') {
         const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));

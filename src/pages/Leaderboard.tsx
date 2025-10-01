@@ -6,6 +6,7 @@ import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { Tables } from "@/integrations/supabase/types"; // Import Tables type
 import { useQuery } from "@tanstack/react-query"; // Import useQuery
+import { mockSessions, mockProfiles as initialMockProfiles } from "@/lib/mockData"; // Import mock sessions and profiles
 
 type LeaderboardEntry = {
   id: string;
@@ -22,7 +23,7 @@ const Leaderboard = () => {
   } = useTimer();
 
   // Fetch all authenticated sessions for leaderboard calculations
-  const { data: allAuthenticatedSessions = [], isLoading: isLoadingSessions } = useQuery<Tables<'sessions'>[]>({
+  const { data: authenticatedSessions = [], isLoading: isLoadingSessions } = useQuery<Tables<'sessions'>[]>({
     queryKey: ['allAuthenticatedSessions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -39,7 +40,7 @@ const Leaderboard = () => {
   });
 
   // Fetch profiles to get user names
-  const { data: profiles = [], isLoading: isLoadingProfiles } = useQuery<Tables<'profiles'>[]>({
+  const { data: realProfiles = [], isLoading: isLoadingProfiles } = useQuery<Tables<'profiles'>[]>({
     queryKey: ['profiles'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -54,9 +55,20 @@ const Leaderboard = () => {
     },
   });
 
+  // Combine real profiles with mock profiles
+  const allProfiles = useMemo(() => [...realProfiles, ...initialMockProfiles], [realProfiles]);
+
+  // Combine authenticated sessions with mock sessions (which have mock user_ids)
+  const allLeaderboardSessions = useMemo(() => {
+    // Filter mock sessions to only include those with a user_id (as per leaderboard requirement)
+    const filteredMockSessions = mockSessions.filter(session => session.user_id !== null);
+    return [...authenticatedSessions, ...filteredMockSessions];
+  }, [authenticatedSessions]);
+
+
   const getUserName = (userId: string | null) => {
-    if (!userId) return "Anonymous"; // Should not happen for authenticated sessions here
-    const profile = profiles.find(p => p.id === userId);
+    if (!userId) return "Anonymous"; 
+    const profile = allProfiles.find(p => p.id === userId);
     return profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Unknown User' : 'Unknown User';
   };
 
@@ -119,13 +131,13 @@ const Leaderboard = () => {
   };
 
   const currentFocusHoursLeaderboard = useMemo(() => 
-    calculateFocusHoursLeaderboard(allAuthenticatedSessions, leaderboardFocusTimePeriod), 
-    [allAuthenticatedSessions, leaderboardFocusTimePeriod, profiles]
+    calculateFocusHoursLeaderboard(allLeaderboardSessions, leaderboardFocusTimePeriod), 
+    [allLeaderboardSessions, leaderboardFocusTimePeriod, allProfiles]
   );
 
   const currentCollaboratedUsersLeaderboard = useMemo(() => 
-    calculateCollaboratedUsersLeaderboard(allAuthenticatedSessions, leaderboardCollaborationTimePeriod), 
-    [allAuthenticatedSessions, leaderboardCollaborationTimePeriod, profiles]
+    calculateCollaboratedUsersLeaderboard(allLeaderboardSessions, leaderboardCollaborationTimePeriod), 
+    [allLeaderboardSessions, leaderboardCollaborationTimePeriod, allProfiles]
   );
 
   if (isLoadingSessions || isLoadingProfiles) {
