@@ -161,7 +161,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast: shadcnToast } = useToast(); // Using shadcn toast for profile updates
 
   // Session history and stats data states
   const [sessions, setSessions] = useState<SessionHistory[]>(initialSessions);
@@ -193,10 +192,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       console.error("Error fetching profile:", error);
       setError(error.message);
       setProfile(null);
-      shadcnToast({
-        title: "Error fetching profile",
+      toast.error("Error fetching profile", {
         description: error.message,
-        variant: "destructive",
       });
     } else if (data) {
       setProfile(data);
@@ -211,10 +208,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       if (insertError) {
         console.error("Error creating profile:", insertError);
         setError(insertError.message);
-        shadcnToast({
-          title: "Error creating profile",
+        toast.error("Error creating profile", {
           description: insertError.message,
-          variant: "destructive",
         });
       } else if (newProfile) {
         setProfile(newProfile);
@@ -231,10 +226,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (!user) {
       setError("User not authenticated.");
       setLoading(false);
-      shadcnToast({
-        title: "Authentication required",
+      toast.error("Authentication required", {
         description: "Please log in to update your profile.",
-        variant: "destructive",
       });
       return;
     }
@@ -249,15 +242,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (error) {
       console.error("Error updating profile:", error);
       setError(error.message);
-      shadcnToast({
-        title: "Error updating profile",
+      toast.error("Error updating profile", {
         description: error.message,
-        variant: "destructive",
       });
     } else if (updatedData) {
       setProfile(updatedData);
-      shadcnToast({
-        title: "Profile updated!",
+      toast.success("Profile updated!", {
         description: "Your profile has been successfully saved.",
       });
     }
