@@ -147,7 +147,7 @@ const Profile = () => {
                     className="cursor-pointer select-none"
                     onClick={handleFirstNameClick}
                   >
-                    {firstName || "Me"}
+                    {firstName || "You"}
                   </span>
                 )}
               </CardTitle>
