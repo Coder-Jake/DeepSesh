@@ -40,7 +40,11 @@ const ScheduleForm: React.FC = () => {
     setCommenceTime, 
     commenceDay, 
     setCommenceDay,
-    timerIncrement // Get timerIncrement from context
+    timerIncrement,
+    isRecurring, // New: Get isRecurring from context
+    setIsRecurring, // New: Get setIsRecurring from context
+    recurrenceFrequency, // New: Get recurrenceFrequency from context
+    setRecurrenceFrequency // New: Get setRecurrenceFrequency from context
   } = useTimer();
   const { toast } = useToast();
 
@@ -52,7 +56,7 @@ const ScheduleForm: React.FC = () => {
     { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45, isCustom: false },
     { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
   ]);
-  const [isStartTimeNow, setIsStartTimeNow] = useState(true); // New state for 'Start Time' toggle
+  const [isStartTimeNow, setIsStartTimeNow] = useState(true); // State for 'Start Time' toggle
 
   // New state and ref for editable schedule title
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
@@ -311,9 +315,9 @@ const ScheduleForm: React.FC = () => {
           <Plus className="mr-2 h-4 w-4" /> Add Timer
         </Button>
 
-        {/* Start Time Toggle Button */}
+        {/* Start Time & Recurrence Toggle Buttons */}
         <div className="flex items-center justify-between">
-          <Label htmlFor="start-time-toggle">Start Time</Label>
+          {/* Now/Later Button (left) */}
           <Button
             id="start-time-toggle"
             variant={isStartTimeNow ? "default" : "outline"}
@@ -321,6 +325,15 @@ const ScheduleForm: React.FC = () => {
             className="w-24"
           >
             {isStartTimeNow ? 'Now' : 'Later'}
+          </Button>
+
+          {/* Single/Recurring Button (right) */}
+          <Button
+            variant={isRecurring ? "default" : "outline"}
+            onClick={() => setIsRecurring(prev => !prev)}
+            className="w-24"
+          >
+            {isRecurring ? 'Recurring' : 'Single'}
           </Button>
         </div>
 
@@ -350,6 +363,23 @@ const ScheduleForm: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+        )}
+
+        {/* Recurrence Frequency Selection (conditionally rendered) */}
+        {isRecurring && (
+          <div className="space-y-2">
+            <Label htmlFor="recurrence-frequency">Recurrence Frequency</Label>
+            <Select value={recurrenceFrequency} onValueChange={(value: 'daily' | 'weekly' | 'monthly') => setRecurrenceFrequency(value)}>
+              <SelectTrigger id="recurrence-frequency">
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         )}
 
