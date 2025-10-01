@@ -7,24 +7,24 @@ const Leaderboard = () => {
   // Sample data for Focus Hours Leaderboard, categorized by time period
   const focusHoursLeaderboardData = {
     week: [
-      { id: 1, name: "Bob", focusHours: 30 },
-      { id: 2, name: "Charlie", focusHours: 25 },
-      { id: 3, name: "Angie", focusHours: 20 }, // Angie is 3rd
+      { id: 1, name: "Angie", focusHours: 30 },
+      { id: 2, name: "Bob", focusHours: 25 },
+      { id: 3, name: "Charlie", focusHours: 20 },
       { id: 4, name: "Diana", focusHours: 18 },
       { id: 5, name: "Eve", focusHours: 15 },
     ],
     month: [
-      { id: 1, name: "Bob", focusHours: 120 },
-      { id: 2, name: "Diana", focusHours: 110 },
-      { id: 3, name: "Charlie", focusHours: 95 },
-      { id: 4, name: "Frank", focusHours: 80 },
-      { id: 5, name: "Angie", focusHours: 70 }, // Angie is 5th
+      { id: 1, name: "Angie", focusHours: 120 },
+      { id: 2, name: "Bob", focusHours: 110 },
+      { id: 3, name: "Diana", focusHours: 95 },
+      { id: 4, name: "Charlie", focusHours: 80 },
+      { id: 5, name: "Frank", focusHours: 70 },
     ],
     all: [
-      { id: 1, name: "Bob", focusHours: 500 },
-      { id: 2, name: "Charlie", focusHours: 450 },
-      { id: 3, name: "Diana", focusHours: 400 },
-      { id: 4, name: "Angie", focusHours: 350 }, // Angie is 4th
+      { id: 1, name: "Angie", focusHours: 500 },
+      { id: 2, name: "Bob", focusHours: 450 },
+      { id: 3, name: "Charlie", focusHours: 400 },
+      { id: 4, name: "Diana", focusHours: 350 },
       { id: 5, name: "Eve", focusHours: 300 },
     ],
   };
@@ -32,25 +32,25 @@ const Leaderboard = () => {
   // Sample data for Collaborated Users Leaderboard, categorized by time period
   const collaboratedUsersLeaderboardData = {
     week: [
-      { id: 1, name: "Frank", collaboratedUsers: 8 },
-      { id: 2, name: "Grace", collaboratedUsers: 7 },
-      { id: 3, name: "Heidi", collaboratedUsers: 6 },
-      { id: 4, name: "Angie", collaboratedUsers: 5 }, // Angie is 4th
-      { id: 5, name: "Ivan", collaboratedUsers: 4 },
+      { id: 1, name: "Angie", collaboratedUsers: 8 },
+      { id: 2, name: "Frank", collaboratedUsers: 7 },
+      { id: 3, name: "Grace", collaboratedUsers: 6 },
+      { id: 4, name: "Heidi", collaboratedUsers: 5 }, // Changed
+      { id: 5, name: "Ivan", collaboratedUsers: 4 }, // Changed
     ],
     month: [
-      { id: 1, name: "Liam", collaboratedUsers: 25 },
-      { id: 2, name: "Mia", collaboratedUsers: 22 },
-      { id: 3, name: "Angie", collaboratedUsers: 18 }, // Angie is 3rd
-      { id: 4, name: "Noah", collaboratedUsers: 15 },
-      { id: 5, name: "Olivia", collaboratedUsers: 12 },
+      { id: 1, name: "Angie", collaboratedUsers: 25 },
+      { id: 2, name: "Liam", collaboratedUsers: 22 }, // Changed
+      { id: 3, name: "Mia", collaboratedUsers: 18 }, // Changed
+      { id: 4, name: "Noah", collaboratedUsers: 15 }, // Changed
+      { id: 5, name: "Olivia", collaboratedUsers: 12 }, // Changed
     ],
     all: [
-      { id: 1, name: "Peter", collaboratedUsers: 100 },
-      { id: 2, name: "Quinn", collaboratedUsers: 90 },
-      { id: 3, name: "Rachel", collaboratedUsers: 80 },
-      { id: 4, name: "Sam", collaboratedUsers: 70 },
-      { id: 5, name: "Angie", collaboratedUsers: 60 }, // Angie is 5th
+      { id: 1, name: "Angie", collaboratedUsers: 100 },
+      { id: 2, name: "Peter", collaboratedUsers: 90 }, // Changed
+      { id: 3, name: "Quinn", collaboratedUsers: 80 }, // Changed
+      { id: 4, name: "Rachel", collaboratedUsers: 70 }, // Changed
+      { id: 5, name: "Sam", collaboratedUsers: 60 }, // Changed
     ],
   };
 
