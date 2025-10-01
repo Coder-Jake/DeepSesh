@@ -28,7 +28,7 @@ const Leaderboard = () => {
     if (match) {
       const hours = parseInt(match[1], 10);
       const minutes = parseInt(match[2], 10);
-      return hours + (minutes / 60);
+      return Math.round(hours + (minutes / 60)); // Round to nearest integer
     }
     return 0; // Default to 0 if format is unexpected
   };
