@@ -45,18 +45,25 @@ const ScheduleForm: React.FC = () => {
   const { toast } = useToast();
 
   const [localSchedule, setLocalSchedule] = useState<ScheduledTimer[]>([
-    { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25 },
-    { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
-    { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60 },
-    { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30 },
-    { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45 },
-    { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15 },
+    { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25, isCustom: false },
+    { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+    { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60, isCustom: false },
+    { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30, isCustom: false },
+    { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45, isCustom: false },
+    { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
   ]);
   const [isStartTimeNow, setIsStartTimeNow] = useState(true); // New state for 'Start Time' toggle
 
   // New state and ref for editable schedule title
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
   const scheduleTitleInputRef = useRef<HTMLInputElement>(null);
+
+  // New states for editing custom timer type text
+  const [editingCustomTitleId, setEditingCustomTitleId] = useState<string | null>(null);
+  const [tempCustomTitle, setTempCustomTitle] = useState<string>("");
+  const customTitleInputRef = useRef<HTMLInputElement>(null);
+  const longPressRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPress = useRef(false);
 
   const daysOfWeek = [
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
@@ -75,6 +82,14 @@ const ScheduleForm: React.FC = () => {
       scheduleTitleInputRef.current.select(); // Select the text when focused
     }
   }, [isEditingScheduleTitle]);
+
+  // Effect to focus the custom title input when editing starts
+  useEffect(() => {
+    if (editingCustomTitleId && customTitleInputRef.current) {
+      customTitleInputRef.current.focus();
+      customTitleInputRef.current.select();
+    }
+  }, [editingCustomTitleId]);
 
   const handleScheduleTitleClick = () => {
     setIsEditingScheduleTitle(true);
@@ -100,15 +115,25 @@ const ScheduleForm: React.FC = () => {
   const handleAddTimer = () => {
     setLocalSchedule(prev => [
       ...prev,
-      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement } // Default to timerIncrement
+      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement, isCustom: false } // Default to timerIncrement
     ]);
   };
 
   const handleUpdateTimer = (id: string, field: keyof ScheduledTimer, value: any) => {
     setLocalSchedule(prev =>
-      prev.map(timer =>
-        timer.id === id ? { ...timer, [field]: value } : timer
-      )
+      prev.map(timer => {
+        if (timer.id === id) {
+          if (field === 'customTitle') {
+            // If customTitle is being set, also set isCustom to true
+            return { ...timer, [field]: value, isCustom: value.trim() !== "" };
+          } else if (field === 'type') {
+            // If type is changed back to focus/break, clear custom title and set isCustom to false
+            return { ...timer, [field]: value, customTitle: undefined, isCustom: false };
+          }
+          return { ...timer, [field]: value };
+        }
+        return timer;
+      })
     );
   };
 
@@ -143,6 +168,41 @@ const ScheduleForm: React.FC = () => {
     }
     setSchedule(localSchedule);
     startSchedule();
+  };
+
+  // Long press handlers for custom type buttons
+  const handleLongPressStart = (timer: ScheduledTimer) => {
+    isLongPress.current = false;
+    longPressRef.current = setTimeout(() => {
+      isLongPress.current = true;
+      setEditingCustomTitleId(timer.id);
+      setTempCustomTitle(timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break'));
+    }, 500); // 500ms for long press
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+    }
+  };
+
+  const handleCustomTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, timerId: string) => {
+    if (e.key === 'Enter') {
+      handleUpdateTimer(timerId, 'customTitle', tempCustomTitle);
+      setEditingCustomTitleId(null);
+      e.currentTarget.blur();
+    }
+  };
+
+  const handleCustomTitleInputBlur = (timerId: string) => {
+    handleUpdateTimer(timerId, 'customTitle', tempCustomTitle);
+    setEditingCustomTitleId(null);
+  };
+
+  const handleTypeButtonClick = (timer: ScheduledTimer) => {
+    if (!isLongPress.current) {
+      handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus');
+    }
   };
 
   return (
@@ -210,16 +270,34 @@ const ScheduleForm: React.FC = () => {
                 onFocus={(e) => e.target.select()}
               />
               
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-24 h-10 text-sm font-medium flex-shrink-0",
-                  timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
-                )}
-                onClick={() => handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus')}
-              >
-                {timer.type === 'focus' ? 'Focus' : 'Break'}
-              </Button>
+              {editingCustomTitleId === timer.id ? (
+                <Input
+                  ref={customTitleInputRef}
+                  value={tempCustomTitle}
+                  onChange={(e) => setTempCustomTitle(e.target.value)}
+                  onKeyDown={(e) => handleCustomTitleInputKeyDown(e, timer.id)}
+                  onBlur={() => handleCustomTitleInputBlur(timer.id)}
+                  className="w-24 h-10 text-sm font-medium flex-shrink-0 text-center"
+                  onFocus={(e) => e.target.select()}
+                />
+              ) : (
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-24 h-10 text-sm font-medium flex-shrink-0",
+                    timer.isCustom ? "bg-blue-200 text-blue-800 hover:bg-blue-300" :
+                    timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
+                  )}
+                  onMouseDown={() => handleLongPressStart(timer)}
+                  onMouseUp={handleLongPressEnd}
+                  onMouseLeave={handleLongPressEnd}
+                  onTouchStart={() => handleLongPressStart(timer)}
+                  onTouchEnd={handleLongPressEnd}
+                  onClick={() => handleTypeButtonClick(timer)}
+                >
+                  {timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break')}
+                </Button>
+              )}
               
               {/* Trash button, pushed to the far right */}
               <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0"> {/* Added ml-auto */}

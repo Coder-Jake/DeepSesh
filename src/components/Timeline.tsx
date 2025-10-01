@@ -1,132 +1,110 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ScheduledTimer } from "@/types/timer";
-import { useTimer } from "@/contexts/TimerContext";
-import { cn } from "@/lib/utils";
-import { Clock, Play, Pause, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // Import Input component
+import React from 'react';
+import { ScheduledTimer } from '@/types/timer';
+import { cn } from '@/lib/utils';
 
 interface TimelineProps {
   schedule: ScheduledTimer[];
   currentScheduleIndex: number;
   timeLeft: number;
-  scheduleTitle: string; // New prop
-  commenceTime: string; // New prop
-  commenceDay: number; // New prop
+  scheduleTitle: string;
+  commenceTime: string;
+  commenceDay: number;
 }
 
-const Timeline: React.FC<TimelineProps> = ({ schedule, currentScheduleIndex, timeLeft, scheduleTitle, commenceTime, commenceDay }) => {
-  const { isRunning, isPaused, setIsRunning, setIsPaused, resetSchedule, formatTime, setScheduleTitle } = useTimer(); // Destructure formatTime and setScheduleTitle from useTimer
+const daysOfWeek = [
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+];
 
-  const [isEditingTimelineTitle, setIsEditingTimelineTitle] = useState(false);
-  const timelineTitleInputRef = useRef<HTMLInputElement>(null);
+const Timeline: React.FC<TimelineProps> = ({
+  schedule,
+  currentScheduleIndex,
+  timeLeft,
+  scheduleTitle,
+  commenceTime,
+  commenceDay,
+}) => {
+  const totalScheduleDuration = schedule.reduce((sum, item) => sum + item.durationMinutes, 0);
 
-  useEffect(() => {
-    if (isEditingTimelineTitle && timelineTitleInputRef.current) {
-      timelineTitleInputRef.current.focus();
-      timelineTitleInputRef.current.select(); // Select the text when focused
-    }
-  }, [isEditingTimelineTitle]);
+  // Calculate the total elapsed time in minutes for the schedule up to the current item
+  const elapsedScheduleMinutes = schedule
+    .slice(0, currentScheduleIndex)
+    .reduce((sum, item) => sum + item.durationMinutes, 0);
 
-  if (schedule.length === 0) {
-    return null;
+  // Calculate the remaining time for the current item in minutes
+  const currentItemRemainingMinutes = Math.ceil(timeLeft / 60);
+
+  // Calculate the total elapsed time including the current item's elapsed portion
+  const totalElapsedMinutes = elapsedScheduleMinutes + (schedule[currentScheduleIndex]?.durationMinutes || 0) - currentItemRemainingMinutes;
+
+  // Calculate the estimated end time
+  const now = new Date();
+  const commenceDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                    parseInt(commenceTime.split(':')[0]), parseInt(commenceTime.split(':')[1]));
+  
+  // Adjust commenceDateTime to the selected day of the week
+  const currentDay = now.getDay();
+  const diff = commenceDay - currentDay;
+  commenceDateTime.setDate(commenceDateTime.getDate() + diff);
+
+  // If the commence time has already passed for the selected day, move to next week
+  if (commenceDateTime.getTime() < now.getTime() && diff <= 0) {
+    commenceDateTime.setDate(commenceDateTime.getDate() + 7);
   }
 
-  const currentItem = schedule[currentScheduleIndex];
-  const progressPercentage = currentItem ? ((currentItem.durationMinutes * 60 - timeLeft) / (currentItem.durationMinutes * 60)) * 100 : 0;
-
-  const calculateStartTime = (index: number) => {
-    const [hours, minutes] = commenceTime.split(':').map(Number);
-    let totalMinutesOffset = 0;
-
-    for (let i = 0; i < index; i++) {
-      totalMinutesOffset += schedule[i].durationMinutes;
-    }
-
-    let currentHour = hours;
-    let currentMinute = minutes + totalMinutesOffset;
-
-    currentHour += Math.floor(currentMinute / 60);
-    currentMinute %= 60;
-    currentHour %= 24; // Handle overflow past 24 hours
-
-    return `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
-  };
-
-  const handleTimelineTitleClick = () => {
-    setIsEditingTimelineTitle(true);
-  };
-
-  const handleTimelineTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      setIsEditingTimelineTitle(false);
-      e.currentTarget.blur();
-      if (scheduleTitle.trim() === "") {
-        setScheduleTitle("My Schedule"); // Revert to default if empty
-      }
-    }
-  };
-
-  const handleTimelineTitleInputBlur = () => {
-    setIsEditingTimelineTitle(false);
-    if (scheduleTitle.trim() === "") {
-      setScheduleTitle("My Schedule"); // Revert to default if empty
-    }
-  };
+  const estimatedEndTime = new Date(commenceDateTime.getTime() + totalScheduleDuration * 60 * 1000);
 
   return (
-    <div className="mt-8 p-4 border rounded-lg bg-card shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        {isEditingTimelineTitle ? (
-          <Input
-            ref={timelineTitleInputRef}
-            value={scheduleTitle}
-            onChange={(e) => setScheduleTitle(e.target.value)}
-            onKeyDown={handleTimelineTitleInputKeyDown}
-            onBlur={handleTimelineTitleInputBlur}
-            placeholder="Schedule Title"
-            className="text-lg font-semibold h-auto py-1 px-2"
-          />
-        ) : (
-          <h3 
-            className="text-lg font-semibold text-foreground cursor-pointer select-none"
-            onClick={handleTimelineTitleClick}
-          >
-            {scheduleTitle}
-          </h3>
-        )}
-      </div>
-      
-      <div className="flex overflow-x-auto pb-2 space-x-3">
-        {schedule.map((item, index) => (
-          <div
-            key={item.id}
-            className={cn(
-              "flex-shrink-0 p-3 rounded-md border",
-              "w-40", // Fixed width for each item
-              item.type === 'focus' ? 'bg-green-100 border-green-200' : 'bg-yellow-100 border-yellow-200',
-              index === currentScheduleIndex && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-            )}
-          >
-            <p className="text-xs text-muted-foreground mb-1">{calculateStartTime(index)}</p> {/* Display start time */}
-            <p className="font-medium text-sm truncate">{item.title}</p>
-            <div className="flex items-center text-xs text-muted-foreground mt-1">
-              <Clock className="h-3 w-3 mr-1" />
-              <span>{item.durationMinutes} min</span>
-            </div>
-            {index === currentScheduleIndex && (
-              <div className="mt-2">
-                <div className="h-1 bg-primary/20 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear" 
-                    style={{ width: `${progressPercentage}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{formatTime(timeLeft)} remaining</p>
+    <div className="mt-8 p-4 border rounded-lg bg-card text-card-foreground shadow-sm">
+      <h2 className="text-xl font-bold mb-2">{scheduleTitle}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        Commencing: {daysOfWeek[commenceDay]} at {commenceTime} (Estimated End: {estimatedEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+      </p>
+      <div className="space-y-4">
+        {schedule.map((item, index) => {
+          const isCurrent = index === currentScheduleIndex;
+          const isCompleted = index < currentScheduleIndex;
+          const itemStartTimeMinutes = schedule.slice(0, index).reduce((sum, prevItem) => sum + prevItem.durationMinutes, 0);
+          const itemEndTimeMinutes = itemStartTimeMinutes + item.durationMinutes;
+
+          const currentItemProgress = isCurrent ? ((item.durationMinutes * 60 - timeLeft) / (item.durationMinutes * 60)) * 100 : 0;
+
+          return (
+            <div
+              key={item.id}
+              className={cn(
+                "relative flex items-center gap-3 p-3 rounded-md transition-all duration-300",
+                isCompleted && "bg-muted text-muted-foreground opacity-70",
+                isCurrent && (item.isCustom ? "bg-blue-100 text-blue-800 shadow-md" :
+                              item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
+                              "bg-private-bg/20 text-private-bg-foreground shadow-md"),
+                !isCompleted && !isCurrent && "bg-secondary/30 text-secondary-foreground"
+              )}
+            >
+              {isCurrent && (
+                <div
+                  className={cn(
+                    "absolute inset-0 rounded-md opacity-50",
+                    item.isCustom ? "bg-blue-200" :
+                    item.type === 'focus' ? "bg-public-bg" : "bg-private-bg"
+                  )}
+                  style={{ width: `${currentItemProgress}%` }}
+                />
+              )}
+              <span className="relative z-10 font-semibold text-sm">{index + 1}.</span>
+              <div className="relative z-10 flex-grow">
+                <p className="font-medium">{item.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  {item.customTitle || (item.type === 'focus' ? 'Focus' : 'Break')} • {item.durationMinutes} mins
+                </p>
               </div>
-            )}
-          </div>
-        ))}
+              {isCurrent && (
+                <span className="relative z-10 font-bold text-lg">
+                  {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
