@@ -260,6 +260,63 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
+  const saveSession = async (
+    seshTitle: string,
+    notes: string,
+    finalAccumulatedFocusSeconds: number,
+    finalAccumulatedBreakSeconds: number,
+    totalSessionSeconds: number,
+    activeJoinedSessionCoworkerCount: number,
+    sessionStartTime: number,
+  ) => {
+    setLoading(true);
+    setError(null);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      setError("User not authenticated.");
+      setLoading(false);
+      toast.error("Authentication required", {
+        description: "Please log in to save your session.",
+      });
+      return;
+    }
+
+    const sessionData: TablesInsert<'public', 'sessions'> = {
+      user_id: user.id,
+      title: seshTitle,
+      notes: notes,
+      focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
+      break_duration_seconds: Math.round(finalAccumulatedBreakSeconds),
+      total_session_seconds: Math.round(totalSessionSeconds),
+      coworker_count: activeJoinedSessionCoworkerCount,
+      session_start_time: new Date(sessionStartTime).toISOString(),
+      session_end_time: new Date().toISOString(),
+    };
+
+    const { data, error: insertError } = await supabase
+      .from('sessions')
+      .insert(sessionData)
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("Error saving session:", insertError);
+      setError(insertError.message);
+      toast.error("Error saving session", {
+        description: insertError.message,
+      });
+    } else if (data) {
+      console.log("Session saved to Supabase:", data);
+      toast.success("Session saved!", {
+        description: "Your session has been successfully recorded.",
+      });
+      // Optionally, update local sessions state if needed for immediate display
+      // For now, we'll just log and toast.
+    }
+    setLoading(false);
+  };
+
   // Load profile and related data from local storage on initial mount
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
