@@ -13,11 +13,17 @@ const History = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    const currentYear = new Date().getFullYear();
+    const sessionYear = date.getFullYear();
+
+    if (sessionYear !== currentYear) {
+      return date.toLocaleDateString('en-US', { year: 'numeric' });
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
   };
 
   const [showSearchBar, setShowSearchBar] = useState(false);
