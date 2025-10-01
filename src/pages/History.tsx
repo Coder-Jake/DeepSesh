@@ -57,6 +57,31 @@ const History = () => {
     }
   ];
 
+  // Sample stats data for different time periods
+  const statsData = {
+    week: {
+      totalFocusTime: "16h 45m",
+      sessionsCompleted: 5,
+      uniqueCoworkers: 8,
+      focusRank: "3rd",
+      coworkerRank: "4th",
+    },
+    month: {
+      totalFocusTime: "65h 30m",
+      sessionsCompleted: 22,
+      uniqueCoworkers: 15,
+      focusRank: "5th",
+      coworkerRank: "3rd",
+    },
+    all: {
+      totalFocusTime: "240h 15m",
+      sessionsCompleted: 80,
+      uniqueCoworkers: 30,
+      focusRank: "4th",
+      coworkerRank: "5th",
+    },
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -69,6 +94,9 @@ const History = () => {
   const [historyTimePeriod, setHistoryTimePeriod] = useState<'week' | 'month' | 'all'>('all');
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Get current stats based on selected time period
+  const currentStats = statsData[historyTimePeriod];
 
   // Filtered sessions based on search query
   const filteredSessions = useMemo(() => {
@@ -89,7 +117,7 @@ const History = () => {
           <h1 className="text-3xl font-bold text-foreground">History</h1>
           <p className="text-muted-foreground mt-2">Review stats from past Seshs</p>
         </div>
-        <TimeFilterToggle onValueChange={setHistoryTimePeriod} />
+        <TimeFilterToggle onValueChange={setHistoryTimePeriod} defaultValue={historyTimePeriod} />
       </div>
         <div className="space-y-6">
           {/* Stats Overview */}
@@ -100,8 +128,9 @@ const History = () => {
                   <div className="flex items-center gap-3">
                     <Clock className="h-8 w-8 text-primary" />
                     <div>
-                      <p className="text-2xl font-bold">16h 45m</p>
+                      <p className="text-2xl font-bold">{currentStats.totalFocusTime}</p>
                       <p className="text-sm text-muted-foreground">Total Focus Time</p>
+                      <p className="text-xs text-muted-foreground">Rank: {currentStats.focusRank}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -113,7 +142,7 @@ const History = () => {
                 <div className="flex items-center gap-3">
                   <Calendar className="h-8 w-8 text-primary" />
                   <div>
-                    <p className="text-2xl font-bold">{sessions.length}</p>
+                    <p className="text-2xl font-bold">{currentStats.sessionsCompleted}</p>
                     <p className="text-sm text-muted-foreground">Sessions Completed</p>
                   </div>
                 </div>
@@ -126,8 +155,9 @@ const History = () => {
                   <div className="flex items-center gap-3">
                     <Users className="h-8 w-8 text-primary" />
                     <div>
-                      <p className="text-2xl font-bold">15</p>
+                      <p className="text-2xl font-bold">{currentStats.uniqueCoworkers}</p>
                       <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
+                      <p className="text-xs text-muted-foreground">Rank: {currentStats.coworkerRank}</p>
                     </div>
                   </div>
                 </CardContent>
