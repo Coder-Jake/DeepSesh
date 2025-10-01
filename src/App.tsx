@@ -88,15 +88,15 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <TimerProvider>
-        <ProfileProvider>
+      <ProfileProvider> {/* ProfileProvider should wrap TimerProvider */}
+        <TimerProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
             <AppContent />
           </BrowserRouter>
-        </ProfileProvider>
-      </TimerProvider>
+        </TimerProvider>
+      </ProfileProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
