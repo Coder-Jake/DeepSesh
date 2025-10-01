@@ -111,23 +111,19 @@ All colors MUST be HSL.
   }
 
   /* Custom CSS for header gradient and hover effect */
-  .header-gradient-link {
-    --gradient-from: hsl(276 49% 60%); /* #AA6DC7 */
-    --gradient-via: hsl(240 49% 58%); /* #6767C2 */
-    --gradient-to: hsl(174 74% 32%); /* #149183 */
-    transition: all 0.7s ease-in-out; /* Slower transition */
-  }
-
-  .header-gradient-link:hover {
-    --gradient-from: hsl(276 49% 40%); /* 20% darker */
-    --gradient-via: hsl(240 49% 38%); /* 20% darker */
-    --gradient-to: hsl(174 74% 12%); /* 20% darker */
-  }
-
   .header-gradient-text {
-    background-image: linear-gradient(to right, var(--gradient-from), var(--gradient-via), var(--gradient-to));
+    background-image: 
+      linear-gradient(to right, hsl(276 49% 60%), hsl(240 49% 58%), hsl(174 74% 32%)), /* Lighter gradient */
+      linear-gradient(to right, hsl(276 49% 40%), hsl(240 49% 38%), hsl(174 74% 12%)); /* Darker gradient */
+    background-size: 200% 100%; /* Make background twice as wide */
+    background-position: 0% 0%; /* Start with the first gradient */
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    transition: background-position 0.7s ease-in-out; /* Animate background-position */
+  }
+
+  .header-gradient-link:hover .header-gradient-text {
+    background-position: 100% 0%; /* On hover, slide to the second gradient */
   }
 }
