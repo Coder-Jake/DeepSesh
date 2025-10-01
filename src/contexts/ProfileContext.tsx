@@ -59,6 +59,18 @@ const parseDurationStringToSeconds = (durationString: string): number => {
   return totalSeconds;
 };
 
+// Helper to check if a session date falls within the current week
+const isDateInCurrentWeek = (sessionDate: Date, today: Date): boolean => {
+  const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay())); // Sunday
+  const lastDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6)); // Saturday
+  return sessionDate >= firstDayOfWeek && sessionDate <= lastDayOfWeek;
+};
+
+// Helper to check if a session date falls within the current month
+const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
+  return sessionDate.getMonth() === today.getMonth() && sessionDate.getFullYear() === today.getFullYear();
+};
+
 
 // Initial data for sessions
 const initialSessions: SessionHistory[] = [
@@ -307,10 +319,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
     if (!user) {
       // User not authenticated, save locally
+      const newSessionDate = new Date(sessionStartTime);
+      const today = new Date(); // Get current date for comparison
+
       const newSession: SessionHistory = {
         id: Date.now(), // Unique ID for local session
         title: seshTitle,
-        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+        date: newSessionDate.toISOString().split('T')[0], // YYYY-MM-DD format
         duration: formatSecondsToDurationString(totalSessionSeconds),
         participants: activeJoinedSessionCoworkerCount,
         type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break', // Determine type based on focus time
@@ -319,21 +334,39 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
       setSessions(prevSessions => [newSession, ...prevSessions]);
 
-      // Update local stats data for 'all' time
+      // Update local stats data for 'week', 'month', and 'all' time
       setStatsData(prevStats => {
-        const currentAllStats = prevStats.all;
-        const updatedTotalFocusSeconds = parseDurationStringToSeconds(currentAllStats.totalFocusTime) + finalAccumulatedFocusSeconds;
-        const updatedUniqueCoworkers = currentAllStats.uniqueCoworkers + activeJoinedSessionCoworkerCount; // Simple addition for demo
+        const updatedStats = { ...prevStats };
 
-        return {
-          ...prevStats,
-          all: {
-            ...currentAllStats,
+        // Helper to update a specific period's stats
+        const updatePeriodStats = (period: TimePeriod) => {
+          const currentPeriodStats = updatedStats[period];
+          const updatedTotalFocusSeconds = parseDurationStringToSeconds(currentPeriodStats.totalFocusTime) + finalAccumulatedFocusSeconds;
+          const updatedUniqueCoworkers = currentPeriodStats.uniqueCoworkers + activeJoinedSessionCoworkerCount; // Simple addition for demo
+
+          updatedStats[period] = {
+            ...currentPeriodStats,
             totalFocusTime: formatSecondsToDurationString(updatedTotalFocusSeconds),
-            sessionsCompleted: currentAllStats.sessionsCompleted + 1,
+            sessionsCompleted: currentPeriodStats.sessionsCompleted + 1,
             uniqueCoworkers: updatedUniqueCoworkers,
-          },
+            // Ranks are static in demo, so they are not updated here
+          };
         };
+
+        // Update 'all' time stats
+        updatePeriodStats('all');
+
+        // Update 'week' stats if session is in current week
+        if (isDateInCurrentWeek(newSessionDate, new Date(today))) { // Pass a new Date object for comparison
+          updatePeriodStats('week');
+        }
+
+        // Update 'month' stats if session is in current month
+        if (isDateInCurrentMonth(newSessionDate, new Date(today))) { // Pass a new Date object for comparison
+          updatePeriodStats('month');
+        }
+
+        return updatedStats;
       });
 
       toast.success("Session saved locally!", {
