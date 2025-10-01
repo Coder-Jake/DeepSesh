@@ -1,40 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ScheduledTimer } from "@/types/timer"; // Import ScheduledTimer type
 import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
-import { TablesInsert } from '@/integrations/supabase/types'; // Import Supabase types
 import { toast } from 'sonner'; // Using sonner for notifications
+import { useProfile } from './ProfileContext'; // Import useProfile
 
 interface NotificationSettings {
   push: boolean;
   vibrate: boolean;
   sound: boolean;
-}
-
-type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
-
-// New types for session history and stats data
-export interface SessionHistory {
-  id: number;
-  title: string;
-  date: string;
-  duration: string;
-  participants: number;
-  type: 'focus' | 'break';
-  notes: string;
-}
-
-export interface StatsPeriodData {
-  totalFocusTime: string;
-  sessionsCompleted: number;
-  uniqueCoworkers: number;
-  focusRank: string;
-  coworkerRank: string;
-}
-
-export interface StatsData {
-  week: StatsPeriodData;
-  month: StatsPeriodData;
-  all: StatsPeriodData;
 }
 
 interface TimerContextType {
@@ -136,103 +109,17 @@ interface TimerContextType {
   commenceDay: number;
   setCommenceDay: React.Dispatch<React.SetStateAction<number>>;
 
-  // New persistent states for History and Leaderboard time filters
-  historyTimePeriod: TimePeriod;
-  setHistoryTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
-  leaderboardFocusTimePeriod: TimePeriod;
-  setLeaderboardFocusTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
-  leaderboardCollaborationTimePeriod: TimePeriod;
-  setLeaderboardCollaborationTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
-
-  // Session history and stats data
-  sessions: SessionHistory[];
-  setSessions: React.Dispatch<React.SetStateAction<SessionHistory[]>>;
-  statsData: StatsData;
-  setStatsData: React.Dispatch<React.SetStateAction<StatsData>>;
-
   // Function to save session
   saveSessionToHistory: () => Promise<void>;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'flowsesh_settings';
-
-// Initial data for sessions
-const initialSessions: SessionHistory[] = [
-  {
-    id: 1,
-    title: "Deep Work Sprint",
-    date: "2025-09-15",
-    duration: "45 mins",
-    participants: 3,
-    type: "focus",
-    notes: "Great session focusing on project documentation. Made significant progress on the API specs."
-  },
-  {
-    id: 2,
-    title: "Study Group Alpha",
-    date: "2025-09-14",
-    duration: "90 mins",
-    participants: 5,
-    type: "focus",
-    notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
-  },
-  {
-    id: 3,
-    title: "Solo Focus",
-    date: "2025-09-13",
-    duration: "30 mins",
-    participants: 1,
-    type: "focus",
-    notes: "Quick focused session to review quarterly goals and plan next steps."
-  },
-  {
-    id: 4,
-    title: "Coding Session",
-    date: "2025-09-12",
-    duration: "120 mins",
-    participants: 2,
-    type: "focus",
-    notes: "Pair programming session working on the new user interface components. Fixed several bugs."
-  },
-  {
-    id: 5,
-    title: "Research Deep Dive",
-    date: "2025-09-11",
-    duration: "60 mins",
-    participants: 4,
-    type: "focus",
-    notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
-  }
-];
-
-// Initial data for stats
-const initialStatsData: StatsData = {
-  week: {
-    totalFocusTime: "22h 0m",
-    sessionsCompleted: 5,
-    uniqueCoworkers: 5,
-    focusRank: "3rd",
-    coworkerRank: "4th",
-  },
-  month: {
-    totalFocusTime: "70h 0m",
-    sessionsCompleted: 22,
-    uniqueCoworkers: 18,
-    focusRank: "5th",
-    coworkerRank: "3rd",
-  },
-  all: {
-    totalFocusTime: "380h 0m",
-    sessionsCompleted: 80,
-    uniqueCoworkers: 65,
-    focusRank: "4th",
-    coworkerRank: "5th",
-  },
-};
+const LOCAL_STORAGE_KEY = 'flowsesh_timer_settings'; // New local storage key for timer data
 
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
+  const { saveSession } = useProfile(); // Use saveSession from ProfileContext
+
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [timerIncrement, setTimerIncrement] = useState(5);
@@ -284,15 +171,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [commenceTime, setCommenceTime] = useState("09:00"); // Default value
   const [commenceDay, setCommenceDay] = useState(0); // Default to Sunday
 
-  // New persistent states for History and Leaderboard time filters
-  const [historyTimePeriod, setHistoryTimePeriod] = useState<TimePeriod>('week');
-  const [leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod] = useState<TimePeriod>('week');
-  const [leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod] = useState<TimePeriod>('week');
-
-  // Session history and stats data states
-  const [sessions, setSessions] = useState<SessionHistory[]>(initialSessions);
-  const [statsData, setStatsData] = useState<StatsData>(initialStatsData);
-
   // Utility function for formatting time
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -323,11 +201,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setCommenceDay(0);
   };
 
-  // Function to save session to Supabase
+  // Function to save session to Supabase (now calls ProfileContext's saveSession)
   const saveSessionToHistory = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id || null; // Get user ID if logged in, otherwise null
-
     if (sessionStartTime === null) {
       toast.error("Failed to save session", {
         description: "Session start time was not recorded.",
@@ -346,7 +221,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       } else {
         finalAccumulatedBreakSeconds += elapsed;
       }
-      setCurrentPhaseStartTime(null); // Reset phase start time after accumulating
+      setCurrentPhaseStartTime(null); // Reset phase start time
     }
 
     const totalSessionSeconds = finalAccumulatedFocusSeconds + finalAccumulatedBreakSeconds;
@@ -355,39 +230,19 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       toast.info("Session too short", {
         description: "Session was too short to be saved.",
       });
+      resetAllTimerStates(); // Reset states even if not saved
       return;
     }
 
-    const sessionData: TablesInsert<'sessions'> = {
-      user_id: userId, // Use userId (can be null)
-      title: seshTitle,
-      notes: notes,
-      focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
-      break_duration_seconds: Math.round(finalAccumulatedBreakSeconds),
-      total_session_seconds: Math.round(totalSessionSeconds),
-      coworker_count: activeJoinedSessionCoworkerCount,
-      session_start_time: new Date(sessionStartTime).toISOString(),
-      session_end_time: new Date().toISOString(),
-    };
-
-    const { error } = await supabase.from('sessions').insert(sessionData);
-
-    if (error) {
-      console.error("Error saving session:", error);
-      toast.error("Failed to save session", {
-        description: error.message,
-      });
-    } else {
-      if (userId) {
-        toast.success("Session saved!", {
-          description: `Your session "${seshTitle}" has been added to your history.`,
-        });
-      } else {
-        toast.success("Anonymous session saved!", {
-          description: `Your session "${seshTitle}" has been saved anonymously. Log in to see it in your history.`,
-        });
-      }
-    }
+    await saveSession(
+      seshTitle,
+      notes,
+      finalAccumulatedFocusSeconds,
+      finalAccumulatedBreakSeconds,
+      totalSessionSeconds,
+      activeJoinedSessionCoworkerCount,
+      sessionStartTime
+    );
     resetAllTimerStates(); // Reset all states after saving
   };
 
@@ -535,15 +390,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setScheduleTitle(settings.scheduleTitle ?? "");
       setCommenceTime(settings.commenceTime ?? "09:00");
       setCommenceDay(settings.commenceDay ?? 0);
-
-      // Load new persistent states for History and Leaderboard time filters
-      setHistoryTimePeriod(settings.historyTimePeriod ?? 'week');
-      setLeaderboardFocusTimePeriod(settings.leaderboardFocusTimePeriod ?? 'week');
-      setLeaderboardCollaborationTimePeriod(settings.leaderboardCollaborationTimePeriod ?? 'week');
-
-      // Load session history and stats data
-      setSessions(settings.sessions ?? initialSessions);
-      setStatsData(settings.statsData ?? initialStatsData);
     }
   }, []);
 
@@ -580,10 +426,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
       schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
       scheduleTitle, commenceTime, commenceDay,
-      // New persistent states for History and Leaderboard time filters
-      historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
-      // Session history and stats data
-      sessions, statsData,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settingsToSave));
   }, [
@@ -598,10 +440,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
     schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
     scheduleTitle, commenceTime, commenceDay,
-    // New persistent states for History and Leaderboard time filters
-    historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
-    // Session history and stats data
-    sessions, statsData,
   ]);
 
   const value = {
@@ -654,13 +492,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     scheduleTitle, setScheduleTitle,
     commenceTime, setCommenceTime,
     commenceDay, setCommenceDay,
-    // New persistent states for History and Leaderboard time filters
-    historyTimePeriod, setHistoryTimePeriod,
-    leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod,
-    leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod,
-    // Session history and stats data
-    sessions, setSessions,
-    statsData, setStatsData,
     // Function to save session
     saveSessionToHistory,
   };

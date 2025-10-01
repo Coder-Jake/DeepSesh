@@ -6,10 +6,10 @@ import TimeFilterToggle from "@/components/TimeFilterToggle";
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
+import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData } = useTimer(); // Use persistent state from context
+  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData } = useProfile(); // Use persistent state from context
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

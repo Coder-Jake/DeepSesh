@@ -2,15 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users, Clock, Award, Gift } from "lucide-react";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
 import { useState } from "react";
-import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
+import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 
 const Leaderboard = () => {
   const { 
     leaderboardFocusTimePeriod, 
     setLeaderboardFocusTimePeriod, 
     leaderboardCollaborationTimePeriod, 
-    setLeaderboardCollaborationTimePeriod 
-  } = useTimer(); // Use persistent states from context
+    setLeaderboardCollaborationTimePeriod,
+    statsData // Get statsData from ProfileContext
+  } = useProfile(); // Use persistent states from context
 
   // Sample data for Focus Hours Leaderboard, categorized by time period
   const focusHoursLeaderboardData = {
