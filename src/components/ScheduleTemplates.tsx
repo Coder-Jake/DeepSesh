@@ -58,7 +58,11 @@ const dummyTemplates: ScheduleTemplate[] = [
   },
 ];
 
-const ScheduleTemplates: React.FC = () => {
+interface ScheduleTemplatesProps {
+  setActiveTab: (tab: string) => void; // New prop
+}
+
+const ScheduleTemplates: React.FC<ScheduleTemplatesProps> = ({ setActiveTab }) => { // Accept prop
   const { setSchedule, setScheduleTitle, setIsSchedulingMode, startSchedule } = useTimer();
   const { toast } = useToast();
 
@@ -69,8 +73,7 @@ const ScheduleTemplates: React.FC = () => {
       title: "Template Loaded",
       description: `"${template.title}" schedule loaded successfully.`,
     });
-    // Optionally switch back to the 'New' tab or directly start the schedule
-    // For now, we'll just load it and let the user decide to start from the 'New' tab.
+    setActiveTab('plan'); // Switch to Plan tab
   };
 
   const handleCommenceTemplate = (template: ScheduleTemplate) => {

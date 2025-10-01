@@ -33,6 +33,7 @@ const getNextHalfHourIncrement = () => {
 
 const ScheduleForm: React.FC = () => {
   const { 
+    schedule, // Get schedule from context
     setSchedule, 
     setIsSchedulingMode, 
     startSchedule, 
@@ -50,14 +51,20 @@ const ScheduleForm: React.FC = () => {
   } = useTimer();
   const { toast } = useToast();
 
-  const [localSchedule, setLocalSchedule] = useState<ScheduledTimer[]>([
-    { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25, isCustom: false },
-    { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
-    { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60, isCustom: false },
-    { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30, isCustom: false },
-    { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45, isCustom: false },
-    { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
-  ]);
+  // Initialize schedule if it's empty (e.g., first time opening schedule form)
+  useEffect(() => {
+    if (schedule.length === 0) {
+      setSchedule([
+        { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25, isCustom: false },
+        { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+        { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60, isCustom: false },
+        { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30, isCustom: false },
+        { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45, isCustom: false },
+        { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
+      ]);
+    }
+  }, [schedule, setSchedule]); // Depend on schedule and setSchedule
+
   const [isStartTimeNow, setIsStartTimeNow] = useState(true); // State for 'Start Time' toggle
   const [activeTab, setActiveTab] = useState("plan"); // State for active tab, changed from "new" to "plan"
 
@@ -120,14 +127,14 @@ const ScheduleForm: React.FC = () => {
   };
 
   const handleAddTimer = () => {
-    setLocalSchedule(prev => [
+    setSchedule(prev => [
       ...prev,
       { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement, isCustom: false } // Default to timerIncrement
     ]);
   };
 
   const handleUpdateTimer = (id: string, field: keyof ScheduledTimer, value: any) => {
-    setLocalSchedule(prev =>
+    setSchedule(prev =>
       prev.map(timer => {
         if (timer.id === id) {
           if (field === 'customTitle') {
@@ -145,7 +152,7 @@ const ScheduleForm: React.FC = () => {
   };
 
   const handleRemoveTimer = (id: string) => {
-    setLocalSchedule(prev => prev.filter(timer => timer.id !== id));
+    setSchedule(prev => prev.filter(timer => timer.id !== id));
   };
 
   const handleCommenceSchedule = () => {
@@ -157,7 +164,7 @@ const ScheduleForm: React.FC = () => {
       });
       return;
     }
-    if (localSchedule.length === 0) {
+    if (schedule.length === 0) { // Use schedule from context
       toast({
         title: "No Timers in Schedule",
         description: "Please add at least one timer to your schedule.",
@@ -165,7 +172,7 @@ const ScheduleForm: React.FC = () => {
       });
       return;
     }
-    if (localSchedule.some(timer => timer.durationMinutes <= 0)) {
+    if (schedule.some(timer => timer.durationMinutes <= 0)) { // Use schedule from context
       toast({
         title: "Invalid Duration",
         description: "All timers must have a duration greater than 0 minutes.",
@@ -173,7 +180,7 @@ const ScheduleForm: React.FC = () => {
       });
       return;
     }
-    setSchedule(localSchedule);
+    // setSchedule(localSchedule); // No longer needed as schedule is updated directly
     startSchedule();
   };
 
@@ -246,7 +253,7 @@ const ScheduleForm: React.FC = () => {
         </CardHeader>
         <TabsContent value="plan" className="pt-6 pb-6 space-y-6 px-4 lg:px-6"> {/* Changed value from "new" to "plan" */}
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-            {localSchedule.map((timer, index) => (
+            {schedule.map((timer, index) => ( {/* Use schedule from context */}
               <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
                 <div className="flex items-center gap-2 flex-grow">
                   <span className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start">{index + 1}.</span>
@@ -355,7 +362,7 @@ const ScheduleForm: React.FC = () => {
           </Button>
         </TabsContent>
         <TabsContent value="saved" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
-          <ScheduleTemplates />
+          <ScheduleTemplates setActiveTab={setActiveTab} /> {/* Pass setActiveTab prop */}
         </TabsContent>
       </Tabs>
     </Card>
