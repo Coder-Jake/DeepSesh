@@ -217,28 +217,23 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Calculate target start time
     const now = new Date();
     const [hours, minutes] = commenceTime.split(':').map(Number);
-    const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
-
-    // Adjust for the selected day of the week
+    
+    // Create a target date for the *current* week/day
+    const targetDateCandidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
     const currentDay = now.getDay(); // 0 for Sunday, 6 for Saturday
-    const daysToAdd = (commenceDay - currentDay + 7) % 7;
-    targetDate.setDate(now.getDate() + daysToAdd);
+    const daysOffset = (commenceDay - currentDay + 7) % 7;
+    targetDateCandidate.setDate(now.getDate() + daysOffset);
 
-    // If the target time is in the past for today, set it for next week
-    if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
-      targetDate.setDate(targetDate.getDate() + 7);
-    }
-
-    const timeUntilStart = targetDate.getTime() - now.getTime();
+    const timeUntilStart = targetDateCandidate.getTime() - now.getTime();
+    const GRACE_PERIOD_MS = 60 * 1000; // 1 minute grace period
 
     // Determine if it should start immediately or go into pending countdown
-    // A small threshold (e.g., 5 seconds) to account for minor time differences or quick clicks
-    if (timeUntilStart <= 5000) { // If within 5 seconds, start immediately
+    if (timeUntilStart <= GRACE_PERIOD_MS) { // If within 1 minute (future, now, or slightly in past)
       setIsSchedulePending(false); // Ensure pending is false
       setIsScheduleActive(true);
       setIsSchedulingMode(false);
       setCurrentScheduleIndex(0);
-      setSessionStartTime(Date.now()); // Overall session start
+      setSessionStartTime(now.getTime()); // Overall session start is now
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       startNextScheduledTimer();
@@ -247,6 +242,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         description: `"${scheduleTitle}" has commenced.`,
       });
     } else {
+      // If the calculated targetDateCandidate is in the past (and outside grace period),
+      // it means the user selected a day/time that has already passed for the current week.
+      // In this case, we should push it to the next week for the countdown.
+      let finalTargetDate = new Date(targetDateCandidate);
+      if (timeUntilStart < -GRACE_PERIOD_MS) { // If significantly in the past
+        finalTargetDate.setDate(finalTargetDate.getDate() + 7);
+      }
+
       setIsSchedulePending(true);
       setIsSchedulingMode(false);
       setIsScheduleActive(true); // Set active so Timeline can show countdown
@@ -256,7 +259,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setAccumulatedBreakSeconds(0);
       toast({
         title: "Schedule Pending",
-        description: `"${scheduleTitle}" will commence at ${commenceTime} on ${new Date(targetDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}.`,
+        description: `"${scheduleTitle}" will commence at ${commenceTime} on ${new Date(finalTargetDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}.`,
       });
     }
   }, [schedule, commenceTime, commenceDay, scheduleTitle, startNextScheduledTimer, toast]);
