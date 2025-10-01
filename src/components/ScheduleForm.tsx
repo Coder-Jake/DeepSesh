@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Play, X } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
@@ -54,6 +54,10 @@ const ScheduleForm: React.FC = () => {
   ]);
   const [isStartTimeNow, setIsStartTimeNow] = useState(true); // New state for 'Start Time' toggle
 
+  // New state and ref for editable schedule title
+  const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
+  const scheduleTitleInputRef = useRef<HTMLInputElement>(null);
+
   const daysOfWeek = [
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
@@ -63,6 +67,34 @@ const ScheduleForm: React.FC = () => {
     setCommenceTime(getNextHalfHourIncrement());
     setCommenceDay(new Date().getDay());
   }, [setCommenceTime, setCommenceDay]);
+
+  // Effect to focus the input when isEditingScheduleTitle becomes true
+  useEffect(() => {
+    if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
+      scheduleTitleInputRef.current.focus();
+    }
+  }, [isEditingScheduleTitle]);
+
+  const handleScheduleTitleClick = () => {
+    setIsEditingScheduleTitle(true);
+  };
+
+  const handleScheduleTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingScheduleTitle(false);
+      e.currentTarget.blur();
+      if (scheduleTitle.trim() === "") {
+        setScheduleTitle("My Schedule"); // Revert to default if empty
+      }
+    }
+  };
+
+  const handleScheduleTitleInputBlur = () => {
+    setIsEditingScheduleTitle(false);
+    if (scheduleTitle.trim() === "") {
+      setScheduleTitle("My Schedule"); // Revert to default if empty
+    }
+  };
 
   const handleAddTimer = () => {
     setLocalSchedule(prev => [
@@ -115,12 +147,24 @@ const ScheduleForm: React.FC = () => {
   return (
     <Card className="py-6 px-0"> {/* Removed horizontal padding from the main Card */}
       <CardHeader className="flex flex-row items-center justify-between pb-4 px-4 lg:px-6"> {/* Added responsive horizontal padding */}
-        <Input
-          placeholder="Schedule Title"
-          value={scheduleTitle}
-          onChange={(e) => setScheduleTitle(e.target.value)}
-          className="text-2xl font-bold h-auto py-2"
-        />
+        {isEditingScheduleTitle ? (
+          <Input
+            ref={scheduleTitleInputRef}
+            value={scheduleTitle}
+            onChange={(e) => setScheduleTitle(e.target.value)}
+            onKeyDown={handleScheduleTitleInputKeyDown}
+            onBlur={handleScheduleTitleInputBlur}
+            placeholder="Schedule Title"
+            className="text-2xl font-bold h-auto py-2"
+          />
+        ) : (
+          <CardTitle
+            className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
+            onClick={handleScheduleTitleClick}
+          >
+            {scheduleTitle || "My Schedule"}
+          </CardTitle>
+        )}
         <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
           <X className="h-5 w-5" />
         </Button>
