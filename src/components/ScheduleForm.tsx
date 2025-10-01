@@ -324,28 +324,6 @@ const ScheduleForm: React.FC = () => {
               <Plus className="mr-2 h-4 w-4" /> Add Timer
             </Button>
 
-            {/* Start Time & Recurrence Toggle Buttons */}
-            <div className="flex items-center justify-between">
-              {/* Now/Later Button (left) */}
-              <Button
-                id="start-time-toggle"
-                variant={isStartTimeNow ? "default" : "outline"}
-                onClick={() => setIsStartTimeNow(prev => !prev)}
-                className="w-24"
-              >
-                {isStartTimeNow ? 'Now' : 'Later'}
-              </Button>
-
-              {/* Single/Recurring Button (right) */}
-              <Button
-                variant={isRecurring ? "default" : "outline"}
-                onClick={() => setIsRecurring(prev => !prev)}
-                className="w-24"
-              >
-                {isRecurring ? 'Recurring' : 'Single'}
-              </Button>
-            </div>
-
             {/* Commencement Time and Day Selection (conditionally rendered) */}
             {!isStartTimeNow && (
               <div className="grid grid-cols-2 gap-4">
