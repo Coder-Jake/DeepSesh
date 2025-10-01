@@ -424,14 +424,19 @@ const Index = () => {
     setActiveJoinedSession(session);
     setActiveJoinedSessionCoworkerCount(session.participants.length); // Set coworker count
     setTimerType(session.currentPhase);
-    setTimeLeft(session.currentPhaseDurationMinutes * 60);
+    
+    // Calculate remaining time based on session's start time and current phase duration
+    const elapsedSecondsInJoinedPhase = Math.floor((Date.now() - session.startTime) / 1000);
+    const remainingSecondsInJoinedPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSecondsInJoinedPhase);
+    setTimeLeft(remainingSecondsInJoinedPhase); // Set timer to continue from where the session was
+    
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
-    setSessionStartTime(Date.now()); // Record overall session start time
-    setCurrentPhaseStartTime(Date.now()); // Record current phase start time
-    setAccumulatedFocusSeconds(0);
-    setAccumulatedBreakSeconds(0);
+    setSessionStartTime(Date.now()); // Record overall session start time for *this user*
+    setCurrentPhaseStartTime(Date.now()); // Record current phase start time for *this user*
+    setAccumulatedFocusSeconds(0); // Reset personal accumulated focus time
+    setAccumulatedBreakSeconds(0); // Reset personal accumulated break time
     toast({
       title: "Session Joined!",
       description: `You've joined "${session.title}".`,
