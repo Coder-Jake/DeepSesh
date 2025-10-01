@@ -3,15 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Added Card import
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Play, X } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils"; // Import cn for conditional styling
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Added Tabs components import
-import ScheduleTemplates from './ScheduleTemplates'; // Import the new component
+import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ScheduleTemplates from './ScheduleTemplates';
 
 // Utility function to get the next 30-minute increment
 const getNextHalfHourIncrement = () => {
@@ -33,7 +33,7 @@ const getNextHalfHourIncrement = () => {
 
 const ScheduleForm: React.FC = () => {
   const { 
-    schedule, // Get schedule from context
+    schedule,
     setSchedule, 
     setIsSchedulingMode, 
     startSchedule, 
@@ -44,10 +44,10 @@ const ScheduleForm: React.FC = () => {
     commenceDay, 
     setCommenceDay,
     timerIncrement,
-    isRecurring, // New: Get isRecurring from context
-    setIsRecurring, // New: Get setIsRecurring from context
-    recurrenceFrequency, // New: Get recurrenceFrequency from context
-    setRecurrenceFrequency // New: Get setRecurrenceFrequency from context
+    isRecurring,
+    setIsRecurring,
+    recurrenceFrequency,
+    setRecurrenceFrequency
   } = useTimer();
   const { toast } = useToast();
 
@@ -63,16 +63,14 @@ const ScheduleForm: React.FC = () => {
         { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
       ]);
     }
-  }, [schedule, setSchedule]); // Depend on schedule and setSchedule
+  }, [schedule, setSchedule]);
 
-  const [isStartTimeNow, setIsStartTimeNow] = useState(true); // State for 'Start Time' toggle
-  const [activeTab, setActiveTab] = useState("plan"); // State for active tab, changed from "new" to "plan"
+  const [isStartTimeNow, setIsStartTimeNow] = useState(true);
+  const [activeTab, setActiveTab] = useState("plan");
 
-  // New state and ref for editable schedule title
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
   const scheduleTitleInputRef = useRef<HTMLInputElement>(null);
 
-  // New states for editing custom timer type text
   const [editingCustomTitleId, setEditingCustomTitleId] = useState<string | null>(null);
   const [tempCustomTitle, setTempCustomTitle] = useState<string>("");
   const customTitleInputRef = useRef<HTMLInputElement>(null);
@@ -83,21 +81,18 @@ const ScheduleForm: React.FC = () => {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
 
-  // Initialize commenceTime and commenceDay to the next 30-minute increment and current day
   React.useEffect(() => {
     setCommenceTime(getNextHalfHourIncrement());
     setCommenceDay(new Date().getDay());
   }, [setCommenceTime, setCommenceDay]);
 
-  // Effect to focus the input when isEditingScheduleTitle becomes true
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
       scheduleTitleInputRef.current.focus();
-      scheduleTitleInputRef.current.select(); // Select the text when focused
+      scheduleTitleInputRef.current.select();
     }
   }, [isEditingScheduleTitle]);
 
-  // Effect to focus the custom title input when editing starts
   useEffect(() => {
     if (editingCustomTitleId && customTitleInputRef.current) {
       customTitleInputRef.current.focus();
@@ -114,7 +109,7 @@ const ScheduleForm: React.FC = () => {
       setIsEditingScheduleTitle(false);
       e.currentTarget.blur();
       if (scheduleTitle.trim() === "") {
-        setScheduleTitle("My Schedule"); // Revert to default if empty
+        setScheduleTitle("My Schedule");
       }
     }
   };
@@ -122,14 +117,14 @@ const ScheduleForm: React.FC = () => {
   const handleScheduleTitleInputBlur = () => {
     setIsEditingScheduleTitle(false);
     if (scheduleTitle.trim() === "") {
-      setScheduleTitle("My Schedule"); // Revert to default if empty
+      setScheduleTitle("My Schedule");
     }
   };
 
   const handleAddTimer = () => {
     setSchedule(prev => [
       ...prev,
-      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement, isCustom: false } // Default to timerIncrement
+      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement, isCustom: false }
     ]);
   };
 
@@ -138,10 +133,8 @@ const ScheduleForm: React.FC = () => {
       prev.map(timer => {
         if (timer.id === id) {
           if (field === 'customTitle') {
-            // If customTitle is being set, also set isCustom to true
             return { ...timer, [field]: value, isCustom: value.trim() !== "" };
           } else if (field === 'type') {
-            // If type is changed back to focus/break, clear custom title and set isCustom to false
             return { ...timer, [field]: value, customTitle: undefined, isCustom: false };
           }
           return { ...timer, [field]: value };
@@ -164,7 +157,7 @@ const ScheduleForm: React.FC = () => {
       });
       return;
     }
-    if (schedule.length === 0) { // Use schedule from context
+    if (schedule.length === 0) {
       toast({
         title: "No Timers in Schedule",
         description: "Please add at least one timer to your schedule.",
@@ -172,7 +165,7 @@ const ScheduleForm: React.FC = () => {
       });
       return;
     }
-    if (schedule.some(timer => timer.durationMinutes <= 0)) { // Use schedule from context
+    if (schedule.some(timer => timer.durationMinutes <= 0)) {
       toast({
         title: "Invalid Duration",
         description: "All timers must have a duration greater than 0 minutes.",
@@ -183,14 +176,13 @@ const ScheduleForm: React.FC = () => {
     startSchedule();
   };
 
-  // Long press handlers for custom type buttons
   const handleLongPressStart = (timer: ScheduledTimer) => {
     isLongPress.current = false;
     longPressRef.current = setTimeout(() => {
       isLongPress.current = true;
       setEditingCustomTitleId(timer.id);
       setTempCustomTitle(timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break'));
-    }, 500); // 500ms for long press
+    }, 500);
   };
 
   const handleLongPressEnd = () => {
@@ -222,10 +214,9 @@ const ScheduleForm: React.FC = () => {
     <Card className="px-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 px-4 lg:px-6">
-          <TabsTrigger value="plan">Plan</TabsTrigger> {/* Changed value from "new" to "plan" and text from "New" to "Plan" */}
+          <TabsTrigger value="plan">Plan</TabsTrigger>
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
-        {/* Moved CardHeader here, between TabsList and TabsContent */}
         <CardHeader className="flex flex-row items-center justify-between py-4 px-4 lg:px-6">
           {isEditingScheduleTitle ? (
             <Input
@@ -250,9 +241,9 @@ const ScheduleForm: React.FC = () => {
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
-        <TabsContent value="plan" className="pt-6 pb-6 space-y-6 px-4 lg:px-6"> {/* Changed value from "new" to "plan" */}
+        <TabsContent value="plan" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-            {schedule.map((timer, index) => ( {/* Use schedule from context */}
+            {schedule.map((timer, index) => (
               <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
                 <div className="flex items-center gap-2 flex-grow">
                   <span className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start">{index + 1}.</span>
@@ -361,7 +352,7 @@ const ScheduleForm: React.FC = () => {
           </Button>
         </TabsContent>
         <TabsContent value="saved" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
-          <ScheduleTemplates setActiveTab={setActiveTab} /> {/* Pass setActiveTab prop */}
+          <ScheduleTemplates setActiveTab={setActiveTab} />
         </TabsContent>
       </Tabs>
     </Card>

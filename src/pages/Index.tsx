@@ -57,6 +57,7 @@ interface DemoSession {
   type: 'focus' | 'break';
   totalDurationMinutes: number;
   currentPhase: 'focus' | 'break';
+  currentPhaseDurationMinutes: number; // Added missing property
   startTime: number;
   location: string;
   workspaceImage: string;
