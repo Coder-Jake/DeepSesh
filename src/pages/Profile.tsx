@@ -46,6 +46,7 @@ const Profile = () => {
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
       firstNameInputRef.current.focus();
+      firstNameInputRef.current.select(); // Select the text when focused
     }
   }, [isEditingFirstName]);
 
