@@ -109,4 +109,25 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom CSS for header gradient and hover effect */
+  .header-gradient-link {
+    --gradient-from: #AA6DC7; /* Original HSL(276, 49%, 60%) */
+    --gradient-via: #6767C2; /* Original HSL(240, 49%, 58%) */
+    --gradient-to: #149183; /* Original HSL(174, 74%, 32%) */
+    transition: all 0.3s ease-in-out; /* Smooth transition for hover effect */
+  }
+
+  .header-gradient-link:hover {
+    --gradient-from: #8040A6; /* HSL(276, 49%, 50%) - 10% darker */
+    --gradient-via: #4D4DA3; /* HSL(240, 49%, 48%) - 10% darker */
+    --gradient-to: #0B5C53; /* HSL(174, 74%, 22%) - 10% darker */
+  }
+
+  .header-gradient-text {
+    background-image: linear-gradient(to right, var(--gradient-from), var(--gradient-via), var(--gradient-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
