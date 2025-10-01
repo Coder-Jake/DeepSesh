@@ -12,6 +12,31 @@ interface NotificationSettings {
 
 type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
 
+// New types for session history and stats data
+export interface SessionHistory {
+  id: number;
+  title: string;
+  date: string;
+  duration: string;
+  participants: number;
+  type: 'focus' | 'break';
+  notes: string;
+}
+
+export interface StatsPeriodData {
+  totalFocusTime: string;
+  sessionsCompleted: number;
+  uniqueCoworkers: number;
+  focusRank: string;
+  coworkerRank: string;
+}
+
+export interface StatsData {
+  week: StatsPeriodData;
+  month: StatsPeriodData;
+  all: StatsPeriodData;
+}
+
 interface TimerContextType {
   focusMinutes: number;
   setFocusMinutes: React.Dispatch<React.SetStateAction<number>>;
@@ -119,6 +144,12 @@ interface TimerContextType {
   leaderboardCollaborationTimePeriod: TimePeriod;
   setLeaderboardCollaborationTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
 
+  // Session history and stats data
+  sessions: SessionHistory[];
+  setSessions: React.Dispatch<React.SetStateAction<SessionHistory[]>>;
+  statsData: StatsData;
+  setStatsData: React.Dispatch<React.SetStateAction<StatsData>>;
+
   // Function to save session
   saveSessionToHistory: () => Promise<void>;
 }
@@ -127,7 +158,81 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'flowsesh_settings';
 
-export const TimerProvider = ({ children }: { ReactNode }) => {
+// Initial data for sessions
+const initialSessions: SessionHistory[] = [
+  {
+    id: 1,
+    title: "Deep Work Sprint",
+    date: "2025-09-15",
+    duration: "45 mins",
+    participants: 3,
+    type: "focus",
+    notes: "Great session focusing on project documentation. Made significant progress on the API specs."
+  },
+  {
+    id: 2,
+    title: "Study Group Alpha",
+    date: "2025-09-14",
+    duration: "90 mins",
+    participants: 5,
+    type: "focus",
+    notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
+  },
+  {
+    id: 3,
+    title: "Solo Focus",
+    date: "2025-09-13",
+    duration: "30 mins",
+    participants: 1,
+    type: "focus",
+    notes: "Quick focused session to review quarterly goals and plan next steps."
+  },
+  {
+    id: 4,
+    title: "Coding Session",
+    date: "2025-09-12",
+    duration: "120 mins",
+    participants: 2,
+    type: "focus",
+    notes: "Pair programming session working on the new user interface components. Fixed several bugs."
+  },
+  {
+    id: 5,
+    title: "Research Deep Dive",
+    date: "2025-09-11",
+    duration: "60 mins",
+    participants: 4,
+    type: "focus",
+    notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
+  }
+];
+
+// Initial data for stats
+const initialStatsData: StatsData = {
+  week: {
+    totalFocusTime: "22h 0m",
+    sessionsCompleted: 5,
+    uniqueCoworkers: 5,
+    focusRank: "3rd",
+    coworkerRank: "4th",
+  },
+  month: {
+    totalFocusTime: "70h 0m",
+    sessionsCompleted: 22,
+    uniqueCoworkers: 18,
+    focusRank: "5th",
+    coworkerRank: "3rd",
+  },
+  all: {
+    totalFocusTime: "380h 0m",
+    sessionsCompleted: 80,
+    uniqueCoworkers: 65,
+    focusRank: "4th",
+    coworkerRank: "5th",
+  },
+};
+
+export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [timerIncrement, setTimerIncrement] = useState(5);
@@ -184,6 +289,10 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
   const [leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod] = useState<TimePeriod>('week');
   const [leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod] = useState<TimePeriod>('week');
 
+  // Session history and stats data states
+  const [sessions, setSessions] = useState<SessionHistory[]>(initialSessions);
+  const [statsData, setStatsData] = useState<StatsData>(initialStatsData);
+
   // Utility function for formatting time
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -237,6 +346,7 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
       } else {
         finalAccumulatedBreakSeconds += elapsed;
       }
+      setCurrentPhaseStartTime(null); // Reset phase start time after accumulating
     }
 
     const totalSessionSeconds = finalAccumulatedFocusSeconds + finalAccumulatedBreakSeconds;
@@ -359,7 +469,7 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
     isRunning, isPaused, timeLeft, isScheduleActive, currentScheduleIndex, schedule,
     setTimeLeft, setTimerType, setCurrentScheduleIndex, setIsRunning, setIsFlashing,
     focusMinutes, breakMinutes, manualTransition, currentPhaseStartTime,
-    accumulatedFocusSeconds, accumulatedBreakSeconds, saveSessionToHistory // Added saveSessionToHistory
+    accumulatedFocusSeconds, accumulatedBreakSeconds, saveSessionToHistory
   ]);
 
   // Effect to update timeLeft when focusMinutes or breakMinutes change (if timer is not active)
@@ -430,6 +540,10 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
       setHistoryTimePeriod(settings.historyTimePeriod ?? 'week');
       setLeaderboardFocusTimePeriod(settings.leaderboardFocusTimePeriod ?? 'week');
       setLeaderboardCollaborationTimePeriod(settings.leaderboardCollaborationTimePeriod ?? 'week');
+
+      // Load session history and stats data
+      setSessions(settings.sessions ?? initialSessions);
+      setStatsData(settings.statsData ?? initialStatsData);
     }
   }, []);
 
@@ -462,29 +576,14 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
       locationSharing,
       isGlobalPrivate, // Renamed
       // Timer/Schedule specific states
-      isRunning,
-      isPaused,
-      timeLeft,
-      timerType,
-      isFlashing,
-      notes,
-      seshTitle, // Save seshTitle
-      sessionStartTime,
-      currentPhaseStartTime,
-      accumulatedFocusSeconds,
-      accumulatedBreakSeconds,
-      activeJoinedSessionCoworkerCount,
-      schedule,
-      currentScheduleIndex,
-      isSchedulingMode,
-      isScheduleActive,
-      scheduleTitle,
-      commenceTime,
-      commenceDay,
+      isRunning, isPaused, timeLeft, timerType, isFlashing, notes, seshTitle, // Added seshTitle
+      sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
+      schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
+      scheduleTitle, commenceTime, commenceDay,
       // New persistent states for History and Leaderboard time filters
-      historyTimePeriod,
-      leaderboardFocusTimePeriod,
-      leaderboardCollaborationTimePeriod,
+      historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
+      // Session history and stats data
+      sessions, statsData,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settingsToSave));
   }, [
@@ -501,6 +600,8 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
     scheduleTitle, commenceTime, commenceDay,
     // New persistent states for History and Leaderboard time filters
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
+    // Session history and stats data
+    sessions, statsData,
   ]);
 
   const value = {
@@ -557,6 +658,9 @@ export const TimerProvider = ({ children }: { ReactNode }) => {
     historyTimePeriod, setHistoryTimePeriod,
     leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod,
     leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod,
+    // Session history and stats data
+    sessions, setSessions,
+    statsData, setStatsData,
     // Function to save session
     saveSessionToHistory,
   };
