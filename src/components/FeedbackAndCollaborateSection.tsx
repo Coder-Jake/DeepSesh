@@ -23,29 +23,7 @@ const FeedbackAndCollaborateSection = () => {
           </CardTitle>
         </a>
       </CardHeader>
-      <CardContent className="relative">
-        {/* Original content, now fully interactive */}
-        <div>
-          <Tabs defaultValue="feedback" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="feedback" className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" /> Feedback
-              </TabsTrigger>
-              <TabsTrigger value="collaborate" className="flex items-center gap-2">
-                <Users className="h-4 w-4" /> Collaborate
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="feedback" className="mt-4 space-y-4">
-              <p className="text-sm text-muted-foreground">Report an idea/issue</p>
-              <FeedbackForm />
-            </TabsContent>
-            <TabsContent value="collaborate" className="mt-4 space-y-4">
-              <p className="text-sm text-muted-foreground">I need IT people</p>
-              <CollaborateForm />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </CardContent>
+      {/* CardContent removed as requested */}
     </Card>
   );
 };
