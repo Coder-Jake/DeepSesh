@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ScheduledTimer } from "@/types/timer"; // Import ScheduledTimer type
 import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
 import { TablesInsert } from '@/integrations/supabase/types'; // Import Supabase types
 import { toast } from 'sonner'; // Using sonner for notifications
+import { ScheduledTimer } from "@/types/timer"; // Import ScheduledTimer type
+import { useSession } from './SessionContext'; // Import useSession
 
 interface NotificationSettings {
   push: boolean;
@@ -128,6 +129,8 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 const LOCAL_STORAGE_KEY = 'flowsesh_settings';
 
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useSession(); // Get user from SessionContext
+
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [timerIncrement, setTimerIncrement] = useState(5);
@@ -216,8 +219,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
 
   // Function to save session to Supabase
   const saveSessionToHistory = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-
     if (!user) {
       toast.error("Failed to save session", {
         description: "You must be logged in to save sessions.",
@@ -501,6 +502,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     scheduleTitle, commenceTime, commenceDay,
     // New persistent states for History and Leaderboard time filters
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
+    user // Added user to dependencies to trigger re-render on auth state change
   ]);
 
   const value = {

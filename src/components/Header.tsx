@@ -2,12 +2,15 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
+import { useSession } from "@/contexts/SessionContext"; // Import useSession
 import Navigation from "@/components/Navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/button"; // Import Button component
 
 const Header = () => {
   const location = useLocation();
   const { timeLeft, formatTime, isRunning, isPaused, isFlashing } = useTimer();
+  const { user, signOut } = useSession(); // Get user and signOut from session context
   const isHomePage = location.pathname === "/";
 
   const [secretTextVisible, setSecretTextVisible] = useState(false);
@@ -15,10 +18,6 @@ const Header = () => {
 
   const handleHeaderClick = () => {
     if (isHomePage) {
-      // Ensure any previous timeouts are cleared to prevent overlapping animations
-      // (This part is not strictly necessary for this specific request but good practice)
-      // if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
       setShowSecretTextDiv(true); // Start rendering the div with initial opacity-0
       
       setTimeout(() => {
@@ -64,7 +63,14 @@ const Header = () => {
           </Link>
         )}
         
-        <Navigation />
+        <div className="flex items-center gap-4">
+          {user && ( // Show logout button only if user is logged in
+            <Button variant="ghost" size="sm" onClick={signOut} className="text-sm">
+              Logout
+            </Button>
+          )}
+          <Navigation />
+        </div>
       </div>
     </header>
   );
