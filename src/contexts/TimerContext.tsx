@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ScheduledTimer } from "@/types/timer"; // Import ScheduledTimer type
+import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
+import { TablesInsert } from '@/integrations/supabase/types'; // Import Supabase types
+import { toast } from 'sonner'; // Using sonner for notifications
 
 interface NotificationSettings {
   push: boolean;
@@ -75,6 +78,20 @@ interface TimerContextType {
   setIsFlashing: React.Dispatch<React.SetStateAction<boolean>>;
   notes: string;
   setNotes: React.Dispatch<React.SetStateAction<string>>;
+  seshTitle: string; // Added seshTitle
+  setSeshTitle: React.Dispatch<React.SetStateAction<string>>; // Added setSeshTitle
+
+  // New session tracking states
+  sessionStartTime: number | null;
+  setSessionStartTime: React.Dispatch<React.SetStateAction<number | null>>;
+  currentPhaseStartTime: number | null;
+  setCurrentPhaseStartTime: React.Dispatch<React.SetStateAction<number | null>>;
+  accumulatedFocusSeconds: number;
+  setAccumulatedFocusSeconds: React.Dispatch<React.SetStateAction<number>>;
+  accumulatedBreakSeconds: number;
+  setAccumulatedBreakSeconds: React.Dispatch<React.SetStateAction<number>>;
+  activeJoinedSessionCoworkerCount: number; // To store coworker count from joined session
+  setActiveJoinedSessionCoworkerCount: React.Dispatch<React.SetStateAction<number>>;
 
   // New schedule-related states
   schedule: ScheduledTimer[];
@@ -101,6 +118,9 @@ interface TimerContextType {
   setLeaderboardFocusTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
   leaderboardCollaborationTimePeriod: TimePeriod;
   setLeaderboardCollaborationTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
+
+  // Function to save session
+  saveSessionToHistory: () => Promise<void>;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -141,6 +161,14 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
+  const [seshTitle, setSeshTitle] = useState("Notes"); // Default Sesh Title
+
+  // Session tracking states
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [currentPhaseStartTime, setCurrentPhaseStartTime] = useState<number | null>(null);
+  const [accumulatedFocusSeconds, setAccumulatedFocusSeconds] = useState(0);
+  const [accumulatedBreakSeconds, setAccumulatedBreakSeconds] = useState(0);
+  const [activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount] = useState(0);
 
   // Schedule-related states
   const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
@@ -163,6 +191,96 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // Function to reset all timer-related states to defaults
+  const resetAllTimerStates = () => {
+    setIsRunning(false);
+    setIsPaused(false);
+    setIsFlashing(false);
+    setTimerType('focus');
+    setTimeLeft(focusMinutes * 60); // Reset to default focus time
+    setNotes("");
+    setSeshTitle("Notes");
+    setSessionStartTime(null);
+    setCurrentPhaseStartTime(null);
+    setAccumulatedFocusSeconds(0);
+    setAccumulatedBreakSeconds(0);
+    setActiveJoinedSessionCoworkerCount(0);
+    setSchedule([]);
+    setCurrentScheduleIndex(0);
+    setIsSchedulingMode(false);
+    setIsScheduleActive(false);
+    setScheduleTitle("");
+    setCommenceTime("09:00");
+    setCommenceDay(0);
+  };
+
+  // Function to save session to Supabase
+  const saveSessionToHistory = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast.error("Failed to save session", {
+        description: "You must be logged in to save sessions.",
+      });
+      return;
+    }
+
+    if (sessionStartTime === null) {
+      toast.error("Failed to save session", {
+        description: "Session start time was not recorded.",
+      });
+      return;
+    }
+
+    // Ensure current phase time is added before saving
+    let finalAccumulatedFocusSeconds = accumulatedFocusSeconds;
+    let finalAccumulatedBreakSeconds = accumulatedBreakSeconds;
+
+    if (isRunning && currentPhaseStartTime !== null) {
+      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+      if (timerType === 'focus') {
+        finalAccumulatedFocusSeconds += elapsed;
+      } else {
+        finalAccumulatedBreakSeconds += elapsed;
+      }
+    }
+
+    const totalSessionSeconds = finalAccumulatedFocusSeconds + finalAccumulatedBreakSeconds;
+
+    if (totalSessionSeconds <= 0) {
+      toast.info("Session too short", {
+        description: "Session was too short to be saved.",
+      });
+      return;
+    }
+
+    const sessionData: TablesInsert<'sessions'> = {
+      user_id: user.id,
+      title: seshTitle,
+      notes: notes,
+      focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
+      break_duration_seconds: Math.round(finalAccumulatedBreakSeconds),
+      total_session_seconds: Math.round(totalSessionSeconds),
+      coworker_count: activeJoinedSessionCoworkerCount,
+      session_start_time: new Date(sessionStartTime).toISOString(),
+      session_end_time: new Date().toISOString(),
+    };
+
+    const { error } = await supabase.from('sessions').insert(sessionData);
+
+    if (error) {
+      console.error("Error saving session:", error);
+      toast.error("Failed to save session", {
+        description: error.message,
+      });
+    } else {
+      toast.success("Session saved!", {
+        description: `Your session "${seshTitle}" has been added to your history.`,
+      });
+    }
+    resetAllTimerStates(); // Reset all states after saving
+  };
+
   // Schedule functions
   const startSchedule = () => {
     if (schedule.length > 0) {
@@ -173,60 +291,64 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setIsRunning(true);
       setIsPaused(false);
       setIsSchedulingMode(false); // Exit scheduling mode once started
+      setSessionStartTime(Date.now()); // Start overall session timer
+      setCurrentPhaseStartTime(Date.now()); // Start current phase timer
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
     }
   };
 
   const resetSchedule = () => {
-    setIsScheduleActive(false);
-    setCurrentScheduleIndex(0);
-    setSchedule([]);
-    setScheduleTitle("");
-    setIsRunning(false);
-    setIsPaused(false);
-    setIsFlashing(false);
-    setTimerType('focus');
-    setTimeLeft(focusMinutes * 60); // Reset to default focus time
+    resetAllTimerStates(); // Use the comprehensive reset function
   };
 
   // Core Timer Countdown Logic
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
 
-    if (isRunning && !isPaused && timeLeft > 0) { // Timer counts down if running and not paused
+    if (isRunning && !isPaused && timeLeft > 0) {
+      if (currentPhaseStartTime === null) { // If resuming from pause or starting new phase
+        setCurrentPhaseStartTime(Date.now());
+      }
       interval = setInterval(() => {
         setTimeLeft(prevTime => prevTime - 1);
       }, 1000);
-    } else if (timeLeft === 0 && isRunning) { // Timer reached 0 and was running
+    } else if (timeLeft === 0 && isRunning) {
+      // Phase ended, accumulate time
+      if (currentPhaseStartTime !== null) {
+        const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+        if (timerType === 'focus') {
+          setAccumulatedFocusSeconds(prev => prev + elapsed);
+        } else {
+          setAccumulatedBreakSeconds(prev => prev + elapsed);
+        }
+        setCurrentPhaseStartTime(null); // Reset phase start time
+      }
+
       setIsRunning(false); // Stop the timer
 
-      // Handle transitions based on whether a schedule is active or manualTransition is off
       if (isScheduleActive) {
         if (currentScheduleIndex < schedule.length - 1) {
-          // Schedule: Move to next item
           const nextIndex = currentScheduleIndex + 1;
           const nextItem = schedule[nextIndex];
           setCurrentScheduleIndex(nextIndex);
           setTimerType(nextItem.type);
-          setTimeLeft(nextItem.durationMinutes * 60); // Automatically set time for next phase
-          setIsRunning(true); // Automatically start next phase
-          setIsFlashing(false); // Stop flashing
-          // Optionally play a sound or show a toast for transition
+          setTimeLeft(nextItem.durationMinutes * 60);
+          setIsRunning(true);
+          setIsFlashing(false);
+          setCurrentPhaseStartTime(Date.now()); // Start new phase timer
         } else {
-          // Schedule completed
-          resetSchedule();
-          // Optionally play a completion sound or show a final toast
+          saveSessionToHistory(); // Schedule completed, save session
         }
       } else if (!manualTransition) {
-        // Non-scheduled timer with automatic transition
         const nextType = timerType === 'focus' ? 'break' : 'focus';
         setTimerType(nextType);
-        setTimeLeft(nextType === 'focus' ? focusMinutes * 60 : breakMinutes * 60); // Automatically set time for next phase
-        setIsRunning(true); // Automatically start the next phase
-        setIsFlashing(false); // No flashing for automatic transition
+        setTimeLeft(nextType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
+        setIsRunning(true);
+        setIsFlashing(false);
+        setCurrentPhaseStartTime(Date.now()); // Start new phase timer
       } else {
-        // Non-scheduled timer with manual transition (default behavior)
-        setIsFlashing(true); // Start flashing to indicate completion
-        // timeLeft should remain 0 here, the other useEffect will be prevented from resetting it.
+        setIsFlashing(true);
       }
     }
 
@@ -236,11 +358,11 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   }, [
     isRunning, isPaused, timeLeft, isScheduleActive, currentScheduleIndex, schedule,
     setTimeLeft, setTimerType, setCurrentScheduleIndex, setIsRunning, setIsFlashing,
-    focusMinutes, breakMinutes, manualTransition // Added manualTransition to dependencies
+    focusMinutes, breakMinutes, manualTransition, currentPhaseStartTime,
+    accumulatedFocusSeconds, accumulatedBreakSeconds, saveSessionToHistory // Added saveSessionToHistory
   ]);
 
   // Effect to update timeLeft when focusMinutes or breakMinutes change (if timer is not active)
-  // MODIFIED: Added !isFlashing to prevent resetting timeLeft when the timer has ended and is waiting for manual transition.
   useEffect(() => {
     if (!isRunning && !isPaused && !isScheduleActive && !isFlashing) {
       setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
@@ -290,6 +412,12 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       setTimerType(loadedTimerType);
       setIsFlashing(settings.isFlashing ?? false);
       setNotes(settings.notes ?? "");
+      setSeshTitle(settings.seshTitle ?? "Notes"); // Load seshTitle
+      setSessionStartTime(settings.sessionStartTime ?? null);
+      setCurrentPhaseStartTime(settings.currentPhaseStartTime ?? null);
+      setAccumulatedFocusSeconds(settings.accumulatedFocusSeconds ?? 0);
+      setAccumulatedBreakSeconds(settings.accumulatedBreakSeconds ?? 0);
+      setActiveJoinedSessionCoworkerCount(settings.activeJoinedSessionCoworkerCount ?? 0);
       setSchedule(settings.schedule ?? []);
       setCurrentScheduleIndex(settings.currentScheduleIndex ?? 0);
       setIsSchedulingMode(settings.isSchedulingMode ?? false);
@@ -340,6 +468,12 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       timerType,
       isFlashing,
       notes,
+      seshTitle, // Save seshTitle
+      sessionStartTime,
+      currentPhaseStartTime,
+      accumulatedFocusSeconds,
+      accumulatedBreakSeconds,
+      activeJoinedSessionCoworkerCount,
       schedule,
       currentScheduleIndex,
       isSchedulingMode,
@@ -361,7 +495,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     breakNotificationsVibrate, verificationStandard, profileVisibility, locationSharing,
     isGlobalPrivate, // Renamed
     // Timer/Schedule specific dependencies
-    isRunning, isPaused, timeLeft, timerType, isFlashing, notes,
+    isRunning, isPaused, timeLeft, timerType, isFlashing, notes, seshTitle, // Added seshTitle
+    sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount,
     schedule, currentScheduleIndex, isSchedulingMode, isScheduleActive,
     scheduleTitle, commenceTime, commenceDay,
     // New persistent states for History and Leaderboard time filters
@@ -402,6 +537,13 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     timerType, setTimerType,
     isFlashing, setIsFlashing,
     notes, setNotes,
+    seshTitle, setSeshTitle, // Added seshTitle
+    // Session tracking states
+    sessionStartTime, setSessionStartTime,
+    currentPhaseStartTime, setCurrentPhaseStartTime,
+    accumulatedFocusSeconds, setAccumulatedFocusSeconds,
+    accumulatedBreakSeconds, setAccumulatedBreakSeconds,
+    activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount,
     // Schedule-related states
     schedule, setSchedule,
     currentScheduleIndex, setCurrentScheduleIndex,
@@ -415,6 +557,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     historyTimePeriod, setHistoryTimePeriod,
     leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod,
     leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod,
+    // Function to save session
+    saveSessionToHistory,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

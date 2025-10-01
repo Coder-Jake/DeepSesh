@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
 
 // Define types for Ask items
 interface ExtendSuggestion {
@@ -147,6 +147,8 @@ const Index = () => {
     setIsFlashing,
     notes,
     setNotes,
+    seshTitle, // Get seshTitle from context
+    setSeshTitle, // Get setSeshTitle from context
     formatTime,
     showSessionsWhileActive,
     timerIncrement,
@@ -162,6 +164,19 @@ const Index = () => {
     commenceTime,
     commenceDay,
     isGlobalPrivate,
+
+    // New session tracking states and functions
+    sessionStartTime,
+    setSessionStartTime,
+    currentPhaseStartTime,
+    setCurrentPhaseStartTime,
+    accumulatedFocusSeconds,
+    setAccumulatedFocusSeconds,
+    accumulatedBreakSeconds,
+    setAccumulatedBreakSeconds,
+    activeJoinedSessionCoworkerCount,
+    setActiveJoinedSessionCoworkerCount,
+    saveSessionToHistory,
   } = useTimer();
   
   const { profile, loading: profileLoading } = useProfile();
@@ -177,7 +192,6 @@ const Index = () => {
   const currentUserName = profile?.first_name || "You";
 
   // State for editable Sesh Title
-  const [seshTitle, setSeshTitle] = useState("Notes");
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -273,28 +287,39 @@ const Index = () => {
       setIsRunning(true);
       setIsPaused(false);
       setIsFlashing(false);
+      setSessionStartTime(Date.now()); // Record overall session start time
+      setCurrentPhaseStartTime(Date.now()); // Record current phase start time
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+    } else if (isPaused) {
+      setIsRunning(true);
+      setIsPaused(false);
+      setCurrentPhaseStartTime(Date.now()); // Resume current phase timer
     }
   };
   
   const pauseTimer = () => {
+    if (currentPhaseStartTime !== null) {
+      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+      if (timerType === 'focus') {
+        setAccumulatedFocusSeconds(prev => prev + elapsed);
+      } else {
+        setAccumulatedBreakSeconds(prev => prev + elapsed);
+      }
+      setCurrentPhaseStartTime(null); // Reset phase start time
+    }
     setIsPaused(true);
     setIsRunning(false);
   };
   
-  const stopTimer = () => {
+  const stopTimer = async () => {
     if (longPressRef.current) {
-      setIsRunning(false);
-      setIsPaused(false);
-      setIsFlashing(false);
+      await saveSessionToHistory(); // Save session data
       setActiveJoinedSession(null);
-      if (isScheduleActive) resetSchedule();
     } else {
       if (confirm('Are you sure you want to stop the timer?')) {
-        setIsRunning(false);
-        setIsPaused(false);
-        setIsFlashing(false);
+        await saveSessionToHistory(); // Save session data
         setActiveJoinedSession(null);
-        if (isScheduleActive) resetSchedule();
       }
     }
   };
@@ -308,6 +333,12 @@ const Index = () => {
       setTimeLeft(initialTime);
       setActiveJoinedSession(null);
       if (isScheduleActive) resetSchedule();
+      setSessionStartTime(null);
+      setCurrentPhaseStartTime(null);
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+      setNotes("");
+      setSeshTitle("Notes");
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
         setIsRunning(false);
@@ -317,24 +348,42 @@ const Index = () => {
         setTimeLeft(initialTime);
         setActiveJoinedSession(null);
         if (isScheduleActive) resetSchedule();
+        setSessionStartTime(null);
+        setCurrentPhaseStartTime(null);
+        setAccumulatedFocusSeconds(0);
+        setAccumulatedBreakSeconds(0);
+        setNotes("");
+        setSeshTitle("Notes");
       }
     }
   };
 
   const switchToBreak = () => {
+    // Accumulate time for the phase just ended
+    if (currentPhaseStartTime !== null) {
+      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+      setAccumulatedFocusSeconds(prev => prev + elapsed);
+    }
     setTimerType('break');
     setTimeLeft(breakMinutes * 60);
     setIsFlashing(false);
     setIsRunning(true);
     playStartSound();
+    setCurrentPhaseStartTime(Date.now()); // Start new phase timer
   };
 
   const switchToFocus = () => {
+    // Accumulate time for the phase just ended
+    if (currentPhaseStartTime !== null) {
+      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+      setAccumulatedBreakSeconds(prev => prev + elapsed);
+    }
     setTimerType('focus');
     setTimeLeft(focusMinutes * 60);
     setIsFlashing(false);
     setIsRunning(true);
     playStartSound();
+    setCurrentPhaseStartTime(Date.now()); // Start new phase timer
   };
 
   const handleCircularProgressChange = (progress: number) => {
@@ -367,11 +416,16 @@ const Index = () => {
 
   const handleJoinSession = (session: DemoSession) => {
     setActiveJoinedSession(session);
+    setActiveJoinedSessionCoworkerCount(session.participants.length); // Set coworker count
     setTimerType(session.currentPhase);
     setTimeLeft(session.currentPhaseDurationMinutes * 60);
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
+    setSessionStartTime(Date.now()); // Record overall session start time
+    setCurrentPhaseStartTime(Date.now()); // Record current phase start time
+    setAccumulatedFocusSeconds(0);
+    setAccumulatedBreakSeconds(0);
     toast({
       title: "Session Joined!",
       description: `You've joined "${session.title}".`,
@@ -597,7 +651,7 @@ const Index = () => {
                     <Button 
                       size="lg" 
                       className="px-8" 
-                      onClick={isRunning ? pauseTimer : (isPaused ? () => { setIsRunning(true); setIsPaused(false); } : startTimer)}
+                      onClick={isRunning ? pauseTimer : startTimer}
                     >
                       {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>

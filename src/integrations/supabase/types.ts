@@ -55,6 +55,56 @@ export type Database = {
           },
         ]
       }
+      sessions: {
+        Row: {
+          break_duration_seconds: number
+          coworker_count: number
+          created_at: string | null
+          focus_duration_seconds: number
+          id: string
+          notes: string | null
+          session_end_time: string
+          session_start_time: string
+          title: string
+          total_session_seconds: number
+          user_id: string
+        }
+        Insert: {
+          break_duration_seconds?: number
+          coworker_count?: number
+          created_at?: string | null
+          focus_duration_seconds?: number
+          id?: string
+          notes?: string | null
+          session_end_time: string
+          session_start_time: string
+          title: string
+          total_session_seconds?: number
+          user_id: string
+        }
+        Update: {
+          break_duration_seconds?: number
+          coworker_count?: number
+          created_at?: string | null
+          focus_duration_seconds?: number
+          id?: string
+          notes?: string | null
+          session_end_time?: string
+          session_start_time?: string
+          title?: string
+          total_session_seconds?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
