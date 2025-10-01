@@ -353,23 +353,6 @@ const ScheduleForm: React.FC = () => {
               </div>
             )}
 
-            {/* Recurrence Frequency Selection (conditionally rendered) */}
-            {isRecurring && (
-              <div className="space-y-2">
-                <Label htmlFor="recurrence-frequency">Recurrence Frequency</Label>
-                <Select value={recurrenceFrequency} onValueChange={(value: 'daily' | 'weekly' | 'monthly') => setRecurrenceFrequency(value)}>
-                  <SelectTrigger id="recurrence-frequency">
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg">
               <Play className="mr-2 h-5 w-5" />Commence
             </Button>
