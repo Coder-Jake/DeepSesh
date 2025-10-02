@@ -372,7 +372,7 @@ const ScheduleForm: React.FC = () => {
 
           <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending}>
             <Play className="mr-2 h-5 w-5" />
-            {isSchedulePending ? "Pending..." : "Commence"}
+            {isSchedulePending ? "Pending..." : "Begin"}
           </Button>
         </TabsContent>
         <TabsContent value="saved" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
