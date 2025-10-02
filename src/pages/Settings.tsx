@@ -743,14 +743,11 @@ const Settings = () => {
                         checked={profileVisibility === 'public'}
                         onCheckedChange={() => setProfileVisibility('public')}
                       />
-                      <Label htmlFor="profile-public" className="text-sm font-normal">
-                        Public
-                      </Label>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="text-sm text-muted-foreground cursor-help">
-                            - Anyone can see your profile
-                          </span>
+                          <Label htmlFor="profile-public" className="text-sm font-normal cursor-help">
+                            Public
+                          </Label>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Anyone can see your profile</p>
@@ -765,16 +762,25 @@ const Settings = () => {
                         onCheckedChange={() => setProfileVisibility('friends')}
                       />
                       <Label htmlFor="profile-friends" className="text-sm font-normal">
-                        Friends
+                        Friends Only
                       </Label>
+                      {/* Tooltip removed as requested */}
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="profile-organisation"
+                        checked={profileVisibility === 'organisation'}
+                        onCheckedChange={() => setProfileVisibility('organisation')}
+                      />
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="text-sm text-muted-foreground cursor-help">
-                            - Only friends can see details
-                          </span>
+                          <Label htmlFor="profile-organisation" className="text-sm font-normal cursor-help">
+                            Organisation
+                          </Label>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Only friends can see details</p>
+                          <p>Only members of your organisation can see details</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -785,14 +791,11 @@ const Settings = () => {
                         checked={profileVisibility === 'private'}
                         onCheckedChange={() => setProfileVisibility('private')}
                       />
-                      <Label htmlFor="profile-private" className="text-sm font-normal">
-                        Private
-                      </Label>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="text-sm text-muted-foreground cursor-help">
-                            - Minimal information shared
-                          </span>
+                          <Label htmlFor="profile-private" className="text-sm font-normal cursor-help">
+                            Private
+                          </Label>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Minimal information shared</p>
@@ -816,7 +819,7 @@ const Settings = () => {
                   <Label>Your Verification</Label>
                   <Select 
                     value={profileVisibility} // This seems to be a copy-paste error, should be a different state for 'Your Verification'
-                    onValueChange={(value: string) => setProfileVisibility(value as 'public' | 'friends' | 'private')} // Assuming it's still profileVisibility for now
+                    onValueChange={(value: string) => setProfileVisibility(value as 'public' | 'friends' | 'private' | 'organisation')} // Assuming it's still profileVisibility for now
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select verification status" />
