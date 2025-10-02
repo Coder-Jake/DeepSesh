@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input"; // Import Input component
+import { Input } from "@/components/ui/input";
 import { ScheduledTimer } from "@/types/timer";
 import { cn } from "@/lib/utils";
 import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
@@ -24,7 +24,7 @@ const Timeline: React.FC<TimelineProps> = ({
   isSchedulePending,
   onCountdownEnd,
 }) => {
-  const { formatTime, scheduleTitle, setScheduleTitle } = useTimer(); // Get scheduleTitle and setScheduleTitle from context
+  const { formatTime, scheduleTitle, setScheduleTitle } = useTimer();
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -82,7 +82,6 @@ const Timeline: React.FC<TimelineProps> = ({
             <CardTitle className="text-xl">Schedule Pending: {scheduleTitle}</CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <p className="text-lg text-muted-foreground">Commencing at:</p>
             <p className="text-3xl font-bold text-foreground">
               {commenceTime} on {targetDayName}, {formattedTargetDate}
             </p>
