@@ -15,9 +15,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 
 const Profile = () => {
   const { profile, loading, updateProfile, localFirstName, setLocalFirstName } = useProfile(); // Use profile context and localFirstName
+  const { user } = useAuth(); // Get user from AuthContext
+  const navigate = useNavigate(); // Initialize useNavigate
   const { toast } = useToast();
 
   const [bio, setBio] = useState("");
@@ -108,7 +113,7 @@ const Profile = () => {
       e.currentTarget.blur();
       const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
       setLocalFirstName(nameToSave); // Ensure local state is updated
-      if (profile) { // Only update Supabase if logged in
+      if (user) { // Only update Supabase if logged in
         await updateProfile({ first_name: nameToSave });
       }
       setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
@@ -120,7 +125,7 @@ const Profile = () => {
     setIsEditingFirstName(false);
     const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
     setLocalFirstName(nameToSave); // Ensure local state is updated
-    if (profile) { // Only update Supabase if logged in
+    if (user) { // Only update Supabase if logged in
       await updateProfile({ first_name: nameToSave });
     }
     setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
@@ -128,7 +133,7 @@ const Profile = () => {
   };
 
   const handleSaveOrganization = async () => {
-    if (profile) {
+    if (user) {
       await updateProfile({ organization: organization.trim() === "" ? null : organization.trim() });
       setIsOrganizationDialogOpen(false);
       // Update originalValues for change detection
@@ -147,7 +152,7 @@ const Profile = () => {
     const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
     setLocalFirstName(nameToSave); // Ensure local state is updated
 
-    if (profile) { // Only update Supabase if logged in
+    if (user) { // Only update Supabase if logged in
       await updateProfile({
         first_name: nameToSave,
         bio,
@@ -168,6 +173,23 @@ const Profile = () => {
     setHasChanges(false);
   };
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Logout Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      navigate('/'); // Redirect to home or login page after logout
+    }
+  };
+
   if (loading) {
     return (
       <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6 text-center text-muted-foreground">
@@ -178,8 +200,13 @@ const Profile = () => {
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
-      <div className="mb-6">
+      <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+        {!user && (
+          <Button variant="outline" onClick={() => navigate('/login')}>
+            Login
+          </Button>
+        )}
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Bio Section */}
@@ -328,6 +355,14 @@ const Profile = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {user && (
+        <div className="fixed bottom-4 left-4 z-50">
+          <Button variant="outline" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
+      )}
     </main>
   );
 };

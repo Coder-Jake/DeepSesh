@@ -14,6 +14,7 @@ import Settings from "./pages/Settings";
 import ChipIn from "./pages/ChipIn";
 import Leaderboard from "./pages/Leaderboard";
 import Credits from "./pages/Credits"; // Import the new Credits page
+import Login from "./pages/Login"; // Import the new Login page
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast"; // Import useToast
@@ -86,6 +87,7 @@ const AppContent = () => {
         <Route path="/chip-in" element={<ChipIn />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/credits" element={<Credits />} /> {/* New Credits route */}
+        <Route path="/login" element={<Login />} /> {/* New Login route */}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

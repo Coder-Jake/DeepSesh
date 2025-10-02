@@ -12,6 +12,10 @@ import { Input } from "@/components/ui/input"; // Import Input
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { NotificationSettings } from "@/types/timer"; // Import NotificationSettings type
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const Settings = () => {
   const { 
@@ -68,6 +72,10 @@ const Settings = () => {
     openSettingsAccordions, // Get from context
     setOpenSettingsAccordions, // Get from context
   } = useTimer();
+
+  const { user } = useAuth(); // Get user from AuthContext
+  const navigate = useNavigate(); // Initialize useNavigate
+  const { toast } = useToast(); // Use shadcn toast for UI feedback
 
   // Local state for temporary UI interactions or derived values
   // Removed selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration
@@ -381,11 +389,32 @@ const Settings = () => {
     setHasChanges(false);
   };
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Logout Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      navigate('/'); // Redirect to home or login page after logout
+    }
+  };
+
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
-      <div className="mb-6">
+      <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-2">Optimise your experience</p>
+        {!user && (
+          <Button variant="outline" onClick={() => navigate('/login')}>
+            Login
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -669,11 +698,11 @@ const Settings = () => {
                     onChange={(e) => setBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setBreakMinutes(currentTimerIncrement); // Default to timerIncrement
+                        setBreakMinutes(currentTimerIncrement);
                       }
                     }}
-                    min={currentTimerIncrement} // Use currentTimerIncrement
-                    step={currentTimerIncrement} // Use currentTimerIncrement
+                    min={currentTimerIncrement}
+                    step={currentTimerIncrement}
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
@@ -864,6 +893,14 @@ const Settings = () => {
           Save Settings
         </Button>
       </div>
+
+      {user && (
+        <div className="fixed bottom-4 left-4 z-50">
+          <Button variant="outline" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
+      )}
     </main>
   );
 };
