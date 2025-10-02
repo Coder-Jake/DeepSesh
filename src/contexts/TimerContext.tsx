@@ -361,27 +361,27 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     if (existingTemplate) {
       toast({
-        title: "Schedule Already Exists",
-        description: `"${scheduleTitle}" already exists.
-        Long-press 'Override' to replace it.`,
-        variant: "destructive", // Use destructive variant for warning
-        action: (
-          <ToastAction
-            altText="Override existing schedule"
-            onLongPress={() => overrideScheduleTemplate(existingTemplate.id)}
-            longPressDelay={700} // Slightly longer delay for override
-            onClick={() => {
-              toast({
-                title: "Long-press to Override",
-                description: "Hold down the 'Override' button to replace the existing schedule.",
-                variant: "default",
-              });
-            }}
-          >
-            Override
-          </ToastAction>
-        ),
-      });
+  title: `Schedule "${scheduleTitle}" already exists`,
+  description: "Long-press 'Override' to replace it.",
+  variant: "destructive",
+  action: (
+    <ToastAction
+      altText="Override existing schedule"
+      onLongPress={() => overrideScheduleTemplate(existingTemplate.id)}
+      longPressDelay={700}
+      onClick={() => {
+        toast({
+          title: "Long-press to Override",
+          description: "Hold down the 'Override' button to replace the existing schedule.",
+          variant: "default",
+        });
+      }}
+    >
+      Override
+    </ToastAction>
+  ),
+});
+
       return;
     }
 
