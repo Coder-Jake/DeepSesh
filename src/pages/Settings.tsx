@@ -765,7 +765,7 @@ const Settings = () => {
                         onCheckedChange={() => setProfileVisibility('friends')}
                       />
                       <Label htmlFor="profile-friends" className="text-sm font-normal">
-                        Friends Only
+                        Friends
                       </Label>
                       <Tooltip>
                         <TooltipTrigger asChild>
