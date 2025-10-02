@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Play, X } from "lucide-react";
+import { Plus, Trash2, Play, X, Clock } from "lucide-react"; // ADD Clock icon
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
@@ -14,12 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
 
 // Utility function to get the current time in HH:MM format
-const getCurrentTimeHHMM = () => {
-  const now = new Date();
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
-};
+// REMOVED from here, now in TimerContext.tsx
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -33,6 +28,8 @@ const ScheduleForm: React.FC = () => {
     setCommenceTime, 
     commenceDay, 
     setCommenceDay,
+    scheduleStartOption, // NEW
+    setScheduleStartOption, // NEW
     timerIncrement,
     isRecurring,
     setIsRecurring,
@@ -42,8 +39,7 @@ const ScheduleForm: React.FC = () => {
   } = useTimer();
   const { toast } = useToast();
 
-  // State to track if the user has manually adjusted commence time/day
-  const [isCommenceTimeAdjusted, setIsCommenceTimeAdjusted] = useState(false);
+  // REMOVED: const [isCommenceTimeAdjusted, setIsCommenceTimeAdjusted] = useState(false);
 
   // Initialize schedule if it's empty (e.g., first time opening schedule form)
   useEffect(() => {
@@ -76,23 +72,8 @@ const ScheduleForm: React.FC = () => {
 
   const currentDayIndex = new Date().getDay(); // Get current day index
 
-  // Effect to keep commenceTime and commenceDay live until adjusted by the user
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    if (!isCommenceTimeAdjusted) {
-      const updateLiveTime = () => {
-        const now = new Date();
-        setCommenceTime(getCurrentTimeHHMM());
-        setCommenceDay(now.getDay());
-      };
-      updateLiveTime(); // Set immediately on mount
-      intervalId = setInterval(updateLiveTime, 1000); // Update every second
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [isCommenceTimeAdjusted, setCommenceTime, setCommenceDay]);
+  // REMOVED: Effect to keep commenceTime and commenceDay live until adjusted by the user
+  // This logic is now handled in TimerContext.tsx based on scheduleStartOption
 
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
@@ -328,41 +309,68 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="commence-time">Commence Time</Label>
-              <Input
-                id="commence-time"
-                type="time"
-                value={commenceTime}
-                onChange={(e) => {
-                  setCommenceTime(e.target.value);
-                  setIsCommenceTimeAdjusted(true); // User adjusted, stop live updates
-                }}
-                onFocus={(e) => e.target.select()}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="commence-day">Commence Day</Label>
-              <Select value={commenceDay.toString()} onValueChange={(value) => {
-                setCommenceDay(parseInt(value));
-                setIsCommenceTimeAdjusted(true); // User adjusted, stop live updates
-              }}>
-                <SelectTrigger id="commence-day">
-                  <SelectValue>
-                    {commenceDay === currentDayIndex ? "Today" : daysOfWeek[commenceDay]}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {daysOfWeek.map((day, index) => (
-                    <SelectItem key={day} value={index.toString()}>
-                      {index === currentDayIndex ? "Today" : day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex gap-2 mt-4"> {/* NEW CONTAINER FOR BUTTONS */}
+            <Button
+              variant={scheduleStartOption === 'now' ? 'secondary' : 'outline'}
+              size="sm"
+              className="text-xs px-3 py-1 h-auto text-muted-foreground"
+              onClick={() => setScheduleStartOption('now')}
+            >
+              Now
+            </Button>
+            <Button
+              variant={scheduleStartOption === 'manual' ? 'secondary' : 'outline'}
+              size="sm"
+              className="text-xs px-3 py-1 h-auto text-muted-foreground"
+              onClick={() => setScheduleStartOption('manual')}
+            >
+              Manual
+            </Button>
+            <Button
+              variant={scheduleStartOption === 'custom_time' ? 'secondary' : 'outline'}
+              size="sm"
+              className="text-xs px-3 py-1 h-auto text-muted-foreground"
+              onClick={() => setScheduleStartOption('custom_time')}
+            >
+              <Clock className="h-4 w-4" />
+            </Button>
           </div>
+
+          {scheduleStartOption === 'custom_time' && ( // CONDITIONAL RENDERING
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="commence-time">Commence Time</Label>
+                <Input
+                  id="commence-time"
+                  type="time"
+                  value={commenceTime}
+                  onChange={(e) => {
+                    setCommenceTime(e.target.value);
+                  }}
+                  onFocus={(e) => e.target.select()}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="commence-day">Commence Day</Label>
+                <Select value={commenceDay.toString()} onValueChange={(value) => {
+                  setCommenceDay(parseInt(value));
+                }}>
+                  <SelectTrigger id="commence-day">
+                    <SelectValue>
+                      {commenceDay === currentDayIndex ? "Today" : daysOfWeek[commenceDay]}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {daysOfWeek.map((day, index) => (
+                      <SelectItem key={day} value={index.toString()}>
+                        {index === currentDayIndex ? "Today" : day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
 
           <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending}>
             <Play className="mr-2 h-5 w-5" />

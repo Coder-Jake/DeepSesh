@@ -5,6 +5,14 @@ import { useToast } from '@/hooks/use-toast'; // Import useToast
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
+// Utility function to get the current time in HH:MM format
+const getCurrentTimeHHMM = () => {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { profile } = useProfile();
   const { toast } = useToast();
@@ -29,12 +37,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [scheduleTitle, setScheduleTitle] = useState("My Schedule");
   const [commenceTime, setCommenceTime] = useState("09:00"); // HH:MM format
   const [commenceDay, setCommenceDay] = useState(0); // 0 for Sunday, 6 for Saturday
+  const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now'); // NEW STATE
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [isSchedulePending, setIsSchedulePending] = useState(false); // New state for pending schedule
 
   // Session management states
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false);
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [currentPhaseStartTime, setCurrentPhaseStartTime] = useState<number | null>(null);
   const [accumulatedFocusSeconds, setAccumulatedFocusSeconds] = useState(0);
@@ -204,6 +213,24 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [currentScheduleIndex, schedule, focusMinutes, breakMinutes, saveSessionToHistory, setSeshTitle, setTimerType, setTimeLeft, setIsRunning, setIsPaused, setIsFlashing, setCurrentPhaseStartTime]);
 
+  // Effect to keep commenceTime and commenceDay live if 'now' is selected
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    if (scheduleStartOption === 'now') {
+      const updateLiveTime = () => {
+        const now = new Date();
+        setCommenceTime(getCurrentTimeHHMM());
+        setCommenceDay(now.getDay());
+      };
+      updateLiveTime(); // Set immediately on mount
+      intervalId = setInterval(updateLiveTime, 1000); // Update every second
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [scheduleStartOption, setCommenceTime, setCommenceDay]);
+
   const startSchedule = useCallback(() => {
     if (schedule.length === 0) {
       toast({
@@ -214,21 +241,32 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    // Calculate target start time
     const now = new Date();
-    const [hours, minutes] = commenceTime.split(':').map(Number);
-    
-    // Create a target date for the *current* week/day
-    const targetDateCandidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
-    const currentDay = now.getDay(); // 0 for Sunday, 6 for Saturday
-    const daysOffset = (commenceDay - currentDay + 7) % 7;
-    targetDateCandidate.setDate(now.getDate() + daysOffset);
-
-    const timeUntilStart = targetDateCandidate.getTime() - now.getTime();
+    let finalTargetDate: Date;
     const GRACE_PERIOD_MS = 60 * 1000; // 1 minute grace period
 
-    // Determine if it should start immediately or go into pending countdown
-    if (timeUntilStart <= GRACE_PERIOD_MS) { // If within 1 minute (future, now, or slightly in past)
+    if (scheduleStartOption === 'now') {
+      finalTargetDate = now; // Start immediately
+    } else { // 'manual' or 'custom_time'
+      const [hours, minutes] = commenceTime.split(':').map(Number);
+      
+      // Create a target date for the *current* week/day
+      const targetDateCandidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+      const currentDay = now.getDay(); // 0 for Sunday, 6 for Saturday
+      const daysOffset = (commenceDay - currentDay + 7) % 7;
+      targetDateCandidate.setDate(now.getDate() + daysOffset);
+
+      const timeUntilStart = targetDateCandidate.getTime() - now.getTime();
+
+      finalTargetDate = new Date(targetDateCandidate);
+      if (timeUntilStart < -GRACE_PERIOD_MS) { // If significantly in the past, push to next week
+        finalTargetDate.setDate(finalTargetDate.getDate() + 7);
+      }
+    }
+
+    const timeUntilFinalStart = finalTargetDate.getTime() - now.getTime();
+
+    if (timeUntilFinalStart <= GRACE_PERIOD_MS) { // If within 1 minute (future, now, or slightly in past)
       setIsSchedulePending(false); // Ensure pending is false
       setIsScheduleActive(true);
       setIsSchedulingMode(false);
@@ -242,14 +280,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         description: `"${scheduleTitle}" has commenced.`,
       });
     } else {
-      // If the calculated targetDateCandidate is in the past (and outside grace period),
-      // it means the user selected a day/time that has already passed for the current week.
-      // In this case, we should push it to the next week for the countdown.
-      let finalTargetDate = new Date(targetDateCandidate);
-      if (timeUntilStart < -GRACE_PERIOD_MS) { // If significantly in the past
-        finalTargetDate.setDate(finalTargetDate.getDate() + 7);
-      }
-
       setIsSchedulePending(true);
       setIsSchedulingMode(false);
       setIsScheduleActive(true); // Set active so Timeline can show countdown
@@ -262,7 +292,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         description: `"${scheduleTitle}" will commence at ${commenceTime} on ${new Date(finalTargetDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}.`,
       });
     }
-  }, [schedule, commenceTime, commenceDay, scheduleTitle, startNextScheduledTimer, toast]);
+  }, [schedule, commenceTime, commenceDay, scheduleTitle, scheduleStartOption, startNextScheduledTimer, toast]);
 
   const resetSchedule = useCallback(() => {
     setIsScheduleActive(false);
@@ -337,6 +367,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     scheduleTitle, setScheduleTitle,
     commenceTime, setCommenceTime,
     commenceDay, setCommenceDay,
+    scheduleStartOption, setScheduleStartOption, // NEW
     isRecurring, setIsRecurring,
     recurrenceFrequency, setRecurrenceFrequency,
     isScheduleActive,
