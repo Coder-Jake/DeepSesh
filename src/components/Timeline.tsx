@@ -24,9 +24,17 @@ const Timeline: React.FC<TimelineProps> = ({
   isSchedulePending,
   onCountdownEnd,
 }) => {
-  const { formatTime, scheduleTitle, setScheduleTitle, isScheduleActive } = useTimer();
+  const { formatTime, scheduleTitle, isScheduleActive } = useTimer(); // Removed setScheduleTitle
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Local state for the timeline's editable title
+  const [localTimelineTitle, setLocalTimelineTitle] = useState(scheduleTitle);
+
+  // Sync local title with global scheduleTitle when it changes (e.g., loaded from template)
+  useEffect(() => {
+    setLocalTimelineTitle(scheduleTitle);
+  }, [scheduleTitle]);
 
   const getCommenceTargetDate = useCallback(() => {
     const now = new Date();
@@ -100,10 +108,10 @@ const Timeline: React.FC<TimelineProps> = ({
         <h3 className="text-lg font-semibold text-left mb-2">Timeline</h3>
         <CardTitle className="text-xl flex justify-center">
           <Input
-            value={scheduleTitle}
-            onChange={(e) => setScheduleTitle(e.target.value)}
+            value={localTimelineTitle} // Use local state
+            onChange={(e) => setLocalTimelineTitle(e.target.value)} // Update local state
             className="text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center"
-            aria-label="Schedule Title"
+            aria-label="Timeline Title" // Changed aria-label for clarity
           />
         </CardTitle>
       </CardHeader>
