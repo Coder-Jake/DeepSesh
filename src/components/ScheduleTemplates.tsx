@@ -79,7 +79,7 @@ const ScheduleTemplates: React.FC<ScheduleTemplatesProps> = ({ setActiveTab }) =
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Changed to max 2 columns */}
           {savedSchedules.map(template => (
             <ScheduleTemplateCard key={template.id} template={template} setActiveTab={setActiveTab} />
           ))}
