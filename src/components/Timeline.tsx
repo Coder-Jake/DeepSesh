@@ -162,7 +162,7 @@ const Timeline: React.FC<TimelineProps> = ({
           <div className="mt-8 pt-6 border-t border-border space-y-2">
             <h3 className="text-lg font-semibold text-foreground text-left">Upcoming</h3>
           </div>
-            <div className="text-base font-bold text-foreground text-left"> {/* New container */}
+          <div className="text-base font-bold text-foreground text-left"> {/* New container */}
               {commenceTime} on {targetDayName}, {formattedTargetDate}
             </div>
             <p className="text-sm text-muted-foreground text-left">Commencing:</p>
