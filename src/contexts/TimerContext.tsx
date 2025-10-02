@@ -47,9 +47,73 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>(() => {
     if (typeof window !== 'undefined') {
       const storedSchedules = localStorage.getItem('savedSchedules');
-      return storedSchedules ? JSON.parse(storedSchedules) : [];
+      if (storedSchedules) {
+        return JSON.parse(storedSchedules);
+      }
     }
-    return [];
+
+    // Default templates
+    const defaultTemplates: ScheduledTimerTemplate[] = [
+      {
+        id: crypto.randomUUID(),
+        title: "Pomodoro Timer",
+        schedule: [
+          { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
+          { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+          { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
+          { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+          { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
+          { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+          { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
+          { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 15, isCustom: false },
+        ],
+        commenceTime: "09:00",
+        commenceDay: new Date().getDay(), // Current day
+        scheduleStartOption: 'manual',
+        isRecurring: false,
+        recurrenceFrequency: 'daily',
+      },
+      {
+        id: crypto.randomUUID(),
+        title: "School Day",
+        schedule: [
+          { id: crypto.randomUUID(), title: "Class 1", type: "focus", durationMinutes: 50, isCustom: true },
+          { id: crypto.randomUUID(), title: "Recess", type: "break", durationMinutes: 10, isCustom: true },
+          { id: crypto.randomUUID(), title: "Class 2", type: "focus", durationMinutes: 50, isCustom: true },
+          { id: crypto.randomUUID(), title: "Recess", type: "break", durationMinutes: 10, isCustom: true },
+          { id: crypto.randomUUID(), title: "Class 3", type: "focus", durationMinutes: 50, isCustom: true },
+          { id: crypto.randomUUID(), title: "Lunch", type: "break", durationMinutes: 60, isCustom: true },
+          { id: crypto.randomUUID(), title: "Class 4", type: "focus", durationMinutes: 50, isCustom: true },
+          { id: crypto.randomUUID(), title: "Recess", type: "break", durationMinutes: 10, isCustom: true },
+          { id: crypto.randomUUID(), title: "Class 5", type: "focus", durationMinutes: 50, isCustom: true },
+        ],
+        commenceTime: "08:30",
+        commenceDay: 1, // Monday
+        scheduleStartOption: 'custom_time',
+        isRecurring: true,
+        recurrenceFrequency: 'daily',
+      },
+      {
+        id: crypto.randomUUID(),
+        title: "Conference",
+        schedule: [
+          { id: crypto.randomUUID(), title: "Keynote", type: "focus", durationMinutes: 60, isCustom: true },
+          { id: crypto.randomUUID(), title: "Coffee Break", type: "break", durationMinutes: 15, isCustom: true },
+          { id: crypto.randomUUID(), title: "Session 1", type: "focus", durationMinutes: 45, isCustom: true },
+          { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: true },
+          { id: crypto.randomUUID(), title: "Session 2", type: "focus", durationMinutes: 45, isCustom: true },
+          { id: crypto.randomUUID(), title: "Lunch", type: "break", durationMinutes: 60, isCustom: true },
+          { id: crypto.randomUUID(), title: "Workshop", type: "focus", durationMinutes: 60, isCustom: true },
+          { id: crypto.randomUUID(), title: "Panel Discussion", type: "break", durationMinutes: 30, isCustom: true },
+        ],
+        commenceTime: "09:00",
+        commenceDay: new Date().getDay(), // Current day
+        scheduleStartOption: 'manual',
+        isRecurring: false,
+        recurrenceFrequency: 'daily',
+      },
+    ];
+    return defaultTemplates;
   });
 
   useEffect(() => {
