@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { ScheduledTimer, TimerContextType, ActiveAskItem, NotificationSettings } from '@/types/timer';
+import { ScheduledTimer, TimerContextType, ActiveAskItem, NotificationSettings, ScheduledTimerTemplate } from '@/types/timer';
 import { useProfile } from './ProfileContext';
 import { useToast } from '@/hooks/use-toast'; // Import useToast
 
@@ -37,10 +37,25 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [scheduleTitle, setScheduleTitle] = useState("My Schedule");
   const [commenceTime, setCommenceTime] = useState("09:00"); // HH:MM format
   const [commenceDay, setCommenceDay] = useState(0); // 0 for Sunday, 6 for Saturday
-  const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now'); // NEW STATE
+  const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [isSchedulePending, setIsSchedulePending] = useState(false); // New state for pending schedule
+
+  // Saved Schedules (Templates) states
+  const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>(() => {
+    if (typeof window !== 'undefined') {
+      const storedSchedules = localStorage.getItem('savedSchedules');
+      return storedSchedules ? JSON.parse(storedSchedules) : [];
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('savedSchedules', JSON.stringify(savedSchedules));
+    }
+  }, [savedSchedules]);
 
   // Session management states
   const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
@@ -301,6 +316,80 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     resetTimer(); // Also reset the main timer states
   }, [resetTimer]);
 
+  const saveCurrentScheduleAsTemplate = useCallback(() => {
+    if (!scheduleTitle.trim()) {
+      toast({
+        title: "Schedule Title Missing",
+        description: "Please enter a title for your schedule before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (schedule.length === 0) {
+      toast({
+        title: "No Timers in Schedule",
+        description: "Please add at least one timer to your schedule before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (savedSchedules.some(template => template.title === scheduleTitle.trim())) {
+      toast({
+        title: "Schedule Already Exists",
+        description: `A schedule with the title "${scheduleTitle}" already exists. Please choose a unique title.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newTemplate: ScheduledTimerTemplate = {
+      id: crypto.randomUUID(),
+      title: scheduleTitle.trim(),
+      schedule: schedule,
+      commenceTime: commenceTime,
+      commenceDay: commenceDay,
+      scheduleStartOption: scheduleStartOption,
+      isRecurring: isRecurring,
+      recurrenceFrequency: recurrenceFrequency,
+    };
+    setSavedSchedules(prev => [...prev, newTemplate]);
+    toast({
+      title: "Schedule Saved!",
+      description: `"${scheduleTitle}" has been saved as a template.`,
+    });
+  }, [scheduleTitle, schedule, savedSchedules, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency, toast]);
+
+  const loadScheduleTemplate = useCallback((templateId: string) => {
+    const templateToLoad = savedSchedules.find(template => template.id === templateId);
+    if (templateToLoad) {
+      setScheduleTitle(templateToLoad.title);
+      setSchedule(templateToLoad.schedule);
+      setCommenceTime(templateToLoad.commenceTime);
+      setCommenceDay(templateToLoad.commenceDay);
+      setScheduleStartOption(templateToLoad.scheduleStartOption);
+      setIsRecurring(templateToLoad.isRecurring);
+      setRecurrenceFrequency(templateToLoad.recurrenceFrequency);
+      toast({
+        title: "Schedule Loaded!",
+        description: `"${templateToLoad.title}" has been loaded.`,
+      });
+    } else {
+      toast({
+        title: "Error Loading Schedule",
+        description: "The selected schedule template could not be found.",
+        variant: "destructive",
+      });
+    }
+  }, [savedSchedules, setScheduleTitle, setSchedule, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, toast]);
+
+  const deleteScheduleTemplate = useCallback((templateId: string) => {
+    setSavedSchedules(prev => prev.filter(template => template.id !== templateId));
+    toast({
+      title: "Schedule Deleted",
+      description: "The schedule template has been removed.",
+    });
+  }, [toast]);
+
   const addAsk = useCallback((ask: ActiveAskItem) => {
     setActiveAsks(prev => [...prev, ask]);
   }, []);
@@ -351,7 +440,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     focusMinutes, setFocusMinutes,
     breakMinutes, setBreakMinutes,
     isRunning, setIsRunning,
-        isPaused, setIsPaused,
+    isPaused, setIsPaused,
     timeLeft, setTimeLeft,
     timerType, setTimerType,
     isFlashing, setIsFlashing,
@@ -367,12 +456,17 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     scheduleTitle, setScheduleTitle,
     commenceTime, setCommenceTime,
     commenceDay, setCommenceDay,
-    scheduleStartOption, setScheduleStartOption, // NEW
+    scheduleStartOption, setScheduleStartOption,
     isRecurring, setIsRecurring,
     recurrenceFrequency, setRecurrenceFrequency,
     isScheduleActive,
     currentScheduleIndex,
     isSchedulePending, setIsSchedulePending,
+
+    savedSchedules, // NEW
+    saveCurrentScheduleAsTemplate, // NEW
+    loadScheduleTemplate, // NEW
+    deleteScheduleTemplate, // NEW
 
     showSessionsWhileActive, setShowSessionsWhileActive,
     sessionStartTime, setSessionStartTime,

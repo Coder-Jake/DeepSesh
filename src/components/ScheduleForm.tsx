@@ -5,16 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Play, X, Clock } from "lucide-react"; // ADD Clock icon
+import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react"; // ADD Save icon
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
-
-// Utility function to get the current time in HH:MM format
-// REMOVED from here, now in TimerContext.tsx
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -28,18 +25,17 @@ const ScheduleForm: React.FC = () => {
     setCommenceTime, 
     commenceDay, 
     setCommenceDay,
-    scheduleStartOption, // NEW
-    setScheduleStartOption, // NEW
+    scheduleStartOption, 
+    setScheduleStartOption, 
     timerIncrement,
     isRecurring,
     setIsRecurring,
     recurrenceFrequency,
     setRecurrenceFrequency,
     isSchedulePending,
+    saveCurrentScheduleAsTemplate, // NEW
   } = useTimer();
   const { toast } = useToast();
-
-  // REMOVED: const [isCommenceTimeAdjusted, setIsCommenceTimeAdjusted] = useState(false);
 
   // Initialize schedule if it's empty (e.g., first time opening schedule form)
   useEffect(() => {
@@ -65,15 +61,13 @@ const ScheduleForm: React.FC = () => {
   const customTitleInputRef = useRef<HTMLInputElement>(null);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
+  const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false); // NEW state for save button color
 
   const daysOfWeek = [
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
 
   const currentDayIndex = new Date().getDay(); // Get current day index
-
-  // REMOVED: Effect to keep commenceTime and commenceDay live until adjusted by the user
-  // This logic is now handled in TimerContext.tsx based on scheduleStartOption
 
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
@@ -200,6 +194,12 @@ const ScheduleForm: React.FC = () => {
     }
   };
 
+  const handleSaveSchedule = () => {
+    saveCurrentScheduleAsTemplate();
+    setIsSaveButtonBlue(true);
+    setTimeout(() => setIsSaveButtonBlue(false), 1000); // Reset color after 1 second
+  };
+
   const buttonText = isSchedulePending 
     ? "Pending..." 
     : (scheduleStartOption === 'now' ? "Begin" : "Prepare");
@@ -313,7 +313,7 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          <div className="flex gap-2 mt-4"> {/* NEW CONTAINER FOR BUTTONS */}
+          <div className="flex gap-2 mt-4 items-center"> {/* NEW CONTAINER FOR BUTTONS */}
             <Button
               variant={scheduleStartOption === 'now' ? 'secondary' : 'outline'}
               size="sm"
@@ -337,6 +337,14 @@ const ScheduleForm: React.FC = () => {
               onClick={() => setScheduleStartOption('custom_time')}
             >
               <Clock className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSaveSchedule}
+              className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500")}
+            >
+              <Save className="h-5 w-5" />
             </Button>
           </div>
 

@@ -1,107 +1,50 @@
-"use client";
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useTimer } from "@/contexts/TimerContext";
-import { ScheduledTimer } from "@/types/timer";
-import { Plus, Play } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-
-interface ScheduleTemplate {
-  id: string;
-  title: string;
-  description: string;
-  schedule: ScheduledTimer[];
-}
-
-const dummyTemplates: ScheduleTemplate[] = [
-  {
-    id: "template-1",
-    title: "Classic Pomodoro",
-    description: "25 min focus, 5 min break, repeat.",
-    schedule: [
-      { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
-      { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
-      { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
-      { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
-      { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
-      { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
-      { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
-      { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 15, isCustom: false },
-    ],
-  },
-  {
-    id: "template-2",
-    title: "Deep Work Session",
-    description: "Long focus blocks with short, frequent breaks.",
-    schedule: [
-      { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 60, isCustom: false },
-      { id: crypto.randomUUID(), title: "Stretch Break", type: "break", durationMinutes: 10, isCustom: false },
-      { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 60, isCustom: false },
-      { id: crypto.randomUUID(), title: "Hydrate Break", type: "break", durationMinutes: 10, isCustom: false },
-      { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 60, isCustom: false },
-      { id: crypto.randomUUID(), title: "Lunch Break", type: "break", durationMinutes: 45, isCustom: false },
-    ],
-  },
-  {
-    id: "template-3",
-    title: "Meeting Marathon",
-    description: "Short breaks between back-to-back meetings.",
-    schedule: [
-      { id: crypto.randomUUID(), title: "Meeting Prep", type: "focus", durationMinutes: 15, isCustom: false },
-      { id: crypto.randomUUID(), title: "Meeting 1", type: "focus", durationMinutes: 30, isCustom: false },
-      { id: crypto.randomUUID(), title: "Quick Break", type: "break", durationMinutes: 5, isCustom: false },
-      { id: crypto.randomUUID(), title: "Meeting 2", type: "focus", durationMinutes: 45, isCustom: false },
-      { id: crypto.randomUUID(), title: "Coffee Break", type: "break", durationMinutes: 10, isCustom: false },
-    ],
-  },
-];
+import { useTimer } from '@/contexts/TimerContext';
+import ScheduleTemplateCard from './ScheduleTemplateCard'; // NEW import
+import { Card, CardContent } from '@/components/ui/card'; // Import Card and CardContent for empty state
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ScheduleTemplatesProps {
-  setActiveTab: (tab: string) => void; // New prop
+  setActiveTab: (tab: string) => void;
 }
 
-const ScheduleTemplates: React.FC<ScheduleTemplatesProps> = ({ setActiveTab }) => { // Accept prop
-  const { setSchedule, setScheduleTitle, setIsSchedulingMode, startSchedule } = useTimer();
-  const { toast } = useToast();
+const ScheduleTemplates: React.FC<ScheduleTemplatesProps> = ({ setActiveTab }) => {
+  const { savedSchedules, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency } = useTimer();
 
-  const handleLoadTemplate = (template: ScheduleTemplate) => {
-    setSchedule(template.schedule);
-    setScheduleTitle(template.title);
-    toast({
-      title: "Template Loaded",
-      description: `"${template.title}" schedule loaded successfully.`,
-    });
-    setActiveTab('plan'); // Switch to Plan tab
-  };
-
-  const handleCommenceTemplate = (template: ScheduleTemplate) => {
-    setSchedule(template.schedule);
-    setScheduleTitle(template.title);
-    startSchedule(); // Directly start the schedule
+  const handleCreateNew = () => {
+    // Reset current schedule to a default empty state or initial state
+    setSchedule([
+      { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25, isCustom: false },
+      { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+    ]);
+    setScheduleTitle("My New Schedule");
+    setCommenceTime("09:00");
+    setCommenceDay(new Date().getDay());
+    setScheduleStartOption('now');
+    setIsRecurring(false);
+    setRecurrenceFrequency('daily');
+    setActiveTab('plan'); // Switch to plan tab
   };
 
   return (
     <div className="space-y-4">
-      {dummyTemplates.map((template) => (
-        <Card key={template.id} className="p-4">
-          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
-            <CardTitle className="text-lg">{template.title}</CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleLoadTemplate(template)}>
-                <Plus className="mr-2 h-4 w-4" /> Load
-              </Button>
-              <Button size="sm" onClick={() => handleCommenceTemplate(template)}>
-                <Play className="mr-2 h-4 w-4" /> Commence
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0 text-sm text-muted-foreground">
-            {template.description}
+      {savedSchedules.length === 0 ? (
+        <Card className="p-6 text-center">
+          <CardContent className="flex flex-col items-center justify-center p-0">
+            <p className="text-muted-foreground mb-4">No saved schedules yet.</p>
+            <Button onClick={handleCreateNew} variant="outline">
+              <Plus className="mr-2 h-4 w-4" /> Create New Schedule
+            </Button>
           </CardContent>
         </Card>
-      ))}
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {savedSchedules.map(template => (
+            <ScheduleTemplateCard key={template.id} template={template} setActiveTab={setActiveTab} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
