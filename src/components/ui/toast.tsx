@@ -25,7 +25,7 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group grid items-center gap-4 overflow-hidden rounded-md border p-6 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full data-[swipe=end]:slide-out-to-right-full data-[swipe=cancel]:translate-x-0 data-[hover]:pause-on-hover data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]",
+  "group grid items-center gap-4 overflow-hidden rounded-md border p-6 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out data-[state=closed]:duration-1000 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full data-[swipe=end]:slide-out-to-right-full data-[swipe=cancel]:translate-x-0 data-[hover]:pause-on-hover data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]",
   {
     variants: {
       variant: {
@@ -125,8 +125,8 @@ const ToastAction = React.forwardRef<
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       onTouchCancel={handlePressEnd}
       {...props}
     />
