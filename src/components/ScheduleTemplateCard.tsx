@@ -56,7 +56,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
 
   return (
     <Card className="flex flex-col justify-between relative">
-      <CardHeader className="pb-2">
+      <CardHeader className="py-2"> {/* Changed from pb-2 to py-2 */}
         <CardTitle className="text-lg">{template.title}</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
           {getScheduleSummary(template.schedule)}
