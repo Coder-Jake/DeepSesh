@@ -151,7 +151,7 @@ const ScheduleForm: React.FC = () => {
     if (schedule.some(timer => timer.durationMinutes <= 0)) {
       toast({
         title: "Invalid Duration",
-        description: "All timers must have a duration greater than 0 minutes.",
+        description: "Timers must have a duration greater than 0 minutes.",
         variant: "destructive",
       });
       return;
