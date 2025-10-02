@@ -63,11 +63,15 @@ const ScheduleForm: React.FC = () => {
   const isLongPress = useRef(false);
   const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false);
 
+  // Reordered days of the week to start with Monday
   const daysOfWeek = [
-    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    "Monday", "Tuesday", "Wednesday", "Rethink", "Friday", "Saturday", "Sunday"
   ];
 
-  const currentDayIndex = new Date().getDay(); // Get current day index
+  // Get current day index (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
+  const currentDayIndex = new Date().getDay(); 
+  // Adjust to match the new daysOfWeek array (0 for Monday, ..., 6 for Sunday)
+  const adjustedCurrentDayIndex = (currentDayIndex === 0) ? 6 : currentDayIndex - 1;
 
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
@@ -419,18 +423,22 @@ const ScheduleForm: React.FC = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Select value={commenceDay.toString()} onValueChange={(value) => {
-                  setCommenceDay(parseInt(value));
-                }}>
-                  <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day"> {/* Added data-input-type */}
-                    <SelectValue>
-                      {commenceDay === currentDayIndex ? "Today" : daysOfWeek[commenceDay]}
+                <Select 
+                  value={commenceDay === null ? '' : commenceDay.toString()} // Display blank if null
+                  onValueChange={(value) => {
+                    setCommenceDay(value === '' ? null : parseInt(value)); // Set to null if blank is selected
+                  }}
+                >
+                  <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
+                    <SelectValue placeholder="Select Day"> {/* Placeholder for blank */}
+                      {commenceDay === null ? "Today (default)" : daysOfWeek[commenceDay]}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="">Today (default)</SelectItem> {/* Blank option */}
                     {daysOfWeek.map((day, index) => (
                       <SelectItem key={day} value={index.toString()}>
-                        {index === currentDayIndex ? "Today" : day}
+                        {day}
                       </SelectItem>
                     ))}
                   </SelectContent>

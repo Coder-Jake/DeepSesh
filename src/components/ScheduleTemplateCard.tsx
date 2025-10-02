@@ -28,8 +28,9 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
     deleteScheduleTemplate(template.id);
   };
 
+  // Reordered days of the week to start with Monday
   const daysOfWeek = [
-    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    "Monday", "Tuesday", "Wednesday", "Rethink", "Friday", "Saturday", "Sunday"
   ];
 
   const getScheduleSummary = (schedule: ScheduledTimer[]) => {
@@ -44,6 +45,9 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
     } else if (template.scheduleStartOption === 'manual') {
       return "Starts: Manual";
     } else {
+      if (template.commenceDay === null) {
+        return "Starts: Today (default)"; // Display for null commenceDay
+      }
       const dayName = daysOfWeek[template.commenceDay];
       return `Starts: ${template.commenceTime} on ${dayName}`;
     }

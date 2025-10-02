@@ -14,7 +14,7 @@ export interface ScheduledTimerTemplate {
   title: string;
   schedule: ScheduledTimer[];
   commenceTime: string;
-  commenceDay: number;
+  commenceDay: number | null; // Changed to allow null for dynamic 'today'
   scheduleStartOption: 'now' | 'manual' | 'custom_time';
   isRecurring: boolean;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
@@ -65,8 +65,8 @@ export interface TimerContextType {
   setScheduleTitle: React.Dispatch<React.SetStateAction<string>>;
   commenceTime: string;
   setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
-  commenceDay: number;
-  setCommenceDay: React.Dispatch<React.SetStateAction<number>>;
+  commenceDay: number | null; // Updated to allow null
+  setCommenceDay: React.Dispatch<React.SetStateAction<number | null>>; // Updated to allow null
   scheduleStartOption: 'now' | 'manual' | 'custom_time'; // Added
   setScheduleStartOption: React.Dispatch<React.SetStateAction<'now' | 'manual' | 'custom_time'>>; // Added
   isRecurring: boolean;
