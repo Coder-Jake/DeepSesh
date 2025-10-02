@@ -59,8 +59,8 @@ const Settings = () => {
     setBreakNotificationsVibrate,
     verificationStandard,
     setVerificationStandard,
-    profileVisibility,
-    setProfileVisibility,
+    profileVisibility, // Now an array
+    setProfileVisibility, // Now handles array
     locationSharing,
     setLocationSharing,
     isGlobalPrivate, // Renamed from isGlobalPublic
@@ -83,7 +83,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({}); // Corrected declaration
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   // Ref to store the *last saved* or *initial loaded* state for comparison
   // Initialize with current context values on first render
@@ -107,7 +107,7 @@ const Settings = () => {
     sessionInvites,
     friendActivity,
     verificationStandard,
-    profileVisibility,
+    profileVisibility, // Now an array
     locationSharing,
     isGlobalPrivate, // Renamed
     timerIncrement,
@@ -160,7 +160,7 @@ const Settings = () => {
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility,
+      profileVisibility, // Compare array
       locationSharing,
       isGlobalPrivate, // Renamed
       timerIncrement: currentTimerIncrement,
@@ -172,8 +172,8 @@ const Settings = () => {
       const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
       const savedVal = savedSettingsRef.current[key as keyof typeof savedSettingsRef.current];
 
-      // Deep comparison for objects (like NotificationSettings)
-      if (typeof currentVal === 'object' && currentVal !== null && !Array.isArray(currentVal)) {
+      // Deep comparison for objects/arrays (like NotificationSettings and profileVisibility)
+      if (typeof currentVal === 'object' && currentVal !== null) {
         return JSON.stringify(currentVal) !== JSON.stringify(savedVal);
       }
       return currentVal !== savedVal;
@@ -295,6 +295,47 @@ const Settings = () => {
     </div>
   );
 
+  const handleProfileVisibilityChange = (
+    option: 'public' | 'friends' | 'organisation' | 'private',
+    checked: boolean
+  ) => {
+    setProfileVisibility(prevVisibility => {
+      let newVisibility = [...prevVisibility];
+
+      if (option === 'private') {
+        if (checked) {
+          // If 'private' is checked, it becomes the only option
+          newVisibility = ['private'];
+        } else {
+          // If 'private' is unchecked, default to 'public'
+          newVisibility = ['public']; 
+        }
+      } else {
+        // If a non-private option is toggled
+        if (newVisibility.includes('private')) {
+          // If 'private' was active, deselect it first
+          newVisibility = newVisibility.filter(v => v !== 'private');
+        }
+
+        if (checked) {
+          // Add the option if checked and not already present
+          if (!newVisibility.includes(option)) {
+            newVisibility.push(option);
+          }
+        } else {
+          // Remove the option if unchecked
+          newVisibility = newVisibility.filter(v => v !== option);
+        }
+
+        // Ensure at least one non-private option is selected if not private
+        if (newVisibility.length === 0 && !newVisibility.includes('private')) {
+          newVisibility = ['public']; // Default to public if nothing else is selected
+        }
+      }
+      return newVisibility;
+    });
+  };
+
   const handleSave = () => {
     const newFocusMinutes = selectedFocusDuration === 'custom' 
       ? Math.max(1, parseInt(customFocusDuration) || 1) 
@@ -323,7 +364,7 @@ const Settings = () => {
     setFriendActivity(friendActivity);
     setBreakNotificationsVibrate(breakNotificationsVibrate);
     setVerificationStandard(verificationStandard);
-    setProfileVisibility(profileVisibility);
+    // profileVisibility is already updated via handleProfileVisibilityChange
     setLocationSharing(locationSharing);
     setIsGlobalPrivate(isGlobalPrivate); // Renamed
     setShouldPlayEndSound(shouldPlayEndSound);
@@ -350,7 +391,7 @@ const Settings = () => {
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility,
+      profileVisibility, // Save the array
       locationSharing,
       isGlobalPrivate, // Renamed
       timerIncrement: currentTimerIncrement,
@@ -740,8 +781,8 @@ const Settings = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="profile-public"
-                        checked={profileVisibility === 'public'}
-                        onCheckedChange={() => setProfileVisibility('public')}
+                        checked={profileVisibility.includes('public')}
+                        onCheckedChange={(checked) => handleProfileVisibilityChange('public', !!checked)}
                       />
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -758,20 +799,19 @@ const Settings = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="profile-friends"
-                        checked={profileVisibility === 'friends'}
-                        onCheckedChange={() => setProfileVisibility('friends')}
+                        checked={profileVisibility.includes('friends')}
+                        onCheckedChange={(checked) => handleProfileVisibilityChange('friends', !!checked)}
                       />
                       <Label htmlFor="profile-friends" className="text-sm font-normal">
                         Friends Only
                       </Label>
-                      {/* Tooltip removed as requested */}
                     </div>
 
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="profile-organisation"
-                        checked={profileVisibility === 'organisation'}
-                        onCheckedChange={() => setProfileVisibility('organisation')}
+                        checked={profileVisibility.includes('organisation')}
+                        onCheckedChange={(checked) => handleProfileVisibilityChange('organisation', !!checked)}
                       />
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -788,8 +828,8 @@ const Settings = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="profile-private"
-                        checked={profileVisibility === 'private'}
-                        onCheckedChange={() => setProfileVisibility('private')}
+                        checked={profileVisibility.includes('private')}
+                        onCheckedChange={(checked) => handleProfileVisibilityChange('private', !!checked)}
                       />
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -818,17 +858,17 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground">Compete for prizes! <br /> <br /> <br />  </p>
                   <Label>Your Verification</Label>
                   <Select 
-                    value={profileVisibility} // This seems to be a copy-paste error, should be a different state for 'Your Verification'
-                    onValueChange={(value: string) => setProfileVisibility(value as 'public' | 'friends' | 'private' | 'organisation')} // Assuming it's still profileVisibility for now
+                    value={verificationStandard} // Corrected to use verificationStandard
+                    onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select verification status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Anon">None</SelectItem>
-                      <SelectItem value="phone">Phone</SelectItem>
+                      <SelectItem value="anyone">None</SelectItem>
+                      <SelectItem value="phone1">Phone</SelectItem>
                       <SelectItem value="organisation">Enterprise</SelectItem>
-                      <SelectItem value="id">ID Verified</SelectItem>
+                      <SelectItem value="id1">ID Verified</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

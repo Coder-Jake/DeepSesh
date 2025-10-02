@@ -76,7 +76,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
   const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(true); // Specific for break notifications
   const [verificationStandard, setVerificationStandard] = useState<'anyone' | 'phone1' | 'organisation' | 'id1'>('anyone');
-  const [profileVisibility, setProfileVisibility] = useState<'public' | 'friends' | 'private'>('public');
+  const [profileVisibility, setProfileVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // Updated to array
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]); // Added
 
@@ -431,7 +431,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setFriendActivity(data.friendActivity ?? { push: true, vibrate: true, sound: true });
       setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? true);
       setVerificationStandard(data.verificationStandard ?? 'anyone');
-      setProfileVisibility(data.profileVisibility ?? 'public');
+      setProfileVisibility(data.profileVisibility ?? ['public']); // Updated default to array
       setLocationSharing(data.locationSharing ?? false);
       setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
 
