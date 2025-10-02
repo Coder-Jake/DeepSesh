@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import { ScheduledTimer, TimerContextType, ActiveAskItem, NotificationSettings, ScheduledTimerTemplate } from '@/types/timer';
 import { useProfile } from './ProfileContext';
 import { useToast } from '@/hooks/use-toast'; // Import useToast
+import { ToastAction } from "@/components/ui/toast"; // NEW: Import ToastAction
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -316,6 +317,28 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     resetTimer(); // Also reset the main timer states
   }, [resetTimer]);
 
+  const overrideScheduleTemplate = useCallback((templateId: string) => {
+    const updatedTemplate: ScheduledTimerTemplate = {
+      id: templateId, // Keep the original ID
+      title: scheduleTitle.trim(),
+      schedule: schedule,
+      commenceTime: commenceTime,
+      commenceDay: commenceDay,
+      scheduleStartOption: scheduleStartOption,
+      isRecurring: isRecurring,
+      recurrenceFrequency: recurrenceFrequency,
+    };
+
+    setSavedSchedules(prev => prev.map(template => 
+      template.id === templateId ? updatedTemplate : template
+    ));
+    toast({
+      title: "Schedule Overridden!",
+      description: `"${scheduleTitle}" has been updated.`,
+      variant: "success",
+    });
+  }, [scheduleTitle, schedule, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency, toast]);
+
   const saveCurrentScheduleAsTemplate = useCallback(() => {
     if (!scheduleTitle.trim()) {
       toast({
@@ -333,11 +356,30 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
       return;
     }
-    if (savedSchedules.some(template => template.title === scheduleTitle.trim())) {
+    
+    const existingTemplate = savedSchedules.find(template => template.title === scheduleTitle.trim());
+
+    if (existingTemplate) {
       toast({
         title: "Schedule Already Exists",
-        description: `A schedule with the title "${scheduleTitle}" already exists. Please choose a unique title.`,
-        variant: "destructive",
+        description: `A schedule with the title "${scheduleTitle}" already exists. Long-press 'Override' to replace it.`,
+        variant: "destructive", // Use destructive variant for warning
+        action: (
+          <ToastAction
+            altText="Override existing schedule"
+            onLongPress={() => overrideScheduleTemplate(existingTemplate.id)}
+            longPressDelay={700} // Slightly longer delay for override
+            onClick={() => {
+              toast({
+                title: "Long-press to Override",
+                description: "Hold down the 'Override' button to replace the existing schedule.",
+                variant: "default",
+              });
+            }}
+          >
+            Override
+          </ToastAction>
+        ),
       });
       return;
     }
@@ -356,8 +398,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     toast({
       title: "Schedule Saved!",
       description: `"${scheduleTitle}" has been saved as a template.`,
+      variant: "success", // Use success variant for successful save
     });
-  }, [scheduleTitle, schedule, savedSchedules, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency, toast]);
+  }, [scheduleTitle, schedule, savedSchedules, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency, toast, overrideScheduleTemplate]);
 
   const loadScheduleTemplate = useCallback((templateId: string) => {
     const templateToLoad = savedSchedules.find(template => template.id === templateId);
@@ -372,6 +415,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       toast({
         title: "Schedule Loaded!",
         description: `"${templateToLoad.title}" has been loaded.`,
+        variant: "success",
       });
     } else {
       toast({
@@ -387,6 +431,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     toast({
       title: "Schedule Deleted",
       description: "The schedule template has been removed.",
+      variant: "success",
     });
   }, [toast]);
 
@@ -463,10 +508,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     currentScheduleIndex,
     isSchedulePending, setIsSchedulePending,
 
-    savedSchedules, // NEW
-    saveCurrentScheduleAsTemplate, // NEW
-    loadScheduleTemplate, // NEW
-    deleteScheduleTemplate, // NEW
+    savedSchedules,
+    saveCurrentScheduleAsTemplate,
+    loadScheduleTemplate,
+    deleteScheduleTemplate,
 
     showSessionsWhileActive, setShowSessionsWhileActive,
     sessionStartTime, setSessionStartTime,
