@@ -22,7 +22,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
   const [seshTitle, setSeshTitle] = useState("Notes");
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false); // Changed default to false
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Schedule related states
