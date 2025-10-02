@@ -649,10 +649,11 @@ const Settings = () => {
                     onChange={(e) => setFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setFocusMinutes(1); // Default to 1 if empty or 0
+                        setFocusMinutes(currentTimerIncrement); // Default to timerIncrement
                       }
                     }}
-                    min="1"
+                    min={currentTimerIncrement} // Use currentTimerIncrement
+                    step={currentTimerIncrement} // Use currentTimerIncrement
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
@@ -668,10 +669,11 @@ const Settings = () => {
                     onChange={(e) => setBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setBreakMinutes(1); // Default to 1 if empty or 0
+                        setBreakMinutes(currentTimerIncrement); // Default to timerIncrement
                       }
                     }}
-                    min="1"
+                    min={currentTimerIncrement} // Use currentTimerIncrement
+                    step={currentTimerIncrement} // Use currentTimerIncrement
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
