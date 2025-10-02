@@ -9,7 +9,6 @@ interface TimelineProps {
   schedule: ScheduledTimer[];
   currentScheduleIndex: number;
   timeLeft: number;
-  // scheduleTitle: string; // No longer passed as a prop, will be taken from context
   commenceTime: string;
   commenceDay: number;
   isSchedulePending: boolean;
@@ -20,7 +19,6 @@ const Timeline: React.FC<TimelineProps> = ({
   schedule,
   currentScheduleIndex,
   timeLeft,
-  // scheduleTitle, // Remove from destructuring
   commenceTime,
   commenceDay,
   isSchedulePending,
