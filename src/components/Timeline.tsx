@@ -161,6 +161,7 @@ const Timeline: React.FC<TimelineProps> = ({
         {isSchedulePending && (
           <div className="mt-8 pt-6 border-t border-border space-y-2">
             <h3 className="text-lg font-semibold text-foreground text-left">Upcoming</h3>
+          </div>
             <div className="text-base font-bold text-foreground text-left"> {/* New container */}
               {commenceTime} on {targetDayName}, {formattedTargetDate}
             </div>
