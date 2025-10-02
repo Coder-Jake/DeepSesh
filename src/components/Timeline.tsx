@@ -79,7 +79,7 @@ const Timeline: React.FC<TimelineProps> = ({
         <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-xl">Schedule Pending: {scheduleTitle}</CardTitle>
+            <CardTitle className="text-xl"> {scheduleTitle}</CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-3xl font-bold text-foreground">
