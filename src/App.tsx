@@ -16,11 +16,13 @@ import Leaderboard from "./pages/Leaderboard";
 import Credits from "./pages/Credits"; // Import the new Credits page
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const navigate = useNavigate();
+  const { toasts } = useToast(); // Get toasts from useToast hook
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -87,6 +89,7 @@ const AppContent = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <Toaster toasts={toasts} /> {/* Pass toasts prop here */}
     </div>
   );
 };
@@ -97,7 +100,7 @@ const App = () => (
       <AuthProvider> {/* AuthProvider now wraps ProfileProvider and TimerProvider */}
         <ProfileProvider>
           <TimerProvider>
-            <Toaster />
+            {/* Toaster is now rendered inside AppContent */}
             <Sonner />
             <BrowserRouter>
               <AppContent />

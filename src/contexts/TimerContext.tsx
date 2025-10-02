@@ -384,6 +384,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showSessionsWhileActive,
     setShowSessionsWhileActive,
     timerIncrement,
+    setTimerIncrement: () => {}, // Placeholder, as timerIncrement is currently a constant
 
     schedule,
     setSchedule,

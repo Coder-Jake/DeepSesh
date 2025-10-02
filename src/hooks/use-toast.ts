@@ -8,7 +8,7 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
 
-type ToasterToast = ToastProps & {
+export type ToasterToast = ToastProps & { // Exporting ToasterToast
   id: string
   title?: React.ReactNode
   description?: React.ReactNode

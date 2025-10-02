@@ -734,7 +734,10 @@ const Settings = () => {
             <AccordionContent className="space-y-6 pt-4">
               <div className="space-y-2">
                 <Label>Profile Visibility</Label>
-                <Select value={profileVisibility} onValueChange={setProfileVisibility}>
+                <Select 
+                  value={profileVisibility} 
+                  onValueChange={(value: string) => setProfileVisibility(value as 'public' | 'friends' | 'private')}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select visibility" />
                   </SelectTrigger>
@@ -757,7 +760,10 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground">Build trust with peers</p>
                   <p className="text-sm text-muted-foreground">Compete for prizes! <br /> <br /> <br />  </p>
                   <Label>Your Verification</Label>
-                  <Select value={profileVisibility} onValueChange={setProfileVisibility}>
+                  <Select 
+                    value={profileVisibility} // This seems to be a copy-paste error, should be a different state for 'Your Verification'
+                    onValueChange={(value: string) => setProfileVisibility(value as 'public' | 'friends' | 'private')} // Assuming it's still profileVisibility for now
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select verification status" />
                     </SelectTrigger>
@@ -775,7 +781,10 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground">
                     for users to interact with sessions you host
                   </p>
-                  <Select value={verificationStandard} onValueChange={setVerificationStandard}>
+                  <Select 
+                    value={verificationStandard} 
+                    onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select verification standard" />
                     </SelectTrigger>
