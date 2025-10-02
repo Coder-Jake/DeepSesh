@@ -212,23 +212,29 @@ const ScheduleForm: React.FC = () => {
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
         <CardHeader className="flex flex-row items-center justify-between py-4 px-4 lg:px-6">
-          {isEditingScheduleTitle ? (
-            <Input
-              ref={scheduleTitleInputRef}
-              value={scheduleTitle}
-              onChange={(e) => setScheduleTitle(e.target.value)}
-              onKeyDown={handleScheduleTitleInputKeyDown}
-              onBlur={handleScheduleTitleInputBlur}
-              placeholder="Schedule Title"
-              className="text-2xl font-bold h-auto py-2"
-              onFocus={(e) => e.target.select()}
-            />
+          {activeTab === 'plan' ? (
+            isEditingScheduleTitle ? (
+              <Input
+                ref={scheduleTitleInputRef}
+                value={scheduleTitle}
+                onChange={(e) => setScheduleTitle(e.target.value)}
+                onKeyDown={handleScheduleTitleInputKeyDown}
+                onBlur={handleScheduleTitleInputBlur}
+                placeholder="Schedule Title"
+                className="text-2xl font-bold h-auto py-2"
+                onFocus={(e) => e.target.select()}
+              />
+            ) : (
+              <CardTitle
+                className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
+                onClick={handleScheduleTitleClick}
+              >
+                {scheduleTitle || "My Schedule"}
+              </CardTitle>
+            )
           ) : (
-            <CardTitle
-              className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
-              onClick={handleScheduleTitleClick}
-            >
-              {scheduleTitle || "My Schedule"}
+            <CardTitle className="text-2xl font-bold h-auto py-2">
+              Saved Schedules
             </CardTitle>
           )}
           <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
