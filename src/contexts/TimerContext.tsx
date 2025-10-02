@@ -202,7 +202,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     toast({
       title: "Session Saved!",
-      description: `Your session "${seshTitle}" has been added to your history.`,
+      description: `Your "${seshTitle}" session has been added to your history.`,
     });
 
     resetTimer();
