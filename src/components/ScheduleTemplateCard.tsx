@@ -1,9 +1,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Trash2 } from "lucide-react";
-import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer"; // Added ScheduledTimer to imports
+import { Play, Trash2, Share2 } from "lucide-react"; // Import Share2
+import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer";
 import { useTimer } from "@/contexts/TimerContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // Import DropdownMenu components
 
 interface ScheduleTemplateCardProps {
   template: ScheduledTimerTemplate;
@@ -51,12 +57,32 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
           {getScheduleSummary(template.schedule)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-2">
+      <CardContent className="pt-2 relative"> {/* Added relative for absolute positioning */}
         <p className="text-sm text-gray-600 mb-3">{getCommenceInfo(template)}</p>
         <div className="flex justify-end gap-2">
           <Button variant="outline" size="sm" onClick={handleLoad}>
             <Play className="h-4 w-4 mr-2" /> Load
           </Button>
+        </div>
+
+        {/* Share Icon and Dropdown */}
+        <div className="absolute bottom-2 left-2"> {/* Positioned to bottom-left */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="w-6 h-6 text-primary hover:bg-muted" // Tiny and dark blue (using primary color)
+              >
+                <Share2 className="h-4 w-4" /> {/* Tiny icon */}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start"> {/* Align to start so it opens rightwards */}
+              <DropdownMenuItem onClick={() => console.log('Share Link for template', template.id)}>Link</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => console.log('Share QR for template', template.id)}>QR</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => console.log('Share NFC for template', template.id)}>NFC</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
       <Button 
