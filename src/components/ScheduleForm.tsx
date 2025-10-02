@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
-import { useTimer } from "@/contexts/TimerContext";
+import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -63,15 +63,24 @@ const ScheduleForm: React.FC = () => {
   const isLongPress = useRef(false);
   const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false);
 
-  // Reordered days of the week to start with Monday
-  const daysOfWeek = [
-    "Monday", "Tuesday", "Wednesday", "Rethink", "Friday", "Saturday", "Sunday"
+  // Order for displaying days in the Select component (Monday first, Sunday last)
+  const daysOfWeekDisplayOrder = [
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
   ];
 
-  // Get current day index (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
-  const currentDayIndex = new Date().getDay(); 
-  // Adjust to match the new daysOfWeek array (0 for Monday, ..., 6 for Sunday)
-  const adjustedCurrentDayIndex = (currentDayIndex === 0) ? 6 : currentDayIndex - 1;
+  // Map display day name to its Date.getDay() index (0 for Sunday, 1 for Monday, etc.)
+  const getDayIndexForDisplayDay = (displayDay: string): number => {
+    switch (displayDay) {
+      case "Monday": return 1;
+      case "Tuesday": return 2;
+      case "Wednesday": return 3;
+      case "Thursday": return 4;
+      case "Friday": return 5;
+      case "Saturday": return 6;
+      case "Sunday": return 0;
+      default: return -1; // Should not happen
+    }
+  };
 
   useEffect(() => {
     if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
@@ -431,13 +440,13 @@ const ScheduleForm: React.FC = () => {
                 >
                   <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
                     <SelectValue placeholder="Select Day"> {/* Placeholder for blank */}
-                      {commenceDay === null ? "Today (default)" : daysOfWeek[commenceDay]}
+                      {commenceDay === null ? "Today (default)" : DAYS_OF_WEEK[commenceDay]}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="today-default">Today (default)</SelectItem> {/* Use non-empty value */}
-                    {daysOfWeek.map((day, index) => (
-                      <SelectItem key={day} value={index.toString()}>
+                    {daysOfWeekDisplayOrder.map((day) => (
+                      <SelectItem key={day} value={getDayIndexForDisplayDay(day).toString()}>
                         {day}
                       </SelectItem>
                     ))}

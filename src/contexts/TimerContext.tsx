@@ -3,6 +3,60 @@ import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client'; // Assuming you have a supabase client
 
+export const DAYS_OF_WEEK = [
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+];
+
+const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
+  {
+    id: "default-1",
+    title: "Pomodoro Classic",
+    schedule: [
+      { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
+      { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+      { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
+      { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+      { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
+      { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+      { id: crypto.randomUUID(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
+      { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 15, isCustom: false },
+    ],
+    commenceTime: "09:00",
+    commenceDay: null, // Today (default)
+    scheduleStartOption: 'custom_time',
+    isRecurring: true,
+    recurrenceFrequency: 'daily',
+  },
+  {
+    id: "default-2",
+    title: "Deep Work Flow",
+    schedule: [
+      { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 50, isCustom: true, customTitle: "Deep Focus" },
+      { id: crypto.randomUUID(), title: "Break", type: "break", durationMinutes: 10, isCustom: false },
+      { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 50, isCustom: true, customTitle: "Deep Focus" },
+      { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 20, isCustom: false },
+    ],
+    commenceTime: "10:00",
+    commenceDay: 1, // Monday (Date.getDay() index)
+    scheduleStartOption: 'custom_time',
+    isRecurring: true,
+    recurrenceFrequency: 'weekly',
+  },
+  {
+    id: "default-3",
+    title: "Quick Sesh",
+    schedule: [
+      { id: crypto.randomUUID(), title: "Quick Focus", type: "focus", durationMinutes: 15, isCustom: true, customTitle: "Quick Focus" },
+      { id: crypto.randomUUID(), title: "Quick Break", type: "break", durationMinutes: 5, isCustom: true, customTitle: "Quick Break" },
+    ],
+    commenceTime: "08:00", // Set a default time for 'now' option
+    commenceDay: null,
+    scheduleStartOption: 'now',
+    isRecurring: false,
+    recurrenceFrequency: 'daily',
+  },
+];
+
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -22,7 +76,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isSchedulePending, setIsSchedulePending] = useState(false);
 
   // Saved Schedules (Templates)
-  const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]);
+  const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>(() => {
+    const storedSchedules = localStorage.getItem('flowsesh_saved_schedules');
+    return storedSchedules ? JSON.parse(storedSchedules) : DEFAULT_SCHEDULE_TEMPLATES;
+  });
 
   // Core Timer states
   const [focusMinutes, setFocusMinutes] = useState(25);
@@ -230,18 +287,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    // Get current day index (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
-    const currentDay = new Date().getDay();
-    // Adjust to match new daysOfWeek array (0 for Monday, ..., 6 for Sunday)
-    const adjustedCurrentDayIndex = (currentDay === 0) ? 6 : currentDay - 1;
-
     const templateToSave: ScheduledTimerTemplate = {
       id: crypto.randomUUID(),
       title: scheduleTitle,
       schedule: schedule,
       commenceTime: commenceTime,
-      // Save as null if it's the current day (dynamic 'today') or if it's already null
-      commenceDay: (commenceDay === null || commenceDay === adjustedCurrentDayIndex) ? null : commenceDay,
+      commenceDay: commenceDay, // Will be null if it was set to "Today (default)"
       scheduleStartOption: scheduleStartOption,
       isRecurring: isRecurring,
       recurrenceFrequency: recurrenceFrequency,
@@ -352,6 +403,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     }
   }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending]);
+
+  // Effect to persist savedSchedules to localStorage
+  useEffect(() => {
+    localStorage.setItem('flowsesh_saved_schedules', JSON.stringify(savedSchedules));
+  }, [savedSchedules]);
 
   const value = {
     schedule, setSchedule,

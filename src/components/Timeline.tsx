@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScheduledTimer } from "@/types/timer";
 import { cn } from "@/lib/utils";
-import { useTimer } from "@/contexts/TimerContext";
+import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
 
 interface TimelineProps {
   schedule: ScheduledTimer[];
@@ -10,7 +10,7 @@ interface TimelineProps {
   timeLeft: number;
   scheduleTitle: string;
   commenceTime: string;
-  commenceDay: number;
+  commenceDay: number; // This prop will now always be a number (resolved from null in Index.tsx)
   isSchedulePending: boolean; // New prop
   onCountdownEnd: () => void; // New prop
 }
@@ -28,10 +28,6 @@ const Timeline: React.FC<TimelineProps> = ({
   const { formatTime } = useTimer();
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const daysOfWeek = [
-    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-  ];
 
   useEffect(() => {
     if (isSchedulePending) {
@@ -74,7 +70,7 @@ const Timeline: React.FC<TimelineProps> = ({
   const totalScheduleDuration = schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
 
   if (isSchedulePending) {
-    const targetDayName = daysOfWeek[commenceDay];
+    const targetDayName = DAYS_OF_WEEK[commenceDay];
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + (commenceDay - targetDate.getDay() + 7) % 7);
     const formattedTargetDate = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });

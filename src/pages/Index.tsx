@@ -162,7 +162,7 @@ const Index = () => {
     resetSchedule,
     scheduleTitle,
     commenceTime,
-    commenceDay,
+    commenceDay, // Now can be null
     isGlobalPrivate,
 
     // New session tracking states and functions
@@ -925,7 +925,7 @@ const Index = () => {
           timeLeft={timeLeft} 
           scheduleTitle={scheduleTitle}
           commenceTime={commenceTime}
-          commenceDay={commenceDay}
+          commenceDay={commenceDay === null ? new Date().getDay() : commenceDay} // Resolve null to current day for Timeline
           isSchedulePending={isSchedulePending} // Pass new prop
           onCountdownEnd={handleCountdownEnd}    // Pass new prop
         />

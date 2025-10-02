@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Play, Trash2, Share2 } from "lucide-react"; // Import Share2
 import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer";
-import { useTimer } from "@/contexts/TimerContext";
+import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,11 +28,6 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
     deleteScheduleTemplate(template.id);
   };
 
-  // Reordered days of the week to start with Monday
-  const daysOfWeek = [
-    "Monday", "Tuesday", "Wednesday", "Rethink", "Friday", "Saturday", "Sunday"
-  ];
-
   const getScheduleSummary = (schedule: ScheduledTimer[]) => {
     if (schedule.length === 0) return "No timers";
     const totalDuration = schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
@@ -48,7 +43,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
       if (template.commenceDay === null) {
         return "Starts: Today (default)"; // Display for null commenceDay
       }
-      const dayName = daysOfWeek[template.commenceDay];
+      const dayName = DAYS_OF_WEEK[template.commenceDay];
       return `Starts: ${template.commenceTime} on ${dayName}`;
     }
   };
