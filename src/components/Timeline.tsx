@@ -106,15 +106,15 @@ const Timeline: React.FC<TimelineProps> = ({
       <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-xl flex justify-center"> {/* Added flex justify-center */}
+          <CardTitle className="text-xl flex justify-center">
             <Input
               value={scheduleTitle}
               onChange={(e) => setScheduleTitle(e.target.value)}
-              className="text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center" {/* Changed text-xl to text-2xl and added text-center */}
+              className="text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center"
               aria-label="Schedule Title"
             />
           </CardTitle>
-          <p className="text-sm text-muted-foreground text-center">Total: {totalScheduleDuration} mins</p> {/* Added text-center */}
+          <p className="text-sm text-muted-foreground text-center">Total: {totalScheduleDuration} mins</p>
         </CardHeader>
         <CardContent className="space-y-2">
           {schedule.map((item, index) => {
