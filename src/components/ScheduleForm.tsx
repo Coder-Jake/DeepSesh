@@ -339,7 +339,6 @@ const ScheduleForm: React.FC = () => {
           {scheduleStartOption === 'custom_time' && ( // CONDITIONAL RENDERING
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="space-y-2">
-              
                 <Input
                   id="commence-time"
                   type="time"
@@ -351,7 +350,6 @@ const ScheduleForm: React.FC = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="commence-day">Commence Day</Label>
                 <Select value={commenceDay.toString()} onValueChange={(value) => {
                   setCommenceDay(parseInt(value));
                 }}>
