@@ -287,7 +287,7 @@ const ScheduleForm: React.FC = () => {
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
-        <TabsContent value="plan" className="pt-0 pb-6 space-y-6 px-4 lg:px-6" id="plan-tab-content"> {/* Changed pt-6 to pt-0 */}
+        <TabsContent value="plan" className="pt-0 pb-6 space-y-6 px-4 lg:px-6" id="plan-tab-content">
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {schedule.map((timer, index) => (
               <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
@@ -368,7 +368,7 @@ const ScheduleForm: React.FC = () => {
             ))}
           </div>
 
-          <Button onClick={handleAddTimer} variant="outline" className="w-full" onKeyDown={handleEnterKeyNavigation} data-input-type="add-timer-button">
+          <Button onClick={handleAddTimer} variant="outline" className="w-full mt-0" onKeyDown={handleEnterKeyNavigation} data-input-type="add-timer-button">
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
@@ -460,7 +460,7 @@ const ScheduleForm: React.FC = () => {
             {buttonText}
           </Button>
         </TabsContent>
-        <TabsContent value="saved" className="pt-0 pb-6 space-y-6 px-4 lg:px-6"> {/* Changed pt-6 to pt-0 */}
+        <TabsContent value="saved" className="pt-0 pb-6 space-y-6 px-4 lg:px-6">
           <ScheduleTemplates setActiveTab={setActiveTab} />
         </TabsContent>
       </Tabs>
