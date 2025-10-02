@@ -462,9 +462,6 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="show-sessions-while-active">Show other sessions while active</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Keep Nearby and Friends sessions visible when your timer is active.
-                  </p>
                 </div>
                 <Switch
                   id="show-sessions-while-active"
@@ -475,9 +472,6 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="manual-transition"> Manual Transitions</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Prompt for session ends?
-                  </p>
                 </div >
                 <Switch
                   id="manual-transition"
@@ -489,9 +483,6 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="lock">Lock in!</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Prevent switching apps until break
-                  </p>
                 </div >
                 <Switch
                   id="lock"
@@ -505,9 +496,6 @@ const Settings = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="batch-notifications-toggle">Batch Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Group notifications to reduce interruptions.
-                    </p>
                   </div>
                   <Switch
                     id="batch-notifications-toggle"
@@ -563,9 +551,6 @@ const Settings = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="exemptions">Exemptions</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Allow specific interruptions during locked-in sessions.
-                    </p>
                   </div>
                   <Switch
                     id="exemptions"
