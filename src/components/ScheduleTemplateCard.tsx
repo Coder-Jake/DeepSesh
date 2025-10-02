@@ -56,7 +56,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
 
   return (
     <Card className="flex flex-col justify-between relative">
-      <CardHeader className="py-2"> {/* Changed from pb-2 to py-2 */}
+      <CardHeader className="py-2">
         <CardTitle className="text-lg">{template.title}</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
           {getScheduleSummary(template.schedule)}
@@ -90,11 +90,11 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
         {/* Load button moved to bottom right */}
         <Button 
           variant="outline" 
-          size="sm" 
+          size="icon" /* Changed size to "icon" */
           onClick={handleLoad}
           className="absolute bottom-2 right-2"
         >
-          <Play className="h-4 w-4 mr-2" /> Load
+          <Play className="h-4 w-4" /> {/* Removed "Load" text and mr-2 class */}
         </Button>
       </CardContent>
       <Button
