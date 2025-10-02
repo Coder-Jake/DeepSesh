@@ -76,7 +76,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
                 size="icon"
                 className="w-6 h-6 hover:bg-muted"
               >
-                <Share2 className="h-4 w-4 text-blue-700" /> {/* Dark Blue */}
+                <Share2 className="h-4 w-4 text-foreground hover:text-blue-700" /> {/* Changed to text-foreground and added hover:text-blue-700 */}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -94,7 +94,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
           onClick={handleLoad}
           className="absolute bottom-2 right-2"
         >
-          <Play className="h-4 w-4 text-green-700" /> {/* Dark Green */}
+          <Play className="h-4 w-4 text-green-700" />
         </Button>
       </CardContent>
       <Button
@@ -103,7 +103,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
         onClick={handleDelete}
         className="absolute top-0 right-0"
       >
-        <Trash2 className="h-3 w-3 text-red-700" /> {/* Dark Red */}
+        <Trash2 className="h-3 w-3 text-foreground hover:text-red-700" /> {/* Changed to text-foreground and added hover:text-red-700 */}
       </Button>
     </Card>
   );
