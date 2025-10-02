@@ -159,16 +159,16 @@ const Timeline: React.FC<TimelineProps> = ({
         })}
 
         {isSchedulePending && (
-          <div className="mt-8 pt-6 border-t border-border text-center space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Upcoming Schedule</h3>
-            <p className="text-3xl font-bold text-foreground">
+          <div className="mt-8 pt-6 border-t border-border space-y-2"> {/* Adjusted space-y */}
+            <h3 className="text-lg font-semibold text-foreground text-left">Upcoming</h3> {/* Changed text and alignment */}
+            <p className="text-base font-bold text-foreground text-left"> {/* Smaller font */}
               {commenceTime} on {targetDayName}, {formattedTargetDate}
             </p>
-            <p className="text-lg text-muted-foreground">Time until start:</p>
-            <p className="text-5xl font-extrabold text-primary">
+            <p className="text-sm text-muted-foreground text-left">Time until start:</p> {/* Smaller font */}
+            <p className="text-3xl font-extrabold text-primary text-left"> {/* Smaller font */}
               {formatTime(countdownTimeLeft)}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground text-left"> {/* Smaller font */}
               Your schedule will automatically begin when the countdown reaches zero.
             </p>
           </div>
