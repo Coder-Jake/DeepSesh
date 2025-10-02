@@ -200,6 +200,10 @@ const ScheduleForm: React.FC = () => {
     }
   };
 
+  const buttonText = isSchedulePending 
+    ? "Pending..." 
+    : (scheduleStartOption === 'now' ? "Begin" : "Prepare");
+
   return (
     <Card className="px-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -339,6 +343,7 @@ const ScheduleForm: React.FC = () => {
           {scheduleStartOption === 'custom_time' && ( // CONDITIONAL RENDERING
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="space-y-2">
+                <Label htmlFor="commence-time">Commence Time</Label>
                 <Input
                   id="commence-time"
                   type="time"
@@ -350,6 +355,7 @@ const ScheduleForm: React.FC = () => {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="commence-day">Commence Day</Label>
                 <Select value={commenceDay.toString()} onValueChange={(value) => {
                   setCommenceDay(parseInt(value));
                 }}>
@@ -372,7 +378,7 @@ const ScheduleForm: React.FC = () => {
 
           <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending}>
             <Play className="mr-2 h-5 w-5" />
-            {isSchedulePending ? "Pending..." : "Begin"}
+            {buttonText}
           </Button>
         </TabsContent>
         <TabsContent value="saved" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
