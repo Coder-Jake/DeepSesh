@@ -424,9 +424,9 @@ const ScheduleForm: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Select 
-                  value={commenceDay === null ? '' : commenceDay.toString()} // Display blank if null
+                  value={commenceDay === null ? "today-default" : commenceDay.toString()} // Use "today-default" for null
                   onValueChange={(value) => {
-                    setCommenceDay(value === '' ? null : parseInt(value)); // Set to null if blank is selected
+                    setCommenceDay(value === "today-default" ? null : parseInt(value)); // Set to null if "today-default" is selected
                   }}
                 >
                   <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
@@ -435,7 +435,7 @@ const ScheduleForm: React.FC = () => {
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Today (default)</SelectItem> {/* Blank option */}
+                    <SelectItem value="today-default">Today (default)</SelectItem> {/* Use non-empty value */}
                     {daysOfWeek.map((day, index) => (
                       <SelectItem key={day} value={index.toString()}>
                         {day}
