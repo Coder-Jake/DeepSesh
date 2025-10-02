@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Trash2 } from "lucide-react";
-import { ScheduledTimerTemplate } from "@/types/timer";
+import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer"; // Added ScheduledTimer to imports
 import { useTimer } from "@/contexts/TimerContext";
 
 interface ScheduleTemplateCardProps {
@@ -44,7 +44,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
   };
 
   return (
-    <Card className="flex flex-col justify-between">
+    <Card className="flex flex-col justify-between relative">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">{template.title}</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
@@ -57,11 +57,16 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
           <Button variant="outline" size="sm" onClick={handleLoad}>
             <Play className="h-4 w-4 mr-2" /> Load
           </Button>
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
         </div>
       </CardContent>
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={handleDelete} 
+        className="absolute top-0 right-0"
+      >
+        <Trash2 className="h-3 w-3" />
+      </Button>
     </Card>
   );
 };
