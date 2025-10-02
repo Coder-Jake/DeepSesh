@@ -1,226 +1,471 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useTimer } from "@/contexts/TimerContext";
-import { Input } from "@/components/ui/input";
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
+import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
+import { ScheduledTimer } from "@/types/timer";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
-import { ScheduledTimer } from '@/types/timer'; // Import ScheduledTimer type
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ScheduleTemplates from './ScheduleTemplates';
 
-const ScheduleForm = () => {
-  const {
-    schedule: globalSchedule,
-    setSchedule,
-    startSchedule,
-    setIsSchedulingMode,
-    scheduleTitle: globalScheduleTitle,
-    setScheduleTitle: setGlobalScheduleTitle,
-    commenceTime: globalCommenceTime,
-    setCommenceTime: setGlobalCommenceTime,
-    commenceDay: globalCommenceDay,
-    setCommenceDay: setGlobalCommenceDay,
-    scheduleStartOption: globalScheduleStartOption,
-    setScheduleStartOption: setGlobalScheduleStartOption,
-    setIsSchedulePending,
-    DAYS_OF_WEEK,
+const ScheduleForm: React.FC = () => {
+  const { 
+    schedule,
+    setSchedule, 
+    setIsSchedulingMode, 
+    startSchedule, 
+    scheduleTitle, 
+    setScheduleTitle, 
+    commenceTime, 
+    setCommenceTime, 
+    commenceDay, 
+    setCommenceDay,
+    scheduleStartOption, 
+    setScheduleStartOption, 
+    timerIncrement,
+    isRecurring, // Now exists on TimerContextType
+    setIsRecurring, // Now exists on TimerContextType
+    recurrenceFrequency, // Now exists on TimerContextType
+    setRecurrenceFrequency, // Now exists on TimerContextType
+    isSchedulePending,
+    saveCurrentScheduleAsTemplate, // Now exists on TimerContextType
   } = useTimer();
+  const { toast } = useToast();
 
-  const [localScheduleTitle, setLocalScheduleTitle] = useState(globalScheduleTitle);
-  const [localCommenceDate, setLocalCommenceDate] = useState<Date | undefined>(undefined);
-  const [localCommenceTime, setLocalCommenceTime] = useState(globalCommenceTime);
-  const [localScheduleItems, setLocalScheduleItems] = useState<ScheduledTimer[]>(
-    globalSchedule.length > 0 ? globalSchedule : [{ id: '1', type: 'focus', durationMinutes: 25, title: 'Focus', isCustom: false }]
-  );
-  const [localScheduleStartOption, setLocalScheduleStartOption] = useState(globalScheduleStartOption);
-
-  // Initialize local state from global context on mount
+  // Initialize schedule if it's empty (e.g., first time opening schedule form)
   useEffect(() => {
-    setLocalScheduleTitle(globalScheduleTitle);
-    setLocalCommenceTime(globalCommenceTime);
-    setLocalScheduleStartOption(globalScheduleStartOption);
-    setLocalScheduleItems(globalSchedule.length > 0 ? globalSchedule : [{ id: '1', type: 'focus', durationMinutes: 25, title: 'Focus', isCustom: false }]);
-  }, [globalScheduleTitle, globalCommenceTime, globalScheduleStartOption, globalSchedule]);
-
-  // Set localCommenceDate based on globalCommenceDay
-  useEffect(() => {
-    if (globalCommenceDay !== null) {
-      const today = new Date();
-      const dayOfWeek = today.getDay();
-      const diff = (globalCommenceDay - dayOfWeek + 7) % 7;
-      const targetDate = new Date(today);
-      targetDate.setDate(today.getDate() + diff);
-      setLocalCommenceDate(targetDate);
-    } else {
-      setLocalCommenceDate(undefined);
+    if (schedule.length === 0) {
+      setSchedule([
+        { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25, isCustom: false },
+        { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+        { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60, isCustom: false },
+        { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30, isCustom: false },
+        { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45, isCustom: false },
+        { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
+      ]);
     }
-  }, [globalCommenceDay]);
+  }, [schedule, setSchedule]);
 
-  const handleAddItem = () => {
-    setLocalScheduleItems([...localScheduleItems, { id: String(Date.now()), type: 'focus', durationMinutes: 25, title: 'Focus', isCustom: false }]);
+  const [activeTab, setActiveTab] = useState("plan");
+
+  const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
+  const scheduleTitleInputRef = useRef<HTMLInputElement>(null);
+
+  const [editingCustomTitleId, setEditingCustomTitleId] = useState<string | null>(null);
+  const [tempCustomTitle, setTempCustomTitle] = useState<string>("");
+  const customTitleInputRef = useRef<HTMLInputElement>(null);
+  const longPressRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPress = useRef(false);
+  const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false);
+
+  // Order for displaying days in the Select component (Monday first, Sunday last)
+  const daysOfWeekDisplayOrder = [
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+  ];
+
+  // Map display day name to its Date.getDay() index (0 for Sunday, 1 for Monday, etc.)
+  const getDayIndexForDisplayDay = (displayDay: string): number => {
+    switch (displayDay) {
+      case "Monday": return 1;
+      case "Tuesday": return 2;
+      case "Wednesday": return 3;
+      case "Thursday": return 4;
+      case "Friday": return 5;
+      case "Saturday": return 6;
+      case "Sunday": return 0;
+      default: return -1; // Should not happen
+    }
   };
 
-  const handleRemoveItem = (id: string) => {
-    setLocalScheduleItems(localScheduleItems.filter(item => item.id !== id));
+  useEffect(() => {
+    if (isEditingScheduleTitle && scheduleTitleInputRef.current) {
+      scheduleTitleInputRef.current.focus();
+      scheduleTitleInputRef.current.select();
+    }
+  }, [isEditingScheduleTitle]);
+
+  useEffect(() => {
+    if (editingCustomTitleId && customTitleInputRef.current) {
+      customTitleInputRef.current.focus();
+      customTitleInputRef.current.select();
+    }
+  }, [editingCustomTitleId]);
+
+  const handleEnterKeyNavigation = useCallback((e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent default form submission or button click
+
+      const activeElement = document.activeElement as HTMLElement;
+      const inputType = activeElement.dataset.inputType; // Get the custom data attribute
+
+      if (inputType) {
+        const formElement = document.getElementById('plan-tab-content');
+        if (!formElement) return;
+
+        // Find all elements of the same inputType within the form
+        const sameTypeElements = Array.from(
+          formElement.querySelectorAll<HTMLElement>(`[data-input-type="${inputType}"]`)
+        ).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0); // Filter out hidden elements
+
+        const currentIndex = sameTypeElements.indexOf(activeElement);
+        if (currentIndex > -1 && currentIndex < sameTypeElements.length - 1) {
+          sameTypeElements[currentIndex + 1].focus();
+        } else if (currentIndex === sameTypeElements.length - 1) {
+          // If it's the last element of its type, blur it
+          activeElement.blur();
+        }
+      } else {
+        // If it's a button or other element without data-input-type,
+        // let it perform its default action or just blur.
+        activeElement.blur();
+      }
+    }
+  }, []);
+
+  const handleScheduleTitleClick = () => {
+    setIsEditingScheduleTitle(true);
   };
 
-  const handleItemChange = (id: string, field: string, value: any) => {
-    setLocalScheduleItems(localScheduleItems.map(item =>
-      item.id === id ? { ...item, [field]: value, isCustom: field === 'customTitle' && value !== 'Focus' && value !== 'Break' } : item
-    ));
+  const handleScheduleTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingScheduleTitle(false);
+      e.currentTarget.blur();
+      if (scheduleTitle.trim() === "") {
+        setScheduleTitle("My Schedule");
+      }
+      handleEnterKeyNavigation(e); // Call navigation after handling local logic
+    }
   };
 
-  const handleStartSchedule = () => {
-    if (localScheduleItems.length === 0) {
+  const handleScheduleTitleInputBlur = () => {
+    setIsEditingScheduleTitle(false);
+    if (scheduleTitle.trim() === "") {
+      setScheduleTitle("My Schedule");
+    }
+  };
+
+  const handleAddTimer = () => {
+    setSchedule((prev: ScheduledTimer[]) => [
+      ...prev,
+      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement, isCustom: false } as ScheduledTimer // Explicitly cast
+    ]);
+  };
+
+  const handleUpdateTimer = (id: string, field: keyof ScheduledTimer, value: any) => {
+    setSchedule((prev: ScheduledTimer[]) =>
+      prev.map(timer => {
+        if (timer.id === id) {
+          if (field === 'customTitle') {
+            return { ...timer, [field]: value, isCustom: value.trim() !== "" } as ScheduledTimer; // Explicitly cast
+          } else if (field === 'type') {
+            return { ...timer, [field]: value, customTitle: undefined, isCustom: false } as ScheduledTimer; // Explicitly cast
+          }
+          return { ...timer, [field]: value } as ScheduledTimer; // Explicitly cast
+        }
+        return timer;
+      })
+    );
+  };
+
+  const handleRemoveTimer = (id: string) => {
+    setSchedule((prev: ScheduledTimer[]) => prev.filter((timer: ScheduledTimer) => timer.id !== id));
+  };
+
+  const handleCommenceSchedule = () => {
+    if (!scheduleTitle.trim()) {
       toast({
-        title: "Error",
-        description: "Please add at least one schedule item.",
+        title: "Schedule Title Missing",
+        description: "Please enter a title for your schedule.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (schedule.length === 0) {
+      toast({
+        title: "No Timers in Schedule",
+        description: "Please add at least one timer to your schedule.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (schedule.some(timer => timer.durationMinutes <= 0)) {
+      toast({
+        title: "Invalid Duration",
+        description: "Timers must have a duration greater than 0 minutes.",
         variant: "destructive",
       });
       return;
     }
 
-    // Update global context states with local form values
-    setGlobalScheduleTitle(localScheduleTitle);
-    setSchedule(localScheduleItems);
-    setGlobalCommenceTime(localCommenceTime);
-    setGlobalScheduleStartOption(localScheduleStartOption);
-    
-    if (localScheduleStartOption === 'custom_time' && localCommenceDate) {
-      setGlobalCommenceDay(localCommenceDate.getDay());
-      setIsSchedulePending(true);
-    } else {
-      setGlobalCommenceDay(null); // For 'now' option, day is irrelevant
-      startSchedule(localScheduleItems);
-    }
-    
-    setIsSchedulingMode(false);
-    toast({
-      title: "Schedule Set!",
-      description: `Your schedule "${localScheduleTitle}" is ready.`,
-    });
+    startSchedule();
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
-    setLocalCommenceDate(date);
-    if (date) {
-      setGlobalCommenceDay(date.getDay()); // Update global day when date is selected
-    } else {
-      setGlobalCommenceDay(null);
+  const handleLongPressStart = (timer: ScheduledTimer) => {
+    isLongPress.current = false;
+    longPressRef.current = setTimeout(() => {
+      isLongPress.current = true;
+      setEditingCustomTitleId(timer.id);
+      setTempCustomTitle(timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break'));
+    }, 500);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
     }
   };
+
+  const handleCustomTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, timerId: string) => {
+    if (e.key === 'Enter') {
+      handleUpdateTimer(timerId, 'customTitle', tempCustomTitle);
+      setEditingCustomTitleId(null);
+      e.currentTarget.blur();
+      handleEnterKeyNavigation(e); // Call navigation after handling local logic
+    }
+  };
+
+  const handleCustomTitleInputBlur = (timerId: string) => {
+    handleUpdateTimer(timerId, 'customTitle', tempCustomTitle);
+    setEditingCustomTitleId(null);
+  };
+
+  const handleTypeButtonClick = (timer: ScheduledTimer) => {
+    if (!isLongPress.current) {
+      handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus');
+    }
+  };
+
+  const handleSaveSchedule = () => {
+    saveCurrentScheduleAsTemplate();
+    setIsSaveButtonBlue(true);
+    setTimeout(() => setIsSaveButtonBlue(false), 1000); // Reset color after 1 second
+  };
+
+  const buttonText = isSchedulePending 
+    ? "Pending..." 
+    : (scheduleStartOption === 'now' ? "Begin" : "Prepare");
 
   return (
-    <div className="p-4 space-y-6">
-      <h3 className="text-xl font-semibold text-center">Create Schedule</h3>
-      <Input
-        placeholder="Schedule Title"
-        value={localScheduleTitle}
-        onChange={(e) => setLocalScheduleTitle(e.target.value)}
-        className="text-lg font-semibold h-auto py-2 px-3"
-      />
+    <Card className="px-0">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 px-4 lg:px-6">
+          <TabsTrigger value="plan">Plan</TabsTrigger>
+          <TabsTrigger value="saved">Saved</TabsTrigger>
+        </TabsList>
+        <CardHeader className="flex flex-row items-center justify-between py-4 px-4 lg:px-6">
+          {activeTab === 'plan' ? (
+            isEditingScheduleTitle ? (
+              <Input
+                ref={scheduleTitleInputRef}
+                value={scheduleTitle}
+                onChange={(e) => setScheduleTitle(e.target.value)}
+                onKeyDown={handleScheduleTitleInputKeyDown}
+                onBlur={handleScheduleTitleInputBlur}
+                placeholder="Schedule Title"
+                className="text-2xl font-bold h-auto py-2"
+                onFocus={(e) => e.target.select()}
+                data-input-type="schedule-title" // Added data-input-type
+              />
+            ) : (
+              <CardTitle
+                className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
+                onClick={handleScheduleTitleClick}
+              >
+                {scheduleTitle || "My Schedule"}
+              </CardTitle>
+            )
+          ) : (
+            <CardTitle className="text-2xl font-bold h-auto py-2">
+              Templates
+            </CardTitle>
+          )}
+          <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)} data-ignore-enter-nav>
+            <X className="h-5 w-5" />
+          </Button>
+        </CardHeader>
+        <TabsContent value="plan" className="pt-6 pb-6 space-y-6 px-4 lg:px-6" id="plan-tab-content">
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+            {schedule.map((timer, index) => (
+              <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
+                <div className="flex items-center gap-2 flex-grow">
+                  <span className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start">{index + 1}.</span>
+                  <Input
+                    placeholder="Timer Title"
+                    value={timer.title}
+                    onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
+                    className="flex-grow min-w-0"
+                    onFocus={(e) => e.target.select()}
+                    onKeyDown={handleEnterKeyNavigation}
+                    data-input-type="timer-title" // Added data-input-type
+                  />
+                </div>
+                
+                <Input
+                  type="number"
+                  placeholder="Min"
+                  value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "") {
+                      handleUpdateTimer(timer.id, 'durationMinutes', 0);
+                    } else {
+                      handleUpdateTimer(timer.id, 'durationMinutes', parseFloat(value) || 0);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (timer.durationMinutes === 0) {
+                      handleUpdateTimer(timer.id, 'durationMinutes', timerIncrement);
+                    }
+                  }}
+                  min={timerIncrement}
+                  step={timerIncrement}
+                  className="w-20 text-center flex-shrink-0"
+                  onFocus={(e) => e.target.select()}
+                  onKeyDown={handleEnterKeyNavigation}
+                  data-input-type="timer-duration" // Added data-input-type
+                />
+                
+                {editingCustomTitleId === timer.id ? (
+                  <Input
+                    ref={customTitleInputRef}
+                    value={tempCustomTitle}
+                    onChange={(e) => setTempCustomTitle(e.target.value)}
+                    onKeyDown={(e) => handleCustomTitleInputKeyDown(e, timer.id)}
+                    onBlur={() => handleCustomTitleInputBlur(timer.id)}
+                    className="w-24 h-10 text-sm font-medium flex-shrink-0 text-center"
+                    onFocus={(e) => e.target.select()}
+                    data-input-type="timer-custom-title" // Added data-input-type
+                  />
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-24 h-auto text-xs font-medium whitespace-normal text-center flex items-center justify-center", // Updated classes
+                      timer.isCustom ? "bg-blue-200 text-blue-800 hover:bg-blue-300" :
+                      timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
+                    )}
+                    onMouseDown={() => handleLongPressStart(timer)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                    onTouchStart={() => handleLongPressStart(timer)}
+                    onTouchEnd={handleLongPressEnd}
+                    onClick={() => handleTypeButtonClick(timer)}
+                    onKeyDown={handleEnterKeyNavigation} // Add navigation to button
+                    data-input-type="timer-type-button" // Added data-input-type for consistency, though it's a button
+                  >
+                    {timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break')}
+                  </Button>
+                )}
+                
+                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0" data-ignore-enter-nav>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </div>
 
-      <div className="space-y-4">
-        {localScheduleItems.map((item, index) => (
-          <div key={item.id} className="flex items-center gap-2 p-2 border rounded-md">
-            <Input
-              type="text"
-              placeholder="Item Title (e.g., Deep Work, Lunch)"
-              value={item.customTitle || item.title}
-              onChange={(e) => handleItemChange(item.id, 'customTitle', e.target.value)}
-              className="flex-grow"
-            />
-            <Select
-              value={item.type}
-              onValueChange={(value: 'focus' | 'break') => handleItemChange(item.id, 'type', value)}
+          <Button onClick={handleAddTimer} variant="outline" className="w-full" onKeyDown={handleEnterKeyNavigation} data-input-type="add-timer-button">
+            <Plus className="mr-2 h-4 w-4" /> Add Timer
+          </Button>
+
+          <div className="flex gap-2 mt-4 items-center">
+            <Button
+              variant={scheduleStartOption === 'now' ? 'secondary' : 'outline'}
+              size="sm"
+              className="text-xs px-3 py-1 h-auto text-muted-foreground"
+              onClick={() => setScheduleStartOption('now')}
+              onKeyDown={handleEnterKeyNavigation}
+              data-input-type="start-option-button"
             >
-              <SelectTrigger className="w-[100px]">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="focus">Focus</SelectItem>
-                <SelectItem value="break">Break</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input
-              type="number"
-              value={item.durationMinutes}
-              onChange={(e) => handleItemChange(item.id, 'durationMinutes', parseInt(e.target.value) || 0)}
-              className="w-20 text-center"
-              min="1"
-            />
-            <Button variant="destructive" size="sm" onClick={() => handleRemoveItem(item.id)}>
-              -
+              Now
+            </Button>
+            <Button
+              variant={scheduleStartOption === 'manual' ? 'secondary' : 'outline'} // Fixed comparison
+              size="sm"
+              className="text-xs px-3 py-1 h-auto text-muted-foreground"
+              onClick={() => setScheduleStartOption('manual')} // Fixed assignment
+              onKeyDown={handleEnterKeyNavigation}
+              data-input-type="start-option-button"
+            >
+              Manual
+            </Button>
+            <Button
+              variant={scheduleStartOption === 'custom_time' ? 'secondary' : 'outline'}
+              size="sm"
+              className="text-xs px-3 py-1 h-auto text-muted-foreground"
+              onClick={() => setScheduleStartOption('custom_time')}
+              onKeyDown={handleEnterKeyNavigation}
+              data-input-type="start-option-button"
+            >
+              <Clock className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSaveSchedule}
+              className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500")}
+              onKeyDown={handleEnterKeyNavigation}
+              data-input-type="save-schedule-button"
+            >
+              <Save className="h-5 w-5" />
             </Button>
           </div>
-        ))}
-        <Button variant="outline" onClick={handleAddItem} className="w-full">
-          Add Item
-        </Button>
-      </div>
 
-      <div className="space-y-4">
-        <Label htmlFor="start-option">Start Option</Label>
-        <Select
-          value={localScheduleStartOption}
-          onValueChange={(value: 'now' | 'custom_time') => setLocalScheduleStartOption(value)}
-        >
-          <SelectTrigger id="start-option">
-            <SelectValue placeholder="When to start?" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="now">Start Now</SelectItem>
-            <SelectItem value="custom_time">Custom Time</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {localScheduleStartOption === 'custom_time' && (
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[200px] justify-start text-left font-normal",
-                    !localCommenceDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {localCommenceDate ? format(localCommenceDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={localCommenceDate}
-                  onSelect={handleDateSelect}
-                  initialFocus
+          {scheduleStartOption === 'custom_time' && (
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="space-y-2">
+                <Input
+                  id="commence-time"
+                  type="time"
+                  value={commenceTime}
+                  onChange={(e) => {
+                    setCommenceTime(e.target.value);
+                  }}
+                  onFocus={(e) => e.target.select()}
+                  onKeyDown={handleEnterKeyNavigation}
+                  data-input-type="commence-time" // Added data-input-type
                 />
-              </PopoverContent>
-            </Popover>
-            <Input
-              type="time"
-              value={localCommenceTime}
-              onChange={(e) => setLocalCommenceTime(e.target.value)}
-              className="w-[120px]"
-            />
-          </div>
-        )}
-      </div>
+              </div>
+              <div className="space-y-2">
+                <Select 
+                  value={commenceDay === null ? "today-default" : commenceDay.toString()} // Use "today-default" for null
+                  onValueChange={(value) => {
+                    setCommenceDay(value === "today-default" ? null : parseInt(value)); // Set to null if "today-default" is selected
+                  }}
+                >
+                  <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
+                    <SelectValue placeholder="Select Day"> {/* Placeholder for blank */}
+                      {commenceDay === null ? "Today (default)" : DAYS_OF_WEEK[commenceDay]}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="today-default">Today (default)</SelectItem> {/* Use non-empty value */}
+                    {daysOfWeekDisplayOrder.map((day) => (
+                      <SelectItem key={day} value={getDayIndexForDisplayDay(day).toString()}>
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
 
-      <div className="flex justify-end gap-2">
-        <Button variant="ghost" onClick={() => setIsSchedulingMode(false)}>
-          Cancel
-        </Button>
-        <Button onClick={handleStartSchedule}>
-          {localScheduleStartOption === 'now' ? 'Start Schedule' : 'Schedule'}
-        </Button>
-      </div>
-    </div>
+          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending} onKeyDown={handleEnterKeyNavigation} data-input-type="commence-schedule-button">
+            <Play className="mr-2 h-5 w-5" />
+            {buttonText}
+          </Button>
+        </TabsContent>
+        <TabsContent value="saved" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
+          <ScheduleTemplates setActiveTab={setActiveTab} />
+        </TabsContent>
+      </Tabs>
+    </Card>
   );
 };
 
