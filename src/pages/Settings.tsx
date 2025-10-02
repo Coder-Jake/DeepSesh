@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 import { Input } from "@/components/ui/input"; // Import Input
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { NotificationSettings } from "@/types/timer"; // Import NotificationSettings type
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 
 const Settings = () => {
   const { 
@@ -82,7 +83,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  timeoutRefs.current = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   // Ref to store the *last saved* or *initial loaded* state for comparison
   // Initialize with current context values on first render
@@ -734,19 +735,72 @@ const Settings = () => {
             <AccordionContent className="space-y-6 pt-4">
               <div className="space-y-2">
                 <Label>Profile Visibility</Label>
-                <Select 
-                  value={profileVisibility} 
-                  onValueChange={(value: string) => setProfileVisibility(value as 'public' | 'friends' | 'private')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select visibility" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
-                    <SelectItem value="friends">Friends Only - Only friends can see details</SelectItem>
-                    <SelectItem value="private">Private - Minimal information shared</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <TooltipProvider delayDuration={0}>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="profile-public"
+                        checked={profileVisibility === 'public'}
+                        onCheckedChange={() => setProfileVisibility('public')}
+                      />
+                      <Label htmlFor="profile-public" className="text-sm font-normal">
+                        Public
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm text-muted-foreground cursor-help">
+                            - Anyone can see your profile
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Anyone can see your profile</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="profile-friends"
+                        checked={profileVisibility === 'friends'}
+                        onCheckedChange={() => setProfileVisibility('friends')}
+                      />
+                      <Label htmlFor="profile-friends" className="text-sm font-normal">
+                        Friends Only
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm text-muted-foreground cursor-help">
+                            - Only friends can see details
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Only friends can see details</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="profile-private"
+                        checked={profileVisibility === 'private'}
+                        onCheckedChange={() => setProfileVisibility('private')}
+                      />
+                      <Label htmlFor="profile-private" className="text-sm font-normal">
+                        Private
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm text-muted-foreground cursor-help">
+                            - Minimal information shared
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Minimal information shared</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
+                </div>
               </div>
 
               {/* Verification Subheading */}
