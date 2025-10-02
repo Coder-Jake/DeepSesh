@@ -361,7 +361,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     if (existingTemplate) {
       toast({
-        title: ""${scheduleTitle}" Already Exists",
+        title: " "${scheduleTitle}" Already Exists",
         description: `"${scheduleTitle}" already exists.
         Long-press 'Override' to replace it.`,
         variant: "destructive", // Use destructive variant for warning
