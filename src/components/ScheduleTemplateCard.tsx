@@ -31,7 +31,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
   const getScheduleSummary = (schedule: ScheduledTimer[]) => {
     if (schedule.length === 0) return "No timers";
     const totalDuration = schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
-    return `${schedule.length} timers, ${totalDuration} \n min`;
+    return `${schedule.length} timers, ${totalDuration} <br> min`;
   };
 
   const getCommenceInfo = (template: ScheduledTimerTemplate) => {
