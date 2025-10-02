@@ -398,7 +398,7 @@ const Index = () => {
   };
 
   const handleCircularProgressChange = (progress: number) => {
-    if (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) return; // Prevent interaction if pending
+    if (isRunning || isPaused || isFlashing || isScheduleActive) return; // Prevent interaction if schedule is active
     
     if (timerType === 'focus') {
       const minutes = (progress / 100) * 120;
@@ -414,7 +414,7 @@ const Index = () => {
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
-    if (isRunning || isPaused || isScheduleActive || isSchedulePending) return; // Prevent interaction if pending
+    if (isRunning || isPaused || isScheduleActive) return; // Prevent interaction if schedule is active
 
     if (mode === 'focus') {
       setTimerType('focus');
@@ -653,7 +653,7 @@ const Index = () => {
                     size={280}
                     strokeWidth={12}
                     progress={(timeLeft / (currentItemDuration * 60)) * 100}
-                    interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive && !isSchedulePending} // Disable interaction if pending
+                    interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive} // Removed isSchedulePending
                     onInteract={handleCircularProgressChange}
                     className={isFlashing ? 'animate-pulse' : ''}
                   >
@@ -673,7 +673,7 @@ const Index = () => {
                       size="lg" 
                       className="px-8" 
                       onClick={isRunning ? pauseTimer : startTimer}
-                      disabled={isSchedulePending} // Disable start/pause if schedule is pending
+                      // Removed disabled={isSchedulePending}
                     >
                       {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
@@ -696,7 +696,7 @@ const Index = () => {
                   </div>
                 )}
 
-                {!isScheduleActive && !isSchedulePending && ( // Hide timer settings if schedule is active or pending
+                {!isScheduleActive && ( // Hide timer settings if schedule is active (removed isSchedulePending)
                   <div className="flex justify-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span 
