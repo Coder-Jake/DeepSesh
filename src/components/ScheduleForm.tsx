@@ -83,24 +83,33 @@ const ScheduleForm: React.FC = () => {
     }
   }, [editingCustomTitleId]);
 
-  const handleEnterKeyNavigation = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>) => {
+  const handleEnterKeyNavigation = useCallback((e: React.KeyboardEvent<HTMLElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault();
-      const formElement = document.getElementById('plan-tab-content');
-      if (!formElement) return;
+      e.preventDefault(); // Prevent default form submission or button click
 
-      const focusableElements = Array.from(
-        formElement.querySelectorAll<HTMLElement>(
-          'input:not([type="hidden"]):not([disabled]), button:not([disabled]):not([data-ignore-enter-nav])'
-        )
-      ).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0); // Filter out hidden elements
+      const activeElement = document.activeElement as HTMLElement;
+      const inputType = activeElement.dataset.inputType; // Get the custom data attribute
 
-      const currentIndex = focusableElements.indexOf(document.activeElement as HTMLElement);
-      if (currentIndex > -1 && currentIndex < focusableElements.length - 1) {
-        focusableElements[currentIndex + 1].focus();
-      } else if (currentIndex === focusableElements.length - 1) {
-        // If it's the last element, blur it
-        (document.activeElement as HTMLElement)?.blur();
+      if (inputType) {
+        const formElement = document.getElementById('plan-tab-content');
+        if (!formElement) return;
+
+        // Find all elements of the same inputType within the form
+        const sameTypeElements = Array.from(
+          formElement.querySelectorAll<HTMLElement>(`[data-input-type="${inputType}"]`)
+        ).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0); // Filter out hidden elements
+
+        const currentIndex = sameTypeElements.indexOf(activeElement);
+        if (currentIndex > -1 && currentIndex < sameTypeElements.length - 1) {
+          sameTypeElements[currentIndex + 1].focus();
+        } else if (currentIndex === sameTypeElements.length - 1) {
+          // If it's the last element of its type, blur it
+          activeElement.blur();
+        }
+      } else {
+        // If it's a button or other element without data-input-type,
+        // let it perform its default action or just blur.
+        activeElement.blur();
       }
     }
   }, []);
@@ -247,6 +256,7 @@ const ScheduleForm: React.FC = () => {
                 placeholder="Schedule Title"
                 className="text-2xl font-bold h-auto py-2"
                 onFocus={(e) => e.target.select()}
+                data-input-type="schedule-title" // Added data-input-type
               />
             ) : (
               <CardTitle
@@ -278,6 +288,7 @@ const ScheduleForm: React.FC = () => {
                     className="flex-grow min-w-0"
                     onFocus={(e) => e.target.select()}
                     onKeyDown={handleEnterKeyNavigation}
+                    data-input-type="timer-title" // Added data-input-type
                   />
                 </div>
                 
@@ -303,6 +314,7 @@ const ScheduleForm: React.FC = () => {
                   className="w-20 text-center flex-shrink-0"
                   onFocus={(e) => e.target.select()}
                   onKeyDown={handleEnterKeyNavigation}
+                  data-input-type="timer-duration" // Added data-input-type
                 />
                 
                 {editingCustomTitleId === timer.id ? (
@@ -310,10 +322,11 @@ const ScheduleForm: React.FC = () => {
                     ref={customTitleInputRef}
                     value={tempCustomTitle}
                     onChange={(e) => setTempCustomTitle(e.target.value)}
-                    onKeyDown={(e) => handleCustomTitleInputInputKeyDown(e, timer.id)}
+                    onKeyDown={(e) => handleCustomTitleInputKeyDown(e, timer.id)}
                     onBlur={() => handleCustomTitleInputBlur(timer.id)}
                     className="w-24 h-10 text-sm font-medium flex-shrink-0 text-center"
                     onFocus={(e) => e.target.select()}
+                    data-input-type="timer-custom-title" // Added data-input-type
                   />
                 ) : (
                   <Button
@@ -330,6 +343,7 @@ const ScheduleForm: React.FC = () => {
                     onTouchEnd={handleLongPressEnd}
                     onClick={() => handleTypeButtonClick(timer)}
                     onKeyDown={handleEnterKeyNavigation} // Add navigation to button
+                    data-input-type="timer-type-button" // Added data-input-type for consistency, though it's a button
                   >
                     {timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break')}
                   </Button>
@@ -342,7 +356,7 @@ const ScheduleForm: React.FC = () => {
             ))}
           </div>
 
-          <Button onClick={handleAddTimer} variant="outline" className="w-full" onKeyDown={handleEnterKeyNavigation}>
+          <Button onClick={handleAddTimer} variant="outline" className="w-full" onKeyDown={handleEnterKeyNavigation} data-input-type="add-timer-button">
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
@@ -353,6 +367,7 @@ const ScheduleForm: React.FC = () => {
               className="text-xs px-3 py-1 h-auto text-muted-foreground"
               onClick={() => setScheduleStartOption('now')}
               onKeyDown={handleEnterKeyNavigation}
+              data-input-type="start-option-button"
             >
               Now
             </Button>
@@ -362,6 +377,7 @@ const ScheduleForm: React.FC = () => {
               className="text-xs px-3 py-1 h-auto text-muted-foreground"
               onClick={() => setScheduleStartOption('manual')}
               onKeyDown={handleEnterKeyNavigation}
+              data-input-type="start-option-button"
             >
               Manual
             </Button>
@@ -371,6 +387,7 @@ const ScheduleForm: React.FC = () => {
               className="text-xs px-3 py-1 h-auto text-muted-foreground"
               onClick={() => setScheduleStartOption('custom_time')}
               onKeyDown={handleEnterKeyNavigation}
+              data-input-type="start-option-button"
             >
               <Clock className="h-4 w-4" />
             </Button>
@@ -380,6 +397,7 @@ const ScheduleForm: React.FC = () => {
               onClick={handleSaveSchedule}
               className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500")}
               onKeyDown={handleEnterKeyNavigation}
+              data-input-type="save-schedule-button"
             >
               <Save className="h-5 w-5" />
             </Button>
@@ -397,13 +415,14 @@ const ScheduleForm: React.FC = () => {
                   }}
                   onFocus={(e) => e.target.select()}
                   onKeyDown={handleEnterKeyNavigation}
+                  data-input-type="commence-time" // Added data-input-type
                 />
               </div>
               <div className="space-y-2">
                 <Select value={commenceDay.toString()} onValueChange={(value) => {
                   setCommenceDay(parseInt(value));
                 }}>
-                  <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation}>
+                  <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day"> {/* Added data-input-type */}
                     <SelectValue>
                       {commenceDay === currentDayIndex ? "Today" : daysOfWeek[commenceDay]}
                     </SelectValue>
@@ -420,7 +439,7 @@ const ScheduleForm: React.FC = () => {
             </div>
           )}
 
-          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending} onKeyDown={handleEnterKeyNavigation}>
+          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending} onKeyDown={handleEnterKeyNavigation} data-input-type="commence-schedule-button">
             <Play className="mr-2 h-5 w-5" />
             {buttonText}
           </Button>
