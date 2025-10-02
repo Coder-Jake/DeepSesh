@@ -7,7 +7,7 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 
 const History = () => {
   const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData } = useProfile(); // Use persistent state from context
@@ -170,16 +170,18 @@ const History = () => {
         </div>
         {/* Export link at the bottom */}
         <div className="mt-8 text-center">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link to="/chip-in" className="text-sm text-muted-foreground hover:underline">
-                <p>Export</p>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Activates after donation</p>
-            </TooltipContent>
-          </Tooltip>
+          <TooltipProvider delayDuration={0}> {/* Added delayDuration={0} for instant tooltip */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="text-sm text-muted-foreground hover:underline cursor-default"> {/* Removed Link, added cursor-default */}
+                  Export
+                </p>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Activates after <Link to="/chip-in" className="text-blue-500 hover:underline">donation</Link></p> {/* Hyperlinked 'donation' */}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </main>
   );
