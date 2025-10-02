@@ -125,8 +125,8 @@ const ToastAction = React.forwardRef<
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       onTouchCancel={handlePressEnd}
       {...props}
     />
