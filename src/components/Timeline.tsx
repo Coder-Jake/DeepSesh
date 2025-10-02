@@ -1,31 +1,32 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input"; // Import Input component
 import { ScheduledTimer } from "@/types/timer";
 import { cn } from "@/lib/utils";
-import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
+import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
 
 interface TimelineProps {
   schedule: ScheduledTimer[];
   currentScheduleIndex: number;
   timeLeft: number;
-  scheduleTitle: string;
+  // scheduleTitle: string; // No longer passed as a prop, will be taken from context
   commenceTime: string;
-  commenceDay: number; // This prop will now always be a number (resolved from null in Index.tsx)
-  isSchedulePending: boolean; // New prop
-  onCountdownEnd: () => void; // New prop
+  commenceDay: number;
+  isSchedulePending: boolean;
+  onCountdownEnd: () => void;
 }
 
 const Timeline: React.FC<TimelineProps> = ({
   schedule,
   currentScheduleIndex,
   timeLeft,
-  scheduleTitle,
+  // scheduleTitle, // Remove from destructuring
   commenceTime,
   commenceDay,
   isSchedulePending,
   onCountdownEnd,
 }) => {
-  const { formatTime } = useTimer();
+  const { formatTime, scheduleTitle, setScheduleTitle } = useTimer(); // Get scheduleTitle and setScheduleTitle from context
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -105,7 +106,14 @@ const Timeline: React.FC<TimelineProps> = ({
       <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-xl">{scheduleTitle}</CardTitle>
+          <CardTitle className="text-xl">
+            <Input
+              value={scheduleTitle}
+              onChange={(e) => setScheduleTitle(e.target.value)}
+              className="text-xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+              aria-label="Schedule Title"
+            />
+          </CardTitle>
           <p className="text-sm text-muted-foreground">Total: {totalScheduleDuration} mins</p>
         </CardHeader>
         <CardContent className="space-y-2">
