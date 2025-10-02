@@ -29,7 +29,9 @@ const ChipIn = () => {
   };
 
   const handleDonate = () => {
-    if (!amount || parseFloat(amount) <= 0) {
+    const donationAmount = parseFloat(amount);
+
+    if (!amount || donationAmount <= 0) {
       toast({
         title: "Invalid amount",
         description: "Please enter a valid donation amount.",
@@ -39,10 +41,17 @@ const ChipIn = () => {
     }
 
     // In a real app, this would integrate with a payment processor
-    toast({
-      title: "Is that really all you've got? 💜",
-      description: `Please donate a larger amount!`,
-    });
+    if (donationAmount > 50) {
+      toast({
+        title: "Congratulations! 🎉",
+        description: "Please speak to the dev to collect your prize!",
+      });
+    } else {
+      toast({
+        title: "Is that really all you've got? 💜",
+        description: `Please donate a larger amount!`,
+      });
+    }
     
     setAmount("");
     setMessage("");
