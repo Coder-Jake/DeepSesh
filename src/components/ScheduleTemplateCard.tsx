@@ -66,12 +66,8 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
         {template.scheduleStartOption === 'custom_time' && (
           <p className="text-sm text-gray-600 mb-3">{getCommenceInfo(template)}</p>
         )}
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={handleLoad}>
-            <Play className="h-4 w-4 mr-2" /> Load
-          </Button>
-        </div>
-
+        
+        {/* Share button */}
         <div className="absolute bottom-2 left-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -90,6 +86,16 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Load button moved to bottom right */}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleLoad}
+          className="absolute bottom-2 right-2"
+        >
+          <Play className="h-4 w-4 mr-2" /> Load
+        </Button>
       </CardContent>
       <Button
         variant="ghost"
