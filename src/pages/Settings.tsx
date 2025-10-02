@@ -70,14 +70,7 @@ const Settings = () => {
   } = useTimer();
 
   // Local state for temporary UI interactions or derived values
-  const [selectedFocusDuration, setSelectedFocusDuration] = useState<string>(focusMinutes.toString());
-  const [customFocusDuration, setCustomFocusDuration] = useState<string>(
-    !['15', '25', '45', '55', '75', '90'].includes(focusMinutes.toString()) ? focusMinutes.toString() : ''
-  );
-  const [selectedBreakDuration, setSelectedBreakDuration] = useState<string>(breakMinutes.toString());
-  const [customBreakDuration, setCustomBreakDuration] = useState<string>(
-    !['5', '10', '15', '20', '30'].includes(breakMinutes.toString()) ? breakMinutes.toString() : ''
-  );
+  // Removed selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -119,26 +112,20 @@ const Settings = () => {
   // This runs once on mount to set up local states from context.
   // It does NOT update savedSettingsRef.current after initial mount.
   useEffect(() => {
-    setSelectedFocusDuration(focusMinutes.toString());
-    setCustomFocusDuration(
-      !['15', '25', '45', '55', '75', '90'].includes(focusMinutes.toString()) ? focusMinutes.toString() : ''
-    );
-    setSelectedBreakDuration(breakMinutes.toString());
-    setCustomBreakDuration(
-      !['5', '10', '15', '20', '30'].includes(breakMinutes.toString()) ? breakMinutes.toString() : ''
-    );
+    // Removed local state initializations for focus/break durations
     setCurrentTimerIncrement(timerIncrement);
     // No update to savedSettingsRef.current here after initial render
   }, [
-    focusMinutes, breakMinutes, timerIncrement, // Only dependencies that affect local state initialization
+    timerIncrement, // Only dependencies that affect local state initialization
     // Other context values are directly used in the UI and don't need local state copies for display
   ]);
 
 
   // Effect to detect changes in local UI states compared to saved settings
   useEffect(() => {
-    const currentFocusVal = selectedFocusDuration === 'custom' ? (parseInt(customFocusDuration) || 0) : parseInt(selectedFocusDuration);
-    const currentBreakVal = selectedBreakDuration === 'custom' ? (parseInt(customBreakDuration) || 0) : parseInt(selectedBreakDuration);
+    // Directly use context values for comparison
+    const currentFocusVal = focusMinutes;
+    const currentBreakVal = breakMinutes;
 
     const currentUiSettings = {
       showSessionsWhileActive,
@@ -182,7 +169,7 @@ const Settings = () => {
   }, [
     showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration, maxDistance,
+    manualTransition, focusMinutes, breakMinutes, maxDistance, // Updated dependencies
     askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPrivate, // Renamed
@@ -337,15 +324,8 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    const newFocusMinutes = selectedFocusDuration === 'custom' 
-      ? Math.max(1, parseInt(customFocusDuration) || 1) 
-      : parseInt(selectedFocusDuration);
-    const newBreakMinutes = selectedBreakDuration === 'custom' 
-      ? Math.max(1, parseInt(customBreakDuration) || 1) 
-      : parseInt(selectedBreakDuration);
-
-    setFocusMinutes(newFocusMinutes);
-    setBreakMinutes(newBreakMinutes);
+    // Focus and Break minutes are now updated directly by their input fields
+    // No need for newFocusMinutes/newBreakMinutes parsing here
     setTimerIncrement(currentTimerIncrement);
     setShowSessionsWhileActive(showSessionsWhileActive);
     setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
@@ -383,8 +363,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: newFocusMinutes,
-      breakMinutes: newBreakMinutes,
+      focusMinutes: focusMinutes, // Directly use current context value
+      breakMinutes: breakMinutes, // Directly use current context value
       maxDistance,
       askNotifications,
       breakNotificationsVibrate,
@@ -514,7 +494,7 @@ const Settings = () => {
                       <SelectContent>
                         <SelectItem value="break">Next Break</SelectItem>
                         <SelectItem value="sesh_end">Sesh End</SelectItem>
-                        <SelectItem value="custom">Every X Minutes</SelectItem> {/* Changed text here */}
+                        <SelectItem value="custom">Every X Minutes</SelectItem>
                       </SelectContent>
                     </Select>
                     {batchNotificationPreference === 'custom' && (
@@ -657,61 +637,45 @@ const Settings = () => {
                 </Button>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="focus-duration">Focus </Label>
-                <Select value={selectedFocusDuration} onValueChange={setSelectedFocusDuration}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="15">15</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                    <SelectItem value="45">45</SelectItem>
-                    <SelectItem value="55">55</SelectItem>
-                    <SelectItem value="75">75</SelectItem>
-                    <SelectItem value="90">90</SelectItem>
-                    <SelectItem value="custom">Other (Custom)</SelectItem>
-                  </SelectContent>
-                </Select>
-                {selectedFocusDuration === 'custom' && (
+              {/* Focus and Break Duration Inputs - Now side-by-side */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="focus-duration">Focus</Label>
                   <Input
+                    id="focus-duration"
                     type="number"
-                    placeholder="Enter custom minutes"
-                    value={customFocusDuration}
-                    onChange={(e) => setCustomFocusDuration(e.target.value)}
+                    placeholder="Minutes"
+                    value={focusMinutes}
+                    onChange={(e) => setFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    onBlur={(e) => {
+                      if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                        setFocusMinutes(1); // Default to 1 if empty or 0
+                      }
+                    }}
                     min="1"
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
-                )}
-              </div>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="break-duration">Break</Label>
-                <Select value={selectedBreakDuration} onValueChange={setSelectedBreakDuration}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="15">15</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="30">30</SelectItem>
-                    <SelectItem value="custom">Other (Custom)</SelectItem>
-                  </SelectContent>
-                </Select>
-                {selectedBreakDuration === 'custom' && (
+                <div className="space-y-2">
+                  <Label htmlFor="break-duration">Break</Label>
                   <Input
+                    id="break-duration"
                     type="number"
-                    placeholder="Enter custom minutes"
-                    value={customBreakDuration}
-                    onChange={(e) => setCustomBreakDuration(e.target.value)}
+                    placeholder="Minutes"
+                    value={breakMinutes}
+                    onChange={(e) => setBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    onBlur={(e) => {
+                      if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                        setBreakMinutes(1); // Default to 1 if empty or 0
+                      }
+                    }}
                     min="1"
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
-                )}
+                </div>
               </div>
             </AccordionContent>
           </AccordionItem>
