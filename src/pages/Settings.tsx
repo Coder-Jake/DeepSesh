@@ -849,14 +849,15 @@ const Settings = () => {
               {/* Verification Subheading */}
               <div className="border-t border-border pt-6 mt-6">
                 <h3 className="text-lg font-semibold mb-4">Verification</h3>
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-4"> {/* Changed to grid layout */}
                   <p className="text-sm text-muted-foreground">
                     Get security clearance
                   </p>
                   <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
                   <p className="text-sm text-muted-foreground">Build trust with peers</p>
-                  <p className="text-sm text-muted-foreground">Compete for prizes! <br /> <br /> <br />  </p>
-                  <Label>Your Verification</Label>
+                  <p className="text-sm text-muted-foreground">Compete for prizes!</p>
+                </div>
+                  <Label className="mt-4 block">Your Verification</Label> {/* Added mt-4 block for spacing */}
                   <Select 
                     value={verificationStandard} // Corrected to use verificationStandard
                     onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
@@ -871,7 +872,7 @@ const Settings = () => {
                       <SelectItem value="id1">ID Verified</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                
 
                 <div className="space-y-2 mt-6">
                   <Label>Minimum Verification Status</Label>
