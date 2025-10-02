@@ -94,7 +94,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [timerIncrement, setTimerIncrement] = useState(5);
 
   // Session management states
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false); // Changed to false
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [currentPhaseStartTime, setCurrentPhaseStartTime] = useState<number | null>(null);
   const [accumulatedFocusSeconds, setAccumulatedFocusSeconds] = useState(0);
@@ -118,9 +118,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [intentionalBreaches, setIntentionalBreaches] = useState(false);
   const [manualTransition, setManualTransition] = useState(false);
   const [maxDistance, setMaxDistance] = useState(1000); // Default to 1km
-  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
-  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
-  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
+  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false }); // Changed to false
+  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false }); // Changed to false
+  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: true, vibrate: false, sound: false }); // Changed to false
   const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(true);
   const [verificationStandard, setVerificationStandard] = useState<'anyone' | 'phone1' | 'organisation' | 'id1'>('anyone');
   const [profileVisibility, setProfileVisibility] = useState<'public' | 'friends' | 'private'>('public');
