@@ -456,7 +456,7 @@ const ScheduleForm: React.FC = () => {
             </div>
           )}
 
-          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending} onKeyDown={handleEnterKeyNavigation} data-input-type="commence-schedule-button">
+          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-schedule-button">
             <Play className="mr-2 h-5 w-5" />
             {buttonText}
           </Button>
