@@ -34,7 +34,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isSchedulePending, setIsSchedulePending] = useState(false); // New state for pending schedule
 
   // Session management states
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [currentPhaseStartTime, setCurrentPhaseStartTime] = useState<number | null>(null);
   const [accumulatedFocusSeconds, setAccumulatedFocusSeconds] = useState(0);
