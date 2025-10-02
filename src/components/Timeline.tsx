@@ -76,6 +76,7 @@ const Timeline: React.FC<TimelineProps> = ({
   return (
     <Card className="mt-6">
       <CardHeader>
+        <h3 className="text-lg font-semibold text-left mb-2">Timeline</h3> {/* Added h3 tag */}
         <CardTitle className="text-xl flex justify-center">
           <Input
             value={scheduleTitle}
