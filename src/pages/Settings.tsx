@@ -514,7 +514,7 @@ const Settings = () => {
                       <SelectContent>
                         <SelectItem value="break">Next Break</SelectItem>
                         <SelectItem value="sesh_end">Sesh End</SelectItem>
-                        <SelectItem value="custom">Custom Minutes</SelectItem>
+                        <SelectItem value="custom">Every X Minutes</SelectItem> {/* Changed text here */}
                       </SelectContent>
                     </Select>
                     {batchNotificationPreference === 'custom' && (
