@@ -110,7 +110,7 @@ const Timeline: React.FC<TimelineProps> = ({
           <Input
             value={localTimelineTitle} // Use local state
             onChange={(e) => setLocalTimelineTitle(e.target.value)} // Update local state
-            className="text-3xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center"
+            className="text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center"
             aria-label="Timeline Title" // Changed aria-label for clarity
           />
         </CardTitle>
