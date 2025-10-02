@@ -164,7 +164,7 @@ const Timeline: React.FC<TimelineProps> = ({
             <p className="text-base font-bold text-foreground text-left"> {/* Smaller font */}
               {commenceTime} on {targetDayName}, {formattedTargetDate}
             </p>
-            <p className="text-sm text-muted-foreground text-left">Time until start:</p> {/* Smaller font */}
+            <p className="text-sm text-muted-foreground text-left">Commencing:</p> {/* Changed text */}
             <p className="text-3xl font-extrabold text-primary text-left"> {/* Smaller font */}
               {formatTime(countdownTimeLeft)}
             </p>
