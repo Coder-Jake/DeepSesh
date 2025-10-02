@@ -30,6 +30,11 @@ const AppContent = () => {
         return;
       }
 
+      // Prevent navigation if any modifier key is pressed
+      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+        return;
+      }
+
       const key = event.key.toLowerCase();
 
       switch (key) {
