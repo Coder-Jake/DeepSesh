@@ -234,7 +234,7 @@ const ScheduleForm: React.FC = () => {
             )
           ) : (
             <CardTitle className="text-2xl font-bold h-auto py-2">
-              Saved Schedules
+              Templates
             </CardTitle>
           )}
           <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
