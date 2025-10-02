@@ -1,15 +1,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Trash2, Share2 } from "lucide-react"; // Import Share2
+import { Play, Trash2, Share2 } from "lucide-react";
 import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer";
-import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
+import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // Import DropdownMenu components
+} from "@/components/ui/dropdown-menu";
 
 interface ScheduleTemplateCardProps {
   template: ScheduledTimerTemplate;
@@ -21,7 +21,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
 
   const handleLoad = () => {
     loadScheduleTemplate(template.id);
-    setActiveTab('plan'); // Switch back to plan tab after loading
+    setActiveTab('plan');
   };
 
   const handleDelete = () => {
@@ -31,7 +31,13 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
   const getScheduleSummary = (schedule: ScheduledTimer[]) => {
     if (schedule.length === 0) return "No timers";
     const totalDuration = schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
-    return `${schedule.length} timers, ${totalDuration} min`;
+    return (
+      <>
+        {schedule.length} timers,
+        <br />
+        {totalDuration} min
+      </>
+    );
   };
 
   const getCommenceInfo = (template: ScheduledTimerTemplate) => {
@@ -41,7 +47,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
       return "Starts: Manual";
     } else {
       if (template.commenceDay === null) {
-        return "Starts: Today (default)"; // Display for null commenceDay
+        return "Starts: Today (default)";
       }
       const dayName = DAYS_OF_WEEK[template.commenceDay];
       return `Starts: ${template.commenceTime} on ${dayName}`;
@@ -56,8 +62,8 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
           {getScheduleSummary(template.schedule)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-2 relative"> {/* Added relative for absolute positioning */}
-        {template.scheduleStartOption === 'custom_time' && ( // Conditionally render based on scheduleStartOption
+      <CardContent className="pt-2 relative">
+        {template.scheduleStartOption === 'custom_time' && (
           <p className="text-sm text-gray-600 mb-3">{getCommenceInfo(template)}</p>
         )}
         <div className="flex justify-end gap-2">
@@ -66,19 +72,18 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
           </Button>
         </div>
 
-        {/* Share Icon and Dropdown */}
-        <div className="absolute bottom-2 left-2"> {/* Positioned to bottom-left */}
+        <div className="absolute bottom-2 left-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="w-6 h-6 text-primary hover:bg-muted" // Tiny and dark blue (using primary color)
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-6 h-6 text-primary hover:bg-muted"
               >
-                <Share2 className="h-4 w-4" /> {/* Tiny icon */}
+                <Share2 className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start"> {/* Align to start so it opens rightwards */}
+            <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => console.log('Share Link for template', template.id)}>Link</DropdownMenuItem>
               <DropdownMenuItem onClick={() => console.log('Share QR for template', template.id)}>QR</DropdownMenuItem>
               <DropdownMenuItem onClick={() => console.log('Share NFC for template', template.id)}>NFC</DropdownMenuItem>
@@ -86,10 +91,10 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
           </DropdownMenu>
         </div>
       </CardContent>
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        onClick={handleDelete} 
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleDelete}
         className="absolute top-0 right-0"
       >
         <Trash2 className="h-3 w-3" />
