@@ -1,13 +1,9 @@
 import * as React from "react"
 
-import { ToastAction as ToastActionPrimitive } from "@/components/ui/toast" // Import ToastAction as ToastActionPrimitive
-// Removed: import { ToastProps as ShadcnToastProps } from "@/components/ui/toast" // Import ToastProps from shadcn/ui/toast
+import { ToastAction as ToastActionPrimitive, Toast, ToastProps as ShadcnToastProps } from "@/components/ui/toast" // Import Toast and its props
 
-// Define ToastProps here as it's not exported from the shadcn/ui component
-type ToastProps = React.ComponentPropsWithoutRef<typeof ToastActionPrimitive> extends {
-  onOpenChange?: (open: boolean) => void;
-} ? React.ComponentPropsWithoutRef<typeof ToastActionPrimitive> : never;
-
+// Corrected ToastProps to refer to the main Toast component
+type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -21,7 +17,7 @@ type ToasterToast = ToastProps & {
 
 // Update ToastActionElement to include long press props
 type ToastActionElement = React.ReactElement<
-  React.ComponentPropsWithoutRef<typeof ToastActionPrimitive> & { // Use ToastActionPrimitive here
+  React.ComponentPropsWithoutRef<typeof ToastActionPrimitive> & {
     onLongPress?: () => void;
     longPressDelay?: number;
   }
@@ -120,23 +116,23 @@ function dispatch(action: Action) {
   listeners.forEach((listener) => listener(memoryState))
 }
 
-type Toast = {
-  (props: ToasterToast): {
+type ToastFunction = {
+  (props: Omit<ToasterToast, 'id' | 'open' | 'onOpenChange'>): {
     id: string
     dismiss: () => void
-    update: (props: ToasterToast) => void
+    update: (props: Partial<ToasterToast>) => void
   }
   dismiss: (toastId?: string) => void
 }
 
-function createToastFunction(): Toast {
-  const toast = function ({ ...props }: ToasterToast) {
+function createToastFunction(): ToastFunction {
+  const toast = function (props: Omit<ToasterToast, 'id' | 'open' | 'onOpenChange'>) {
     const id = genId()
 
-    const update = (props: ToasterToast) =>
+    const update = (newProps: Partial<ToasterToast>) =>
       dispatch({
         type: actionTypes.UPDATE_TOAST,
-        toast: { ...props, id },
+        toast: { ...newProps, id },
       })
     const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id })
 

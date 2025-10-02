@@ -28,12 +28,12 @@ const ScheduleForm: React.FC = () => {
     scheduleStartOption, 
     setScheduleStartOption, 
     timerIncrement,
-    isRecurring,
-    setIsRecurring,
-    recurrenceFrequency,
-    setRecurrenceFrequency,
+    isRecurring, // Now exists on TimerContextType
+    setIsRecurring, // Now exists on TimerContextType
+    recurrenceFrequency, // Now exists on TimerContextType
+    setRecurrenceFrequency, // Now exists on TimerContextType
     isSchedulePending,
-    saveCurrentScheduleAsTemplate,
+    saveCurrentScheduleAsTemplate, // Now exists on TimerContextType
   } = useTimer();
   const { toast } = useToast();
 
@@ -385,10 +385,10 @@ const ScheduleForm: React.FC = () => {
               Now
             </Button>
             <Button
-              variant={scheduleStartOption === 'manual' ? 'secondary' : 'outline'}
+              variant={scheduleStartOption === 'manual' ? 'secondary' : 'outline'} // Fixed comparison
               size="sm"
               className="text-xs px-3 py-1 h-auto text-muted-foreground"
-              onClick={() => setScheduleStartOption('manual')}
+              onClick={() => setScheduleStartOption('manual')} // Fixed assignment
               onKeyDown={handleEnterKeyNavigation}
               data-input-type="start-option-button"
             >

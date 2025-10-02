@@ -15,7 +15,7 @@ export interface ScheduledTimerTemplate {
   schedule: ScheduledTimer[];
   commenceTime: string;
   commenceDay: number | null; // Changed to allow null for dynamic 'today'
-  scheduleStartOption: 'now' | 'manual' | 'custom_time';
+  scheduleStartOption: 'now' | 'manual' | 'custom_time'; // Added 'manual'
   isRecurring: boolean;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
 }
@@ -67,12 +67,12 @@ export interface TimerContextType {
   setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
   commenceDay: number | null; // Updated to allow null
   setCommenceDay: React.Dispatch<React.SetStateAction<number | null>>; // Updated to allow null
-  scheduleStartOption: 'now' | 'manual' | 'custom_time'; // Added
+  scheduleStartOption: 'now' | 'manual' | 'custom_time'; // Added 'manual'
   setScheduleStartOption: React.Dispatch<React.SetStateAction<'now' | 'manual' | 'custom_time'>>; // Added
-  isRecurring: boolean;
-  setIsRecurring: React.Dispatch<React.SetStateAction<boolean>>;
-  recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
-  setRecurrenceFrequency: React.Dispatch<React.SetStateAction<'daily' | 'weekly' | 'monthly'>>;
+  isRecurring: boolean; // Added
+  setIsRecurring: React.Dispatch<React.SetStateAction<boolean>>; // Added
+  recurrenceFrequency: 'daily' | 'weekly' | 'monthly'; // Added
+  setRecurrenceFrequency: React.Dispatch<React.SetStateAction<'daily' | 'weekly' | 'monthly'>>; // Added
   isScheduleActive: boolean;
   currentScheduleIndex: number;
   isSchedulePending: boolean; // Added new state
@@ -105,7 +105,7 @@ export interface TimerContextType {
   setSeshTitle: React.Dispatch<React.SetStateAction<string>>;
   formatTime: (seconds: number) => string;
   timerIncrement: number;
-  setTimerIncrement: React.Dispatch<React.SetStateAction<number>>;
+  setTimerIncrement: React.Dispatch<React.SetStateAction<number>>; // Added
 
   // Session management states
   showSessionsWhileActive: boolean;

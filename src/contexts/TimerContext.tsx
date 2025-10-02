@@ -1,104 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { ScheduledTimer } from '@/types/timer';
+import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings } from '@/types/timer'; // Import all types
 import { toast } from '@/hooks/use-toast'; // Using shadcn toast for UI feedback
 import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
 import { supabase } from '@/integrations/supabase/client'; // Import supabase client
-
-// Define types for Ask items
-interface ExtendSuggestion {
-  id: string;
-  minutes: number;
-  creator: string;
-  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
-  status: 'pending' | 'accepted' | 'rejected';
-}
-
-interface PollOption {
-  id: string;
-  text: string;
-  votes: { userId: string }[];
-}
-
-interface Poll {
-  id: string;
-  question: string;
-  type: 'closed' | 'choice' | 'selection';
-  creator: string;
-  options: PollOption[];
-  status: 'active' | 'closed';
-  allowCustomResponses: boolean;
-}
-
-type ActiveAskItem = ExtendSuggestion | Poll;
-
-interface TimerContextType {
-  focusMinutes: number;
-  setFocusMinutes: React.Dispatch<React.SetStateAction<number>>;
-  breakMinutes: number;
-  setBreakMinutes: React.Dispatch<React.SetStateAction<number>>;
-  isRunning: boolean;
-  setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
-  isPaused: boolean;
-  setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
-  timeLeft: number;
-  setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
-  timerType: 'focus' | 'break';
-  setTimerType: React.Dispatch<React.SetStateAction<'focus' | 'break'>>;
-  isFlashing: boolean;
-  setIsFlashing: React.Dispatch<React.SetStateAction<boolean>>;
-  notes: string;
-  setNotes: React.Dispatch<React.SetStateAction<string>>;
-  seshTitle: string;
-  setSeshTitle: React.Dispatch<React.SetStateAction<string>>;
-  formatTime: (seconds: number) => string;
-  showSessionsWhileActive: boolean;
-  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<boolean>>;
-  timerIncrement: number;
-
-  // Schedule related states and functions
-  schedule: ScheduledTimer[];
-  setSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>;
-  currentScheduleIndex: number;
-  setCurrentScheduleIndex: React.Dispatch<React.SetStateAction<number>>;
-  isSchedulingMode: boolean;
-  setIsSchedulingMode: React.Dispatch<React.SetStateAction<boolean>>;
-  isScheduleActive: boolean;
-  setIsScheduleActive: React.Dispatch<React.SetStateAction<boolean>>;
-  startSchedule: () => void;
-  resetSchedule: () => void;
-  scheduleTitle: string;
-  setScheduleTitle: React.Dispatch<React.SetStateAction<string>>;
-  commenceTime: string;
-  setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
-  commenceDay: number | null;
-  setCommenceDay: React.Dispatch<React.SetStateAction<number | null>>;
-  isGlobalPrivate: boolean;
-  setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>;
-
-  // New session tracking states and functions
-  sessionStartTime: number | null;
-  setSessionStartTime: React.Dispatch<React.SetStateAction<number | null>>;
-  currentPhaseStartTime: number | null;
-  setCurrentPhaseStartTime: React.Dispatch<React.SetStateAction<number | null>>;
-  accumulatedFocusSeconds: number;
-  setAccumulatedFocusSeconds: React.Dispatch<React.SetStateAction<number>>;
-  accumulatedBreakSeconds: number;
-  setAccumulatedBreakSeconds: React.Dispatch<React.SetStateAction<number>>;
-  activeJoinedSessionCoworkerCount: number;
-  setActiveJoinedSessionCoworkerCount: React.Dispatch<React.SetStateAction<number>>;
-  saveSessionToHistory: () => Promise<void>;
-
-  // Active Asks
-  activeAsks: ActiveAskItem[];
-  addAsk: (ask: ActiveAskItem) => void;
-  updateAsk: (ask: ActiveAskItem) => void;
-
-  // Schedule pending state
-  isSchedulePending: boolean;
-  setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>;
-  scheduleStartOption: 'now' | 'custom_time';
-  setScheduleStartOption: React.Dispatch<React.SetStateAction<'now' | 'custom_time'>>;
-}
 
 export const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -130,7 +34,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [commenceTime, setCommenceTime] = useState("09:00");
   const [commenceDay, setCommenceDay] = useState<number | null>(null); // 0 for Sunday, 1 for Monday, etc.
   const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false); // Added
+  const [recurrenceFrequency, setRecurrenceFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily'); // Added
 
+  // Saved Schedules (Templates)
+  const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]); // Added
+  
   // New session tracking states
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [currentPhaseStartTime, setCurrentPhaseStartTime] = useState<number | null>(null);
@@ -143,7 +52,30 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Schedule pending state
   const [isSchedulePending, setIsSchedulePending] = useState(false);
-  const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'custom_time'>('now');
+  const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now'); // Added 'manual'
+
+  // Settings states
+  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(true);
+  const [shouldShowEndToast, setShouldShowEndToast] = useState(true);
+  const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
+  const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
+  const [customBatchMinutes, setCustomBatchMinutes] = useState(timerIncrement);
+  const [lock, setLock] = useState(false);
+  const [exemptionsEnabled, setExemptionsEnabled] = useState(false);
+  const [phoneCalls, setPhoneCalls] = useState(false);
+  const [favourites, setFavourites] = useState(false);
+  const [workApps, setWorkApps] = useState(false);
+  const [intentionalBreaches, setIntentionalBreaches] = useState(false);
+  const [manualTransition, setManualTransition] = useState(false);
+  const [maxDistance, setMaxDistance] = useState(1000); // Default to 1km
+  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
+  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
+  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
+  const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(true); // Specific for break notifications
+  const [verificationStandard, setVerificationStandard] = useState<'anyone' | 'phone1' | 'organisation' | 'id1'>('anyone');
+  const [profileVisibility, setProfileVisibility] = useState<'public' | 'friends' | 'private'>('public');
+  const [locationSharing, setLocationSharing] = useState(false);
+  const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]); // Added
 
   const playSound = useCallback(() => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -176,23 +108,30 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const startSchedule = useCallback(() => {
     if (schedule.length > 0) {
-      setIsScheduleActive(true);
-      setCurrentScheduleIndex(0);
-      setTimerType(schedule[0].type);
-      setTimeLeft(schedule[0].durationMinutes * 60);
-      setIsRunning(true);
-      setIsPaused(false);
-      setIsFlashing(false);
-      setSessionStartTime(Date.now());
-      setCurrentPhaseStartTime(Date.now());
-      setAccumulatedFocusSeconds(0);
-      setAccumulatedBreakSeconds(0);
-      toast({
-        title: "Schedule Started!",
-        description: `"${scheduleTitle}" has begun.`,
-      });
+      if (scheduleStartOption === 'custom_time') {
+        setIsSchedulePending(true);
+        setIsSchedulingMode(false); // Exit scheduling mode
+        // The Timeline component will handle the countdown and call handleCountdownEnd when time is up
+      } else { // 'now' or 'manual'
+        setIsScheduleActive(true);
+        setCurrentScheduleIndex(0);
+        setTimerType(schedule[0].type);
+        setTimeLeft(schedule[0].durationMinutes * 60);
+        setIsRunning(true);
+        setIsPaused(false);
+        setIsFlashing(false);
+        setSessionStartTime(Date.now());
+        setCurrentPhaseStartTime(Date.now());
+        setAccumulatedFocusSeconds(0);
+        setAccumulatedBreakSeconds(0);
+        toast({
+          title: "Schedule Started!",
+          description: `"${scheduleTitle}" has begun.`,
+        });
+        setIsSchedulingMode(false); // Exit scheduling mode
+      }
     }
-  }, [schedule, scheduleTitle]);
+  }, [schedule, scheduleTitle, scheduleStartOption]);
 
   const resetSchedule = useCallback(() => {
     setIsScheduleActive(false);
@@ -203,6 +142,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCommenceDay(null);
     setIsSchedulePending(false);
     setScheduleStartOption('now');
+    setIsRecurring(false); // Reset recurrence
+    setRecurrenceFrequency('daily'); // Reset recurrence frequency
     // Reset main timer to default focus
     setTimerType('focus');
     setTimeLeft(focusMinutes * 60);
@@ -216,6 +157,60 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setNotes("");
     setSeshTitle("Notes");
   }, [focusMinutes]);
+
+  const saveCurrentScheduleAsTemplate = useCallback(() => {
+    if (!scheduleTitle.trim() || schedule.length === 0) {
+      toast({
+        title: "Cannot save schedule",
+        description: "Please provide a title and add timers to your schedule.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newTemplate: ScheduledTimerTemplate = {
+      id: crypto.randomUUID(),
+      title: scheduleTitle,
+      schedule: schedule,
+      commenceTime: commenceTime,
+      commenceDay: commenceDay,
+      scheduleStartOption: scheduleStartOption,
+      isRecurring: isRecurring,
+      recurrenceFrequency: recurrenceFrequency,
+    };
+
+    setSavedSchedules((prev) => [...prev, newTemplate]);
+    toast({
+      title: "Schedule Saved!",
+      description: `"${scheduleTitle}" has been saved as a template.`,
+    });
+  }, [scheduleTitle, schedule, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency]);
+
+  const loadScheduleTemplate = useCallback((templateId: string) => {
+    const templateToLoad = savedSchedules.find(template => template.id === templateId);
+    if (templateToLoad) {
+      setSchedule(templateToLoad.schedule);
+      setScheduleTitle(templateToLoad.title);
+      setCommenceTime(templateToLoad.commenceTime);
+      setCommenceDay(templateToLoad.commenceDay);
+      setScheduleStartOption(templateToLoad.scheduleStartOption);
+      setIsRecurring(templateToLoad.isRecurring);
+      setRecurrenceFrequency(templateToLoad.recurrenceFrequency);
+      toast({
+        title: "Schedule Loaded!",
+        description: `"${templateToLoad.title}" has been loaded.`,
+      });
+    }
+  }, [savedSchedules]);
+
+  const deleteScheduleTemplate = useCallback((templateId: string) => {
+    setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
+    toast({
+      title: "Schedule Deleted!",
+      description: "The schedule template has been removed.",
+    });
+  }, []);
+
 
   const saveSessionToHistory = useCallback(async () => {
     if (!user || !sessionStartTime) {
@@ -408,6 +403,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCommenceDay,
     isGlobalPrivate,
     setIsGlobalPrivate,
+    isRecurring,
+    setIsRecurring,
+    recurrenceFrequency,
+    setRecurrenceFrequency,
+
+    savedSchedules,
+    saveCurrentScheduleAsTemplate,
+    loadScheduleTemplate,
+    deleteScheduleTemplate,
 
     sessionStartTime,
     setSessionStartTime,
@@ -429,6 +433,49 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsSchedulePending,
     scheduleStartOption,
     setScheduleStartOption,
+
+    shouldPlayEndSound,
+    setShouldPlayEndSound,
+    shouldShowEndToast,
+    setShouldShowEndToast,
+    isBatchNotificationsEnabled,
+    setIsBatchNotificationsEnabled,
+    batchNotificationPreference,
+    setBatchNotificationPreference,
+    customBatchMinutes,
+    setCustomBatchMinutes,
+    lock,
+    setLock,
+    exemptionsEnabled,
+    setExemptionsEnabled,
+    phoneCalls,
+    setPhoneCalls,
+    favourites,
+    setFavourites,
+    workApps,
+    setWorkApps,
+    intentionalBreaches,
+    setIntentionalBreaches,
+    manualTransition,
+    setManualTransition,
+    maxDistance,
+    setMaxDistance,
+    askNotifications,
+    setAskNotifications,
+    sessionInvites,
+    setSessionInvites,
+    friendActivity,
+    setFriendActivity,
+    breakNotificationsVibrate,
+    setBreakNotificationsVibrate,
+    verificationStandard,
+    setVerificationStandard,
+    profileVisibility,
+    setProfileVisibility,
+    locationSharing,
+    setLocationSharing,
+    openSettingsAccordions,
+    setOpenSettingsAccordions,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
