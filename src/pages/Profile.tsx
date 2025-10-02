@@ -7,6 +7,14 @@ import { Slider } from "@/components/ui/slider";
 import { useEffect, useState, useRef } from "react";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { useToast } from "@/hooks/use-toast"; // Import useToast
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const Profile = () => {
   const { profile, loading, updateProfile, localFirstName, setLocalFirstName } = useProfile(); // Use profile context and localFirstName
@@ -15,16 +23,20 @@ const Profile = () => {
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([30]);
+  const [organization, setOrganization] = useState(""); // New state for organization
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
     firstName: "", // This will now track localFirstName
     bio: "",
     intention: "",
-    sociability: [30]
+    sociability: [30],
+    organization: "" // Added organization to original values
   });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
   const firstNameInputRef = useRef<HTMLInputElement>(null);
+
+  const [isOrganizationDialogOpen, setIsOrganizationDialogOpen] = useState(false); // State for organization dialog
 
   useEffect(() => {
     // Initialize local states from profile or defaults
@@ -32,13 +44,15 @@ const Profile = () => {
     setBio(profile?.bio || "");
     setIntention(profile?.intention || "");
     setSociability([profile?.sociability || 50]);
-    
+    setOrganization(profile?.organization || ""); // Initialize organization
+
     // Set original values for change detection
     setOriginalValues({
       firstName: profile?.first_name || localStorage.getItem('flowsesh_local_first_name') || "You",
       bio: profile?.bio || "",
       intention: profile?.intention || "",
-      sociability: [profile?.sociability || 50]
+      sociability: [profile?.sociability || 50],
+      organization: profile?.organization || "" // Set original organization
     });
     setHasChanges(false);
   }, [profile, setLocalFirstName]); // Depend on profile and setLocalFirstName
@@ -50,32 +64,38 @@ const Profile = () => {
     }
   }, [isEditingFirstName]);
 
-  const checkForChanges = (newFirstName: string, newBio: string, newIntention: string, newSociability: number[]) => {
+  const checkForChanges = (newFirstName: string, newBio: string, newIntention: string, newSociability: number[], newOrganization: string) => {
     const changed = newFirstName !== originalValues.firstName ||
                    newBio !== originalValues.bio || 
                    newIntention !== originalValues.intention || 
-                   newSociability[0] !== originalValues.sociability[0];
+                   newSociability[0] !== originalValues.sociability[0] ||
+                   newOrganization !== originalValues.organization; // Check for organization changes
     setHasChanges(changed);
   };
 
   const handleFirstNameChange = (value: string) => {
     setLocalFirstName(value); // Update local state
-    checkForChanges(value, bio, intention, sociability);
+    checkForChanges(value, bio, intention, sociability, organization);
   };
 
   const handleBioChange = (value: string) => {
     setBio(value);
-    checkForChanges(localFirstName, value, intention, sociability);
+    checkForChanges(localFirstName, value, intention, sociability, organization);
   };
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
-    checkForChanges(localFirstName, bio, value, sociability);
+    checkForChanges(localFirstName, bio, value, sociability, organization);
   };
 
   const handleSociabilityChange = (value: number[]) => {
     setSociability(value);
-    checkForChanges(localFirstName, bio, intention, value);
+    checkForChanges(localFirstName, bio, intention, value, organization);
+  };
+
+  const handleOrganizationChange = (value: string) => {
+    setOrganization(value);
+    checkForChanges(localFirstName, bio, intention, sociability, value);
   };
 
   const handleFirstNameClick = () => {
@@ -92,7 +112,7 @@ const Profile = () => {
         await updateProfile({ first_name: nameToSave });
       }
       setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-      checkForChanges(nameToSave, bio, intention, sociability);
+      checkForChanges(nameToSave, bio, intention, sociability, organization);
     }
   };
 
@@ -104,7 +124,23 @@ const Profile = () => {
       await updateProfile({ first_name: nameToSave });
     }
     setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-    checkForChanges(nameToSave, bio, intention, sociability);
+    checkForChanges(nameToSave, bio, intention, sociability, organization);
+  };
+
+  const handleSaveOrganization = async () => {
+    if (profile) {
+      await updateProfile({ organization: organization.trim() === "" ? null : organization.trim() });
+      setIsOrganizationDialogOpen(false);
+      // Update originalValues for change detection
+      setOriginalValues(prev => ({ ...prev, organization: organization.trim() === "" ? null : organization.trim() }));
+      checkForChanges(localFirstName, bio, intention, sociability, organization); // Re-check for changes
+    } else {
+      toast({
+        title: "Not Logged In",
+        description: "Please log in to save your organization.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -117,6 +153,7 @@ const Profile = () => {
         bio,
         intention,
         sociability: sociability[0],
+        organization: organization.trim() === "" ? null : organization.trim(), // Save organization
         updated_at: new Date().toISOString(),
       });
     } else {
@@ -127,7 +164,7 @@ const Profile = () => {
       });
     }
     // After successful update, reset original values and hasChanges
-    setOriginalValues({ firstName: nameToSave, bio, intention, sociability });
+    setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization });
     setHasChanges(false);
   };
 
@@ -231,6 +268,27 @@ const Profile = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Organization Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Organization</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {profile?.organization ? (
+                <p className="text-sm text-muted-foreground">
+                  Currently affiliated with: <span className="font-medium text-foreground">{profile.organization}</span>
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Not currently affiliated with an organization.
+                </p>
+              )}
+              <Button onClick={() => setIsOrganizationDialogOpen(true)}>
+                {profile?.organization ? "Edit Organization" : "Add Organization"}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Save Button */}
@@ -243,7 +301,34 @@ const Profile = () => {
             {loading ? "Saving..." : "Save Profile"}
           </Button>
         </div>
-      </main>
+      
+      {/* Organization Dialog */}
+      <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{profile?.organization ? "Edit Organization Name" : "Add Organization Name"}</DialogTitle>
+            <DialogDescription>
+              Enter the name of your organization. This will be visible to others.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="organization-name">Organization Name</Label>
+              <Input
+                id="organization-name"
+                value={organization}
+                onChange={(e) => handleOrganizationChange(e.target.value)}
+                placeholder="e.g., Acme Corp"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOrganizationDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveOrganization}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 };
 
