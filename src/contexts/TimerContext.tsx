@@ -343,7 +343,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!scheduleTitle.trim()) {
       toast({
         title: "Schedule Title Missing",
-        description: "Please enter a title for your schedule before saving.",
+        description: "Enter a schedule title before saving.",
         variant: "destructive",
       });
       return;
@@ -351,7 +351,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (schedule.length === 0) {
       toast({
         title: "No Timers in Schedule",
-        description: "Please add at least one timer to your schedule before saving.",
+        description: "Add at least one timer to your schedule before saving.",
         variant: "destructive",
       });
       return;
