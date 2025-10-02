@@ -729,7 +729,7 @@ const Settings = () => {
           {/* Privacy & Safety */}
           <AccordionItem value="privacy" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
-              Privacy & Safety
+              Safety
             </AccordionTrigger>
             <AccordionContent className="space-y-6 pt-4">
               <div className="space-y-2">
