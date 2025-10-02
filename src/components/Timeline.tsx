@@ -68,20 +68,70 @@ const Timeline: React.FC<TimelineProps> = ({
 
   const totalScheduleDuration = schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
 
-  if (isSchedulePending) {
-    const targetDayName = DAYS_OF_WEEK[commenceDay];
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + (commenceDay - targetDate.getDay() + 7) % 7);
-    const formattedTargetDate = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const targetDayName = DAYS_OF_WEEK[commenceDay];
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + (commenceDay - targetDate.getDay() + 7) % 7);
+  const formattedTargetDate = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-    return (
-      <>
-        <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-xl"> {scheduleTitle}</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
+  return (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="text-xl flex justify-center">
+          <Input
+            value={scheduleTitle}
+            onChange={(e) => setScheduleTitle(e.target.value)}
+            className="text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center"
+            aria-label="Schedule Title"
+          />
+        </CardTitle>
+        <p className="text-sm text-muted-foreground text-center">Total: {totalScheduleDuration} mins</p>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {schedule.map((item, index) => {
+          const isCurrent = index === currentScheduleIndex && !isSchedulePending; // Only current if not pending
+          const isCompleted = index < currentScheduleIndex && !isSchedulePending; // Only completed if not pending
+          const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
+
+          return (
+            <div
+              key={item.id}
+              className={cn(
+                "relative flex items-center justify-between p-3 rounded-md transition-all duration-300",
+                isCompleted && "bg-muted text-muted-foreground opacity-70",
+                isCurrent && (item.isCustom ? "bg-blue-100 text-blue-800 shadow-md" :
+                              item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
+                              "bg-private-bg/20 text-private-bg-foreground shadow-md"),
+                !isCurrent && !isCompleted && "bg-background hover:bg-muted/50"
+              )}
+            >
+              {isCurrent && (
+                <div
+                  className={cn(
+                    "absolute inset-0 rounded-md opacity-50",
+                    item.isCustom ? "bg-blue-200" :
+                    item.type === 'focus' ? "bg-public-bg" : "bg-private-bg"
+                  )}
+                  style={{ width: `${100 - progress}%`, transformOrigin: 'left' }}
+                />
+              )}
+              <div className="relative z-10 flex-grow">
+                <h4 className="font-medium">{item.title}</h4>
+                <p className="text-xs text-muted-foreground">
+                  {item.customTitle || (item.type === 'focus' ? 'Focus' : 'Break')} • {item.durationMinutes} mins
+                </p>
+              </div>
+              {isCurrent && (
+                <div className="relative z-10 text-lg font-bold">
+                  {formatTime(timeLeft)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {isSchedulePending && (
+          <div className="mt-8 pt-6 border-t border-border text-center space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Upcoming Schedule</h3>
             <p className="text-3xl font-bold text-foreground">
               {commenceTime} on {targetDayName}, {formattedTargetDate}
             </p>
@@ -92,72 +142,10 @@ const Timeline: React.FC<TimelineProps> = ({
             <p className="text-sm text-muted-foreground">
               Your schedule will automatically begin when the countdown reaches zero.
             </p>
-          </CardContent>
-        </Card>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="text-xl flex justify-center">
-          <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
-            <Input
-              value={scheduleTitle}
-              onChange={(e) => setScheduleTitle(e.target.value)}
-              className="text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center"
-              aria-label="Schedule Title"
-            />
-          </CardTitle>
-          <p className="text-sm text-muted-foreground text-center">Total: {totalScheduleDuration} mins</p>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {schedule.map((item, index) => {
-            const isCurrent = index === currentScheduleIndex;
-            const isCompleted = index < currentScheduleIndex;
-            const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
-
-            return (
-              <div
-                key={item.id}
-                className={cn(
-                  "relative flex items-center justify-between p-3 rounded-md transition-all duration-300",
-                  isCompleted && "bg-muted text-muted-foreground opacity-70",
-                  isCurrent && (item.isCustom ? "bg-blue-100 text-blue-800 shadow-md" :
-                                item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
-                                "bg-private-bg/20 text-private-bg-foreground shadow-md"),
-                  !isCurrent && !isCompleted && "bg-background hover:bg-muted/50"
-                )}
-              >
-                {isCurrent && (
-                  <div
-                    className={cn(
-                      "absolute inset-0 rounded-md opacity-50",
-                      item.isCustom ? "bg-blue-200" :
-                      item.type === 'focus' ? "bg-public-bg" : "bg-private-bg"
-                    )}
-                    style={{ width: `${100 - progress}%`, transformOrigin: 'left' }}
-                  />
-                )}
-                <div className="relative z-10 flex-grow">
-                  <h4 className="font-medium">{item.title}</h4>
-                  <p className="text-xs text-muted-foreground">
-                    {item.customTitle || (item.type === 'focus' ? 'Focus' : 'Break')} • {item.durationMinutes} mins
-                  </p>
-                </div>
-                {isCurrent && (
-                  <div className="relative z-10 text-lg font-bold">
-                    {formatTime(timeLeft)}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
-    </>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

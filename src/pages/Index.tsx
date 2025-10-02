@@ -918,30 +918,16 @@ const Index = () => {
           </TooltipProvider>
         </div>
       </div>
-      {/* Timeline Section (for active schedule) */}
-      {isScheduleActive && (
-        <Timeline 
-          schedule={schedule} 
-          currentScheduleIndex={currentScheduleIndex} 
-          timeLeft={timeLeft} 
-          commenceTime={commenceTime}
-          commenceDay={commenceDay === null ? new Date().getDay() : commenceDay} // Resolve null to current day for Timeline
-          isSchedulePending={false} // This instance is for active schedule, so not pending
-          onCountdownEnd={handleCountdownEnd}    // Pass new prop
-        />
-      )}
-
-      {/* New Upcoming Section */}
-      {(isSchedulePending && scheduleStartOption === 'custom_time') && (
+      {/* Timeline Section (for active schedule and upcoming) */}
+      {(isScheduleActive || (isSchedulePending && scheduleStartOption === 'custom_time')) && (
         <div className="mt-8"> {/* Add some top margin for separation */}
-          <h3 className="text-lg font-semibold text-foreground mb-3">Upcoming</h3>
           <Timeline
             schedule={schedule}
-            currentScheduleIndex={currentScheduleIndex} // This will be 0 for a pending schedule
-            timeLeft={timeLeft} // This will be 0 for a pending schedule, as set in TimerContext
+            currentScheduleIndex={currentScheduleIndex}
+            timeLeft={timeLeft}
             commenceTime={commenceTime}
             commenceDay={commenceDay === null ? new Date().getDay() : commenceDay}
-            isSchedulePending={true} // This instance is specifically for the pending schedule
+            isSchedulePending={isSchedulePending && scheduleStartOption === 'custom_time'}
             onCountdownEnd={handleCountdownEnd}
           />
         </div>
