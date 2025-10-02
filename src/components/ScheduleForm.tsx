@@ -247,7 +247,7 @@ const ScheduleForm: React.FC = () => {
   };
 
   const buttonText =
-    : (scheduleStartOption === 'now' ? "Begin" : "Prepare");
+      (scheduleStartOption === 'now' ? "Begin" : "Prepare");
 
   return (
     <Card className="px-0">
