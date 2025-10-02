@@ -184,7 +184,7 @@ const ChipIn = () => {
                 Can't donate? No problem! You can still help by:
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Sharing FlowSesh with friends</li>
+                <li>• Sharing DeepSesh with friends</li>
                 <li>• Providing feedback and suggestions</li>
                 <li>• Reporting bugs you encounter</li>
                 <li>• Contributing to our community</li>

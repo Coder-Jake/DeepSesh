@@ -1,6 +1,6 @@
-# AI Development Rules for FlowSesh
+# AI Development Rules for DeepSesh
 
-This document outlines the core technologies used in the FlowSesh application and provides guidelines for library usage to ensure consistency, maintainability, and adherence to best practices.
+This document outlines the core technologies used in the DeepSesh application and provides guidelines for library usage to ensure consistency, maintainability, and adherence to best practices.
 
 ## Tech Stack Overview
 

@@ -197,8 +197,8 @@ interface ProfileProviderProps {
   children: ReactNode;
 }
 
-const LOCAL_STORAGE_KEY = 'flowsesh_profile_data'; // New local storage key for profile data
-const LOCAL_FIRST_NAME_KEY = 'flowsesh_local_first_name'; // New local storage key for local first name
+const LOCAL_STORAGE_KEY = 'deepsesh_profile_data'; // New local storage key for profile data
+const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name'; // New local storage key for local first name
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -235,7 +235,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (error) {
       console.error("Error fetching profile:", error);
       setError(error.message);
-      setProfile(null);
       toast.error("Error fetching profile", {
         description: error.message,
       });

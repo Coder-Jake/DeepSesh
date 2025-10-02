@@ -9,7 +9,7 @@ export const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY_TIMER = 'flowsesh_timer_context'; // New local storage key for TimerContext
+const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context'; // New local storage key for TimerContext
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth(); // Get user from AuthContext

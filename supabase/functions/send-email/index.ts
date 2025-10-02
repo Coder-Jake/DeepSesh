@@ -30,7 +30,7 @@ serve(async (req) => {
       });
     }
 
-    const subject = type === 'feedback' ? `FlowSesh Feedback from ${name}` : `FlowSesh Collaboration Request from ${name}`;
+    const subject = type === 'feedback' ? `DeepSesh Feedback from ${name}` : `DeepSesh Collaboration Request from ${name}`;
     const body = `
       <p><strong>Type:</strong> ${type === 'feedback' ? 'Feedback/Idea/Issue' : 'Collaboration Request'}</p>
       <p><strong>Name:</strong> ${name}</p>
