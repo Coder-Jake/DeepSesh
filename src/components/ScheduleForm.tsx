@@ -246,8 +246,7 @@ const ScheduleForm: React.FC = () => {
     setTimeout(() => setIsSaveButtonBlue(false), 1000); // Reset color after 1 second
   };
 
-  const buttonText = isSchedulePending 
-    ? "Pending..." 
+  const buttonText =
     : (scheduleStartOption === 'now' ? "Begin" : "Prepare");
 
   return (
