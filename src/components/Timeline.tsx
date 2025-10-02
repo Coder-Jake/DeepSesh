@@ -100,10 +100,10 @@ const Timeline: React.FC<TimelineProps> = ({
 
   return (
     <>
-      <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="text-xl flex justify-center">
+          <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
             <Input
               value={scheduleTitle}
               onChange={(e) => setScheduleTitle(e.target.value)}
