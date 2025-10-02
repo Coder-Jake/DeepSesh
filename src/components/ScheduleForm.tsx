@@ -256,7 +256,7 @@ const ScheduleForm: React.FC = () => {
           <TabsTrigger value="plan">Plan</TabsTrigger>
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
-        <CardHeader className="flex flex-row items-center justify-between py-4 px-4 lg:px-6">
+        <CardHeader className="flex flex-row items-center justify-between pt-4 pb-0 px-4 lg:px-6"> {/* Changed py-4 to pt-4 pb-0 */}
           {activeTab === 'plan' ? (
             isEditingScheduleTitle ? (
               <Input
