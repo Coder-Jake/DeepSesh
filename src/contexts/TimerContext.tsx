@@ -99,10 +99,26 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const pad = (num: number) => num.toString().padStart(2, '0');
 
+    let timeParts: string[] = [];
+
     if (days > 0) {
-      return `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      timeParts.push(`${days}d`);
+      timeParts.push(pad(hours));
+      timeParts.push(pad(minutes));
+      timeParts.push(pad(seconds));
+      return `${timeParts[0]} ${timeParts.slice(1).join(':')}`;
+    } else if (hours > 0) {
+      timeParts.push(pad(hours));
+      timeParts.push(pad(minutes));
+      timeParts.push(pad(seconds));
+      return timeParts.join(':');
+    } else if (minutes > 0) {
+      timeParts.push(pad(minutes));
+      timeParts.push(pad(seconds));
+      return timeParts.join(':');
     } else {
-      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      // Only seconds or zero
+      return `00:${pad(seconds)}`;
     }
   }, []);
 
