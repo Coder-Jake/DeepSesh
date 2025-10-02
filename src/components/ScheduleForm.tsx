@@ -137,14 +137,14 @@ const ScheduleForm: React.FC = () => {
   };
 
   const handleAddTimer = () => {
-    setSchedule(prev => [
+    setSchedule((prev: ScheduledTimer[]) => [
       ...prev,
       { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement, isCustom: false }
     ]);
   };
 
   const handleUpdateTimer = (id: string, field: keyof ScheduledTimer, value: any) => {
-    setSchedule(prev =>
+    setSchedule((prev: ScheduledTimer[]) =>
       prev.map(timer => {
         if (timer.id === id) {
           if (field === 'customTitle') {
@@ -160,7 +160,7 @@ const ScheduleForm: React.FC = () => {
   };
 
   const handleRemoveTimer = (id: string) => {
-    setSchedule(prev => prev.filter(timer => timer.id !== id));
+    setSchedule((prev: ScheduledTimer[]) => prev.filter(timer => timer.id !== id));
   };
 
   const handleCommenceSchedule = () => {

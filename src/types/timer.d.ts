@@ -7,16 +7,7 @@ export type ScheduledTimer = {
   customTitle?: string;
 };
 
-export type ScheduledTimerTemplate = {
-  id: string;
-  title: string;
-  schedule: ScheduledTimer[];
-  commenceTime: string;
-  commenceDay: number;
-  scheduleStartOption: 'now' | 'manual' | 'custom_time';
-  isRecurring: boolean;
-  recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
-};
+// ScheduledTimerTemplate moved to src/types/timer.ts
 
 export type ActiveAskItem = {
   id: string;

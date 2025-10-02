@@ -7,6 +7,17 @@ export interface ScheduledTimer {
   customTitle?: string;
 }
 
+export interface ScheduledTimerTemplate {
+  id: string;
+  title: string;
+  schedule: ScheduledTimer[];
+  commenceTime: string;
+  commenceDay: number;
+  scheduleStartOption: 'now' | 'manual' | 'custom_time';
+  isRecurring: boolean;
+  recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
+}
+
 // Define types for Ask items (copied from Index.tsx to ensure consistency)
 export interface ExtendSuggestion {
   id: string;
@@ -54,6 +65,8 @@ export interface TimerContextType {
   setCommenceTime: (time: string) => void;
   commenceDay: number;
   setCommenceDay: (day: number) => void;
+  scheduleStartOption: 'now' | 'manual' | 'custom_time'; // Added
+  setScheduleStartOption: (option: 'now' | 'manual' | 'custom_time') => void; // Added
   isRecurring: boolean;
   setIsRecurring: (isRecurring: boolean) => void;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
@@ -62,6 +75,12 @@ export interface TimerContextType {
   currentScheduleIndex: number;
   isSchedulePending: boolean; // Added new state
   setIsSchedulePending: (isPending: boolean) => void; // Added new setter
+
+  // Saved Schedules (Templates)
+  savedSchedules: ScheduledTimerTemplate[]; // Added
+  saveCurrentScheduleAsTemplate: () => void; // Added
+  loadScheduleTemplate: (templateId: string) => void; // Added
+  deleteScheduleTemplate: (templateId: string) => void; // Added
 
   // Core Timer states
   focusMinutes: number;

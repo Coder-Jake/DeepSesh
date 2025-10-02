@@ -10,6 +10,7 @@ import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 import { Input } from "@/components/ui/input"; // Import Input
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
+import { NotificationSettings } from "@/types/timer"; // Import NotificationSettings type
 
 const Settings = () => {
   const { 
@@ -206,15 +207,15 @@ const Settings = () => {
     showMomentaryText(`${type}-${field}`, text);
 
     if (type === 'ask') {
-      setAskNotifications(prev => ({ ...prev, [field]: value }));
+      setAskNotifications((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     } else if (type === 'break') {
       if (field === 'push') setShouldShowEndToast(value);
       if (field === 'vibrate') setBreakNotificationsVibrate(value);
       if (field === 'sound') setShouldPlayEndSound(value);
     } else if (type === 'invites') {
-      setSessionInvites(prev => ({ ...prev, [field]: value }));
+      setSessionInvites((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     } else if (type === 'activity') {
-      setFriendActivity(prev => ({ ...prev, [field]: value }));
+      setFriendActivity((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     }
   };
 
@@ -600,7 +601,7 @@ const Settings = () => {
                 </div >
                 <Button
                   id="global-visibility-toggle"
-                  onClick={() => setIsGlobalPrivate(prev => !prev)} // Toggle isGlobalPrivate
+                  onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)} // Toggle isGlobalPrivate
                   className={cn(
                     "px-4 py-2 rounded-full transition-colors text-black select-none",
                     !isGlobalPrivate ? "bg-[hsl(var(--public-bg))] hover:bg-white" : "bg-[hsl(var(--private-bg))] hover:bg-white" // Display Public when false, Private when true

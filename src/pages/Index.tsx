@@ -312,9 +312,9 @@ const Index = () => {
     if (currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
       if (timerType === 'focus') {
-        setAccumulatedFocusSeconds(prev => prev + elapsed);
+        setAccumulatedFocusSeconds((prev: number) => prev + elapsed);
       } else {
-        setAccumulatedBreakSeconds(prev => prev + elapsed);
+        setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
       }
       setCurrentPhaseStartTime(null); // Reset phase start time
     }
@@ -372,7 +372,7 @@ const Index = () => {
     // Accumulate time for the phase just ended
     if (currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-      setAccumulatedFocusSeconds(prev => prev + elapsed);
+      setAccumulatedFocusSeconds((prev: number) => prev + elapsed);
     }
     setTimerType('break');
     setTimeLeft(breakMinutes * 60);
@@ -386,7 +386,7 @@ const Index = () => {
     // Accumulate time for the phase just ended
     if (currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-      setAccumulatedBreakSeconds(prev => prev + elapsed);
+      setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
     }
     setTimerType('focus');
     setTimeLeft(focusMinutes * 60);

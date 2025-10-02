@@ -1,6 +1,10 @@
 import * as React from "react"
 
-import { ToastProps, ToastAction as ToastActionPrimitive } from "@/components/ui/toast" // Import ToastAction as ToastActionPrimitive
+import { ToastAction as ToastActionPrimitive } from "@/components/ui/toast" // Import ToastAction as ToastActionPrimitive
+import { ToastProps as ShadcnToastProps } from "@/components/ui/toast" // Import ToastProps from shadcn/ui/toast
+
+// Define ToastProps here as it's not exported from the shadcn/ui component
+type ToastProps = ShadcnToastProps;
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -186,7 +190,7 @@ const addToRemoveQueue = (toastId: string) => {
   REMOVE_QUEUE.set(toastId, setTimeout(() => {
     REMOVE_QUEUE.delete(toastId)
     dispatch({ type: actionTypes.REMOVE_TOAST, toastId })
-  }, TOAST_REMOVE_DELAY))
+  }, TOAST_REMOVE_DELAY) as unknown as number) // Explicitly cast to number
 }
 
 export { useToast, toast }
