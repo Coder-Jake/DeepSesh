@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScheduledTimer } from "@/types/timer";
@@ -24,27 +24,31 @@ const Timeline: React.FC<TimelineProps> = ({
   isSchedulePending,
   onCountdownEnd,
 }) => {
-  const { formatTime, scheduleTitle, setScheduleTitle } = useTimer();
+  const { formatTime, scheduleTitle, setScheduleTitle, isScheduleActive } = useTimer();
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const getCommenceTargetDate = useCallback(() => {
+    const now = new Date();
+    const [hours, minutes] = commenceTime.split(':').map(Number);
+    const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+    const currentDay = now.getDay();
+    const daysToAdd = (commenceDay - currentDay + 7) % 7;
+    targetDate.setDate(now.getDate() + daysToAdd);
+
+    // If the target time is in the past for today, set it for next week
+    if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
+      targetDate.setDate(targetDate.getDate() + 7);
+    }
+    return targetDate;
+  }, [commenceTime, commenceDay]);
 
   useEffect(() => {
     if (isSchedulePending) {
       const calculateCountdown = () => {
-        const now = new Date();
-        const [hours, minutes] = commenceTime.split(':').map(Number);
-        const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
-
-        const currentDay = now.getDay();
-        const daysToAdd = (commenceDay - currentDay + 7) % 7;
-        targetDate.setDate(now.getDate() + daysToAdd);
-
-        // If the target time is in the past for today, set it for next week
-        if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
-          targetDate.setDate(targetDate.getDate() + 7);
-        }
-        
-        const timeRemaining = Math.max(0, Math.floor((targetDate.getTime() - now.getTime()) / 1000));
+        const targetDate = getCommenceTargetDate();
+        const timeRemaining = Math.max(0, Math.floor((targetDate.getTime() - new Date().getTime()) / 1000));
         setCountdownTimeLeft(timeRemaining);
 
         if (timeRemaining <= 0) {
@@ -64,19 +68,36 @@ const Timeline: React.FC<TimelineProps> = ({
         }
       };
     }
-  }, [isSchedulePending, commenceTime, commenceDay, onCountdownEnd]);
+  }, [isSchedulePending, getCommenceTargetDate, onCountdownEnd]);
 
   const totalScheduleDuration = schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
 
   const targetDayName = DAYS_OF_WEEK[commenceDay];
-  const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() + (commenceDay - targetDate.getDay() + 7) % 7);
-  const formattedTargetDate = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const targetDateForDisplay = getCommenceTargetDate();
+  const formattedTargetDate = targetDateForDisplay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  // Calculate estimated finish time
+  let estimatedFinishTime: Date | null = null;
+  if (isSchedulePending) {
+    const targetDate = getCommenceTargetDate();
+    estimatedFinishTime = new Date(targetDate.getTime() + totalScheduleDuration * 60 * 1000);
+  } else if (isScheduleActive) {
+    const now = Date.now();
+    let remainingDurationSeconds = timeLeft; // Time left for the current item
+    for (let i = currentScheduleIndex + 1; i < schedule.length; i++) {
+      remainingDurationSeconds += schedule[i].durationMinutes * 60; // Add future items
+    }
+    estimatedFinishTime = new Date(now + remainingDurationSeconds * 1000);
+  }
+
+  const formattedFinishTime = estimatedFinishTime 
+    ? estimatedFinishTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+    : null;
 
   return (
     <Card className="mt-6">
       <CardHeader>
-        <h3 className="text-lg font-semibold text-left mb-2">Timeline</h3> {/* Added h3 tag */}
+        <h3 className="text-lg font-semibold text-left mb-2">Timeline</h3>
         <CardTitle className="text-xl flex justify-center">
           <Input
             value={scheduleTitle}
@@ -85,7 +106,6 @@ const Timeline: React.FC<TimelineProps> = ({
             aria-label="Schedule Title"
           />
         </CardTitle>
-        <p className="text-sm text-muted-foreground text-center">Total: {totalScheduleDuration} mins</p>
       </CardHeader>
       <CardContent className="space-y-2">
         {schedule.map((item, index) => {
@@ -145,6 +165,13 @@ const Timeline: React.FC<TimelineProps> = ({
             </p>
           </div>
         )}
+
+        <div className="mt-8 pt-6 border-t border-border text-center space-y-1">
+          <p className="text-sm text-muted-foreground">Total: {totalScheduleDuration} mins</p>
+          {formattedFinishTime && (
+            <p className="text-sm text-muted-foreground">Finish: {formattedFinishTime}</p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
