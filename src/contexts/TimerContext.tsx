@@ -3,10 +3,13 @@ import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem
 import { toast } from '@/hooks/use-toast'; // Using shadcn toast for UI feedback
 import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
 import { supabase } from '@/integrations/supabase/client'; // Import supabase client
+import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules'; // Import default templates
 
 export const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
+
+const LOCAL_STORAGE_KEY_TIMER = 'flowsesh_timer_context'; // New local storage key for TimerContext
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth(); // Get user from AuthContext
@@ -376,6 +379,100 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       prev.map((ask) => (ask.id === updatedAsk.id ? updatedAsk : ask))
     );
   }, []);
+
+  // Load TimerContext states from local storage on initial mount
+  useEffect(() => {
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      setFocusMinutes(data.focusMinutes ?? 25);
+      setBreakMinutes(data.breakMinutes ?? 5);
+      setSeshTitle(data.seshTitle ?? "Notes");
+      setNotes(data.notes ?? "");
+      setShowSessionsWhileActive(data.showSessionsWhileActive ?? false);
+      setIsGlobalPrivate(data.isGlobalPrivate ?? false);
+      setTimerType(data.timerType ?? 'focus');
+      setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? data.focusMinutes * 60 : data.breakMinutes * 60));
+      setIsRunning(data.isRunning ?? false);
+      setIsPaused(data.isPaused ?? false);
+      setIsFlashing(data.isFlashing ?? false);
+      setSchedule(data.schedule ?? []);
+      setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
+      setIsSchedulingMode(data.isSchedulingMode ?? false);
+      setIsScheduleActive(data.isScheduleActive ?? false);
+      setScheduleTitle(data.scheduleTitle ?? "My Focus Sesh");
+      setCommenceTime(data.commenceTime ?? "09:00");
+      setCommenceDay(data.commenceDay ?? null);
+      setIsRecurring(data.isRecurring ?? false);
+      setRecurrenceFrequency(data.recurrenceFrequency ?? 'daily');
+      setSessionStartTime(data.sessionStartTime ?? null);
+      setCurrentPhaseStartTime(data.currentPhaseStartTime ?? null);
+      setAccumulatedFocusSeconds(data.accumulatedFocusSeconds ?? 0);
+      setAccumulatedBreakSeconds(data.accumulatedBreakSeconds ?? 0);
+      setActiveJoinedSessionCoworkerCount(data.activeJoinedSessionCoworkerCount ?? 0);
+      setActiveAsks(data.activeAsks ?? []);
+      setIsSchedulePending(data.isSchedulePending ?? false);
+      setScheduleStartOption(data.scheduleStartOption ?? 'now');
+      setShouldPlayEndSound(data.shouldPlayEndSound ?? true);
+      setShouldShowEndToast(data.shouldShowEndToast ?? true);
+      setIsBatchNotificationsEnabled(data.isBatchNotificationsEnabled ?? false);
+      setBatchNotificationPreference(data.batchNotificationPreference ?? 'break');
+      setCustomBatchMinutes(data.customBatchMinutes ?? timerIncrement);
+      setLock(data.lock ?? false);
+      setExemptionsEnabled(data.exemptionsEnabled ?? false);
+      setPhoneCalls(data.phoneCalls ?? false);
+      setFavourites(data.favourites ?? false);
+      setWorkApps(data.workApps ?? false);
+      setIntentionalBreaches(data.intentionalBreaches ?? false);
+      setManualTransition(data.manualTransition ?? false);
+      setMaxDistance(data.maxDistance ?? 1000);
+      setAskNotifications(data.askNotifications ?? { push: true, vibrate: true, sound: true });
+      setSessionInvites(data.sessionInvites ?? { push: true, vibrate: true, sound: true });
+      setFriendActivity(data.friendActivity ?? { push: true, vibrate: true, sound: true });
+      setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? true);
+      setVerificationStandard(data.verificationStandard ?? 'anyone');
+      setProfileVisibility(data.profileVisibility ?? 'public');
+      setLocationSharing(data.locationSharing ?? false);
+      setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
+
+      // Load savedSchedules, merging with defaults if local storage is empty for schedules
+      const loadedSchedules = data.savedSchedules ?? [];
+      setSavedSchedules(loadedSchedules.length > 0 ? loadedSchedules : DEFAULT_SCHEDULE_TEMPLATES);
+    } else {
+      // If no data in local storage, initialize with default templates
+      setSavedSchedules(DEFAULT_SCHEDULE_TEMPLATES);
+    }
+  }, []);
+
+  // Save TimerContext states to local storage whenever they change
+  useEffect(() => {
+    const dataToSave = {
+      focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
+      notes, seshTitle, showSessionsWhileActive, schedule, currentScheduleIndex,
+      isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
+      isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, sessionStartTime,
+      currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
+      activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
+      shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
+      customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
+      intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
+      friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
+      locationSharing, openSettingsAccordions,
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
+  }, [
+    focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
+    notes, seshTitle, showSessionsWhileActive, schedule, currentScheduleIndex,
+    isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
+    isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, sessionStartTime,
+    currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
+    activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
+    shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
+    customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
+    intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
+    friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
+    locationSharing, openSettingsAccordions,
+  ]);
 
   const value = {
     focusMinutes,
