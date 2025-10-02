@@ -76,77 +76,83 @@ const Timeline: React.FC<TimelineProps> = ({
     const formattedTargetDate = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
     return (
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="text-xl">Schedule Pending: {scheduleTitle}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-lg text-muted-foreground">Commencing at:</p>
-          <p className="text-3xl font-bold text-foreground">
-            {commenceTime} on {targetDayName}, {formattedTargetDate}
-          </p>
-          <p className="text-lg text-muted-foreground">Time until start:</p>
-          <p className="text-5xl font-extrabold text-primary">
-            {formatTime(countdownTimeLeft)}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Your schedule will automatically begin when the countdown reaches zero.
-          </p>
-        </CardContent>
-      </Card>
+      <>
+        <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-xl">Schedule Pending: {scheduleTitle}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-lg text-muted-foreground">Commencing at:</p>
+            <p className="text-3xl font-bold text-foreground">
+              {commenceTime} on {targetDayName}, {formattedTargetDate}
+            </p>
+            <p className="text-lg text-muted-foreground">Time until start:</p>
+            <p className="text-5xl font-extrabold text-primary">
+              {formatTime(countdownTimeLeft)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Your schedule will automatically begin when the countdown reaches zero.
+            </p>
+          </CardContent>
+        </Card>
+      </>
     );
   }
 
   return (
-    <Card className="mt-6">
-      <CardHeader>
-        <CardTitle className="text-xl">{scheduleTitle}</CardTitle>
-        <p className="text-sm text-muted-foreground">Total: {totalScheduleDuration} mins</p>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {schedule.map((item, index) => {
-          const isCurrent = index === currentScheduleIndex;
-          const isCompleted = index < currentScheduleIndex;
-          const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
+    <>
+      <h3 className="text-lg font-semibold text-foreground mb-3">Timeline</h3>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-xl">{scheduleTitle}</CardTitle>
+          <p className="text-sm text-muted-foreground">Total: {totalScheduleDuration} mins</p>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {schedule.map((item, index) => {
+            const isCurrent = index === currentScheduleIndex;
+            const isCompleted = index < currentScheduleIndex;
+            const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
 
-          return (
-            <div
-              key={item.id}
-              className={cn(
-                "relative flex items-center justify-between p-3 rounded-md transition-all duration-300",
-                isCompleted && "bg-muted text-muted-foreground opacity-70",
-                isCurrent && (item.isCustom ? "bg-blue-100 text-blue-800 shadow-md" :
-                              item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
-                              "bg-private-bg/20 text-private-bg-foreground shadow-md"),
-                !isCurrent && !isCompleted && "bg-background hover:bg-muted/50"
-              )}
-            >
-              {isCurrent && (
-                <div
-                  className={cn(
-                    "absolute inset-0 rounded-md opacity-50",
-                    item.isCustom ? "bg-blue-200" :
-                    item.type === 'focus' ? "bg-public-bg" : "bg-private-bg"
-                  )}
-                  style={{ width: `${100 - progress}%`, transformOrigin: 'left' }}
-                />
-              )}
-              <div className="relative z-10 flex-grow">
-                <h4 className="font-medium">{item.title}</h4>
-                <p className="text-xs text-muted-foreground">
-                  {item.customTitle || (item.type === 'focus' ? 'Focus' : 'Break')} • {item.durationMinutes} mins
-                </p>
-              </div>
-              {isCurrent && (
-                <div className="relative z-10 text-lg font-bold">
-                  {formatTime(timeLeft)}
+            return (
+              <div
+                key={item.id}
+                className={cn(
+                  "relative flex items-center justify-between p-3 rounded-md transition-all duration-300",
+                  isCompleted && "bg-muted text-muted-foreground opacity-70",
+                  isCurrent && (item.isCustom ? "bg-blue-100 text-blue-800 shadow-md" :
+                                item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
+                                "bg-private-bg/20 text-private-bg-foreground shadow-md"),
+                  !isCurrent && !isCompleted && "bg-background hover:bg-muted/50"
+                )}
+              >
+                {isCurrent && (
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-md opacity-50",
+                      item.isCustom ? "bg-blue-200" :
+                      item.type === 'focus' ? "bg-public-bg" : "bg-private-bg"
+                    )}
+                    style={{ width: `${100 - progress}%`, transformOrigin: 'left' }}
+                  />
+                )}
+                <div className="relative z-10 flex-grow">
+                  <h4 className="font-medium">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground">
+                    {item.customTitle || (item.type === 'focus' ? 'Focus' : 'Break')} • {item.durationMinutes} mins
+                  </p>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </CardContent>
-    </Card>
+                {isCurrent && (
+                  <div className="relative z-10 text-lg font-bold">
+                    {formatTime(timeLeft)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+    </>
   );
 };
 
