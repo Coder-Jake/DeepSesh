@@ -83,7 +83,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  timeoutRefs.current = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({}); // Corrected declaration
 
   // Ref to store the *last saved* or *initial loaded* state for comparison
   // Initialize with current context values on first render
