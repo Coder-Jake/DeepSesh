@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react"; // ADD Save icon
+import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
@@ -33,7 +33,7 @@ const ScheduleForm: React.FC = () => {
     recurrenceFrequency,
     setRecurrenceFrequency,
     isSchedulePending,
-    saveCurrentScheduleAsTemplate, // NEW
+    saveCurrentScheduleAsTemplate,
   } = useTimer();
   const { toast } = useToast();
 
@@ -61,7 +61,7 @@ const ScheduleForm: React.FC = () => {
   const customTitleInputRef = useRef<HTMLInputElement>(null);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
-  const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false); // NEW state for save button color
+  const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false);
 
   const daysOfWeek = [
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
@@ -83,6 +83,28 @@ const ScheduleForm: React.FC = () => {
     }
   }, [editingCustomTitleId]);
 
+  const handleEnterKeyNavigation = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const formElement = document.getElementById('plan-tab-content');
+      if (!formElement) return;
+
+      const focusableElements = Array.from(
+        formElement.querySelectorAll<HTMLElement>(
+          'input:not([type="hidden"]):not([disabled]), button:not([disabled]):not([data-ignore-enter-nav])'
+        )
+      ).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0); // Filter out hidden elements
+
+      const currentIndex = focusableElements.indexOf(document.activeElement as HTMLElement);
+      if (currentIndex > -1 && currentIndex < focusableElements.length - 1) {
+        focusableElements[currentIndex + 1].focus();
+      } else if (currentIndex === focusableElements.length - 1) {
+        // If it's the last element, blur it
+        (document.activeElement as HTMLElement)?.blur();
+      }
+    }
+  }, []);
+
   const handleScheduleTitleClick = () => {
     setIsEditingScheduleTitle(true);
   };
@@ -94,6 +116,7 @@ const ScheduleForm: React.FC = () => {
       if (scheduleTitle.trim() === "") {
         setScheduleTitle("My Schedule");
       }
+      handleEnterKeyNavigation(e); // Call navigation after handling local logic
     }
   };
 
@@ -180,6 +203,7 @@ const ScheduleForm: React.FC = () => {
       handleUpdateTimer(timerId, 'customTitle', tempCustomTitle);
       setEditingCustomTitleId(null);
       e.currentTarget.blur();
+      handleEnterKeyNavigation(e); // Call navigation after handling local logic
     }
   };
 
@@ -237,11 +261,11 @@ const ScheduleForm: React.FC = () => {
               Templates
             </CardTitle>
           )}
-          <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)}>
+          <Button variant="ghost" size="icon" onClick={() => setIsSchedulingMode(false)} data-ignore-enter-nav>
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
-        <TabsContent value="plan" className="pt-6 pb-6 space-y-6 px-4 lg:px-6">
+        <TabsContent value="plan" className="pt-6 pb-6 space-y-6 px-4 lg:px-6" id="plan-tab-content">
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {schedule.map((timer, index) => (
               <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
@@ -253,6 +277,7 @@ const ScheduleForm: React.FC = () => {
                     onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
                     className="flex-grow min-w-0"
                     onFocus={(e) => e.target.select()}
+                    onKeyDown={handleEnterKeyNavigation}
                   />
                 </div>
                 
@@ -277,6 +302,7 @@ const ScheduleForm: React.FC = () => {
                   step={timerIncrement}
                   className="w-20 text-center flex-shrink-0"
                   onFocus={(e) => e.target.select()}
+                  onKeyDown={handleEnterKeyNavigation}
                 />
                 
                 {editingCustomTitleId === timer.id ? (
@@ -284,7 +310,7 @@ const ScheduleForm: React.FC = () => {
                     ref={customTitleInputRef}
                     value={tempCustomTitle}
                     onChange={(e) => setTempCustomTitle(e.target.value)}
-                    onKeyDown={(e) => handleCustomTitleInputKeyDown(e, timer.id)}
+                    onKeyDown={(e) => handleCustomTitleInputInputKeyDown(e, timer.id)}
                     onBlur={() => handleCustomTitleInputBlur(timer.id)}
                     className="w-24 h-10 text-sm font-medium flex-shrink-0 text-center"
                     onFocus={(e) => e.target.select()}
@@ -303,28 +329,30 @@ const ScheduleForm: React.FC = () => {
                     onTouchStart={() => handleLongPressStart(timer)}
                     onTouchEnd={handleLongPressEnd}
                     onClick={() => handleTypeButtonClick(timer)}
+                    onKeyDown={handleEnterKeyNavigation} // Add navigation to button
                   >
                     {timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break')}
                   </Button>
                 )}
                 
-                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0">
+                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0" data-ignore-enter-nav>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
             ))}
           </div>
 
-          <Button onClick={handleAddTimer} variant="outline" className="w-full">
+          <Button onClick={handleAddTimer} variant="outline" className="w-full" onKeyDown={handleEnterKeyNavigation}>
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          <div className="flex gap-2 mt-4 items-center"> {/* NEW CONTAINER FOR BUTTONS */}
+          <div className="flex gap-2 mt-4 items-center">
             <Button
               variant={scheduleStartOption === 'now' ? 'secondary' : 'outline'}
               size="sm"
               className="text-xs px-3 py-1 h-auto text-muted-foreground"
               onClick={() => setScheduleStartOption('now')}
+              onKeyDown={handleEnterKeyNavigation}
             >
               Now
             </Button>
@@ -333,6 +361,7 @@ const ScheduleForm: React.FC = () => {
               size="sm"
               className="text-xs px-3 py-1 h-auto text-muted-foreground"
               onClick={() => setScheduleStartOption('manual')}
+              onKeyDown={handleEnterKeyNavigation}
             >
               Manual
             </Button>
@@ -341,6 +370,7 @@ const ScheduleForm: React.FC = () => {
               size="sm"
               className="text-xs px-3 py-1 h-auto text-muted-foreground"
               onClick={() => setScheduleStartOption('custom_time')}
+              onKeyDown={handleEnterKeyNavigation}
             >
               <Clock className="h-4 w-4" />
             </Button>
@@ -349,12 +379,13 @@ const ScheduleForm: React.FC = () => {
               size="icon"
               onClick={handleSaveSchedule}
               className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500")}
+              onKeyDown={handleEnterKeyNavigation}
             >
               <Save className="h-5 w-5" />
             </Button>
           </div>
 
-          {scheduleStartOption === 'custom_time' && ( // CONDITIONAL RENDERING
+          {scheduleStartOption === 'custom_time' && (
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="space-y-2">
                 <Input
@@ -365,13 +396,14 @@ const ScheduleForm: React.FC = () => {
                     setCommenceTime(e.target.value);
                   }}
                   onFocus={(e) => e.target.select()}
+                  onKeyDown={handleEnterKeyNavigation}
                 />
               </div>
               <div className="space-y-2">
                 <Select value={commenceDay.toString()} onValueChange={(value) => {
                   setCommenceDay(parseInt(value));
                 }}>
-                  <SelectTrigger id="commence-day">
+                  <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation}>
                     <SelectValue>
                       {commenceDay === currentDayIndex ? "Today" : daysOfWeek[commenceDay]}
                     </SelectValue>
@@ -388,7 +420,7 @@ const ScheduleForm: React.FC = () => {
             </div>
           )}
 
-          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending}>
+          <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" disabled={isSchedulePending} onKeyDown={handleEnterKeyNavigation}>
             <Play className="mr-2 h-5 w-5" />
             {buttonText}
           </Button>
