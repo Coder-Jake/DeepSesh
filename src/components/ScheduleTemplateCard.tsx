@@ -58,7 +58,9 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-2 relative"> {/* Added relative for absolute positioning */}
-        <p className="text-sm text-gray-600 mb-3">{getCommenceInfo(template)}</p>
+        {template.scheduleStartOption === 'custom_time' && ( // Conditionally render based on scheduleStartOption
+          <p className="text-sm text-gray-600 mb-3">{getCommenceInfo(template)}</p>
+        )}
         <div className="flex justify-end gap-2">
           <Button variant="outline" size="sm" onClick={handleLoad}>
             <Play className="h-4 w-4 mr-2" /> Load
