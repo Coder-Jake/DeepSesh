@@ -158,7 +158,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.warn("Cannot save session: User not logged in or session not started.");
       toast({
         title: "Session Not Saved",
-        description: "Please log in to save your session history.",
+        description: "Log in to save your session history.",
         variant: "destructive",
       });
       return;
