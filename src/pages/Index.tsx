@@ -549,7 +549,7 @@ const Index = () => {
 
     const updatedOptions = currentPoll.options.map(option => {
       if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
-        option.votes = option.votes.filter(v => v.userId !== currentUserId);
+        option.votes = option.votes.filter(v => v.userId === currentUserId); // Filter out current user's previous vote
       }
 
       if (optionIds.includes(option.id)) {

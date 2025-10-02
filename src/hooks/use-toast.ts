@@ -1,10 +1,13 @@
 import * as React from "react"
 
 import { ToastAction as ToastActionPrimitive } from "@/components/ui/toast" // Import ToastAction as ToastActionPrimitive
-import { ToastProps as ShadcnToastProps } from "@/components/ui/toast" // Import ToastProps from shadcn/ui/toast
+// Removed: import { ToastProps as ShadcnToastProps } from "@/components/ui/toast" // Import ToastProps from shadcn/ui/toast
 
 // Define ToastProps here as it's not exported from the shadcn/ui component
-type ToastProps = ShadcnToastProps;
+type ToastProps = React.ComponentPropsWithoutRef<typeof ToastActionPrimitive> extends {
+  onOpenChange?: (open: boolean) => void;
+} ? React.ComponentPropsWithoutRef<typeof ToastActionPrimitive> : never;
+
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000

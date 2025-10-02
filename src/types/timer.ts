@@ -1,3 +1,5 @@
+import React from 'react'; // Import React for React.Dispatch
+
 export interface ScheduledTimer {
   id: string;
   title: string;
@@ -54,27 +56,27 @@ export interface NotificationSettings {
 export interface TimerContextType {
   // Scheduling states
   schedule: ScheduledTimer[];
-  setSchedule: (schedule: ScheduledTimer[]) => void;
+  setSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>;
   isSchedulingMode: boolean;
-  setIsSchedulingMode: (isScheduling: boolean) => void;
+  setIsSchedulingMode: React.Dispatch<React.SetStateAction<boolean>>;
   startSchedule: () => void;
   resetSchedule: () => void;
   scheduleTitle: string;
-  setScheduleTitle: (title: string) => void;
+  setScheduleTitle: React.Dispatch<React.SetStateAction<string>>;
   commenceTime: string;
-  setCommenceTime: (time: string) => void;
+  setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
   commenceDay: number;
-  setCommenceDay: (day: number) => void;
+  setCommenceDay: React.Dispatch<React.SetStateAction<number>>;
   scheduleStartOption: 'now' | 'manual' | 'custom_time'; // Added
-  setScheduleStartOption: (option: 'now' | 'manual' | 'custom_time') => void; // Added
+  setScheduleStartOption: React.Dispatch<React.SetStateAction<'now' | 'manual' | 'custom_time'>>; // Added
   isRecurring: boolean;
-  setIsRecurring: (isRecurring: boolean) => void;
+  setIsRecurring: React.Dispatch<React.SetStateAction<boolean>>;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
-  setRecurrenceFrequency: (frequency: 'daily' | 'weekly' | 'monthly') => void;
+  setRecurrenceFrequency: React.Dispatch<React.SetStateAction<'daily' | 'weekly' | 'monthly'>>;
   isScheduleActive: boolean;
   currentScheduleIndex: number;
   isSchedulePending: boolean; // Added new state
-  setIsSchedulePending: (isPending: boolean) => void; // Added new setter
+  setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>; // Added new setter
 
   // Saved Schedules (Templates)
   savedSchedules: ScheduledTimerTemplate[]; // Added
@@ -84,40 +86,40 @@ export interface TimerContextType {
 
   // Core Timer states
   focusMinutes: number;
-  setFocusMinutes: (minutes: number) => void;
+  setFocusMinutes: React.Dispatch<React.SetStateAction<number>>;
   breakMinutes: number;
-  setBreakMinutes: (minutes: number) => void;
+  setBreakMinutes: React.Dispatch<React.SetStateAction<number>>;
   isRunning: boolean;
-  setIsRunning: (running: boolean) => void;
+  setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
   isPaused: boolean;
-  setIsPaused: (paused: boolean) => void;
+  setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
   timeLeft: number;
-  setTimeLeft: (time: number) => void;
+  setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
   timerType: 'focus' | 'break';
-  setTimerType: (type: 'focus' | 'break') => void;
+  setTimerType: React.Dispatch<React.SetStateAction<'focus' | 'break'>>;
   isFlashing: boolean;
-  setIsFlashing: (flashing: boolean) => void;
+  setIsFlashing: React.Dispatch<React.SetStateAction<boolean>>;
   notes: string;
-  setNotes: (notes: string) => void;
+  setNotes: React.Dispatch<React.SetStateAction<string>>;
   seshTitle: string;
-  setSeshTitle: (title: string) => void;
+  setSeshTitle: React.Dispatch<React.SetStateAction<string>>;
   formatTime: (seconds: number) => string;
   timerIncrement: number;
-  setTimerIncrement: (increment: number) => void;
+  setTimerIncrement: React.Dispatch<React.SetStateAction<number>>;
 
   // Session management states
   showSessionsWhileActive: boolean;
-  setShowSessionsWhileActive: (show: boolean) => void;
+  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<boolean>>;
   sessionStartTime: number | null;
-  setSessionStartTime: (time: number | null) => void;
+  setSessionStartTime: React.Dispatch<React.SetStateAction<number | null>>;
   currentPhaseStartTime: number | null;
-  setCurrentPhaseStartTime: (time: number | null) => void;
+  setCurrentPhaseStartTime: React.Dispatch<React.SetStateAction<number | null>>;
   accumulatedFocusSeconds: number;
-  setAccumulatedFocusSeconds: (seconds: number) => void;
+  setAccumulatedFocusSeconds: React.Dispatch<React.SetStateAction<number>>;
   accumulatedBreakSeconds: number;
-  setAccumulatedBreakSeconds: (seconds: number) => void;
+  setAccumulatedBreakSeconds: React.Dispatch<React.SetStateAction<number>>;
   activeJoinedSessionCoworkerCount: number;
-  setActiveJoinedSessionCoworkerCount: (count: number) => void;
+  setActiveJoinedSessionCoworkerCount: React.Dispatch<React.SetStateAction<number>>;
   saveSessionToHistory: () => Promise<void>;
 
   // Ask/Poll states
@@ -127,47 +129,47 @@ export interface TimerContextType {
 
   // Settings states
   shouldPlayEndSound: boolean;
-  setShouldPlayEndSound: (play: boolean) => void;
+  setShouldPlayEndSound: React.Dispatch<React.SetStateAction<boolean>>;
   shouldShowEndToast: boolean;
-  setShouldShowEndToast: (show: boolean) => void;
+  setShouldShowEndToast: React.Dispatch<React.SetStateAction<boolean>>;
   isBatchNotificationsEnabled: boolean;
-  setIsBatchNotificationsEnabled: (enabled: boolean) => void;
+  setIsBatchNotificationsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   batchNotificationPreference: 'break' | 'sesh_end' | 'custom';
-  setBatchNotificationPreference: (preference: 'break' | 'sesh_end' | 'custom') => void;
+  setBatchNotificationPreference: React.Dispatch<React.SetStateAction<'break' | 'sesh_end' | 'custom'>>;
   customBatchMinutes: number;
-  setCustomBatchMinutes: (minutes: number) => void;
+  setCustomBatchMinutes: React.Dispatch<React.SetStateAction<number>>;
   lock: boolean;
-  setLock: (locked: boolean) => void;
+  setLock: React.Dispatch<React.SetStateAction<boolean>>;
   exemptionsEnabled: boolean;
-  setExemptionsEnabled: (enabled: boolean) => void;
+  setExemptionsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   phoneCalls: boolean;
-  setPhoneCalls: (enabled: boolean) => void;
+  setPhoneCalls: React.Dispatch<React.SetStateAction<boolean>>;
   favourites: boolean;
-  setFavourites: (enabled: boolean) => void;
+  setFavourites: React.Dispatch<React.SetStateAction<boolean>>;
   workApps: boolean;
-  setWorkApps: (enabled: boolean) => void;
+  setWorkApps: React.Dispatch<React.SetStateAction<boolean>>;
   intentionalBreaches: boolean;
-  setIntentionalBreaches: (enabled: boolean) => void;
+  setIntentionalBreaches: React.Dispatch<React.SetStateAction<boolean>>;
   manualTransition: boolean;
-  setManualTransition: (enabled: boolean) => void;
+  setManualTransition: React.Dispatch<React.SetStateAction<boolean>>;
   maxDistance: number;
-  setMaxDistance: (distance: number) => void;
+  setMaxDistance: React.Dispatch<React.SetStateAction<number>>;
   askNotifications: NotificationSettings;
-  setAskNotifications: (settings: NotificationSettings) => void;
+  setAskNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   sessionInvites: NotificationSettings;
-  setSessionInvites: (settings: NotificationSettings) => void;
+  setSessionInvites: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   friendActivity: NotificationSettings;
-  setFriendActivity: (settings: NotificationSettings) => void;
+  setFriendActivity: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   breakNotificationsVibrate: boolean;
-  setBreakNotificationsVibrate: (vibrate: boolean) => void;
+  setBreakNotificationsVibrate: React.Dispatch<React.SetStateAction<boolean>>;
   verificationStandard: 'anyone' | 'phone1' | 'organisation' | 'id1';
-  setVerificationStandard: (standard: 'anyone' | 'phone1' | 'organisation' | 'id1') => void;
+  setVerificationStandard: React.Dispatch<React.SetStateAction<'anyone' | 'phone1' | 'organisation' | 'id1'>>;
   profileVisibility: 'public' | 'friends' | 'private';
-  setProfileVisibility: (visibility: 'public' | 'friends' | 'private') => void;
+  setProfileVisibility: React.Dispatch<React.SetStateAction<'public' | 'friends' | 'private'>>;
   locationSharing: boolean;
-  setLocationSharing: (sharing: boolean) => void;
+  setLocationSharing: React.Dispatch<React.SetStateAction<boolean>>;
   isGlobalPrivate: boolean;
-  setIsGlobalPrivate: (isPrivate: boolean) => void;
+  setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>;
   openSettingsAccordions: string[];
-  setOpenSettingsAccordions: (accordions: string[]) => void;
+  setOpenSettingsAccordions: React.Dispatch<React.SetStateAction<string[]>>;
 }
