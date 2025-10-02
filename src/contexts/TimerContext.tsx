@@ -94,7 +94,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [timerIncrement, setTimerIncrement] = useState(5);
 
   // Session management states
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(true);
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false); // Changed to false
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [currentPhaseStartTime, setCurrentPhaseStartTime] = useState<number | null>(null);
   const [accumulatedFocusSeconds, setAccumulatedFocusSeconds] = useState(0);
