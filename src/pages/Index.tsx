@@ -72,7 +72,7 @@ const mockNearbySessions: DemoSession[] = [
     type: "focus",
     totalDurationMinutes: 90,
     currentPhase: "focus",
-    currentPhaseDurationMinutes: 75,
+    currentPhaseDurationMinutes: 59,
     startTime: Date.now() - (5.52 * 60 * 1000),
     location: "Engineering Library - Room 304",
     workspaceImage: "/api/placeholder/200/120",
