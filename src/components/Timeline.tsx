@@ -159,19 +159,23 @@ const Timeline: React.FC<TimelineProps> = ({
         })}
 
         {isSchedulePending && (
-          <div className="mt-8 pt-6 border-t border-border space-y-2"> {/* Adjusted space-y */}
-            <h3 className="text-lg font-semibold text-foreground text-left">Upcoming</h3> {/* Changed text and alignment */}
-            <p className="text-base font-bold text-foreground text-left"> {/* Smaller font */}
-              {commenceTime} on {targetDayName}, {formattedTargetDate}
-            </p>
-            <p className="text-sm text-muted-foreground text-left">Commencing:</p> {/* Changed text */}
-            <p className="text-3xl font-extrabold text-primary text-left"> {/* Smaller font */}
-              {formatTime(countdownTimeLeft)}
-            </p>
-            <p className="text-xs text-muted-foreground text-left"> {/* Smaller font */}
-              Your schedule will automatically begin when the countdown reaches zero.
-            </p>
-          </div>
+          <Card className="mt-6"> {/* New Card for Upcoming section */}
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-foreground text-left">Upcoming</h3>
+            </CardHeader>
+            <CardContent className="space-y-2"> {/* Adjusted space-y */}
+              <p className="text-base font-bold text-foreground text-left">
+                {commenceTime} on {targetDayName}, {formattedTargetDate}
+              </p>
+              <p className="text-sm text-muted-foreground text-left">Commencing:</p>
+              <p className="text-3xl font-extrabold text-primary text-left">
+                {formatTime(countdownTimeLeft)}
+              </p>
+              <p className="text-xs text-muted-foreground text-left">
+                Your schedule will automatically begin when the countdown reaches zero.
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         <div className="mt-8 pt-6 border-t border-border text-center space-y-1">
