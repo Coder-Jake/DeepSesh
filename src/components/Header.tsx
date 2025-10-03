@@ -45,7 +45,7 @@ const Header = () => {
             <h1 className="text-3xl font-bold header-gradient-text select-none">
               DeepSesh
               {isHomePage && (
-                <span className="ml-1 text-[0.7rem] text-gray-400 font-normal">(demo)</span>
+                <span className="ml-0.5 text-[0.6rem] text-gray-400 font-normal">(demo)</span>
               )}
             </h1> {/* Changed to header-gradient-text */}
           </Link>
