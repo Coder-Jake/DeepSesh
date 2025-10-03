@@ -57,7 +57,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
   return (
     <Card className="flex flex-col justify-between relative">
       <CardHeader className="py-2">
-        <CardTitle className="text-lg">{template.title}</CardTitle>
+        <CardTitle className="text-lg">Conference</CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
           {getScheduleSummary(template.schedule)}
         </CardDescription>
@@ -76,7 +76,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
                 size="icon"
                 className="w-6 h-6 hover:bg-muted"
               >
-                <Share2 className="h-4 w-4 text-foreground hover:text-blue-700" /> {/* Changed to text-foreground and added hover:text-blue-700 */}
+                <Share2 className="h-4 w-4 text-foreground hover:text-blue-700" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -103,7 +103,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
         onClick={handleDelete}
         className="absolute top-0 right-0"
       >
-        <Trash2 className="h-3 w-3 text-foreground hover:text-red-700" /> {/* Changed to text-foreground and added hover:text-red-700 */}
+        <Trash2 className="h-3 w-3 text-foreground hover:text-red-700" />
       </Button>
     </Card>
   );
