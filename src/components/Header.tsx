@@ -42,7 +42,12 @@ const Header = () => {
             className="hover:opacity-80 transition-opacity header-gradient-link" // Added header-gradient-link class
             onClick={handleHeaderClick}
           >
-            <h1 className="text-3xl font-bold header-gradient-text select-none">DeepSesh</h1> {/* Changed to header-gradient-text */}
+            <h1 className="text-3xl font-bold header-gradient-text select-none">
+              DeepSesh
+              {isHomePage && (
+                <span className="ml-2 text-xs text-gray-400 font-normal">(demo)</span>
+              )}
+            </h1> {/* Changed to header-gradient-text */}
           </Link>
           {showSecretTextDiv && ( // Conditionally render the div
             <div
