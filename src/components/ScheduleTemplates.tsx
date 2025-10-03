@@ -63,6 +63,7 @@ const ScheduleTemplates: React.FC<ScheduleTemplatesProps> = ({ setActiveTab }) =
             </Button>
           </CardContent>
         </Card>
+        <Button variant="outline" className="w-full" disabled>Load</Button>
       </div>
     );
   }
@@ -85,6 +86,7 @@ const ScheduleTemplates: React.FC<ScheduleTemplatesProps> = ({ setActiveTab }) =
           ))}
         </div>
       )}
+      <Button variant="outline" className="w-full" disabled>Load</Button>
     </div>
   );
 };
