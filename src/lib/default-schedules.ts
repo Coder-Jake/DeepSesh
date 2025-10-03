@@ -64,7 +64,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
   },
   {
     id: generateId(),
-    title: "Hackathon Sprint",
+    title: "Hackathon",
     schedule: [
       { id: generateId(), title: "Brainstorming", type: "focus", durationMinutes: 90, isCustom: true, customTitle: "Brainstorming" },
       { id: generateId(), title: "Team Sync", type: "break", durationMinutes: 15, isCustom: true, customTitle: "Team Sync" },
