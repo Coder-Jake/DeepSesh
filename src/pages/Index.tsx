@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square } from "lucide-react"; // Changed StopCircle to Square
+import { Globe, Lock, CalendarPlus, Share2, Square } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -684,7 +684,7 @@ const Index = () => {
                   <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                     <div className="shape-octagon w-10 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
                       <Button 
-                        variant="ghost" // Use ghost variant to make the button itself transparent
+                        variant="ghost" 
                         size="icon" 
                         onMouseDown={() => handleLongPressStart(stopTimer)}
                         onMouseUp={handleLongPressEnd}
@@ -692,7 +692,10 @@ const Index = () => {
                         onTouchStart={() => handleLongPressStart(stopTimer)}
                         onTouchEnd={handleLongPressEnd}
                         onClick={stopTimer}
-                        className="w-full h-full rounded-none bg-transparent hover:bg-transparent text-secondary-foreground" // Make button transparent and fill parent
+                        className={cn(
+                          "w-full h-full rounded-none bg-transparent hover:bg-transparent",
+                          isPaused ? "text-red-500" : "text-secondary-foreground" // Conditional red color
+                        )}
                       >
                         <Square size={16} fill="currentColor" /> {/* Solid Square icon */}
                       </Button>
