@@ -308,7 +308,7 @@ const Profile = () => {
                 </p>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Not currently affiliated with an organization.
+                  Not currently affiliated with an organisation.
                 </p>
               )}
               <Button onClick={() => setIsOrganizationDialogOpen(true)}>
