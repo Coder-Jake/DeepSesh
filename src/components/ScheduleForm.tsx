@@ -40,6 +40,8 @@ const ScheduleForm: React.FC = () => {
     isPaused, // Added for confirmation check
     isScheduleActive, // Added for confirmation check
     resetSchedule, // Added for confirmation check
+    timerColors, // NEW: Get from context
+    setTimerColors, // NEW: Get from context
   } = useTimer();
   const { toast } = useToast();
 
@@ -71,7 +73,7 @@ const ScheduleForm: React.FC = () => {
 
   // New state for color picker
   const [editingColorTimerId, setEditingColorTimerId] = useState<string | null>(null);
-  const [timerColors, setTimerColors] = useState<Record<string, string>>({}); // Stores colors by timer ID
+  // Removed local timerColors state, now using context
 
   // Order for displaying days in the Select component (Monday first, Sunday last)
   const daysOfWeekDisplayOrder = [

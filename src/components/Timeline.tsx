@@ -24,7 +24,7 @@ const Timeline: React.FC<TimelineProps> = ({
   isSchedulePending,
   onCountdownEnd,
 }) => {
-  const { formatTime, scheduleTitle, isScheduleActive } = useTimer(); // Removed setScheduleTitle
+  const { formatTime, scheduleTitle, isScheduleActive, timerColors } = useTimer(); // Removed setScheduleTitle, added timerColors
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -120,6 +120,7 @@ const Timeline: React.FC<TimelineProps> = ({
           const isCurrent = index === currentScheduleIndex && !isSchedulePending; // Only current if not pending
           const isCompleted = index < currentScheduleIndex && !isSchedulePending; // Only completed if not pending
           const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
+          const itemBackgroundColor = timerColors[item.id] || 'bg-muted/50'; // Get custom color or default
 
           return (
             <div
@@ -132,6 +133,7 @@ const Timeline: React.FC<TimelineProps> = ({
                               "bg-private-bg/20 text-private-bg-foreground shadow-md"),
                 !isCurrent && !isCompleted && "bg-background hover:bg-muted/50"
               )}
+              style={{ backgroundColor: itemBackgroundColor }} // Apply custom background color
             >
               {isCurrent && (
                 <div

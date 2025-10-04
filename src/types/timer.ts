@@ -86,6 +86,10 @@ export interface TimerContextType {
   loadScheduleTemplate: (templateId: string) => void; // Added
   deleteScheduleTemplate: (templateId: string) => void; // Added
 
+  // Timer Colors
+  timerColors: Record<string, string>; // NEW
+  setTimerColors: React.Dispatch<React.SetStateAction<Record<string, string>>>; // NEW
+
   // Core Timer states
   focusMinutes: number;
   setFocusMinutes: React.Dispatch<React.SetStateAction<number>>;

@@ -76,6 +76,9 @@ export type TimerContextType = {
   loadScheduleTemplate: (templateId: string) => void; // NEW
   deleteScheduleTemplate: (templateId: string) => void; // NEW
 
+  timerColors: Record<string, string>; // NEW
+  setTimerColors: React.Dispatch<React.SetStateAction<Record<string, string>>>; // NEW
+
   showSessionsWhileActive: boolean;
   setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<boolean>>;
   sessionStartTime: number | null;

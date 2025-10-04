@@ -46,6 +46,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Saved Schedules (Templates)
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]); // Added
   
+  // Timer Colors
+  const [timerColors, setTimerColors] = useState<Record<string, string>>({}); // NEW
+
   // New session tracking states
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [currentPhaseStartTime, setCurrentPhaseStartTime] = useState<number | null>(null);
@@ -240,6 +243,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setAccumulatedBreakSeconds(0);
     setNotes("");
     setSeshTitle("Notes");
+    setTimerColors({}); // Reset timer colors
   }, [focusMinutes]);
 
   const saveCurrentScheduleAsTemplate = useCallback(() => {
@@ -441,6 +445,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setProfileVisibility(data.profileVisibility ?? ['public']); // Updated default to array
       setLocationSharing(data.locationSharing ?? false);
       setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
+      setTimerColors(data.timerColors ?? {}); // NEW: Load timer colors
 
       // Load savedSchedules, merging with defaults if local storage is empty for schedules
       const loadedSchedules = data.savedSchedules ?? [];
@@ -457,7 +462,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
       notes, seshTitle, showSessionsWhileActive, schedule, currentScheduleIndex,
       isSchedulingMode, isScheduleActive, isSchedulePrepared, scheduleTitle, commenceTime, commenceDay, // NEW
-      isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, sessionStartTime,
+      isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
       shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
@@ -471,7 +476,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
     notes, seshTitle, showSessionsWhileActive, schedule, currentScheduleIndex,
     isSchedulingMode, isScheduleActive, isSchedulePrepared, scheduleTitle, commenceTime, commenceDay, // NEW
-    isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, sessionStartTime,
+    isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
     currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
@@ -536,6 +541,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     saveCurrentScheduleAsTemplate,
     loadScheduleTemplate,
     deleteScheduleTemplate,
+
+    timerColors, // NEW
+    setTimerColors, // NEW
 
     sessionStartTime,
     setSessionStartTime,
