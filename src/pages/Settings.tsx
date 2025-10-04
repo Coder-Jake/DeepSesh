@@ -84,7 +84,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  timeoutRefs.current = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   // Ref to store the *last saved* or *initial loaded* state for comparison
   // Initialize with current context values on first render
@@ -861,10 +861,21 @@ const Settings = () => {
                 
 
                 <div className="space-y-2 mt-6">
-                  <Label>Minimum Verification Status</Label>
-                  <p className="text-sm text-muted-foreground">
-                    for users to interact with sessions you host
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <Label>Minimum Verification Status</Label>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm text-muted-foreground cursor-help">
+                            (for sessions you host)
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>for users to interact with sessions you host</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Select 
                     value={verificationStandard} 
                     onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
