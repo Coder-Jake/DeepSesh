@@ -134,7 +134,24 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsSchedulePending(true);
         setIsSchedulingMode(false); // Exit scheduling mode
         // The Timeline component will handle the countdown and call handleCountdownEnd when time is up
-      } else { // 'now' or 'manual'
+      } else if (scheduleStartOption === 'manual') {
+        setIsScheduleActive(true);
+        setCurrentScheduleIndex(0);
+        setTimerType(schedule[0].type);
+        setTimeLeft(schedule[0].durationMinutes * 60);
+        setIsRunning(false); // Timer should NOT start running immediately
+        setIsPaused(false); // Not paused, but not running either
+        setIsFlashing(false);
+        setSessionStartTime(Date.now()); // Overall session starts now
+        setCurrentPhaseStartTime(null); // Phase starts when user hits 'Start'
+        setAccumulatedFocusSeconds(0);
+        setAccumulatedBreakSeconds(0);
+        toast({
+          title: "Schedule Prepared!",
+          description: `"${scheduleTitle}" is ready to begin.`,
+        });
+        setIsSchedulingMode(false); // Exit scheduling mode
+      } else { // 'now' option
         setIsScheduleActive(true);
         setCurrentScheduleIndex(0);
         setTimerType(schedule[0].type);
