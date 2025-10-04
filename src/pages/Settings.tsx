@@ -511,7 +511,16 @@ const Settings = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="batch-notifications-toggle">Batch Notifications</Label>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label htmlFor="batch-notifications-toggle" className="cursor-help">Batch Notifications</Label>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Notifications will be delayed and delivered as a group at specified times. Exemptions apply.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <Switch
                     id="batch-notifications-toggle"
