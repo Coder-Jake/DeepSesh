@@ -627,9 +627,10 @@ const Index = () => {
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
   // Determine the background color for the CircularProgress
-  const circularProgressBackgroundColor = timerType === 'focus' 
-    ? 'hsl(var(--focus-bg-light))' 
-    : 'hsl(var(--break-bg-light))';
+  const circularProgressBackgroundColor = 
+    (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending)
+      ? (timerType === 'focus' ? 'hsl(var(--focus-bg-light))' : 'hsl(var(--break-bg-light))')
+      : 'hsl(var(--background))'; // White background when inactive
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
@@ -670,7 +671,7 @@ const Index = () => {
                         </> : <>
                           <Lock size={16} />
                           <span className="text-sm font-medium">Private</span>
-                        </>}
+                        }</>
                     </button>
                     
                     {/* Share Dropdown */}
