@@ -479,7 +479,7 @@ const ScheduleForm: React.FC = () => {
                   data-input-type="commence-time" // Added data-input-type
                 />
               </div>
-              <div className="space-y-8">
+              <div className="space-y-2">
                 <Select 
                   value={commenceDay === null ? "today-default" : commenceDay.toString()} // Use "today-default" for null
                   onValueChange={(value) => {
