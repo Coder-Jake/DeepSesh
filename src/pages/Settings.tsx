@@ -78,13 +78,12 @@ const Settings = () => {
   const { toast } = useToast(); // Use shadcn toast for UI feedback
 
   // Local state for temporary UI interactions or derived values
-  // Removed selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
 
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  timeoutRefs.current = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({}); // FIX: Declared timeoutRefs using useRef
 
   // Ref to store the *last saved* or *initial loaded* state for comparison
   // Initialize with current context values on first render
@@ -120,12 +119,9 @@ const Settings = () => {
   // This runs once on mount to set up local states from context.
   // It does NOT update savedSettingsRef.current after initial mount.
   useEffect(() => {
-    // Removed local state initializations for focus/break durations
     setCurrentTimerIncrement(timerIncrement);
-    // No update to savedSettingsRef.current here after initial render
   }, [
     timerIncrement, // Only dependencies that affect local state initialization
-    // Other context values are directly used in the UI and don't need local state copies for display
   ]);
 
 
