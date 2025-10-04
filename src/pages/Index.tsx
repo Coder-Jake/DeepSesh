@@ -293,20 +293,29 @@ const Index = () => {
   };
   
   const startTimer = () => {
-    if (!isRunning && !isPaused) {
-      playStartSound();
-      setIsRunning(true);
+    if (isScheduleActive || isRunning || isPaused) {
+      if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
+        return;
+      }
+      // If confirmed, reset existing schedule/timer before starting new one
+      if (isScheduleActive) resetSchedule();
+      setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      setSessionStartTime(Date.now()); // Record overall session start time
-      setCurrentPhaseStartTime(Date.now()); // Record current phase start time
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-    } else if (isPaused) {
-      setIsRunning(true);
-      setIsPaused(false);
-      setCurrentPhaseStartTime(Date.now()); // Resume current phase timer
+      setNotes("");
+      setSeshTitle("Notes");
     }
+
+    playStartSound();
+    setIsRunning(true);
+    setIsPaused(false);
+    setIsFlashing(false);
+    setSessionStartTime(Date.now()); // Record overall session start time
+    setCurrentPhaseStartTime(Date.now()); // Record current phase start time
+    setAccumulatedFocusSeconds(0);
+    setAccumulatedBreakSeconds(0);
   };
   
   const pauseTimer = () => {
@@ -397,7 +406,7 @@ const Index = () => {
       setActiveJoinedSession(null);
       if (isScheduleActive) resetSchedule();
       setSessionStartTime(null);
-      setCurrentPhaseStartTime(null);
+      setCurrentPhaseStartTime(null); // Reset current phase start time
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
@@ -469,6 +478,21 @@ const Index = () => {
   };
 
   const handleJoinSession = (session: DemoSession) => {
+    if (isRunning || isPaused || isScheduleActive || isSchedulePending) {
+      if (!confirm("A timer or schedule is already active. Do you want to override it and join this session?")) {
+        return;
+      }
+      // If confirmed, reset existing schedule/timer before joining new one
+      if (isScheduleActive) resetSchedule();
+      setIsRunning(false);
+      setIsPaused(false);
+      setIsFlashing(false);
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+      setNotes("");
+      setSeshTitle("Notes");
+    }
+
     setActiveJoinedSession(session);
     setActiveJoinedSessionCoworkerCount(session.participants.length); // Set coworker count
     setTimerType(session.currentPhase);

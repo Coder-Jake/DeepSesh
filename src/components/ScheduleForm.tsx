@@ -34,6 +34,10 @@ const ScheduleForm: React.FC = () => {
     setRecurrenceFrequency, // Now exists on TimerContextType
     isSchedulePending,
     saveCurrentScheduleAsTemplate, // Now exists on TimerContextType
+    isRunning, // Added for confirmation check
+    isPaused, // Added for confirmation check
+    isScheduleActive, // Added for confirmation check
+    resetSchedule, // Added for confirmation check
   } = useTimer();
   const { toast } = useToast();
 
@@ -200,6 +204,16 @@ const ScheduleForm: React.FC = () => {
         variant: "destructive",
       });
       return;
+    }
+
+    if (isRunning || isPaused || isScheduleActive || isSchedulePending) {
+      if (!confirm("A timer or schedule is already active. Do you want to override it and commence this new schedule?")) {
+        return;
+      }
+      // If confirmed, reset existing schedule/timer before starting new one
+      if (isScheduleActive) resetSchedule();
+      // Also reset manual timer states if they were active
+      // These are handled by startSchedule now, which will reset the main timer states
     }
 
     startSchedule();
