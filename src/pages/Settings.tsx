@@ -487,7 +487,16 @@ const Settings = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="manual-transition"> Manual Transitions</Label>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="manual-transition" className="cursor-help">Manual Transitions</Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Require confirmation to move between Focus/Break.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div >
                 <Switch
                   id="manual-transition"
@@ -504,7 +513,7 @@ const Settings = () => {
                         <Label htmlFor="lock" className="cursor-help">Lock in!</Label>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p> Disable other apps during Focus.</p>
+                        <p>Disable other apps during Focus.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
