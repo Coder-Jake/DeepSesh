@@ -39,15 +39,15 @@ const Header = () => {
         <div className="relative">
           <Link 
             to="/" 
-            className="hover:opacity-80 transition-opacity header-gradient-link" // Added header-gradient-link class
+            className="hover:opacity-80 transition-opacity"
             onClick={handleHeaderClick}
           >
-            <h1 className="text-3xl font-bold header-gradient-text select-none">
+            <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
               DeepSesh
               {isHomePage && (
                 <span className="ml-0.5 text-[0.6rem] text-gray-400 font-normal">(demo)</span>
               )}
-            </h1> {/* Changed to header-gradient-text */}
+            </h1>
           </Link>
           {showSecretTextDiv && ( // Conditionally render the div
             <div
