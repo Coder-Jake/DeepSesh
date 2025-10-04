@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { useToast } from "@/hooks/use-toast"; // Import useToast
-import { useTheme } => "@/contexts/ThemeContext"; // Import useTheme
+import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 
 const Settings = () => {
   const { 
@@ -685,7 +685,7 @@ const Settings = () => {
                   id="global-visibility-toggle"
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)} // Toggle isGlobalPrivate
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-white select-none", // Changed text-black to text-white
+                    "px-4 py-2 rounded-full transition-colors text-black select-none",
                     !isGlobalPrivate ? "bg-[hsl(var(--public-bg))] hover:bg-white" : "bg-[hsl(var(--private-bg))] hover:bg-white" // Display Public when false, Private when true
                   )}
                 >
