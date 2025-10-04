@@ -292,8 +292,8 @@ const Index = () => {
     }
   };
   
-  const startTimer = () => {
-    if (isScheduleActive || isRunning || isPaused) {
+  const startNewManualTimer = () => { // Renamed to be explicit
+    if (isScheduleActive || isRunning || isPaused || isSchedulePending) {
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
       }
@@ -316,6 +316,24 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now()); // Record current phase start time
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
+  };
+
+  const resumeTimer = () => {
+    playStartSound(); // Optional, but good for consistency
+    setIsRunning(true);
+    setIsPaused(false);
+    // If a schedule was pending and now resuming, ensure currentPhaseStartTime is set
+    if (isScheduleActive && isSchedulePending) {
+      setIsSchedulePending(false); // No longer pending, now running
+      setCurrentPhaseStartTime(Date.now());
+      toast({
+        title: "Schedule Resumed!",
+        description: `"${scheduleTitle}" has resumed.`,
+      });
+    } else if (currentPhaseStartTime === null) {
+      // If it was a manual timer paused, restart phase tracking
+      setCurrentPhaseStartTime(Date.now());
+    }
   };
   
   const pauseTimer = () => {
@@ -421,7 +439,7 @@ const Index = () => {
         setActiveJoinedSession(null);
         if (isScheduleActive) resetSchedule();
         setSessionStartTime(null);
-        setCurrentPhaseStartTime(0); // Reset current phase start time
+        setCurrentPhaseStartTime(null); // Reset current phase start time
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
         setNotes("");
@@ -744,8 +762,15 @@ const Index = () => {
                     <Button 
                       size="lg" 
                       className="px-8" 
-                      onClick={isRunning ? pauseTimer : startTimer}
-                      // Removed disabled={isSchedulePending}
+                      onClick={() => {
+                        if (isRunning) {
+                          pauseTimer();
+                        } else if (isPaused) {
+                          resumeTimer();
+                        } else {
+                          startNewManualTimer(); // Call the new explicit function for starting a fresh timer
+                        }
+                      }}
                     >
                       {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
