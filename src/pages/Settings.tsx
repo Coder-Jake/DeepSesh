@@ -686,8 +686,7 @@ const Settings = () => {
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)} // Toggle isGlobalPrivate
                   className={cn(
                     "px-4 py-2 rounded-full transition-colors select-none text-foreground", // Added text-foreground
-                    !isGlobalPrivate ? "bg-[hsl(var(--public-bg))]" 
-  : "bg-[hsl(var(--private-bg))]"
+                    !isGlobalPrivate ? "bg-[hsl(var(--public-bg))]" : "bg-[hsl(var(--private-bg))]"
 
                   )}
                 >
