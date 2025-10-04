@@ -322,7 +322,7 @@ const ScheduleForm: React.FC = () => {
               <div 
                 key={timer.id} 
                 className="relative flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-1 border rounded-md bg-muted/50"
-                style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? '#E0F2F7' : '') }} // Apply dynamic background color or default baby blue for focus
+                style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }} // Apply dynamic background color or default baby blue for focus
               >
                 <div className="flex items-center gap-2 flex-grow">
                   <span 

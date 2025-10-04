@@ -122,7 +122,7 @@ const Timeline: React.FC<TimelineProps> = ({
           const isCurrent = index === currentScheduleIndex && !isSchedulePending; // Only current if not pending
           const isCompleted = index < currentScheduleIndex && !isSchedulePending; // Only completed if not pending
           const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
-          const itemBackgroundColor = timerColors[item.id] || 'bg-muted/50'; // Get custom color or default
+          const itemBackgroundColor = timerColors[item.id] || (item.type === 'focus' ? 'hsl(var(--focus-background))' : ''); // Get custom color or default focus background
 
           return (
             <div
