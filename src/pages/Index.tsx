@@ -283,7 +283,7 @@ const Index = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
       setSeshTitle("Notes"); // Revert to default if empty
-    }
+      }
   };
 
   const handleTitleLongPress = () => {
@@ -626,6 +626,11 @@ const Index = () => {
     ? schedule[currentScheduleIndex].durationMinutes
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
+  // Determine the background color for the CircularProgress
+  const circularProgressBackgroundColor = timerType === 'focus' 
+    ? 'hsl(var(--focus-bg-light))' 
+    : 'hsl(var(--break-bg-light))';
+
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
       <div className="mb-6">
@@ -696,6 +701,7 @@ const Index = () => {
                     interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive} // Removed isSchedulePending
                     onInteract={handleCircularProgressChange}
                     className={isFlashing ? 'animate-pulse' : ''}
+                    backgroundColor={circularProgressBackgroundColor} // Pass the dynamic background color
                   >
                     <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}>
                       {formatTime(timeLeft)}
