@@ -130,27 +130,40 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const startSchedule = useCallback(() => {
     if (schedule.length > 0) {
+      setIsScheduleActive(true); // Always activate schedule mode
+      setCurrentScheduleIndex(0);
+      setTimerType(schedule[0].type);
+      setTimeLeft(schedule[0].durationMinutes * 60);
+      setIsFlashing(false);
+      setSessionStartTime(Date.now());
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+      setIsSchedulingMode(false); // Exit scheduling mode
+
       if (scheduleStartOption === 'custom_time') {
-        setIsSchedulePending(true);
-        setIsSchedulingMode(false); // Exit scheduling mode
-        // The Timeline component will handle the countdown and call handleCountdownEnd when time is up
-      } else { // 'now' or 'manual'
-        setIsScheduleActive(true);
-        setCurrentScheduleIndex(0);
-        setTimerType(schedule[0].type);
-        setTimeLeft(schedule[0].durationMinutes * 60);
-        setIsRunning(true);
+        setIsSchedulePending(true); // For countdown
+        setIsRunning(false); // Not running yet
+        setIsPaused(true); // Paused until countdown ends
+        toast({
+          title: "Schedule Prepared!",
+          description: `"${scheduleTitle}" will begin at the scheduled time.`,
+        });
+      } else if (scheduleStartOption === 'manual') {
+        setIsRunning(false); // Not running yet
+        setIsPaused(true); // Paused, waiting for user to hit 'Start'
+        setCurrentPhaseStartTime(null); // No phase started yet
+        toast({
+          title: "Schedule Prepared!",
+          description: `"${scheduleTitle}" is ready. Hit 'Start' to begin.`,
+        });
+      } else { // 'now'
+        setIsRunning(true); // Start immediately
         setIsPaused(false);
-        setIsFlashing(false);
-        setSessionStartTime(Date.now());
         setCurrentPhaseStartTime(Date.now());
-        setAccumulatedFocusSeconds(0);
-        setAccumulatedBreakSeconds(0);
         toast({
           title: "Schedule Started!",
           description: `"${scheduleTitle}" has begun.`,
         });
-        setIsSchedulingMode(false); // Exit scheduling mode
       }
     }
   }, [schedule, scheduleTitle, scheduleStartOption]);
