@@ -9,6 +9,7 @@ interface CircularProgressProps {
   interactive?: boolean;
   className?: string;
   timerType?: 'focus' | 'break'; // New prop
+  isActiveTimer?: boolean; // New prop
 }
 
 export const CircularProgress = ({
@@ -19,7 +20,8 @@ export const CircularProgress = ({
   onInteract,
   interactive = false,
   className = "",
-  timerType = 'focus' // Default to focus
+  timerType = 'focus', // Default to focus
+  isActiveTimer = false, // Default to false
 }: CircularProgressProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const radius = (size - strokeWidth) / 2;
@@ -73,7 +75,9 @@ export const CircularProgress = ({
     }
   }, [isDragging]);
 
-  const backgroundColor = timerType === 'focus' ? 'hsl(var(--focus-background))' : 'hsl(var(--break-background))';
+  const backgroundColor = isActiveTimer
+    ? (timerType === 'focus' ? 'hsl(var(--focus-background))' : 'hsl(var(--break-background))')
+    : 'hsl(var(--neutral-background))'; // Use neutral background when inactive
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>

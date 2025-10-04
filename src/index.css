@@ -41,6 +41,7 @@
 
     --focus-background: 210 60% 90%; /* Light pastel blue for focus */
     --break-background: 60 80% 90%; /* Light pastel yellow for break */
+    --neutral-background: 210 20% 95%; /* Light gray for neutral */
   }
 
   .dark {
@@ -79,6 +80,7 @@
 
     --focus-background: 210 40% 25%; /* Dark mode pastel blue for focus */
     --break-background: 60 40% 25%; /* Dark mode pastel yellow for break */
+    --neutral-background: 210 20% 15%; /* Darker gray for neutral */
   }
 }
 

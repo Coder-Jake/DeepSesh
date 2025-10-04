@@ -626,6 +626,9 @@ const Index = () => {
     ? schedule[currentScheduleIndex].durationMinutes
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
+  // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
+  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
+
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
       <div className="mb-6">
@@ -693,10 +696,11 @@ const Index = () => {
                     size={280}
                     strokeWidth={12}
                     progress={(timeLeft / (currentItemDuration * 60)) * 100}
-                    interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive} // Removed isSchedulePending
+                    interactive={!isActiveTimer} // Use isActiveTimer here
                     onInteract={handleCircularProgressChange}
                     className={isFlashing ? 'animate-pulse' : ''}
                     timerType={timerType} // Pass timerType here
+                    isActiveTimer={isActiveTimer} // Pass isActiveTimer here
                   >
                     <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}>
                       {formatTime(timeLeft)}
