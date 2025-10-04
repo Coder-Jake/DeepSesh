@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 
 const Settings = () => {
   const { 
@@ -76,6 +77,7 @@ const Settings = () => {
   const { user } = useAuth(); // Get user from AuthContext
   const navigate = useNavigate(); // Initialize useNavigate
   const { toast } = useToast(); // Use shadcn toast for UI feedback
+  const { isDarkMode, toggleDarkMode } = useTheme(); // Use theme context
 
   // Local state for temporary UI interactions or derived values
   // Removed selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration
@@ -84,7 +86,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({}); // Corrected useRef typing
+  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Ref to store the *last saved* or *initial loaded* state for comparison
   // Initialize with current context values on first render
@@ -114,6 +116,7 @@ const Settings = () => {
     timerIncrement,
     shouldPlayEndSound,
     shouldShowEndToast,
+    isDarkMode, // Added isDarkMode to saved settings
   });
 
   // Effect to sync local UI states with context on initial load
@@ -161,6 +164,7 @@ const Settings = () => {
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
+      isDarkMode, // Added isDarkMode to current UI settings
     };
 
     const changed = Object.keys(currentUiSettings).some(key => {
@@ -182,6 +186,7 @@ const Settings = () => {
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPrivate, // Renamed
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
+    isDarkMode, // Added isDarkMode dependency
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -357,6 +362,7 @@ const Settings = () => {
     setIsGlobalPrivate(isGlobalPrivate); // Renamed
     setShouldPlayEndSound(shouldPlayEndSound);
     setShouldShowEndToast(shouldShowEndToast);
+    // isDarkMode is handled by ThemeContext and its useEffect
 
     // After saving, update the ref to reflect the new "saved" state
     savedSettingsRef.current = {
@@ -385,6 +391,7 @@ const Settings = () => {
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
+      isDarkMode, // Save current dark mode state
     };
     setHasChanges(false);
   };
@@ -630,6 +637,18 @@ const Settings = () => {
               Session Defaults
             </AccordionTrigger>
             <AccordionContent className="space-y-6 pt-4">
+              {/* Dark Mode Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="dark-mode-toggle">Dark Mode</Label>
+                </div>
+                <Switch
+                  id="dark-mode-toggle"
+                  checked={isDarkMode}
+                  onCheckedChange={toggleDarkMode}
+                />
+              </div>
+
               {/* Global Session Visibility - Moved here */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
@@ -867,7 +886,7 @@ const Settings = () => {
                         <Label className="block cursor-help">Minimum Verification Status</Label>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>for others to interact with sessions you host</p>
+                        <p>for users to interact with sessions you host</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { TimerProvider } from "@/contexts/TimerContext";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Import AuthProvider
+import { ThemeProvider } from "@/contexts/ThemeContext"; // Import ThemeProvider
 import Header from "@/components/Header";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -99,17 +100,19 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider> {/* AuthProvider now wraps ProfileProvider and TimerProvider */}
-        <ProfileProvider>
-          <TimerProvider>
-            {/* Toaster is now rendered inside AppContent */}
-            <Sonner />
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </TimerProvider>
-        </ProfileProvider>
-      </AuthProvider>
+      <ThemeProvider> {/* ThemeProvider wraps AuthProvider */}
+        <AuthProvider>
+          <ProfileProvider>
+            <TimerProvider>
+              {/* Toaster is now rendered inside AppContent */}
+              <Sonner />
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </TimerProvider>
+          </ProfileProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
