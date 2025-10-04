@@ -9,7 +9,7 @@ import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
 import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, getNearestNextHourTime } from "@/lib/utils"; // Import getNearestNextHourTime
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
 import ColorPicker from './ColorPicker'; // Import the new ColorPicker component
@@ -57,7 +57,11 @@ const ScheduleForm: React.FC = () => {
         { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
       ]);
     }
-  }, [schedule, setSchedule]);
+    // Set default commence time to the nearest next hour if not already set
+    if (!commenceTime) {
+      setCommenceTime(getNearestNextHourTime());
+    }
+  }, [schedule, setSchedule, commenceTime, setCommenceTime]);
 
   const [activeTab, setActiveTab] = useState("plan");
 
