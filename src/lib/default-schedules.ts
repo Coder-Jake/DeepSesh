@@ -27,6 +27,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     scheduleStartOption: 'now',
     isRecurring: false,
     recurrenceFrequency: 'daily',
+    timerColors: {}, // NEW: Default empty colors
   },
   {
     id: generateId(),
@@ -44,6 +45,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     scheduleStartOption: 'custom_time',
     isRecurring: true,
     recurrenceFrequency: 'weekly',
+    timerColors: {}, // NEW: Default empty colors
   },
   {
     id: generateId(),
@@ -61,6 +63,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     scheduleStartOption: 'manual',
     isRecurring: false,
     recurrenceFrequency: 'daily',
+    timerColors: {}, // NEW: Default empty colors
   },
   {
     id: generateId(),
@@ -77,5 +80,6 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     scheduleStartOption: 'now',
     isRecurring: false,
     recurrenceFrequency: 'daily',
+    timerColors: {}, // NEW: Default empty colors
   },
 ];

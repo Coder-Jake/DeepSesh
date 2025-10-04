@@ -18,6 +18,7 @@ export interface ScheduledTimerTemplate {
   scheduleStartOption: 'now' | 'manual' | 'custom_time'; // Added 'manual'
   isRecurring: boolean;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
+  timerColors: Record<string, string>; // NEW: Store colors for timers within this template
 }
 
 // Define types for Ask items (copied from Index.tsx to ensure consistency)

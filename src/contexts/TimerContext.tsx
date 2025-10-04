@@ -265,6 +265,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       scheduleStartOption: scheduleStartOption,
       isRecurring: isRecurring,
       recurrenceFrequency: recurrenceFrequency,
+      timerColors: timerColors, // NEW: Save current timer colors with the template
     };
 
     setSavedSchedules((prev) => [...prev, newTemplate]);
@@ -272,7 +273,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       title: "Schedule Saved!",
       description: `"${scheduleTitle}" has been saved as a template.`,
     });
-  }, [scheduleTitle, schedule, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency]);
+  }, [scheduleTitle, schedule, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency, timerColors]);
 
   const loadScheduleTemplate = useCallback((templateId: string) => {
     const templateToLoad = savedSchedules.find(template => template.id === templateId);
@@ -289,6 +290,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsSchedulePending(templateToLoad.scheduleStartOption === 'custom_time'); // Set pending if custom_time
       setIsRunning(false);
       setIsPaused(true); // Paused, waiting for start/countdown
+      setTimerColors(templateToLoad.timerColors || {}); // NEW: Load timer colors from the template
       toast({
         title: "Schedule Loaded!",
         description: `"${templateToLoad.title}" has been loaded.`,
