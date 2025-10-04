@@ -465,7 +465,7 @@ const ScheduleForm: React.FC = () => {
           </div>
 
           {scheduleStartOption === 'custom_time' && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-2 gap-4 mt-2">
               <div className="space-y-2">
                 <Input
                   id="commence-time"
