@@ -38,6 +38,9 @@
     --private-bg: 240 60% 90%; /* Light blue for private */
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 10%; /* Darker olive for text */
+
+    --focus-background: 210 60% 90%; /* Light pastel blue for focus */
+    --break-background: 60 80% 90%; /* Light pastel yellow for break */
   }
 
   .dark {
@@ -73,6 +76,9 @@
     --private-bg: 240 60% 20%; /* Darker blue for private */
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */
+
+    --focus-background: 210 40% 25%; /* Dark mode pastel blue for focus */
+    --break-background: 60 40% 25%; /* Dark mode pastel yellow for break */
   }
 }
 

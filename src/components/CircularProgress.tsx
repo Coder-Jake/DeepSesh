@@ -8,6 +8,7 @@ interface CircularProgressProps {
   onInteract?: (progress: number) => void;
   interactive?: boolean;
   className?: string;
+  timerType?: 'focus' | 'break'; // New prop
 }
 
 export const CircularProgress = ({
@@ -17,7 +18,8 @@ export const CircularProgress = ({
   children,
   onInteract,
   interactive = false,
-  className = ""
+  className = "",
+  timerType = 'focus' // Default to focus
 }: CircularProgressProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const radius = (size - strokeWidth) / 2;
@@ -71,6 +73,8 @@ export const CircularProgress = ({
     }
   }, [isDragging]);
 
+  const backgroundColor = timerType === 'focus' ? 'hsl(var(--focus-background))' : 'hsl(var(--break-background))';
+
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
       <svg
@@ -87,7 +91,7 @@ export const CircularProgress = ({
           r={radius}
           stroke="hsl(var(--muted))"
           strokeWidth={strokeWidth}
-          fill="hsl(var(--background))" // Changed to fill with background color
+          fill={backgroundColor} // Use conditional background color
         />
         
         {/* Progress ring */}

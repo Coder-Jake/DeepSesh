@@ -141,7 +141,7 @@ const Index = () => {
     setIsPaused,
     timeLeft,
     setTimeLeft,
-    timerType,
+    timerType, // Get timerType from context
     setTimerType,
     isFlashing,
     setIsFlashing,
@@ -696,6 +696,7 @@ const Index = () => {
                     interactive={!isRunning && !isPaused && !isFlashing && !isScheduleActive} // Removed isSchedulePending
                     onInteract={handleCircularProgressChange}
                     className={isFlashing ? 'animate-pulse' : ''}
+                    timerType={timerType} // Pass timerType here
                   >
                     <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}>
                       {formatTime(timeLeft)}
