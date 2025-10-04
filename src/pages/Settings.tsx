@@ -685,8 +685,10 @@ const Settings = () => {
                   id="global-visibility-toggle"
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)} // Toggle isGlobalPrivate
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors select-none text-foreground", // Added text-foreground
-                    !isGlobalPrivate ? "bg-[hsl(var(--public-bg))] hover:opacity-80" : "bg-[hsl(var(--private-bg))] hover:opacity-80"
+                    "px-4 py-2 rounded-full transition-colors select-none text-foreground",
+                    !isGlobalPrivate 
+                      ? "bg-[hsl(var(--public-bg))] hover:brightness-90" 
+                      : "bg-[hsl(var(--private-bg))] hover:brightness-90"
                   )}
                 >
                   {!isGlobalPrivate ? "Public" : "Private"} {/* Display Public when false, Private when true */}
