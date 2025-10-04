@@ -263,11 +263,12 @@ const Index = () => {
   };
 
   // Handlers for Sesh Title editing
-  const handleTitleClick = () => {
-    if (!isLongPress.current) {
-      setIsEditingSeshTitle(true);
-    }
-  };
+  // Removed handleTitleClick as it's no longer needed for single click
+  // const handleTitleClick = () => {
+  //   if (!isLongPress.current) {
+  //     setIsEditingSeshTitle(true);
+  //   }
+  // };
 
   const handleTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -699,8 +700,6 @@ const Index = () => {
                     size={280}
                     strokeWidth={12}
                     progress={(timeLeft / (currentItemDuration * 60)) * 100}
-                    // Removed interactive prop
-                    // Removed onInteract prop
                     className={isFlashing ? 'animate-pulse' : ''}
                     timerType={timerType} // Pass timerType here
                     isActiveTimer={isActiveTimer} // Pass isActiveTimer here
@@ -721,7 +720,6 @@ const Index = () => {
                       size="lg" 
                       className="px-8" 
                       onClick={isRunning ? pauseTimer : startTimer}
-                      // Removed disabled={isSchedulePending}
                     >
                       {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
@@ -880,7 +878,7 @@ const Index = () => {
               ) : (
                 <CardTitle 
                   className="text-lg cursor-pointer select-none"
-                  onClick={handleTitleClick}
+                  onDoubleClick={() => setIsEditingSeshTitle(true)} {/* New: Double-click to edit */}
                   onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
                   onMouseUp={handleLongPressEnd}
                   onMouseLeave={handleLongPressEnd}
