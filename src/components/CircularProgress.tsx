@@ -8,7 +8,6 @@ interface CircularProgressProps {
   onInteract?: (progress: number) => void;
   interactive?: boolean;
   className?: string;
-  backgroundColor?: string; // New prop for background fill color
 }
 
 export const CircularProgress = ({
@@ -18,8 +17,7 @@ export const CircularProgress = ({
   children,
   onInteract,
   interactive = false,
-  className = "",
-  backgroundColor = "hsl(var(--background))" // Default to background color
+  className = ""
 }: CircularProgressProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const radius = (size - strokeWidth) / 2;
@@ -89,7 +87,7 @@ export const CircularProgress = ({
           r={radius}
           stroke="hsl(var(--muted))"
           strokeWidth={strokeWidth}
-          fill={backgroundColor} // Use the new backgroundColor prop
+          fill="hsl(var(--background))" // Changed to fill with background color
         />
         
         {/* Progress ring */}
