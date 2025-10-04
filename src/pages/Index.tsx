@@ -284,7 +284,7 @@ const Index = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
       setSeshTitle("Notes"); // Revert to default if empty
-    }
+      }
   };
 
   const handleTitleLongPress = () => {
@@ -884,6 +884,7 @@ const Index = () => {
                   onMouseLeave={handleLongPressEnd}
                   onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
                   onTouchEnd={handleLongPressEnd}
+                  // Removed onClick={handleTitleClick}
                 >
                   {seshTitle}
                 </CardTitle>
