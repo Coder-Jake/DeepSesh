@@ -498,7 +498,16 @@ const Settings = () => {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="lock">Lock in!</Label>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="lock" className="cursor-help">Lock in!</Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Lock in to prevent distractions during focus sessions.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div >
                 <Switch
                   id="lock"
@@ -517,7 +526,7 @@ const Settings = () => {
                           <Label htmlFor="batch-notifications-toggle" className="cursor-help">Batch Notifications</Label>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Notifications delayed until specified time. Exemptions apply.</p>
+                          <p>Notifications will be delayed and delivered as a group at specified times. Exemptions apply.</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
