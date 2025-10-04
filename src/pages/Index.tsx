@@ -725,9 +725,9 @@ const Index = () => {
                     <Button 
                       size="lg" 
                       className="px-8" 
-                      onClick={isRunning || (isScheduleActive && scheduleStartOption === 'manual') ? pauseTimer : startTimer}
+                      onClick={isRunning ? pauseTimer : startTimer} {/* Corrected onClick logic */}
                     >
-                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : (isScheduleActive && scheduleStartOption === 'manual' ? 'Start' : 'Start'))}
+                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')} {/* Simplified button text */}
                     </Button>
                   )}
                 </div>
