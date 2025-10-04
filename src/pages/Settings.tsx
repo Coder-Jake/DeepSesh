@@ -504,7 +504,7 @@ const Settings = () => {
                         <Label htmlFor="lock" className="cursor-help">Lock in!</Label>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Lock in to prevent distractions during focus sessions.</p>
+                        <p> Disable other apps during Focus.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
