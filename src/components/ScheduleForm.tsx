@@ -316,17 +316,17 @@ const ScheduleForm: React.FC = () => {
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
-        <TabsContent value="plan" className="pt-0 pb-6 space-y-2 px-4 lg:px-6" id="plan-tab-content">
-          <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2">
+        <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {schedule.map((timer, index) => (
               <div 
                 key={timer.id} 
-                className="relative flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2 border rounded-md bg-muted/50"
+                className="relative flex flex-col gap-y-2 px-3 py-2 border rounded-md bg-muted/50" // Changed to flex-col
                 style={{ backgroundColor: timerColors[timer.id] || '' }} // Apply dynamic background color
               >
-                <div className="flex items-center gap-2 flex-grow">
+                <div className="flex items-center gap-2"> {/* First row: Number + Title */}
                   <span 
-                    className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start cursor-pointer hover:text-foreground transition-colors"
+                    className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start cursor-pointer hover:text-foreground transition-colors min-w-[1.5rem]" // Added min-w
                     onClick={() => setEditingColorTimerId(timer.id)} // Open color picker on click
                   >
                     {index + 1}.
@@ -351,66 +351,69 @@ const ScheduleForm: React.FC = () => {
                   />
                 </div>
                 
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "") {
-                      handleUpdateTimer(timer.id, 'durationMinutes', 0);
-                    } else {
-                      handleUpdateTimer(timer.id, 'durationMinutes', parseFloat(value) || 0);
-                    }
-                  }}
-                  onBlur={() => {
-                    if (timer.durationMinutes === 0) {
-                      handleUpdateTimer(timer.id, 'durationMinutes', timerIncrement);
-                    }
-                  }}
-                  min={timerIncrement}
-                  step={timerIncrement}
-                  className="w-20 text-center flex-shrink-0"
-                  onFocus={(e) => e.target.select()}
-                  onKeyDown={handleEnterKeyNavigation}
-                  data-input-type="timer-duration" // Added data-input-type
-                />
-                
-                {editingCustomTitleId === timer.id ? (
+                {/* Second row: Duration + Type Button + Trash */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pl-[2.75rem]"> {/* Added pl for alignment */}
                   <Input
-                    ref={customTitleInputRef}
-                    value={tempCustomTitle}
-                    onChange={(e) => setTempCustomTitle(e.target.value)}
-                    onKeyDown={(e) => handleCustomTitleInputKeyDown(e, timer.id)}
-                    onBlur={() => handleCustomTitleInputBlur(timer.id)}
-                    className="w-24 h-10 text-sm font-medium flex-shrink-0 text-center"
+                    type="number"
+                    placeholder="Min"
+                    value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        handleUpdateTimer(timer.id, 'durationMinutes', 0);
+                      } else {
+                        handleUpdateTimer(timer.id, 'durationMinutes', parseFloat(value) || 0);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (timer.durationMinutes === 0) {
+                        handleUpdateTimer(timer.id, 'durationMinutes', timerIncrement);
+                      }
+                    }}
+                    min={timerIncrement}
+                    step={timerIncrement}
+                    className="w-20 text-center flex-shrink-0"
                     onFocus={(e) => e.target.select()}
-                    data-input-type="timer-custom-title" // Added data-input-type
+                    onKeyDown={handleEnterKeyNavigation}
+                    data-input-type="timer-duration" // Added data-input-type
                   />
-                ) : (
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-24 h-auto text-xs font-medium whitespace-normal text-center flex items-center justify-center", // Updated classes
-                      timer.isCustom ? "bg-blue-100 text-blue-800 hover:bg-blue-200" :
-                      timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
-                    )}
-                    onMouseDown={() => handleLongPressStart(timer)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(timer)}
-                    onTouchEnd={handleLongPressEnd}
-                    onClick={() => handleTypeButtonClick(timer)}
-                    onKeyDown={handleEnterKeyNavigation} // Add navigation to button
-                    data-input-type="timer-type-button" // Added data-input-type for consistency, though it's a button
-                  >
-                    {timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break')}
+                  
+                  {editingCustomTitleId === timer.id ? (
+                    <Input
+                      ref={customTitleInputRef}
+                      value={tempCustomTitle}
+                      onChange={(e) => setTempCustomTitle(e.target.value)}
+                      onKeyDown={(e) => handleCustomTitleInputKeyDown(e, timer.id)}
+                      onBlur={() => handleCustomTitleInputBlur(timer.id)}
+                      className="w-24 h-10 text-sm font-medium flex-shrink-0 text-center"
+                      onFocus={(e) => e.target.select()}
+                      data-input-type="timer-custom-title" // Added data-input-type
+                    />
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-24 h-auto text-xs font-medium whitespace-normal text-center flex items-center justify-center", // Updated classes
+                        timer.isCustom ? "bg-blue-100 text-blue-800 hover:bg-blue-200" :
+                        timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
+                      )}
+                      onMouseDown={() => handleLongPressStart(timer)}
+                      onMouseUp={handleLongPressEnd}
+                      onMouseLeave={handleLongPressEnd}
+                      onTouchStart={() => handleLongPressStart(timer)}
+                      onTouchEnd={handleLongPressEnd}
+                      onClick={() => handleTypeButtonClick(timer)}
+                      onKeyDown={handleEnterKeyNavigation} // Add navigation to button
+                      data-input-type="timer-type-button" // Added data-input-type for consistency, though it's a button
+                    >
+                      {timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break')}
+                    </Button>
+                  )}
+                  
+                  <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0" data-ignore-enter-nav>
+                    <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
-                )}
-                
-                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0" data-ignore-enter-nav>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+                </div>
               </div>
             ))}
           </div>
