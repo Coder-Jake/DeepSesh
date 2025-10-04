@@ -517,7 +517,7 @@ const Settings = () => {
                           <Label htmlFor="batch-notifications-toggle" className="cursor-help">Batch Notifications</Label>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Notifications will be delayed and delivered as a group at specified times. Exemptions apply.</p>
+                          <p>Notifications delayed until specified time. Exemptions apply.</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
