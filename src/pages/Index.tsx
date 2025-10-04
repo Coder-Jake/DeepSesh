@@ -326,7 +326,7 @@ const Index = () => {
   const stopTimer = async () => {
     // Calculate final accumulated times before saving
     let finalAccumulatedFocus = accumulatedFocusSeconds;
-    let finalAccumulatedBreak = accumulatedBreakSeconds;
+    let finalAccumulatedBreak = accumulatedulatedBreakSeconds;
 
     if (isRunning && currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
@@ -630,7 +630,7 @@ const Index = () => {
   const circularProgressBackgroundColor = 
     (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending)
       ? (timerType === 'focus' ? 'hsl(var(--focus-bg-light))' : 'hsl(var(--break-bg-light))')
-      : 'hsl(var(--background))'; // White background when inactive
+      : 'hsl(var(--background))';
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
