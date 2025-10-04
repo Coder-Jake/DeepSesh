@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface CircularProgressProps {
   size?: number;
@@ -87,7 +87,7 @@ export const CircularProgress = ({
           r={radius}
           stroke="hsl(var(--muted))"
           strokeWidth={strokeWidth}
-          fill="transparent"
+          fill="hsl(var(--background))" // Changed to fill with background color
         />
         
         {/* Progress ring */}
@@ -103,7 +103,7 @@ export const CircularProgress = ({
           strokeLinecap="round"
           className="transition-all duration-200 ease-out"
           style={{
-            filter: interactive ? 'drop-shadow(0 0 8px hsl(var(--primary) / 0.3))' : undefined
+            filter: `drop-shadow(0 0 4px hsl(var(--primary) / 0.2)) ${interactive ? 'drop-shadow(0 0 8px hsl(var(--primary) / 0.3))' : ''}` // Added subtle shadow, stronger for interactive
           }}
         />
         
@@ -112,11 +112,13 @@ export const CircularProgress = ({
           <circle
             cx={size / 2 + radius * Math.cos((progress / 100) * 2 * Math.PI - Math.PI / 2)}
             cy={size / 2 + radius * Math.sin((progress / 100) * 2 * Math.PI - Math.PI / 2)}
-            r={strokeWidth / 2 + 2}
+            r={strokeWidth / 2 + 4} // Slightly larger
             fill="hsl(var(--primary))"
+            stroke="hsl(var(--primary-foreground))" // Added a stroke
+            strokeWidth={2} // Stroke width
             className="cursor-grab active:cursor-grabbing"
             style={{
-              filter: 'drop-shadow(0 2px 4px hsl(var(--primary) / 0.5))'
+              filter: 'drop-shadow(0 2px 6px hsl(var(--primary) / 0.6))' // Stronger shadow for handle
             }}
           />
         )}
