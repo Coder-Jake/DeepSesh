@@ -421,88 +421,90 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          <div className="flex gap-2 mt-4 items-center">
-            <Button
-              variant={scheduleStartOption === 'now' ? 'secondary' : 'outline'}
-              size="sm"
-              className="text-xs px-3 py-1 h-auto text-muted-foreground"
-              onClick={() => setScheduleStartOption('now')}
-              onKeyDown={handleEnterKeyNavigation}
-              data-input-type="start-option-button"
-            >
-              Now
-            </Button>
-            <Button
-              variant={scheduleStartOption === 'manual' ? 'secondary' : 'outline'} // Fixed comparison
-              size="sm"
-              className="text-xs px-3 py-1 h-auto text-muted-foreground"
-              onClick={() => setScheduleStartOption('manual')} // Fixed assignment
-              onKeyDown={handleEnterKeyNavigation}
-              data-input-type="start-option-button"
-            >
-              Manual
-            </Button>
-            <Button
-              variant={scheduleStartOption === 'custom_time' ? 'secondary' : 'outline'}
-              size="sm"
-              className="text-xs px-3 py-1 h-auto text-muted-foreground"
-              onClick={() => setScheduleStartOption('custom_time')}
-              onKeyDown={handleEnterKeyNavigation}
-              data-input-type="start-option-button"
-            >
-              <Clock className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSaveSchedule}
-              className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500")}
-              onKeyDown={handleEnterKeyNavigation}
-              data-input-type="save-schedule-button"
-            >
-              <Save className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {scheduleStartOption === 'custom_time' && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="space-y-2">
-                <Input
-                  id="commence-time"
-                  type="time"
-                  value={commenceTime}
-                  onChange={(e) => {
-                    setCommenceTime(e.target.value);
-                  }}
-                  onFocus={(e) => e.target.select()}
-                  onKeyDown={handleEnterKeyNavigation}
-                  data-input-type="commence-time" // Added data-input-type
-                />
-              </div>
-              <div className="space-y-2">
-                <Select 
-                  value={commenceDay === null ? "today-default" : commenceDay.toString()} // Use "today-default" for null
-                  onValueChange={(value) => {
-                    setCommenceDay(value === "today-default" ? null : parseInt(value)); // Set to null if "today-default" is selected
-                  }}
-                >
-                  <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
-                    <SelectValue placeholder="Select Day"> {/* Placeholder for blank */}
-                      {commenceDay === null ? "Today (default)" : DAYS_OF_WEEK[commenceDay]}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today-default">Today (default)</SelectItem> {/* Use non-empty value */}
-                    {daysOfWeekDisplayOrder.map((day) => (
-                      <SelectItem key={day} value={getDayIndexForDisplayDay(day).toString()}>
-                        {day}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-2"> {/* New wrapper div with reduced vertical spacing */}
+            <div className="flex gap-2 items-center"> {/* Removed mt-4 */}
+              <Button
+                variant={scheduleStartOption === 'now' ? 'secondary' : 'outline'}
+                size="sm"
+                className="text-xs px-3 py-1 h-auto text-muted-foreground"
+                onClick={() => setScheduleStartOption('now')}
+                onKeyDown={handleEnterKeyNavigation}
+                data-input-type="start-option-button"
+              >
+                Now
+              </Button>
+              <Button
+                variant={scheduleStartOption === 'manual' ? 'secondary' : 'outline'} // Fixed comparison
+                size="sm"
+                className="text-xs px-3 py-1 h-auto text-muted-foreground"
+                onClick={() => setScheduleStartOption('manual')} // Fixed assignment
+                onKeyDown={handleEnterKeyNavigation}
+                data-input-type="start-option-button"
+              >
+                Manual
+              </Button>
+              <Button
+                variant={scheduleStartOption === 'custom_time' ? 'secondary' : 'outline'}
+                size="sm"
+                className="text-xs px-3 py-1 h-auto text-muted-foreground"
+                onClick={() => setScheduleStartOption('custom_time')}
+                onKeyDown={handleEnterKeyNavigation}
+                data-input-type="start-option-button"
+              >
+                <Clock className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSaveSchedule}
+                className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500")}
+                onKeyDown={handleEnterKeyNavigation}
+                data-input-type="save-schedule-button"
+              >
+                <Save className="h-5 w-5" />
+              </Button>
             </div>
-          )}
+
+            {scheduleStartOption === 'custom_time' && (
+              <div className="grid grid-cols-2 gap-4"> {/* Removed mt-4 */}
+                <div className="space-y-2">
+                  <Input
+                    id="commence-time"
+                    type="time"
+                    value={commenceTime}
+                    onChange={(e) => {
+                      setCommenceTime(e.target.value);
+                    }}
+                    onFocus={(e) => e.target.select()}
+                    onKeyDown={handleEnterKeyNavigation}
+                    data-input-type="commence-time" // Added data-input-type
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Select 
+                    value={commenceDay === null ? "today-default" : commenceDay.toString()} // Use "today-default" for null
+                    onValueChange={(value) => {
+                      setCommenceDay(value === "today-default" ? null : parseInt(value)); // Set to null if "today-default" is selected
+                    }}
+                  >
+                    <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
+                      <SelectValue placeholder="Select Day"> {/* Placeholder for blank */}
+                        {commenceDay === null ? "Today (default)" : DAYS_OF_WEEK[commenceDay]}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="today-default">Today (default)</SelectItem> {/* Use non-empty value */}
+                      {daysOfWeekDisplayOrder.map((day) => (
+                        <SelectItem key={day} value={getDayIndexForDisplayDay(day).toString()}>
+                          {day}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </div>
 
           <Button onClick={handleCommenceSchedule} className="w-full h-12 text-lg" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-schedule-button">
             <Play className="mr-2 h-5 w-5" />
