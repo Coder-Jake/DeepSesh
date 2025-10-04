@@ -58,8 +58,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now'); // Added 'manual'
 
   // Settings states
-  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(true);
-  const [shouldShowEndToast, setShouldShowEndToast] = useState(true);
+  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false); // Changed default to false
+  const [shouldShowEndToast, setShouldShowEndToast] = useState(false); // Changed default to false
   const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
   const [customBatchMinutes, setCustomBatchMinutes] = useState(timerIncrement);
@@ -71,10 +71,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [intentionalBreaches, setIntentionalBreaches] = useState(false);
   const [manualTransition, setManualTransition] = useState(false);
   const [maxDistance, setMaxDistance] = useState(1000); // Default to 1km
-  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
-  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
-  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: true, vibrate: true, sound: true });
-  const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(true); // Specific for break notifications
+  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // Changed default to false
+  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // Changed default to false
+  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // Changed default to false
+  const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false); // Changed default to false
   const [verificationStandard, setVerificationStandard] = useState<'anyone' | 'phone1' | 'organisation' | 'id1'>('anyone');
   const [profileVisibility, setProfileVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // Updated to array
   const [locationSharing, setLocationSharing] = useState(false);
@@ -322,7 +322,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       clearInterval(timerRef.current!);
       setIsRunning(false);
       setIsFlashing(true);
-      playSound();
+      if (shouldPlayEndSound) playSound(); // Play sound only if enabled
 
       if (isScheduleActive) {
         // Accumulate time for the phase just ended
@@ -345,10 +345,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setCurrentPhaseStartTime(Date.now()); // Start new phase timer
         } else {
           // Schedule completed
-          toast({
-            title: "Schedule Completed!",
-            description: `"${scheduleTitle}" has finished.`,
-          });
+          if (shouldShowEndToast) { // Show toast only if enabled
+            toast({
+              title: "Schedule Completed!",
+              description: `"${scheduleTitle}" has finished.`,
+            });
+          }
           saveSessionToHistory(); // Save the completed schedule as a session
           resetSchedule();
         }
@@ -360,7 +362,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, schedule, currentScheduleIndex, timerType, saveSessionToHistory, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, schedule, currentScheduleIndex, timerType, saveSessionToHistory, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
@@ -413,8 +415,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setActiveAsks(data.activeAsks ?? []);
       setIsSchedulePending(data.isSchedulePending ?? false);
       setScheduleStartOption(data.scheduleStartOption ?? 'now');
-      setShouldPlayEndSound(data.shouldPlayEndSound ?? true);
-      setShouldShowEndToast(data.shouldShowEndToast ?? true);
+      setShouldPlayEndSound(data.shouldPlayEndSound ?? false); // Changed default to false
+      setShouldShowEndToast(data.shouldShowEndToast ?? false); // Changed default to false
       setIsBatchNotificationsEnabled(data.isBatchNotificationsEnabled ?? false);
       setBatchNotificationPreference(data.batchNotificationPreference ?? 'break');
       setCustomBatchMinutes(data.customBatchMinutes ?? timerIncrement);
@@ -426,10 +428,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIntentionalBreaches(data.intentionalBreaches ?? false);
       setManualTransition(data.manualTransition ?? false);
       setMaxDistance(data.maxDistance ?? 1000);
-      setAskNotifications(data.askNotifications ?? { push: true, vibrate: true, sound: true });
-      setSessionInvites(data.sessionInvites ?? { push: true, vibrate: true, sound: true });
-      setFriendActivity(data.friendActivity ?? { push: true, vibrate: true, sound: true });
-      setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? true);
+      setAskNotifications(data.askNotifications ?? { push: false, vibrate: false, sound: false }); // Changed default to false
+      setSessionInvites(data.sessionInvites ?? { push: false, vibrate: false, sound: false }); // Changed default to false
+      setFriendActivity(data.friendActivity ?? { push: false, vibrate: false, sound: false }); // Changed default to false
+      setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? false); // Changed default to false
       setVerificationStandard(data.verificationStandard ?? 'anyone');
       setProfileVisibility(data.profileVisibility ?? ['public']); // Updated default to array
       setLocationSharing(data.locationSharing ?? false);
