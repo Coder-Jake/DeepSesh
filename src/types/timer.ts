@@ -76,6 +76,7 @@ export interface TimerContextType {
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly'; // Added
   setRecurrenceFrequency: React.Dispatch<React.SetStateAction<'daily' | 'weekly' | 'monthly'>>; // Added
   isScheduleActive: boolean;
+  setIsScheduleActive: React.Dispatch<React.SetStateAction<boolean>>; // Added this line
   currentScheduleIndex: number;
   isSchedulePending: boolean; // Added new state
   setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>; // Added new setter
