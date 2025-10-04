@@ -142,7 +142,7 @@ const Profile = () => {
     } else {
       toast({
         title: "Not Logged In",
-        description: "Please log in to save your organization.",
+        description: "Please log in to save your organisation.",
         variant: "destructive",
       });
     }
@@ -299,7 +299,7 @@ const Profile = () => {
           {/* Organization Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Organization</CardTitle>
+              <CardTitle>Organisation</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {profile?.organization ? (
@@ -312,7 +312,7 @@ const Profile = () => {
                 </p>
               )}
               <Button onClick={() => setIsOrganizationDialogOpen(true)}>
-                {profile?.organization ? "Edit Organization" : "Add Organization"}
+                {profile?.organization ? "Edit Organisation" : "Add Organisation"}
               </Button>
             </CardContent>
           </Card>
@@ -333,14 +333,14 @@ const Profile = () => {
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{profile?.organization ? "Edit Organization Name" : "Add Organization Name"}</DialogTitle>
+            <DialogTitle>{profile?.organization ? "Edit Organisation Name" : "Add Organisation Name"}</DialogTitle>
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="organization-name">Organization Name</Label>
+              <Label htmlFor="organization-name">Organisation Name</Label>
               <Input
                 id="organization-name"
                 value={organization}
