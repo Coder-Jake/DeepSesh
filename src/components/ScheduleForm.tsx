@@ -285,7 +285,7 @@ const ScheduleForm: React.FC = () => {
           <TabsTrigger value="plan">Plan</TabsTrigger>
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
-        <CardHeader className="flex flex-row items-center justify-between pt-4 pb-0 px-4 lg:px-6">
+        <CardHeader className="flex flex-row items-center justify-between pt-4 pb-1 px-4 lg:px-6">
           {activeTab === 'plan' ? (
             isEditingScheduleTitle ? (
               <Input
@@ -316,12 +316,12 @@ const ScheduleForm: React.FC = () => {
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
-        <TabsContent value="plan" className="pt-0 pb-0 space-y-4 px-4 lg:px-6" id="plan-tab-content">
+        <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {schedule.map((timer, index) => (
               <div 
                 key={timer.id} 
-                className="relative flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-0 border rounded-md bg-muted/50"
+                className="relative flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-1 border rounded-md bg-muted/50"
                 style={{ backgroundColor: timerColors[timer.id] || '' }} // Apply dynamic background color
               >
                 <div className="flex items-center gap-2 flex-grow">
