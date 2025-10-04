@@ -86,7 +86,7 @@ export type TimerContextType = {
   setAccumulatedBreakSeconds: React.Dispatch<React.SetStateAction<number>>;
   activeJoinedSessionCoworkerCount: number;
   setActiveJoinedSessionCoworkerCount: React.Dispatch<React.SetStateAction<number>>;
-  saveSessionToHistory: () => Promise<void>;
+  // saveSessionToHistory: () => Promise<void>; // REMOVED
 
   activeAsks: ActiveAskItem[];
   addAsk: (ask: ActiveAskItem) => void;
@@ -128,8 +128,8 @@ export type TimerContextType = {
   setBreakNotificationsVibrate: React.Dispatch<React.SetStateAction<boolean>>;
   verificationStandard: 'anyone' | 'phone1' | 'organisation' | 'id1';
   setVerificationStandard: React.Dispatch<React.SetStateAction<'anyone' | 'phone1' | 'organisation' | 'id1'>>;
-  profileVisibility: 'public' | 'friends' | 'private';
-  setProfileVisibility: React.Dispatch<React.SetStateAction<'public' | 'friends' | 'private'>>;
+  profileVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  setProfileVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
   locationSharing: boolean;
   setLocationSharing: React.Dispatch<React.SetStateAction<boolean>>;
   isGlobalPrivate: boolean;

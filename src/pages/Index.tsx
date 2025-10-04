@@ -7,7 +7,7 @@ import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
-import { useProfile } from "@/contexts/ProfileContext";
+import { useProfile } from "@/contexts/ProfileContext"; // Ensure useProfile is imported
 import { useNavigate } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn } from "@/lib/utils";
@@ -176,7 +176,7 @@ const Index = () => {
     setAccumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
-    saveSessionToHistory,
+    // saveSessionToHistory, // REMOVED from useTimer destructuring
 
     // Active Asks from TimerContext
     activeAsks,
@@ -189,7 +189,7 @@ const Index = () => {
     scheduleStartOption, // Get scheduleStartOption from context
   } = useTimer();
   
-  const { profile, loading: profileLoading, localFirstName } = useProfile(); // Get localFirstName from context
+  const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
   const navigate = useNavigate();
 
   const [isPrivate, setIsPrivate] = useState(isGlobalPrivate);
@@ -324,13 +324,53 @@ const Index = () => {
   };
   
   const stopTimer = async () => {
-    if (longPressRef.current) {
-      await saveSessionToHistory(); // Save session data
+    // Calculate final accumulated times before saving
+    let finalAccumulatedFocus = accumulatedFocusSeconds;
+    let finalAccumulatedBreak = accumulatedBreakSeconds;
+
+    if (isRunning && currentPhaseStartTime !== null) {
+      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+      if (timerType === 'focus') {
+        finalAccumulatedFocus += elapsed;
+      } else {
+        finalAccumulatedBreak += elapsed;
+      }
+    }
+    const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
+
+    const performStopActions = async () => {
+      await saveSession(
+        seshTitle,
+        notes,
+        finalAccumulatedFocus,
+        finalAccumulatedBreak,
+        totalSessionSeconds,
+        activeJoinedSessionCoworkerCount,
+        sessionStartTime || Date.now() // Use sessionStartTime or current time if null
+      );
+      // Reset timer states after saving
+      setIsRunning(false);
+      setIsPaused(false);
+      setIsFlashing(false);
+      setTimerType('focus'); // Reset to default focus type
+      setTimeLeft(focusMinutes * 60); // Reset to default focus time
       setActiveJoinedSession(null);
+      if (isScheduleActive) resetSchedule();
+      setSessionStartTime(null);
+      setCurrentPhaseStartTime(null);
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+      setNotes("");
+      setSeshTitle("Notes");
+    };
+
+    if (longPressRef.current) {
+      // Long press: save without confirmation
+      await performStopActions();
     } else {
+      // Regular click: ask for confirmation
       if (confirm('Are you sure you want to stop the timer?')) {
-        await saveSessionToHistory(); // Save session data
-        setActiveJoinedSession(null);
+        await performStopActions();
       }
     }
   };

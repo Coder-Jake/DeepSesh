@@ -120,7 +120,7 @@ export interface TimerContextType {
   setAccumulatedBreakSeconds: React.Dispatch<React.SetStateAction<number>>;
   activeJoinedSessionCoworkerCount: number;
   setActiveJoinedSessionCoworkerCount: React.Dispatch<React.SetStateAction<number>>;
-  saveSessionToHistory: () => Promise<void>;
+  // saveSessionToHistory: () => Promise<void>; // REMOVED
 
   // Ask/Poll states
   activeAsks: ActiveAskItem[];

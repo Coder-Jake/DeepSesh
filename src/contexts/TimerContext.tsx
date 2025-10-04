@@ -4,6 +4,7 @@ import { toast } from '@/hooks/use-toast'; // Using shadcn toast for UI feedback
 import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
 import { supabase } from '@/integrations/supabase/client'; // Import supabase client
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules'; // Import default templates
+import { useProfile } from './ProfileContext'; // Import useProfile
 
 export const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -13,6 +14,7 @@ const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context'; // New local storage k
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth(); // Get user from AuthContext
+  const { saveSession } = useProfile(); // Get saveSession from useProfile
 
   const timerIncrement = 5; // Default increment for focus/break minutes
 
@@ -51,7 +53,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount] = useState(0);
 
   // Active Asks state
-  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]);
+  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]
+  );
 
   // Schedule pending state
   const [isSchedulePending, setIsSchedulePending] = useState(false);
@@ -230,88 +233,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, []);
 
-
-  const saveSessionToHistory = useCallback(async () => {
-    if (!user || !sessionStartTime) {
-      console.warn("Cannot save session: User not logged in or session not started.");
-      return;
-    }
-
-    // Ensure current phase time is accumulated before saving
-    let finalAccumulatedFocus = accumulatedFocusSeconds;
-    let finalAccumulatedBreak = accumulatedBreakSeconds;
-
-    if (isRunning && currentPhaseStartTime !== null) {
-      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-      if (timerType === 'focus') {
-        finalAccumulatedFocus += elapsed;
-      } else {
-        finalAccumulatedBreak += elapsed;
-      }
-    }
-
-    const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
-
-    if (totalSessionSeconds === 0) {
-      toast({
-        title: "Session not saved",
-        description: "Session was too short to save.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('sessions')
-        .insert([
-          {
-            user_id: user.id,
-            title: seshTitle,
-            notes: notes,
-            focus_duration_seconds: Math.round(finalAccumulatedFocus),
-            break_duration_seconds: Math.round(finalAccumulatedBreak),
-            total_session_seconds: Math.round(totalSessionSeconds),
-            coworker_count: activeJoinedSessionCoworkerCount,
-            session_start_time: new Date(sessionStartTime).toISOString(),
-            session_end_time: new Date().toISOString(),
-          },
-        ]);
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Session Saved!",
-        description: "Your session has been added to your history.",
-      });
-
-      // Reset all timer states after saving
-      setIsRunning(false);
-      setIsPaused(false);
-      setIsFlashing(false);
-      setTimerType('focus');
-      setTimeLeft(focusMinutes * 60);
-      setSessionStartTime(null);
-      setCurrentPhaseStartTime(null);
-      setAccumulatedFocusSeconds(0);
-      setAccumulatedBreakSeconds(0);
-      setActiveJoinedSessionCoworkerCount(0);
-      setNotes("");
-      setSeshTitle("Notes");
-      if (isScheduleActive) resetSchedule();
-
-    } catch (error: any) {
-      console.error("Error saving session:", error.message);
-      toast({
-        title: "Error saving session",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  }, [user, sessionStartTime, seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, isRunning, currentPhaseStartTime, timerType, activeJoinedSessionCoworkerCount, focusMinutes, isScheduleActive, resetSchedule]);
-
   // Timer logic
   useEffect(() => {
     if (isRunning && !isPaused && timeLeft > 0) {
@@ -351,8 +272,24 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               description: `"${scheduleTitle}" has finished.`,
             });
           }
-          saveSessionToHistory(); // Save the completed schedule as a session
-          resetSchedule();
+          
+          // Calculate final accumulated times before saving
+          const finalFocusSeconds = accumulatedFocusSeconds + (timerType === 'focus' && currentPhaseStartTime !== null ? (Date.now() - currentPhaseStartTime) / 1000 : 0);
+          const finalBreakSeconds = accumulatedBreakSeconds + (timerType === 'break' && currentPhaseStartTime !== null ? (Date.now() - currentPhaseStartTime) / 1000 : 0);
+          const totalSession = finalFocusSeconds + finalBreakSeconds;
+
+          // Call saveSession from ProfileContext here
+          saveSession(
+            seshTitle,
+            notes,
+            finalFocusSeconds,
+            finalBreakSeconds,
+            totalSession,
+            activeJoinedSessionCoworkerCount,
+            sessionStartTime || Date.now() // Use sessionStartTime or current time if null
+          );
+
+          resetSchedule(); // Reset all timer states after saving
         }
       }
     }
@@ -362,7 +299,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, schedule, currentScheduleIndex, timerType, saveSessionToHistory, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, schedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
@@ -539,7 +476,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setAccumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
-    saveSessionToHistory,
+    // saveSessionToHistory, // REMOVED
 
     activeAsks,
     addAsk,
