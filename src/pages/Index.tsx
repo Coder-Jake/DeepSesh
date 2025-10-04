@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square } from "lucide-react"; // Import Square icon
+import { Globe, Lock, CalendarPlus, Share2, StopCircle } from "lucide-react"; // Changed Square to StopCircle
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -682,18 +682,18 @@ const Index = () => {
 
                 {(isPaused || isRunning || isScheduleActive || isSchedulePending) && ( // Show stop button if pending
                   <div className="absolute bottom-4 left-4 flex flex-col gap-1">
-                    <Button // Changed to shadcn Button
-                      variant="ghost" // Use ghost variant for icon button
-                      size="icon" // Use icon size
+                    <Button 
+                      variant="destructive" // Changed to destructive variant for a solid background
+                      size="icon" 
                       onMouseDown={() => handleLongPressStart(stopTimer)}
                       onMouseUp={handleLongPressEnd}
                       onMouseLeave={handleLongPressEnd}
                       onTouchStart={() => handleLongPressStart(stopTimer)}
                       onTouchEnd={handleLongPressEnd}
                       onClick={stopTimer}
-                      className="text-muted-foreground hover:bg-muted transition-colors select-none" // Keep some existing classes for color/hover
+                      className="shape-octagon select-none" // Added shape-octagon class, removed conflicting text/hover classes
                     >
-                      <Square size={16} /> {/* Stop icon */}
+                      <StopCircle size={16} /> {/* Stop icon */}
                     </Button>
                   </div>
                 )}
