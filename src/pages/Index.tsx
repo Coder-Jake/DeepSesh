@@ -326,7 +326,7 @@ const Index = () => {
   const stopTimer = async () => {
     // Calculate final accumulated times before saving
     let finalAccumulatedFocus = accumulatedFocusSeconds;
-    let finalAccumulatedBreak = accumulatedulatedBreakSeconds;
+    let finalAccumulatedBreak = accumulatedBreakSeconds;
 
     if (isRunning && currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
