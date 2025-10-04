@@ -61,6 +61,7 @@ export interface TimerContextType {
   isSchedulingMode: boolean;
   setIsSchedulingMode: React.Dispatch<React.SetStateAction<boolean>>;
   startSchedule: () => void;
+  commencePreparedSchedule: () => void; // NEW: Added this line
   resetSchedule: () => void;
   scheduleTitle: string;
   setScheduleTitle: React.Dispatch<React.SetStateAction<string>>;

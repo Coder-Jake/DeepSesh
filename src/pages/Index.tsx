@@ -160,6 +160,7 @@ const Index = () => {
     isSchedulingMode,
     setIsSchedulingMode,
     isScheduleActive,
+    setIsScheduleActive, // Destructure setIsScheduleActive
     isSchedulePrepared, // NEW
     startSchedule,
     commencePreparedSchedule, // NEW
