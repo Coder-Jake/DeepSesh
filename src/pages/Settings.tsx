@@ -683,12 +683,10 @@ const Settings = () => {
                 </div >
                 <Button
                   id="global-visibility-toggle"
+                  variant="outline" // Use outline variant for transparent background and border
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)} // Toggle isGlobalPrivate
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors select-none text-foreground", // Added text-foreground
-                    !isGlobalPrivate 
-                      ? "bg-[hsl(var(--public-bg))] hover:bg-[hsl(120_90%_30%)]" // Darker public on hover
-                      : "bg-[hsl(var(--private-bg))] hover:bg-[hsl(240_100%_50%)]" // Darker private on hover
+                    "px-3 py-1 rounded-full transition-colors select-none text-foreground hover:bg-muted" // Apply homepage button styles
                   )}
                 >
                   {!isGlobalPrivate ? "Public" : "Private"} {/* Display Public when false, Private when true */}
