@@ -194,7 +194,7 @@ const Index = () => {
 
   const [isPrivate, setIsPrivate] = useState(isGlobalPrivate);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
-  const isLongPress = useRef(false); // Flag to indicate if a long press occurred
+  const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   // Removed local activeAsks state, now using context
 
@@ -232,92 +232,64 @@ const Index = () => {
     oscillator.stop(audioContext.currentTime + 0.1);
   };
 
-  // Generic long press detection handlers
-  const startLongPressDetection = () => {
-    isLongPress.current = false; // Reset for each press
+  const handleLongPressStart = (callback: () => void) => {
+    isLongPress.current = false;
     longPressRef.current = setTimeout(() => {
-      isLongPress.current = true; // It's a long press
+      isLongPress.current = true;
+      callback();
     }, 500);
   };
   
-  const endLongPressDetection = () => {
+  const handleLongPressEnd = () => {
     if (longPressRef.current) {
       clearTimeout(longPressRef.current);
-      longPressRef.current = null;
     }
   };
-
-  // Core actions for Stop and Reset
-  const performStopTimer = async () => {
-    await saveSessionToHistory();
-    setActiveJoinedSession(null);
-    toast({ title: "Timer Stopped", description: "Session saved." });
-  };
-
-  const performResetTimer = () => {
-    setIsRunning(false);
-    setIsPaused(false);
-    setIsFlashing(false);
-    const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
-    setTimeLeft(initialTime);
-    setActiveJoinedSession(null);
-    if (isScheduleActive) resetSchedule();
-    setSessionStartTime(null);
-    setCurrentPhaseStartTime(0);
-    setAccumulatedFocusSeconds(0);
-    setAccumulatedBreakSeconds(0);
-    setNotes("");
-    setSeshTitle("Notes");
-    toast({ title: "Timer Reset", description: "Timer has been reset." });
-  };
-
-  // Specific handlers for buttons using generic long press detection
-  const handleStopButtonRelease = () => {
-    endLongPressDetection(); // Clear the long press timer
-
-    if (isLongPress.current) { // It was a long press
-      performStopTimer(); // Execute action directly
-    } else { // It was a short press
-      if (confirm('Are you sure you want to stop the timer?')) {
-        performStopTimer();
-      }
-    }
-    isLongPress.current = false; // Reset for next interaction
-  };
-
-  const handleResetButtonRelease = () => {
-    endLongPressDetection(); // Clear the long press timer
-
-    if (isLongPress.current) { // It was a long press
-      performResetTimer(); // Execute action directly
-    } else { // It was a short press
-      if (confirm('Are you sure you want to reset the timer?')) {
-        performResetTimer();
-      }
-    }
-    isLongPress.current = false; // Reset for next interaction
-  };
-
+  
   const handlePublicPrivateToggle = () => {
-    endLongPressDetection(); // Clear the long press timer
-    if (isLongPress.current) { // Long press: toggle directly
+    if (isLongPress.current) {
       setIsPrivate(!isPrivate);
-    } else { // Short press: ask for confirmation
+    } else {
       if (confirm(`Switch to ${isPrivate ? 'Public' : 'Private'} mode?`)) {
         setIsPrivate(!isPrivate);
       }
     }
-    isLongPress.current = false; // Reset for next interaction
   };
 
-  const handleIntentionClick = () => {
-    // Short press action: e.g., show a tooltip or copy to clipboard
-    toast({ title: "Intention", description: profile?.intention || "No intention set." });
+  const handleIntentionLongPress = () => {
+    if (isLongPress.current) {
+      navigate('/profile');
+    }
   };
 
-  const handleIntentionLongPressAction = () => {
-    navigate('/profile');
-    toast({ title: "Navigating", description: "Redirecting to profile settings." });
+  // Handlers for Sesh Title editing
+  const handleTitleClick = () => {
+    if (!isLongPress.current) {
+      setIsEditingSeshTitle(true);
+    }
+  };
+
+  const handleTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingSeshTitle(false);
+      e.currentTarget.blur();
+      if (seshTitle.trim() === "") {
+        setSeshTitle("Notes"); // Revert to default if empty
+      }
+    }
+  };
+
+  const handleTitleInputBlur = () => {
+    setIsEditingSeshTitle(false);
+    if (seshTitle.trim() === "") {
+      setSeshTitle("Notes"); // Revert to default if empty
+    }
+  };
+
+  const handleTitleLongPress = () => {
+    if (isLongPress.current) {
+      setIsEditingSeshTitle(true);
+    }
   };
   
   const startTimer = () => {
@@ -351,6 +323,52 @@ const Index = () => {
     setIsRunning(false);
   };
   
+  const stopTimer = async () => {
+    if (longPressRef.current) {
+      await saveSessionToHistory(); // Save session data
+      setActiveJoinedSession(null);
+    } else {
+      if (confirm('Are you sure you want to stop the timer?')) {
+        await saveSessionToHistory(); // Save session data
+        setActiveJoinedSession(null);
+      }
+    }
+  };
+  
+  const resetTimer = () => {
+    if (longPressRef.current) {
+      setIsRunning(false);
+      setIsPaused(false);
+      setIsFlashing(false);
+      const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+      setTimeLeft(initialTime);
+      setActiveJoinedSession(null);
+      if (isScheduleActive) resetSchedule();
+      setSessionStartTime(null);
+      setCurrentPhaseStartTime(null);
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+      setNotes("");
+      setSeshTitle("Notes");
+    } else {
+      if (confirm('Are you sure you want to reset the timer?')) {
+        setIsRunning(false);
+        setIsPaused(false);
+        setIsFlashing(false);
+        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+        setTimeLeft(initialTime);
+        setActiveJoinedSession(null);
+        if (isScheduleActive) resetSchedule();
+        setSessionStartTime(null);
+        setCurrentPhaseStartTime(0); // Reset current phase start time
+        setAccumulatedFocusSeconds(0);
+        setAccumulatedBreakSeconds(0);
+        setNotes("");
+        setSeshTitle("Notes");
+      }
+    }
+  };
+
   const switchToBreak = () => {
     // Accumulate time for the phase just ended
     if (currentPhaseStartTime !== null) {
@@ -593,11 +611,12 @@ const Index = () => {
                   </Button>
                   <div className="flex flex-col items-end gap-2">
                     <button 
-                      onMouseDown={startLongPressDetection}
-                      onMouseUp={handlePublicPrivateToggle}
-                      onMouseLeave={endLongPressDetection}
-                      onTouchStart={startLongPressDetection}
-                      onTouchEnd={handlePublicPrivateToggle}
+                      onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
+                      onMouseUp={handleLongPressEnd}
+                      onMouseLeave={handleLongPressEnd}
+                      onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
+                      onTouchEnd={handleLongPressEnd}
+                      onClick={handlePublicPrivateToggle}
                       className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
                     >
                       {!isPrivate ? <>
@@ -664,24 +683,15 @@ const Index = () => {
                 {(isPaused || isRunning || isScheduleActive || isSchedulePending) && ( // Show stop button if pending
                   <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                     <button
-                      onMouseDown={startLongPressDetection}
-                      onMouseUp={handleStopButtonRelease}
-                      onMouseLeave={handleStopButtonRelease}
-                      onTouchStart={startLongPressDetection}
-                      onTouchEnd={handleStopButtonRelease}
+                      onMouseDown={() => handleLongPressStart(stopTimer)}
+                      onMouseUp={handleLongPressEnd}
+                      onMouseLeave={handleLongPressEnd}
+                      onTouchStart={() => handleLongPressStart(stopTimer)}
+                      onTouchEnd={handleLongPressEnd}
+                      onClick={stopTimer}
                       className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground select-none"
                     >
                       Stop
-                    </button>
-                    <button
-                      onMouseDown={startLongPressDetection}
-                      onMouseUp={handleResetButtonRelease}
-                      onMouseLeave={handleResetButtonRelease}
-                      onTouchStart={startLongPressDetection}
-                      onTouchEnd={handleResetButtonRelease}
-                      className="text-xs px-2 py-1 rounded border border-border hover:bg-muted transition-colors text-muted-foreground select-none"
-                    >
-                      Reset
                     </button>
                   </div>
                 )}
@@ -781,26 +791,15 @@ const Index = () => {
               <CardContent>
                 <p 
                   className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
-                  onMouseDown={startLongPressDetection}
-                  onMouseUp={() => {
-                    endLongPressDetection();
-                    if (isLongPress.current) {
-                      handleIntentionLongPressAction();
-                    } else {
-                      handleIntentionClick();
+                  onMouseDown={() => handleLongPressStart(handleIntentionLongPress)}
+                  onMouseUp={handleLongPressEnd}
+                  onMouseLeave={handleLongPressEnd}
+                  onTouchStart={() => handleLongPressStart(handleIntentionLongPress)}
+                  onTouchEnd={handleLongPressEnd}
+                  onClick={() => {
+                    if (!isLongPress.current) {
+                      // Optional: short press action, e.g., copy to clipboard or show full text
                     }
-                    isLongPress.current = false;
-                  }}
-                  onMouseLeave={endLongPressDetection}
-                  onTouchStart={startLongPressDetection}
-                  onTouchEnd={() => {
-                    endLongPressDetection();
-                    if (isLongPress.current) {
-                      handleIntentionLongPressAction();
-                    } else {
-                      handleIntentionClick();
-                    }
-                    isLongPress.current = false;
                   }}
                 >
                   {profile.intention}
@@ -826,7 +825,12 @@ const Index = () => {
               ) : (
                 <CardTitle 
                   className="text-lg cursor-pointer select-none"
-                  onClick={() => setIsEditingSeshTitle(true)} // Simple click to edit
+                  onClick={handleTitleClick}
+                  onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
+                  onMouseUp={handleLongPressEnd}
+                  onMouseLeave={handleLongPressEnd}
+                  onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
+                  onTouchEnd={handleLongPressEnd}
                 >
                   {seshTitle}
                 </CardTitle>
