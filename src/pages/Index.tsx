@@ -339,15 +339,6 @@ const Index = () => {
     const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
 
     const performStopActions = async () => {
-      await saveSession(
-        seshTitle,
-        notes,
-        finalAccumulatedFocus,
-        finalAccumulatedBreak,
-        totalSessionSeconds,
-        activeJoinedSessionCoworkerCount,
-        sessionStartTime || Date.now() // Use sessionStartTime or current time if null
-      );
       // Reset timer states after saving
       setIsRunning(false);
       setIsPaused(false);
@@ -364,13 +355,34 @@ const Index = () => {
       setSeshTitle("Notes");
     };
 
+    const handleSaveAndStop = async () => {
+      if (totalSessionSeconds < 30) {
+        toast({
+          title: "Session Too Short",
+          description: "Sessions shorter than 30 seconds are not saved to history.",
+          variant: "destructive",
+        });
+      } else {
+        await saveSession(
+          seshTitle,
+          notes,
+          finalAccumulatedFocus,
+          finalAccumulatedBreak,
+          totalSessionSeconds,
+          activeJoinedSessionCoworkerCount,
+          sessionStartTime || Date.now() // Use sessionStartTime or current time if null
+        );
+      }
+      await performStopActions();
+    };
+
     if (longPressRef.current) {
       // Long press: save without confirmation
-      await performStopActions();
+      await handleSaveAndStop();
     } else {
       // Regular click: ask for confirmation
       if (confirm('Are you sure you want to stop the timer?')) {
-        await performStopActions();
+        await handleSaveAndStop();
       }
     }
   };
