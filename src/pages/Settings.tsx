@@ -867,7 +867,7 @@ const Settings = () => {
                         <Label className="block cursor-help">Minimum Verification Status</Label>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>for users to interact with sessions you host</p>
+                        <p>for others to interact with sessions you host</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
