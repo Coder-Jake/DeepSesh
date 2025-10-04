@@ -164,7 +164,6 @@ const Index = () => {
     commenceTime,
     commenceDay, // Now can be null
     isGlobalPrivate,
-    scheduleStartOption, // Get scheduleStartOption from context
 
     // New session tracking states and functions
     sessionStartTime,
@@ -187,6 +186,7 @@ const Index = () => {
     // New: Schedule pending state
     isSchedulePending,
     setIsSchedulePending,
+    scheduleStartOption, // Get scheduleStartOption from context
   } = useTimer();
   
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
@@ -263,6 +263,12 @@ const Index = () => {
   };
 
   // Handlers for Sesh Title editing
+  const handleTitleClick = () => {
+    if (!isLongPress.current) {
+      setIsEditingSeshTitle(true);
+    }
+  };
+
   const handleTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setIsEditingSeshTitle(false);
@@ -277,7 +283,7 @@ const Index = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
       setSeshTitle("Notes"); // Revert to default if empty
-      }
+    }
   };
 
   const handleTitleLongPress = () => {
@@ -287,19 +293,7 @@ const Index = () => {
   };
   
   const startTimer = () => {
-    if (isScheduleActive && scheduleStartOption === 'manual' && !isRunning) {
-      // If a manual schedule is active but not running, start it
-      playStartSound();
-      setIsRunning(true);
-      setIsPaused(false);
-      setIsFlashing(false);
-      setCurrentPhaseStartTime(Date.now()); // Start current phase timer for manual schedule
-      toast({
-        title: "Schedule Started!",
-        description: `"${scheduleTitle}" has begun.`,
-      });
-    } else if (!isRunning && !isPaused) {
-      // Regular start
+    if (!isRunning && !isPaused) {
       playStartSound();
       setIsRunning(true);
       setIsPaused(false);
@@ -309,7 +303,6 @@ const Index = () => {
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
     } else if (isPaused) {
-      // Resume
       setIsRunning(true);
       setIsPaused(false);
       setCurrentPhaseStartTime(Date.now()); // Resume current phase timer
@@ -706,6 +699,8 @@ const Index = () => {
                     size={280}
                     strokeWidth={12}
                     progress={(timeLeft / (currentItemDuration * 60)) * 100}
+                    // Removed interactive prop
+                    // Removed onInteract prop
                     className={isFlashing ? 'animate-pulse' : ''}
                     timerType={timerType} // Pass timerType here
                     isActiveTimer={isActiveTimer} // Pass isActiveTimer here
@@ -725,9 +720,10 @@ const Index = () => {
                     <Button 
                       size="lg" 
                       className="px-8" 
-                      onClick={isRunning ? pauseTimer : startTimer} {/* Corrected onClick logic */}
+                      onClick={isRunning ? pauseTimer : startTimer}
+                      // Removed disabled={isSchedulePending}
                     >
-                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')} {/* Simplified button text */}
+                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
                   )}
                 </div>
@@ -884,7 +880,7 @@ const Index = () => {
               ) : (
                 <CardTitle 
                   className="text-lg cursor-pointer select-none"
-                  onDoubleClick={() => setIsEditingSeshTitle(true)} {/* New: Double-click to edit */}
+                  onClick={handleTitleClick}
                   onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
                   onMouseUp={handleLongPressEnd}
                   onMouseLeave={handleLongPressEnd}
