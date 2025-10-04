@@ -450,19 +450,10 @@ const Index = () => {
   };
 
   const handleCircularProgressChange = (progress: number) => {
-    if (isRunning || isPaused || isFlashing || isScheduleActive) return; // Prevent interaction if schedule is active
-    
-    if (timerType === 'focus') {
-      const minutes = (progress / 100) * 120;
-      const actualMinutes = Math.max(timerIncrement, Math.round(minutes / timerIncrement) * timerIncrement);
-      setFocusMinutes(actualMinutes);
-      setTimeLeft(actualMinutes * 60);
-    } else {
-      const minutes = (progress / 100) * 30;
-      const actualMinutes = Math.max(timerIncrement, Math.round(minutes / timerIncrement) * timerIncrement);
-      setBreakMinutes(actualMinutes);
-      setTimeLeft(actualMinutes * 60);
-    }
+    // This function is no longer needed as the CircularProgress is not interactive.
+    // However, to avoid breaking existing logic that might call it, we can keep it
+    // as a no-op or remove it if it's truly unused. For now, I'll keep it as a no-op.
+    console.log("CircularProgress is not interactive. Progress change ignored:", progress);
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
@@ -708,8 +699,8 @@ const Index = () => {
                     size={280}
                     strokeWidth={12}
                     progress={(timeLeft / (currentItemDuration * 60)) * 100}
-                    interactive={!isActiveTimer} // Use isActiveTimer here
-                    onInteract={handleCircularProgressChange}
+                    // Removed interactive prop
+                    // Removed onInteract prop
                     className={isFlashing ? 'animate-pulse' : ''}
                     timerType={timerType} // Pass timerType here
                     isActiveTimer={isActiveTimer} // Pass isActiveTimer here

@@ -5,8 +5,6 @@ interface CircularProgressProps {
   strokeWidth?: number;
   progress: number; // 0-100
   children?: React.ReactNode;
-  onInteract?: (progress: number) => void;
-  interactive?: boolean;
   className?: string;
   timerType?: 'focus' | 'break'; // New prop
   isActiveTimer?: boolean; // New prop
@@ -17,63 +15,14 @@ export const CircularProgress = ({
   strokeWidth = 8,
   progress,
   children,
-  onInteract,
-  interactive = false,
   className = "",
   timerType = 'focus', // Default to focus
   isActiveTimer = false, // Default to false
 }: CircularProgressProps) => {
-  const [isDragging, setIsDragging] = useState(false);
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!interactive) return;
-    setIsDragging(true);
-    handleMouseMove(e);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent | MouseEvent) => {
-    if (!interactive || (!isDragging && e.type === 'mousemove')) return;
-    
-    const rect = (e.currentTarget as Element).getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const x = e.clientX - centerX;
-    const y = e.clientY - centerY;
-    
-    // Calculate angle from mouse position
-    let angle = Math.atan2(y, x) * (180 / Math.PI);
-    angle = (angle + 450) % 360; // Normalize to 0-360 starting from top
-    
-    const newProgress = (angle / 360) * 100;
-    onInteract?.(newProgress);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      const handleGlobalMouseMove = (e: MouseEvent) => {
-        const target = document.querySelector('.circular-progress-container');
-        if (target) {
-          handleMouseMove(e as any);
-        }
-      };
-      
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      
-      return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging]);
 
   const backgroundColor = isActiveTimer
     ? (timerType === 'focus' ? 'hsl(var(--focus-background))' : 'hsl(var(--break-background))')
@@ -84,9 +33,7 @@ export const CircularProgress = ({
       <svg
         width={size}
         height={size}
-        className={`circular-progress-container transform -rotate-90 ${interactive ? 'cursor-pointer' : ''}`}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
+        className={`circular-progress-container transform -rotate-90`}
       >
         {/* Background ring */}
         <circle
@@ -111,25 +58,9 @@ export const CircularProgress = ({
           strokeLinecap="round"
           className="transition-all duration-200 ease-out"
           style={{
-            filter: `drop-shadow(0 0 4px hsl(var(--primary) / 0.2)) ${interactive ? 'drop-shadow(0 0 8px hsl(var(--primary) / 0.3))' : ''}` // Added subtle shadow, stronger for interactive
+            filter: `drop-shadow(0 0 4px hsl(var(--primary) / 0.2))` // Added subtle shadow
           }}
         />
-        
-        {/* Interactive handle */}
-        {interactive && (
-          <circle
-            cx={size / 2 + radius * Math.cos((progress / 100) * 2 * Math.PI - Math.PI / 2)}
-            cy={size / 2 + radius * Math.sin((progress / 100) * 2 * Math.PI - Math.PI / 2)}
-            r={strokeWidth / 2 + 4} // Slightly larger
-            fill="hsl(var(--primary))"
-            stroke="hsl(var(--primary-foreground))" // Added a stroke
-            strokeWidth={2} // Stroke width
-            className="cursor-grab active:cursor-grabbing"
-            style={{
-              filter: 'drop-shadow(0 2px 6px hsl(var(--primary) / 0.6))' // Stronger shadow for handle
-            }}
-          />
-        )}
       </svg>
       
       {/* Center content */}
