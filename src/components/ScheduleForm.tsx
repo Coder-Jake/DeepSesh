@@ -345,7 +345,7 @@ const ScheduleForm: React.FC = () => {
                     variant="ghost"
                     className={cn(
                       "w-24 h-auto text-xs font-medium whitespace-normal text-center flex items-center justify-center", // Updated classes
-                      timer.isCustom ? "bg-blue-200 text-blue-800 hover:bg-blue-300" :
+                      timer.isCustom ? "bg-blue-100 text-blue-800 hover:bg-blue-300" :
                       timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
                     )}
                     onMouseDown={() => handleLongPressStart(timer)}
