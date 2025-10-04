@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
+import ColorPicker from './ColorPicker'; // Import the new ColorPicker component
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -67,6 +68,10 @@ const ScheduleForm: React.FC = () => {
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false);
+
+  // New state for color picker
+  const [editingColorTimerId, setEditingColorTimerId] = useState<string | null>(null);
+  const [timerColors, setTimerColors] = useState<Record<string, string>>({}); // Stores colors by timer ID
 
   // Order for displaying days in the Select component (Monday first, Sunday last)
   const daysOfWeekDisplayOrder = [
@@ -263,6 +268,11 @@ const ScheduleForm: React.FC = () => {
     setTimeout(() => setIsSaveButtonBlue(false), 1000); // Reset color after 1 second
   };
 
+  const handleColorSelect = (timerId: string, color: string) => {
+    setTimerColors(prev => ({ ...prev, [timerId]: color }));
+    setEditingColorTimerId(null); // Close picker after selection
+  };
+
   const buttonText =
       (scheduleStartOption === 'now' ? "Begin" : "Prepare");
 
@@ -307,9 +317,27 @@ const ScheduleForm: React.FC = () => {
         <TabsContent value="plan" className="pt-0 pb-6 space-y-6 px-4 lg:px-6" id="plan-tab-content">
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {schedule.map((timer, index) => (
-              <div key={timer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
+              <div 
+                key={timer.id} 
+                className="relative flex flex-wrap items-center gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50"
+                style={{ backgroundColor: timerColors[timer.id] || '' }} // Apply dynamic background color
+              >
                 <div className="flex items-center gap-2 flex-grow">
-                  <span className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start">{index + 1}.</span>
+                  <span 
+                    className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => setEditingColorTimerId(timer.id)} // Open color picker on click
+                  >
+                    {index + 1}.
+                  </span>
+                  {editingColorTimerId === timer.id && (
+                    <div className="absolute z-20 top-full left-0 mt-1"> {/* Position picker below the number */}
+                      <ColorPicker
+                        onSelectColor={(color) => handleColorSelect(timer.id, color)}
+                        onClose={() => setEditingColorTimerId(null)}
+                        currentColor={timerColors[timer.id]}
+                      />
+                    </div>
+                  )}
                   <Input
                     placeholder="Timer Title"
                     value={timer.title}
