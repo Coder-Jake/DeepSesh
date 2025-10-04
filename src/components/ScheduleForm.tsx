@@ -316,7 +316,7 @@ const ScheduleForm: React.FC = () => {
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
-        <TabsContent value="plan" className="pt-0 pb-6 space-y-6 px-4 lg:px-6" id="plan-tab-content">
+        <TabsContent value="plan" className="pt-0 pb-6 space-y-2 px-4 lg:px-6" id="plan-tab-content">
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {schedule.map((timer, index) => (
               <div 
