@@ -408,9 +408,11 @@ const ScheduleForm: React.FC = () => {
                   </Button>
                 )}
                 
-                <Button variant="ghost" size="icon" onClick={() => handleRemoveTimer(timer.id)} className="ml-auto flex-shrink-0" data-ignore-enter-nav>
-                  <Trash2 className="h-5 w-5 text-destructive" />
-                </Button>
+                <Trash2 
+                  className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
+                  onClick={() => handleRemoveTimer(timer.id)} 
+                  data-ignore-enter-nav
+                />
               </div>
             ))}
           </div>
