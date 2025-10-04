@@ -263,12 +263,11 @@ const Index = () => {
   };
 
   // Handlers for Sesh Title editing
-  // Removed handleTitleClick as it's no longer needed for single click
-  // const handleTitleClick = () => {
-  //   if (!isLongPress.current) {
-  //     setIsEditingSeshTitle(true);
-  //   }
-  // };
+  const handleTitleClick = () => {
+    if (!isLongPress.current) {
+      setIsEditingSeshTitle(true);
+    }
+  };
 
   const handleTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -284,7 +283,7 @@ const Index = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
       setSeshTitle("Notes"); // Revert to default if empty
-      }
+    }
   };
 
   const handleTitleLongPress = () => {
@@ -633,7 +632,6 @@ const Index = () => {
   // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
   const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
 
-
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
       <div className="mb-6">
@@ -701,6 +699,8 @@ const Index = () => {
                     size={280}
                     strokeWidth={12}
                     progress={(timeLeft / (currentItemDuration * 60)) * 100}
+                    // Removed interactive prop
+                    // Removed onInteract prop
                     className={isFlashing ? 'animate-pulse' : ''}
                     timerType={timerType} // Pass timerType here
                     isActiveTimer={isActiveTimer} // Pass isActiveTimer here
@@ -721,6 +721,7 @@ const Index = () => {
                       size="lg" 
                       className="px-8" 
                       onClick={isRunning ? pauseTimer : startTimer}
+                      // Removed disabled={isSchedulePending}
                     >
                       {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
@@ -879,7 +880,7 @@ const Index = () => {
               ) : (
                 <CardTitle 
                   className="text-lg cursor-pointer select-none"
-                  onDoubleClick={() => setIsEditingSeshTitle(true)} {/* New: Double-click to edit */}
+                  onClick={handleTitleClick}
                   onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
                   onMouseUp={handleLongPressEnd}
                   onMouseLeave={handleLongPressEnd}
