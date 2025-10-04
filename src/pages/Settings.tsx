@@ -685,8 +685,8 @@ const Settings = () => {
                   id="global-visibility-toggle"
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)} // Toggle isGlobalPrivate
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors select-none", // Removed text-black
-                    !isGlobalPrivate ? "bg-[hsl(var(--public-bg))] hover:opacity-80" : "bg-[hsl(var(--private-bg))] hover:opacity-80" // Adjusted hover
+                    "px-4 py-2 rounded-full transition-colors select-none text-foreground", // Added text-foreground
+                    !isGlobalPrivate ? "bg-[hsl(var(--public-bg))] hover:opacity-80" : "bg-[hsl(var(--private-bg))] hover:opacity-80"
                   )}
                 >
                   {!isGlobalPrivate ? "Public" : "Private"} {/* Display Public when false, Private when true */}
@@ -791,7 +791,7 @@ const Settings = () => {
                   </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground select-none">
                     {maxDistance <= 300 && "Very close proximity only"}
-                    {maxDistance > 300 && maxDistance <= 1000 && "Walking distance"}
+                    {maxDistance > 300 && maxDistance > 1000 && "Walking distance"}
                     {maxDistance > 1000 && maxDistance <= 2000 && "Short bike ride"}
                     {maxDistance > 2000 && "Wider area search"}
                   </div>
