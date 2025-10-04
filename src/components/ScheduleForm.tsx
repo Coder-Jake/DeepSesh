@@ -421,7 +421,7 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          <div className="space-y-2"> {/* New wrapper div with reduced vertical spacing */}
+          <div className="space-y-0"> {/* New wrapper div with reduced vertical spacing */}
             <div className="flex gap-2 items-center"> {/* Removed mt-4 */}
               <Button
                 variant={scheduleStartOption === 'now' ? 'secondary' : 'outline'}
