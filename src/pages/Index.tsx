@@ -153,7 +153,9 @@ const Index = () => {
     showSessionsWhileActive,
     timerIncrement,
     
-    schedule,
+    schedule, // Keep schedule for editing in ScheduleForm
+    activeSchedule, // NEW: Use activeSchedule for Timeline
+    activeTimerColors, // NEW: Use activeTimerColors for Timeline
     currentScheduleIndex,
     isSchedulingMode,
     setIsSchedulingMode,
@@ -670,8 +672,8 @@ const Index = () => {
   }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, toast]);
 
   // Determine the total duration of the current timer phase for CircularProgress
-  const currentItemDuration = isScheduleActive && schedule[currentScheduleIndex]
-    ? schedule[currentScheduleIndex].durationMinutes
+  const currentItemDuration = isScheduleActive && activeSchedule[currentScheduleIndex] // Use activeSchedule here
+    ? activeSchedule[currentScheduleIndex].durationMinutes // Use activeSchedule here
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
   // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
@@ -1031,13 +1033,14 @@ const Index = () => {
       {(isScheduleActive || isSchedulePrepared || (isSchedulePending && scheduleStartOption === 'custom_time')) && ( // Show if prepared
         <div className="mt-8"> {/* Add some top margin for separation */}
           <Timeline
-            schedule={schedule}
+            schedule={activeSchedule} // NEW: Pass activeSchedule
             currentScheduleIndex={currentScheduleIndex}
             timeLeft={timeLeft}
             commenceTime={commenceTime}
             commenceDay={commenceDay === null ? new Date().getDay() : commenceDay}
             isSchedulePending={isSchedulePending && scheduleStartOption === 'custom_time'}
             onCountdownEnd={handleCountdownEnd}
+            timerColors={activeTimerColors} // NEW: Pass activeTimerColors
           />
         </div>
       )}

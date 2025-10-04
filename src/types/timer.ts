@@ -81,6 +81,12 @@ export interface TimerContextType {
   isSchedulePrepared: boolean; // NEW: Indicates a schedule is set for later, but not actively running
   setIsSchedulePrepared: React.Dispatch<React.SetStateAction<boolean>>; // NEW
 
+  // Snapshot of the schedule when it's active or prepared
+  activeSchedule: ScheduledTimer[]; // NEW
+  setActiveSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>; // NEW
+  activeTimerColors: Record<string, string>; // NEW
+  setActiveTimerColors: React.Dispatch<React.SetStateAction<Record<string, string>>>; // NEW
+
   // Saved Schedules (Templates)
   savedSchedules: ScheduledTimerTemplate[]; // Added
   saveCurrentScheduleAsTemplate: () => void; // Added

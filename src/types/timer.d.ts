@@ -71,6 +71,11 @@ export type TimerContextType = {
   isSchedulePrepared: boolean; // NEW
   setIsSchedulePrepared: React.Dispatch<React.SetStateAction<boolean>>; // NEW
 
+  activeSchedule: ScheduledTimer[]; // NEW
+  setActiveSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>; // NEW
+  activeTimerColors: Record<string, string>; // NEW
+  setActiveTimerColors: React.Dispatch<React.SetStateAction<Record<string, string>>>; // NEW
+
   savedSchedules: ScheduledTimerTemplate[]; // NEW
   saveCurrentScheduleAsTemplate: () => void; // NEW
   loadScheduleTemplate: (templateId: string) => void; // NEW

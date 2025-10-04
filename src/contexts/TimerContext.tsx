@@ -43,6 +43,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isRecurring, setIsRecurring] = useState(false); // Added
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily'); // Added
 
+  // Snapshot of the schedule when it's active or prepared
+  const [activeSchedule, setActiveSchedule] = useState<ScheduledTimer[]>([]); // NEW
+  const [activeTimerColors, setActiveTimerColors] = useState<Record<string, string>>({}); // NEW
+
   // Saved Schedules (Templates)
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]); // Added
   
@@ -147,6 +151,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setSeshTitle("Notes");
       }
 
+      // Take a snapshot of the current schedule and its colors
+      setActiveSchedule([...schedule]);
+      setActiveTimerColors({ ...timerColors });
+
       setCurrentScheduleIndex(0);
       setTimerType(schedule[0].type);
       setTimeLeft(schedule[0].durationMinutes * 60);
@@ -187,7 +195,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     }
-  }, [schedule, scheduleTitle, scheduleStartOption, isRunning, isPaused]);
+  }, [schedule, scheduleTitle, scheduleStartOption, isRunning, isPaused, timerColors]);
 
   const commencePreparedSchedule = useCallback(() => {
     if (!isSchedulePrepared) return; // Only commence if a schedule is prepared
@@ -244,6 +252,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setNotes("");
     setSeshTitle("Notes");
     setTimerColors({}); // Reset timer colors
+    setActiveSchedule([]); // NEW: Clear active schedule
+    setActiveTimerColors({}); // NEW: Clear active timer colors
   }, [focusMinutes]);
 
   const saveCurrentScheduleAsTemplate = useCallback(() => {
@@ -291,6 +301,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsRunning(false);
       setIsPaused(true); // Paused, waiting for start/countdown
       setTimerColors(templateToLoad.timerColors || {}); // NEW: Load timer colors from the template
+      
+      // Also set the active schedule and colors when loading a template
+      setActiveSchedule(templateToLoad.schedule);
+      setActiveTimerColors(templateToLoad.timerColors || {});
+
       toast({
         title: "Schedule Loaded!",
         description: `"${templateToLoad.title}" has been loaded.`,
@@ -330,10 +345,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
 
         const nextIndex = currentScheduleIndex + 1;
-        if (nextIndex < schedule.length) {
+        if (nextIndex < activeSchedule.length) { // Use activeSchedule here
           setCurrentScheduleIndex(nextIndex);
-          setTimerType(schedule[nextIndex].type);
-          setTimeLeft(schedule[nextIndex].durationMinutes * 60);
+          setTimerType(activeSchedule[nextIndex].type); // Use activeSchedule here
+          setTimeLeft(activeSchedule[nextIndex].durationMinutes * 60); // Use activeSchedule here
           setIsRunning(true);
           setIsFlashing(false);
           setCurrentPhaseStartTime(Date.now()); // Start new phase timer
@@ -372,7 +387,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, schedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
@@ -448,6 +463,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setLocationSharing(data.locationSharing ?? false);
       setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
       setTimerColors(data.timerColors ?? {}); // NEW: Load timer colors
+      setActiveSchedule(data.activeSchedule ?? []); // NEW: Load active schedule
+      setActiveTimerColors(data.activeTimerColors ?? {}); // NEW: Load active timer colors
 
       // Load savedSchedules, merging with defaults if local storage is empty for schedules
       const loadedSchedules = data.savedSchedules ?? [];
@@ -471,7 +488,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
       friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
-      locationSharing, openSettingsAccordions,
+      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, // NEW: Save active schedule and colors
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
   }, [
@@ -485,7 +502,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
     intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
     friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
-    locationSharing, openSettingsAccordions,
+    locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, // NEW: Save active schedule and colors
   ]);
 
   const value = {
@@ -538,6 +555,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsRecurring,
     recurrenceFrequency,
     setRecurrenceFrequency,
+
+    activeSchedule, // NEW
+    setActiveSchedule, // NEW
+    activeTimerColors, // NEW
+    setActiveTimerColors, // NEW
 
     savedSchedules,
     saveCurrentScheduleAsTemplate,

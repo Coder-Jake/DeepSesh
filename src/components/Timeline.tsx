@@ -6,25 +6,27 @@ import { cn } from "@/lib/utils";
 import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
 
 interface TimelineProps {
-  schedule: ScheduledTimer[];
+  schedule: ScheduledTimer[]; // Now represents the active/prepared schedule
   currentScheduleIndex: number;
   timeLeft: number;
   commenceTime: string;
   commenceDay: number;
   isSchedulePending: boolean;
   onCountdownEnd: () => void;
+  timerColors: Record<string, string>; // NEW: Receive timerColors as prop
 }
 
 const Timeline: React.FC<TimelineProps> = ({
-  schedule,
+  schedule, // Now activeSchedule
   currentScheduleIndex,
   timeLeft,
   commenceTime,
   commenceDay,
   isSchedulePending,
   onCountdownEnd,
+  timerColors, // NEW: Destructure timerColors
 }) => {
-  const { formatTime, scheduleTitle, isScheduleActive, timerColors } = useTimer(); // Removed setScheduleTitle, added timerColors
+  const { formatTime, scheduleTitle, isScheduleActive } = useTimer(); // Removed setScheduleTitle, added timerColors
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
