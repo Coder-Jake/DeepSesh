@@ -56,8 +56,8 @@ export type TimerContextType = {
   setScheduleTitle: React.Dispatch<React.SetStateAction<string>>;
   commenceTime: string;
   setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
-  commenceDay: number;
-  setCommenceDay: React.Dispatch<React.SetStateAction<number>>;
+  commenceDay: number | null;
+  setCommenceDay: React.Dispatch<React.SetStateAction<number | null>>;
   scheduleStartOption: 'now' | 'manual' | 'custom_time';
   setScheduleStartOption: React.Dispatch<React.SetStateAction<'now' | 'manual' | 'custom_time'>>;
   isRecurring: boolean;
@@ -68,6 +68,8 @@ export type TimerContextType = {
   currentScheduleIndex: number;
   isSchedulePending: boolean;
   setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>;
+  isSchedulePrepared: boolean; // NEW
+  setIsSchedulePrepared: React.Dispatch<React.SetStateAction<boolean>>; // NEW
 
   savedSchedules: ScheduledTimerTemplate[]; // NEW
   saveCurrentScheduleAsTemplate: () => void; // NEW

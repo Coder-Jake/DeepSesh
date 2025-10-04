@@ -158,7 +158,9 @@ const Index = () => {
     isSchedulingMode,
     setIsSchedulingMode,
     isScheduleActive,
+    isSchedulePrepared, // NEW
     startSchedule,
+    commencePreparedSchedule, // NEW
     resetSchedule,
     scheduleTitle,
     commenceTime,
@@ -293,12 +295,12 @@ const Index = () => {
   };
   
   const startNewManualTimer = () => { // Renamed to be explicit
-    if (isScheduleActive || isRunning || isPaused || isSchedulePending) {
+    if (isRunning || isPaused || isScheduleActive) { // Only check for actively running/paused manual timer or immediate schedule
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
       }
       // If confirmed, reset existing schedule/timer before starting new one
-      if (isScheduleActive) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
@@ -373,7 +375,7 @@ const Index = () => {
       setTimerType('focus'); // Reset to default focus type
       setTimeLeft(focusMinutes * 60); // Reset to default focus time
       setActiveJoinedSession(null);
-      if (isScheduleActive) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setSessionStartTime(null);
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
@@ -422,7 +424,7 @@ const Index = () => {
       const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
       setTimeLeft(initialTime);
       setActiveJoinedSession(null);
-      if (isScheduleActive) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setSessionStartTime(null);
       setCurrentPhaseStartTime(null); // Reset current phase start time
       setAccumulatedFocusSeconds(0);
@@ -437,7 +439,7 @@ const Index = () => {
         const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
         setTimeLeft(initialTime);
         setActiveJoinedSession(null);
-        if (isScheduleActive) resetSchedule();
+        if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
         setSessionStartTime(null);
         setCurrentPhaseStartTime(null); // Reset current phase start time
         setAccumulatedFocusSeconds(0);
@@ -484,7 +486,7 @@ const Index = () => {
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
-    if (isRunning || isPaused || isScheduleActive) return; // Prevent interaction if schedule is active
+    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) return; // Prevent interaction if schedule is active or prepared
 
     if (mode === 'focus') {
       setTimerType('focus');
@@ -496,12 +498,12 @@ const Index = () => {
   };
 
   const handleJoinSession = (session: DemoSession) => {
-    if (isRunning || isPaused || isScheduleActive || isSchedulePending) {
+    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) { // Check for prepared schedule too
       if (!confirm("A timer or schedule is already active. Do you want to override it and join this session?")) {
         return;
       }
       // If confirmed, reset existing schedule/timer before joining new one
-      if (isScheduleActive) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
@@ -533,7 +535,7 @@ const Index = () => {
     });
   };
 
-  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive || isSchedulePending);
+  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending); // Check for prepared schedule too
 
   const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
 
@@ -656,6 +658,7 @@ const Index = () => {
   // Callback for when the schedule countdown ends in Timeline
   const handleCountdownEnd = useCallback(() => {
     setIsSchedulePending(false);
+    setIsScheduleActive(true); // Now it's actively running
     setIsRunning(true);
     setIsPaused(false);
     // playStartSound(); // Play sound when schedule actually starts
@@ -672,7 +675,7 @@ const Index = () => {
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
   // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
-  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
+  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending || isSchedulePrepared; // Check for prepared schedule too
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
@@ -763,7 +766,9 @@ const Index = () => {
                       size="lg" 
                       className="px-8" 
                       onClick={() => {
-                        if (isRunning) {
+                        if (isSchedulePrepared) {
+                          commencePreparedSchedule(); // Commence the prepared schedule
+                        } else if (isRunning) {
                           pauseTimer();
                         } else if (isPaused) {
                           resumeTimer();
@@ -772,12 +777,12 @@ const Index = () => {
                         }
                       }}
                     >
-                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
+                      {isSchedulePrepared ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))}
                     </Button>
                   )}
                 </div>
 
-                {(isPaused || isRunning || isScheduleActive || isSchedulePending) && ( // Show stop button if pending
+                {(isPaused || isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending) && ( // Show stop button if pending or prepared
                   <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                     <div className="shape-octagon w-10 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
                       <Button 
@@ -800,7 +805,7 @@ const Index = () => {
                   </div>
                 )}
 
-                {!isScheduleActive && ( // Hide timer settings if schedule is active (removed isSchedulePending)
+                {!isScheduleActive && !isSchedulePrepared && ( // Hide timer settings if schedule is active or prepared
                   <div className="flex justify-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span 
@@ -870,7 +875,7 @@ const Index = () => {
                     </div>
                   </div>
                 )}
-                {(isRunning || isPaused || isScheduleActive || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
+                {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
               </>
             )}
           </div>
@@ -952,7 +957,7 @@ const Index = () => {
           </Card>
 
           {/* Coworkers Section - Show when running or paused */}
-          {(isRunning || isPaused || isScheduleActive || isSchedulePending) && currentCoworkers.length > 0 && ( // Show if pending
+          {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && currentCoworkers.length > 0 && ( // Show if pending or prepared
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Coworkers</CardTitle>
@@ -1023,7 +1028,7 @@ const Index = () => {
         </div>
       </div>
       {/* Timeline Section (for active schedule and upcoming) */}
-      {(isScheduleActive || (isSchedulePending && scheduleStartOption === 'custom_time')) && (
+      {(isScheduleActive || isSchedulePrepared || (isSchedulePending && scheduleStartOption === 'custom_time')) && ( // Show if prepared
         <div className="mt-8"> {/* Add some top margin for separation */}
           <Timeline
             schedule={schedule}

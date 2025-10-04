@@ -77,6 +77,8 @@ export interface TimerContextType {
   currentScheduleIndex: number;
   isSchedulePending: boolean; // Added new state
   setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>; // Added new setter
+  isSchedulePrepared: boolean; // NEW: Indicates a schedule is set for later, but not actively running
+  setIsSchedulePrepared: React.Dispatch<React.SetStateAction<boolean>>; // NEW
 
   // Saved Schedules (Templates)
   savedSchedules: ScheduledTimerTemplate[]; // Added

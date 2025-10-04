@@ -34,7 +34,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
   const [isSchedulingMode, setIsSchedulingMode] = useState(false);
-  const [isScheduleActive, setIsScheduleActive] = useState(false);
+  const [isScheduleActive, setIsScheduleActive] = useState(false); // True when schedule is actively running/paused as part of its execution
+  const [isSchedulePrepared, setIsSchedulePrepared] = useState(false); // NEW: True when a schedule is set for later, but not actively running
   const [scheduleTitle, setScheduleTitle] = useState("My Focus Sesh");
   const [commenceTime, setCommenceTime] = useState("09:00");
   const [commenceDay, setCommenceDay] = useState<number | null>(null); // 0 for Sunday, 1 for Monday, etc.
@@ -130,25 +131,40 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const startSchedule = useCallback(() => {
     if (schedule.length > 0) {
-      setIsScheduleActive(true); // Always activate schedule mode
+      // Reset manual timer states if a manual timer was running/paused
+      // This ensures a clean slate for the schedule, unless it's a later-starting schedule
+      // and a manual timer is currently running.
+      if (scheduleStartOption === 'now' || (!isRunning && !isPaused)) {
+        setIsRunning(false);
+        setIsPaused(false);
+        setIsFlashing(false);
+        setAccumulatedFocusSeconds(0);
+        setAccumulatedBreakSeconds(0);
+        setNotes("");
+        setSeshTitle("Notes");
+      }
+
       setCurrentScheduleIndex(0);
       setTimerType(schedule[0].type);
       setTimeLeft(schedule[0].durationMinutes * 60);
       setIsFlashing(false);
-      setSessionStartTime(Date.now());
-      setAccumulatedFocusSeconds(0);
-      setAccumulatedBreakSeconds(0);
+      setSessionStartTime(Date.now()); // Record overall session start time for the schedule
       setIsSchedulingMode(false); // Exit scheduling mode
 
       if (scheduleStartOption === 'custom_time') {
+        setIsSchedulePrepared(true); // Schedule is prepared, but not active yet
+        setIsScheduleActive(false); // Not actively running
         setIsSchedulePending(true); // For countdown
         setIsRunning(false); // Not running yet
         setIsPaused(true); // Paused until countdown ends
+        setCurrentPhaseStartTime(null); // No phase started yet
         toast({
           title: "Schedule Prepared!",
           description: `"${scheduleTitle}" will begin at the scheduled time.`,
         });
       } else if (scheduleStartOption === 'manual') {
+        setIsSchedulePrepared(true); // Schedule is prepared, but not active yet
+        setIsScheduleActive(false); // Not actively running
         setIsRunning(false); // Not running yet
         setIsPaused(true); // Paused, waiting for user to hit 'Start'
         setCurrentPhaseStartTime(null); // No phase started yet
@@ -157,7 +173,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           description: `"${scheduleTitle}" is ready. Hit 'Start' to begin.`,
         });
       } else { // 'now'
-        setIsRunning(true); // Start immediately
+        setIsSchedulePrepared(false); // Not just prepared, it's starting now
+        setIsScheduleActive(true); // Start immediately
+        setIsRunning(true);
         setIsPaused(false);
         setCurrentPhaseStartTime(Date.now());
         toast({
@@ -166,10 +184,41 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     }
-  }, [schedule, scheduleTitle, scheduleStartOption]);
+  }, [schedule, scheduleTitle, scheduleStartOption, isRunning, isPaused]);
+
+  const commencePreparedSchedule = useCallback(() => {
+    if (!isSchedulePrepared) return; // Only commence if a schedule is prepared
+
+    // If a manual timer is running, prompt to override
+    if (isRunning || isPaused) { // Check for any active manual timer state
+      if (!confirm("A manual timer is currently active. Do you want to override it and start the prepared schedule?")) {
+        return;
+      }
+      // If confirmed, stop the manual timer
+      setIsRunning(false);
+      setIsPaused(false);
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+      setNotes("");
+      setSeshTitle("Notes");
+    }
+
+    // Now, actually start the prepared schedule
+    setIsSchedulePrepared(false); // No longer just prepared, it's active
+    setIsScheduleActive(true); // Now it's actively running
+    setIsRunning(true);
+    setIsPaused(false);
+    setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
+    toast({
+      title: "Schedule Commenced!",
+      description: `"${scheduleTitle}" has begun.`,
+    });
+  }, [isSchedulePrepared, isRunning, isPaused, scheduleTitle]);
+
 
   const resetSchedule = useCallback(() => {
     setIsScheduleActive(false);
+    setIsSchedulePrepared(false); // Reset prepared state too
     setCurrentScheduleIndex(0);
     setSchedule([]);
     setScheduleTitle("My Focus Sesh");
@@ -231,6 +280,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setScheduleStartOption(templateToLoad.scheduleStartOption);
       setIsRecurring(templateToLoad.isRecurring);
       setRecurrenceFrequency(templateToLoad.recurrenceFrequency);
+      setIsSchedulePrepared(true); // Loading a template means it's prepared
+      setIsScheduleActive(false); // Not active until commenced
+      setIsSchedulePending(templateToLoad.scheduleStartOption === 'custom_time'); // Set pending if custom_time
+      setIsRunning(false);
+      setIsPaused(true); // Paused, waiting for start/countdown
       toast({
         title: "Schedule Loaded!",
         description: `"${templateToLoad.title}" has been loaded.`,
@@ -316,10 +370,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
       setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
 
   // Active Asks functions
   const addAsk = useCallback((ask: ActiveAskItem) => {
@@ -352,6 +406,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
       setIsScheduleActive(data.isScheduleActive ?? false);
+      setIsSchedulePrepared(data.isSchedulePrepared ?? false); // NEW
       setScheduleTitle(data.scheduleTitle ?? "My Focus Sesh");
       setCommenceTime(data.commenceTime ?? "09:00");
       setCommenceDay(data.commenceDay ?? null);
@@ -401,7 +456,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const dataToSave = {
       focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
       notes, seshTitle, showSessionsWhileActive, schedule, currentScheduleIndex,
-      isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
+      isSchedulingMode, isScheduleActive, isSchedulePrepared, scheduleTitle, commenceTime, commenceDay, // NEW
       isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, sessionStartTime,
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
@@ -415,7 +470,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [
     focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
     notes, seshTitle, showSessionsWhileActive, schedule, currentScheduleIndex,
-    isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
+    isSchedulingMode, isScheduleActive, isSchedulePrepared, scheduleTitle, commenceTime, commenceDay, // NEW
     isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, sessionStartTime,
     currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
@@ -459,7 +514,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsSchedulingMode,
     isScheduleActive,
     setIsScheduleActive,
+    isSchedulePrepared, // NEW
+    setIsSchedulePrepared, // NEW
     startSchedule,
+    commencePreparedSchedule, // NEW
     resetSchedule,
     scheduleTitle,
     setScheduleTitle,
