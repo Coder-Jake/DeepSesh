@@ -650,10 +650,16 @@ const Settings = () => {
               {/* New Increments Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="timer-increments-toggle">Increments</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Adjust timers by 1 or 5 minutes.
-                  </p>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="timer-increments-toggle" className="cursor-help">Increments</Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Adjust timers by 1 or 5 minutes.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <Button
                   id="timer-increments-toggle"
