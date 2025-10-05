@@ -273,7 +273,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         description: "No changes made.",
       });
     }
-  }, [blockedUsers]);
+  }, [blockedUsers, toast]);
 
   const unblockUser = useCallback((userName: string) => {
     const trimmedName = userName.trim();
@@ -287,7 +287,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         description: "No changes made.",
       });
     }
-  }, [blockedUsers]);
+  }, [blockedUsers, toast]);
 
 
   const fetchProfile = async () => {
@@ -301,38 +301,47 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       return;
     }
 
-    const { data, error } = await supabase
+    // Attempt to fetch the profile
+    const { data: existingProfile, error: fetchError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
 
-    if (error) {
-      console.error("Error fetching profile:", error);
-      setError(error.message);
+    // If an error occurred during fetch AND it's not the "no rows found" error,
+    // then it's a genuine error we should report.
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error("Error fetching profile:", fetchError);
+      setError(fetchError.message);
       toast.error("Error fetching profile", {
-        description: error.message,
+        description: fetchError.message,
       });
-    } else if (data) {
-      // Ensure first_name is always a string
-      setProfile({ ...data, first_name: data.first_name || "" });
-      console.log("Profile fetched from Supabase:", { ...data, first_name: data.first_name || "" });
+      setProfile(null); // Ensure profile is null on error
+      setLoading(false);
+      return;
+    }
+
+    if (existingProfile) {
+      // Profile found
+      setProfile({ ...existingProfile, first_name: existingProfile.first_name || "" });
+      console.log("Profile fetched from Supabase:", { ...existingProfile, first_name: existingProfile.first_name || "" });
     } else {
-      // If no profile exists, create a basic one (this should ideally be handled by the trigger)
+      // No profile found (either data is null or PGRST116 error occurred), attempt to create one
+      console.log("No existing profile found for user, attempting to create one.");
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
         .insert({ id: user.id, first_name: user.user_metadata.first_name, last_name: user.user_metadata.last_name })
         .select()
-        .single();
-      
+        .single(); // Still using .single() here, which is fine for an insert that returns one row
+
       if (insertError) {
         console.error("Error creating profile:", insertError);
         setError(insertError.message);
         toast.error("Error creating profile", {
           description: insertError.message,
         });
+        setProfile(null); // Ensure profile is null on error
       } else if (newProfile) {
-        // Ensure first_name is always a string
         setProfile({ ...newProfile, first_name: newProfile.first_name || "" });
         console.log("New profile created in Supabase:", { ...newProfile, first_name: newProfile.first_name || "" });
       }
