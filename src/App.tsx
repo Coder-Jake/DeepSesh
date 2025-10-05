@@ -1,9 +1,8 @@
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { TimerProvider, useTimer } from "@/contexts/TimerContext"; // Import useTimer here
+import { TimerProvider, useTimer } from "@/contexts/TimerContext";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -20,15 +19,14 @@ import Credits from "./pages/Credits";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
+import ToastManager from "@/components/ToastManager"; // Import the new ToastManager
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const navigate = useNavigate();
-  const { toasts } = useToast();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
+  // Removed areToastsEnabled from useTimer() here, now handled by ToastManager
   const lastHoveredElementRef = useRef<HTMLElement | null>(null);
 
   const getElementName = (element: HTMLElement): string | null => {
@@ -206,7 +204,7 @@ const AppContent = () => {
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {areToastsEnabled && <Toaster toasts={toasts} />} {/* NEW: Conditionally render Toaster */}
+      <ToastManager /> {/* Render ToastManager here */}
       <GlobalTooltip />
     </div>
   );
