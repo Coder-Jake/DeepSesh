@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScheduledTimer } from "@/types/timer";
-import { cn } from "@/lib/utils";
+import { cn, getContrastingTextColor } from "@/lib/utils"; // Import getContrastingTextColor
 import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
 
 interface TimelineProps {
@@ -202,7 +202,8 @@ const Timeline: React.FC<TimelineProps> = ({
           const isCurrent = index === currentScheduleIndex && !isSchedulePending; // Only current if not pending
           const isCompleted = index < currentScheduleIndex && !isSchedulePending; // Only completed if not pending
           const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
-          const itemBackgroundColor = timerColors[item.id] || (item.type === 'focus' ? 'hsl(var(--focus-background))' : ''); // Get custom color or default focus background
+          const itemBackgroundColor = timerColors[item.id];
+          const itemTextColor = itemBackgroundColor ? getContrastingTextColor(itemBackgroundColor) : undefined;
 
           return (
             <div
@@ -226,18 +227,18 @@ const Timeline: React.FC<TimelineProps> = ({
                   style={{ width: `${100 - progress}%`, transformOrigin: 'left' }}
                 />
               )}
-              <div className="relative z-10 flex-grow">
+              <div className="relative z-10 flex-grow" style={{ color: itemTextColor }}> {/* Apply contrasting text color */}
                 <h4 className="font-medium">{item.title}</h4>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground" style={{ color: itemTextColor }}> {/* Apply contrasting text color */}
                   {item.title} • {item.durationMinutes} mins
                 </p>
               </div>
               {/* Start time for all items, visible on hover */}
-              <div className="relative z-10 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="relative z-10 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: itemTextColor }}> {/* Apply contrasting text color */}
                 {itemStartTimes[item.id]}
               </div>
               {isCurrent && (
-                <div className="relative z-10 text-lg font-bold">
+                <div className="relative z-10 text-lg font-bold" style={{ color: itemTextColor }}> {/* Apply contrasting text color */}
                   {formatTime(timeLeft)}
                 </div>
               )}

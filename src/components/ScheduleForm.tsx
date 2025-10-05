@@ -9,7 +9,7 @@ import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
 import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
 import { ScheduledTimer } from "@/types/timer";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, getContrastingTextColor } from "@/lib/utils"; // Import getContrastingTextColor
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
 import ColorPicker from './ColorPicker'; // Import the new ColorPicker component
@@ -304,76 +304,85 @@ const ScheduleForm: React.FC = () => {
         </CardHeader>
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
           <div className="space-y-1 pr-2"> {/* Removed max-h-[400px] and overflow-y-auto */}
-            {schedule.map((timer, index) => (
-              <div 
-                key={timer.id} 
-                className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50" // Changed px-3 to px-2
-                style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }} // Apply dynamic background color or default baby blue for focus
-              >
-                <div className="flex items-center gap-1 flex-grow-0"> {/* Adjusted gap to gap-1 */}
-                  <span 
-                    className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors" // Removed self-start
-                    onClick={(e) => handleOpenColorPicker(e, timer.id)} // Open color picker on click
-                  >
-                    {index + 1}.
-                  </span>
+            {schedule.map((timer, index) => {
+              const itemBackgroundColor = timerColors[timer.id];
+              const itemTextColor = itemBackgroundColor ? getContrastingTextColor(itemBackgroundColor) : undefined;
+
+              return (
+                <div 
+                  key={timer.id} 
+                  className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50" // Changed px-3 to px-2
+                  style={{ backgroundColor: itemBackgroundColor || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }} // Apply dynamic background color or default baby blue for focus
+                >
+                  <div className="flex items-center gap-1 flex-grow-0"> {/* Adjusted gap to gap-1 */}
+                    <span 
+                      className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors" // Removed self-start
+                      onClick={(e) => handleOpenColorPicker(e, timer.id)} // Open color picker on click
+                      style={{ color: itemTextColor }} // Apply contrasting text color
+                    >
+                      {index + 1}.
+                    </span>
+                    <Input
+                      placeholder="Timer Title"
+                      value={timer.title}
+                      onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
+                      className="flex-grow min-w-0"
+                      onFocus={(e) => e.target.select()}
+                      onKeyDown={handleEnterKeyNavigation}
+                      data-input-type="timer-title" // Added data-input-type
+                      style={{ color: itemTextColor }} // Apply contrasting text color
+                    />
+                  </div>
+                  
                   <Input
-                    placeholder="Timer Title"
-                    value={timer.title}
-                    onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
-                    className="flex-grow min-w-0"
+                    type="number"
+                    placeholder="Min"
+                    value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        handleUpdateTimer(timer.id, 'durationMinutes', 0);
+                      } else {
+                        handleUpdateTimer(timer.id, 'durationMinutes', parseFloat(value) || 0);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (timer.durationMinutes === 0) {
+                        handleUpdateTimer(timer.id, 'durationMinutes', timerIncrement);
+                      }
+                    }}
+                    min={timerIncrement}
+                    step={timerIncrement}
+                    className="w-16 text-center flex-shrink-0"
                     onFocus={(e) => e.target.select()}
                     onKeyDown={handleEnterKeyNavigation}
-                    data-input-type="timer-title" // Added data-input-type
+                    data-input-type="timer-duration" // Added data-input-type
+                    style={{ color: itemTextColor }} // Apply contrasting text color
+                  />
+                  
+                  {/* Replaced custom title input/button with Select for timer type */}
+                  <Select
+                    value={timer.type}
+                    onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
+                  >
+                    <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center hidden" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="focus">Focus</SelectItem>
+                      <SelectItem value="break">Break</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Trash2 
+                    className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
+                    onClick={() => handleRemoveTimer(timer.id)} 
+                    data-ignore-enter-nav
+                    style={{ color: itemTextColor === '#FFFFFF' ? '#FFFFFF' : undefined }} // Ensure icon color contrasts
                   />
                 </div>
-                
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "") {
-                      handleUpdateTimer(timer.id, 'durationMinutes', 0);
-                    } else {
-                      handleUpdateTimer(timer.id, 'durationMinutes', parseFloat(value) || 0);
-                    }
-                  }}
-                  onBlur={() => {
-                    if (timer.durationMinutes === 0) {
-                      handleUpdateTimer(timer.id, 'durationMinutes', timerIncrement);
-                    }
-                  }}
-                  min={timerIncrement}
-                  step={timerIncrement}
-                  className="w-16 text-center flex-shrink-0"
-                  onFocus={(e) => e.target.select()}
-                  onKeyDown={handleEnterKeyNavigation}
-                  data-input-type="timer-duration" // Added data-input-type
-                />
-                
-                {/* Replaced custom title input/button with Select for timer type */}
-                <Select
-                  value={timer.type}
-                  onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
-                >
-                  <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center hidden" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="focus">Focus</SelectItem>
-                    <SelectItem value="break">Break</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Trash2 
-                  className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
-                  onClick={() => handleRemoveTimer(timer.id)} 
-                  data-ignore-enter-nav
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <Button onClick={handleAddTimer} variant="outline" className="w-full mt-0" onKeyDown={handleEnterKeyNavigation} data-input-type="add-timer-button">
