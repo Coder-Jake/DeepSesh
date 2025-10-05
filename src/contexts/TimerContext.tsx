@@ -47,6 +47,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Snapshot of the schedule when it's active or prepared
   const [activeSchedule, setActiveSchedule] = useState<ScheduledTimer[]>([]); // NEW
   const [activeTimerColors, setActiveTimerColors] = useState<Record<string, string>>({}); // NEW
+  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitle] = useState("My Focus Sesh"); // NEW: Title for the active/prepared schedule timeline
 
   // Saved Schedules (Templates)
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]); // Added
@@ -174,6 +175,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Take a snapshot of the current schedule and its colors
       setActiveSchedule([...schedule]);
       setActiveTimerColors({ ...timerColors });
+      setActiveScheduleDisplayTitle(scheduleTitle); // NEW: Set timeline title on start
 
       setCurrentScheduleIndex(0);
       setTimerType(schedule[0].type);
@@ -242,6 +244,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsRunning(true);
     setIsPaused(false);
     setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
+    setActiveScheduleDisplayTitle(scheduleTitle); // NEW: Set timeline title on commence
     updateSeshTitleWithSchedule(scheduleTitle); // Update seshTitle when prepared schedule commences
     toast({
       title: "Schedule Commenced!",
@@ -278,6 +281,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setTimerColors({}); // Reset timer colors
     setActiveSchedule([]); // NEW: Clear active schedule
     setActiveTimerColors({}); // NEW: Clear active timer colors
+    setActiveScheduleDisplayTitle("My Focus Sesh"); // NEW: Reset timeline title
   }, [focusMinutes]);
 
   const saveCurrentScheduleAsTemplate = useCallback(() => {
@@ -313,7 +317,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const templateToLoad = savedSchedules.find(template => template.id === templateId);
     if (templateToLoad) {
       setSchedule(templateToLoad.schedule);
-      setScheduleTitle(templateToLoad.title);
+      setScheduleTitle(templateToLoad.title); // RE-ENABLED: Update scheduleTitle on load
       setCommenceTime(templateToLoad.commenceTime);
       setCommenceDay(templateToLoad.commenceDay);
       setScheduleStartOption(templateToLoad.scheduleStartOption);
@@ -330,17 +334,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setActiveSchedule(templateToLoad.schedule);
       setActiveTimerColors(templateToLoad.timerColors || {});
 
-      // When a template is loaded, the seshTitle should sync if not customized
-      if (!isSeshTitleCustomized) {
-        _setSeshTitle(`${templateToLoad.title} Notes`);
-      }
+      // When a template is loaded, the seshTitle and activeScheduleDisplayTitle should NOT sync yet
+      // They will sync when the schedule is actually commenced.
 
       toast({
         title: "Schedule Loaded!",
         description: `"${templateToLoad.title}" has been loaded.`,
       });
     }
-  }, [savedSchedules, isSeshTitleCustomized]);
+  }, [savedSchedules]); // Removed isSeshTitleCustomized from dependencies
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
@@ -520,6 +522,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setTimerColors(data.timerColors ?? {}); // NEW: Load timer colors
       setActiveSchedule(data.activeSchedule ?? []); // NEW: Load active schedule
       setActiveTimerColors(data.activeTimerColors ?? {}); // NEW: Load active timer colors
+      setActiveScheduleDisplayTitle(data.activeScheduleDisplayTitle ?? "My Focus Sesh"); // NEW: Load active schedule display title
       setIs24HourFormat(data.is24HourFormat ?? true); // NEW: Load is24HourFormat
 
       // Load savedSchedules, merging with defaults if local storage is empty for schedules
@@ -544,7 +547,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
       friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
-      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, // NEW: Save active schedule and colors
+      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
       is24HourFormat, // NEW: Save is24HourFormat
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
@@ -559,7 +562,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
     intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
     friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
-    locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, // NEW: Save active schedule and colors
+    locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
     is24HourFormat, // NEW: Save is24HourFormat
   ]);
 
@@ -619,6 +622,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setActiveSchedule, // NEW
     activeTimerColors, // NEW
     setActiveTimerColors, // NEW
+    activeScheduleDisplayTitle, // NEW
+    setActiveScheduleDisplayTitle, // NEW
 
     savedSchedules,
     saveCurrentScheduleAsTemplate,

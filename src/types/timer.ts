@@ -88,6 +88,8 @@ export interface TimerContextType {
   setActiveSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>; // NEW
   activeTimerColors: Record<string, string>; // NEW
   setActiveTimerColors: React.Dispatch<React.SetStateAction<Record<string, string>>>; // NEW
+  activeScheduleDisplayTitle: string; // NEW: Title for the active/prepared schedule timeline
+  setActiveScheduleDisplayTitle: React.Dispatch<React.SetStateAction<string>>; // NEW
 
   // Saved Schedules (Templates)
   savedSchedules: ScheduledTimerTemplate[]; // Added
@@ -121,7 +123,7 @@ export interface TimerContextType {
   isSeshTitleCustomized: boolean; // NEW: Added customization flag
   formatTime: (seconds: number) => string;
   timerIncrement: number;
-  setTimerIncrement: React.Dispatch<React.SetStateAction<number>>; // Added
+  setTimerIncrement: React.Dispatch<React.SetStateAction<string>>; // Changed to string for consistency with other inputs
 
   // Session management states
   showSessionsWhileActive: boolean;
