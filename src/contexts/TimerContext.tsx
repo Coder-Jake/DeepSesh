@@ -16,7 +16,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const { user } = useAuth(); // Get user from AuthContext
   const { saveSession } = useProfile(); // Get saveSession from useProfile
 
-  const timerIncrement = 5; // Default increment for focus/break minutes
+  const [timerIncrement, setTimerIncrementInternal] = useState(5); // Default increment for focus/break minutes
 
   const [focusMinutes, setFocusMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
@@ -158,6 +158,37 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [isSeshTitleCustomized]);
 
+  const resetSchedule = useCallback(() => {
+    setIsScheduleActive(false);
+    setIsSchedulePrepared(false); // Reset prepared state too
+    setCurrentScheduleIndex(0);
+    setSchedule([]);
+    setScheduleTitle("My Focus Sesh");
+    setCommenceTime(""); // Changed to empty string
+    setCommenceDay(null);
+    setIsSchedulePending(false);
+    setScheduleStartOption('now');
+    setIsRecurring(false); // Reset recurrence
+    setRecurrenceFrequency('daily'); // Reset recurrence frequency
+    // Reset main timer to default focus
+    setTimerType('focus');
+    setTimeLeft(focusMinutes * 60);
+    setIsRunning(false);
+    setIsPaused(false);
+    setIsFlashing(false);
+    setSessionStartTime(null);
+    setCurrentPhaseStartTime(null);
+    setAccumulatedFocusSeconds(0);
+    setAccumulatedBreakSeconds(0);
+    setNotes("");
+    _setSeshTitle("Notes"); // Reset internal seshTitle
+    setIsSeshTitleCustomized(false); // Reset customization flag
+    setTimerColors({}); // Reset timer colors
+    setActiveSchedule([]); // NEW: Clear active schedule
+    setActiveTimerColors({}); // NEW: Clear active timer colors
+    setActiveScheduleDisplayTitle("My Focus Sesh"); // NEW: Reset timeline title
+  }, [focusMinutes]);
+
   const startSchedule = useCallback(() => {
     if (schedule.length === 0) {
       // This case is handled by toast in ScheduleForm, so just return
@@ -259,38 +290,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       description: `"${scheduleTitle}" has begun.`,
     });
   }, [isSchedulePrepared, isRunning, isPaused, scheduleTitle, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast]);
-
-
-  const resetSchedule = useCallback(() => {
-    setIsScheduleActive(false);
-    setIsSchedulePrepared(false); // Reset prepared state too
-    setCurrentScheduleIndex(0);
-    setSchedule([]);
-    setScheduleTitle("My Focus Sesh");
-    setCommenceTime(""); // Changed to empty string
-    setCommenceDay(null);
-    setIsSchedulePending(false);
-    setScheduleStartOption('now');
-    setIsRecurring(false); // Reset recurrence
-    setRecurrenceFrequency('daily'); // Reset recurrence frequency
-    // Reset main timer to default focus
-    setTimerType('focus');
-    setTimeLeft(focusMinutes * 60);
-    setIsRunning(false);
-    setIsPaused(false);
-    setIsFlashing(false);
-    setSessionStartTime(null);
-    setCurrentPhaseStartTime(null);
-    setAccumulatedFocusSeconds(0);
-    setAccumulatedBreakSeconds(0);
-    setNotes("");
-    _setSeshTitle("Notes"); // Reset internal seshTitle
-    setIsSeshTitleCustomized(false); // Reset customization flag
-    setTimerColors({}); // Reset timer colors
-    setActiveSchedule([]); // NEW: Clear active schedule
-    setActiveTimerColors({}); // NEW: Clear active timer colors
-    setActiveScheduleDisplayTitle("My Focus Sesh"); // NEW: Reset timeline title
-  }, [focusMinutes]);
 
   const saveCurrentScheduleAsTemplate = useCallback(() => {
     if (!scheduleTitle.trim() || schedule.length === 0) {
@@ -607,7 +606,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showSessionsWhileActive,
     setShowSessionsWhileActive,
     timerIncrement,
-    setTimerIncrement: () => {}, // Placeholder, as timerIncrement is currently a constant
+    setTimerIncrement: setTimerIncrementInternal, // Expose internal setter
 
     schedule,
     setSchedule,

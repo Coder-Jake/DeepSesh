@@ -919,7 +919,7 @@ const Index = () => {
           <ActiveAskSection 
             activeAsks={activeAsks} 
             onVoteExtend={handleVoteExtend} 
-            onVotePoll={handlePollSubmit} 
+            onVotePoll={handleVotePoll} // Corrected prop here
             currentUserId={currentUserId} 
           />
         </div>
@@ -939,7 +939,7 @@ const Index = () => {
                   onMouseUp={handleLongPressEnd}
                   onMouseLeave={handleLongPressEnd}
                   onTouchStart={() => handleLongPressStart(handleIntentionLongPress)}
-                  onTouchEnd={handleLongPressEnd}
+                  onTouchEnd={() => handleLongPressEnd()}
                   onClick={() => {
                     if (!isLongPress.current) {
                       // Optional: short press action, e.g., copy to clipboard or show full text

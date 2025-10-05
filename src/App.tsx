@@ -43,8 +43,15 @@ const AppContent = () => {
     if (element.title) {
       return element.title;
     }
-    if (element instanceof HTMLInputElement && element.placeholder) {
-      return `${element.placeholder} Input`;
+    if (element instanceof HTMLInputElement) { // Type guard for HTMLInputElement
+      if (element.placeholder) {
+        return `${element.placeholder} Input`;
+      }
+      if (element.type === 'number') return 'Number Input';
+      if (element.type === 'email') return 'Email Input';
+      if (element.type === 'password') return 'Password Input';
+      if (element.type === 'text') return 'Text Input';
+      return 'Input Field';
     }
     if (element instanceof HTMLImageElement && element.alt) {
       return `${element.alt} Image`;
@@ -62,13 +69,6 @@ const AppContent = () => {
       if (text && text.length > 0 && text.length < 50) {
         return `${text} Label`;
       }
-    }
-    if (element.tagName === 'INPUT') {
-      if (element.type === 'number') return 'Number Input';
-      if (element.type === 'email') return 'Email Input';
-      if (element.type === 'password') return 'Password Input';
-      if (element.type === 'text') return 'Text Input';
-      return 'Input Field';
     }
     if (element.tagName === 'TEXTAREA') {
       return 'Textarea Field';
@@ -98,12 +98,7 @@ const AppContent = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Shift' && !isShiftPressed) {
         setIsShiftPressed(true);
-        if (lastHoveredElementRef.current) {
-          const name = getElementName(lastHoveredElementRef.current);
-          if (name) {
-            setTooltip(name, event.clientX, event.clientY);
-          }
-        }
+        // Removed setTooltip call here, it will be handled by mousemove/mouseover
       }
 
       const targetTagName = (event.target as HTMLElement).tagName;
@@ -154,12 +149,10 @@ const AppContent = () => {
     };
 
     const handleMouseMove = (event: MouseEvent) => {
-      if (isShiftPressed) {
-        if (lastHoveredElementRef.current) {
-          const name = getElementName(lastHoveredElementRef.current);
-          if (name) {
-            setTooltip(name, event.clientX, event.clientY);
-          }
+      if (isShiftPressed && lastHoveredElementRef.current) {
+        const name = getElementName(lastHoveredElementRef.current);
+        if (name) {
+          setTooltip(name, event.clientX, event.clientY);
         }
       }
     };

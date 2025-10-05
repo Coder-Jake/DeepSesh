@@ -44,7 +44,7 @@ export type TimerContextType = {
   setSeshTitle: React.Dispatch<React.SetStateAction<string>>;
   formatTime: (seconds: number) => string;
   timerIncrement: number;
-  setTimerIncrement: React.Dispatch<React.SetStateAction<number>>;
+  setTimerIncrement: React.Dispatch<React.SetStateAction<number>>; // Changed to number
 
   schedule: ScheduledTimer[];
   setSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>;

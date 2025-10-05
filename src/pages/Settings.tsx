@@ -27,7 +27,7 @@ const Settings = () => {
     breakMinutes, 
     setBreakMinutes, 
     timerIncrement, 
-    setTimerIncrement, 
+    setTimerIncrement, // Use the setter from context
     shouldPlayEndSound, 
     setShouldPlayEndSound, 
     shouldShowEndToast, 
@@ -82,7 +82,6 @@ const Settings = () => {
   const { isDarkMode, toggleDarkMode } = useTheme(); // Use theme context
 
   // Local state for temporary UI interactions or derived values
-  // Removed selectedFocusDuration, customFocusDuration, selectedBreakDuration, customBreakDuration
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -126,7 +125,6 @@ const Settings = () => {
   // This runs once on mount to set up local states from context.
   // It does NOT update savedSettingsRef.current after initial mount.
   useEffect(() => {
-    // Removed local state initializations for focus/break durations
     setCurrentTimerIncrement(timerIncrement);
     // No update to savedSettingsRef.current here after initial render
   }, [
@@ -344,7 +342,7 @@ const Settings = () => {
   const handleSave = () => {
     // Focus and Break minutes are now updated directly by their input fields
     // No need for newFocusMinutes/newBreakMinutes parsing here
-    setTimerIncrement(currentTimerIncrement);
+    setTimerIncrement(currentTimerIncrement); // Corrected type here
     setShowSessionsWhileActive(showSessionsWhileActive);
     setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
     setBatchNotificationPreference(batchNotificationPreference);

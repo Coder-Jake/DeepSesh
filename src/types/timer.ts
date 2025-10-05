@@ -123,7 +123,7 @@ export interface TimerContextType {
   isSeshTitleCustomized: boolean; // NEW: Added customization flag
   formatTime: (seconds: number) => string;
   timerIncrement: number;
-  setTimerIncrement: React.Dispatch<React.SetStateAction<string>>; // Changed to string for consistency with other inputs
+  setTimerIncrement: React.Dispatch<React.SetStateAction<number>>; // Changed to number
 
   // Session management states
   showSessionsWhileActive: boolean;
