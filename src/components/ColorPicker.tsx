@@ -144,7 +144,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
   }, [onSelectColor]);
 
   return (
-    <div className="absolute z-10 mt-2 p-2 bg-popover border rounded-md shadow-lg w-1/4 min-w-[280px]" onMouseLeave={onClose}>
+    <div className="p-2 bg-popover border rounded-md shadow-lg w-[300px]" onMouseLeave={onClose}>
       {recentColors.length > 0 && (
         <div className="mb-3">
           <p className="text-xs text-muted-foreground mb-1">Recently Used</p>

@@ -85,6 +85,7 @@ const ScheduleForm: React.FC = () => {
 
   // New state for color picker
   const [editingColorTimerId, setEditingColorTimerId] = useState<string | null>(null);
+  const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
   // Removed local timerColors state, now using context
 
   // Order for displaying days in the Select component (Monday first, Sunday last)
@@ -243,6 +244,22 @@ const ScheduleForm: React.FC = () => {
   const handleColorSelect = (timerId: string, color: string) => {
     setTimerColors(prev => ({ ...prev, [timerId]: color }));
     setEditingColorTimerId(null); // Close picker after selection
+    setPickerPosition(null);
+  };
+
+  const handleOpenColorPicker = (e: React.MouseEvent, timerId: string) => {
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    setEditingColorTimerId(timerId);
+    setPickerPosition({
+      top: rect.bottom + window.scrollY, // Position below the clicked element
+      left: rect.left + window.scrollX,
+    });
+  };
+
+  const handleCloseColorPicker = () => {
+    setEditingColorTimerId(null);
+    setPickerPosition(null);
   };
 
   const buttonText =
@@ -297,19 +314,10 @@ const ScheduleForm: React.FC = () => {
                 <div className="flex items-center gap-1 flex-grow-0"> {/* Adjusted gap to gap-1 */}
                   <span 
                     className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors" // Removed self-start
-                    onClick={() => setEditingColorTimerId(timer.id)} // Open color picker on click
+                    onClick={(e) => handleOpenColorPicker(e, timer.id)} // Open color picker on click
                   >
                     {index + 1}.
                   </span>
-                  {editingColorTimerId === timer.id && (
-                    <div className="absolute z-20 top-full left-0 mt-1"> {/* Position picker below the number */}
-                      <ColorPicker
-                        onSelectColor={(color) => handleColorSelect(timer.id, color)}
-                        onClose={() => setEditingColorTimerId(null)}
-                        currentColor={timerColors[timer.id]}
-                      />
-                    </div>
-                  )}
                   <Input
                     placeholder="Timer Title"
                     value={timer.title}
@@ -467,6 +475,19 @@ const ScheduleForm: React.FC = () => {
           <ScheduleTemplates setActiveTab={setActiveTab} />
         </TabsContent>
       </Tabs>
+
+      {editingColorTimerId && pickerPosition && (
+        <div
+          className="absolute z-50" // High z-index to ensure it's on top
+          style={{ top: pickerPosition.top, left: pickerPosition.left }}
+        >
+          <ColorPicker
+            onSelectColor={(color) => handleColorSelect(editingColorTimerId, color)}
+            onClose={handleCloseColorPicker}
+            currentColor={timerColors[editingColorTimerId]}
+          />
+        </div>
+      )}
     </Card>
   );
 };
