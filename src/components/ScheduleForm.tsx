@@ -304,7 +304,7 @@ const ScheduleForm: React.FC = () => {
           </Button>
         </CardHeader>
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
-          <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2">
+          <div className="space-y-1 pr-2"> {/* Removed max-h-[400px] and overflow-y-auto */}
             {schedule.map((timer, index) => (
               <div 
                 key={timer.id} 
