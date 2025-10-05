@@ -112,8 +112,8 @@ const mockFriendsSessions: DemoSession[] = [
     id: 201,
     title: "Psychology 101 Final Review",
     type: "focus",
-    totalDurationMinutes: 90,
     currentPhase: "break",
+    totalDurationMinutes: 90,
     currentPhaseDurationMinutes: 15,
     startTime: Date.now() - (10.66 * 60 * 1000),
     location: "Main Library - Study Room 12",
@@ -690,35 +690,43 @@ const Index = () => {
   // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
   const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePrepared || isSchedulePending; // Check for prepared schedule too
 
-  // NEW: Sort prepared schedules
+  // Helper function to get the effective start timestamp for sorting
+  const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
+    if (template.scheduleStartOption === 'manual') {
+      // Manual schedules are ready to start immediately, place them at the very beginning
+      return -Infinity; 
+    } else if (template.scheduleStartOption === 'custom_time') {
+      const [hours, minutes] = template.commenceTime.split(':').map(Number);
+      let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+      const currentDay = now.getDay();
+      const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
+      const daysToAdd = (templateDay - currentDay + 7) % 7;
+      targetDate.setDate(now.getDate() + daysToAdd);
+
+      // If the target time is in the past for today, set it for next week
+      if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
+        targetDate.setDate(targetDate.getDate() + 7);
+      }
+      return targetDate.getTime();
+    }
+    return Infinity; // Should not happen for prepared schedules
+  }, []);
+
+  // NEW: Sort prepared schedules chronologically
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
     return [...preparedSchedules].sort((a, b) => {
-      // Manual schedules first
-      if (a.scheduleStartOption === 'manual' && b.scheduleStartOption !== 'manual') return -1;
-      if (b.scheduleStartOption === 'manual' && a.scheduleStartOption !== 'manual') return 1;
+      const timeA = getEffectiveStartTime(a, now);
+      const timeB = getEffectiveStartTime(b, now);
 
-      // Then custom_time schedules chronologically
-      if (a.scheduleStartOption === 'custom_time' && b.scheduleStartOption === 'custom_time') {
-        const getTargetDate = (template: ScheduledTimerTemplate) => {
-          const [hours, minutes] = template.commenceTime.split(':').map(Number);
-          const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
-          const currentDay = now.getDay();
-          const templateDay = template.commenceDay === null ? currentDay : template.commenceDay; // If null, assume today
-          const daysToAdd = (templateDay - currentDay + 7) % 7;
-          targetDate.setDate(now.getDate() + daysToAdd);
-          if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
-            targetDate.setDate(targetDate.getDate() + 7);
-          }
-          return targetDate;
-        };
-        const dateA = getTargetDate(a);
-        const dateB = getTargetDate(b);
-        return dateA.getTime() - dateB.getTime();
+      if (timeA === timeB) {
+        // If times are identical (e.g., both manual), sort by title for stable order
+        return a.title.localeCompare(b.title);
       }
-      return 0;
+      return timeA - timeB;
     });
-  }, [preparedSchedules]);
+  }, [preparedSchedules, getEffectiveStartTime]);
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
