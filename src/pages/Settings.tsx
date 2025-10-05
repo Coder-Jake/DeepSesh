@@ -967,8 +967,16 @@ const Settings = () => {
               {/* NEW: Toasts Switch */}
               <div className="flex items-center justify-between border-t border-border pt-6 mt-6">
                 <div className="space-y-0.5">
-                  <Label htmlFor="toasts-toggle">Toasts</Label>
-                  <p className="text-sm text-muted-foreground">Show general app notifications.</p>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="toasts-toggle" className="cursor-help">Toasts</Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Gives context to what the app is doing. Activate if encountering errors.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <Switch
                   id="toasts-toggle"
