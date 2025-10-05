@@ -330,44 +330,42 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
       clearInterval(timerRef.current!);
-      setIsRunning(false);
-      setIsFlashing(true);
-      if (shouldPlayEndSound) playSound(); // Play sound only if enabled
+
+      // Accumulate time for the phase that just ended
+      if (currentPhaseStartTime !== null) {
+        const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+        if (timerType === 'focus') {
+          setAccumulatedFocusSeconds((prev: number) => prev + elapsed);
+        } else {
+          setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
+        }
+      }
+
+      if (shouldPlayEndSound) playSound();
 
       if (isScheduleActive) {
-        // Accumulate time for the phase just ended
-        if (currentPhaseStartTime !== null) {
-          const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-          if (timerType === 'focus') {
-            setAccumulatedFocusSeconds((prev: number) => prev + elapsed);
-          } else {
-            setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
-          }
-        }
-
         const nextIndex = currentScheduleIndex + 1;
-        if (nextIndex < activeSchedule.length) { // Use activeSchedule here
+        if (nextIndex < activeSchedule.length) {
           setCurrentScheduleIndex(nextIndex);
-          setTimerType(activeSchedule[nextIndex].type); // Use activeSchedule here
-          setTimeLeft(activeSchedule[nextIndex].durationMinutes * 60); // Use activeSchedule here
+          setTimerType(activeSchedule[nextIndex].type);
+          setTimeLeft(activeSchedule[nextIndex].durationMinutes * 60);
           setIsRunning(true);
           setIsFlashing(false);
           setCurrentPhaseStartTime(Date.now()); // Start new phase timer
         } else {
           // Schedule completed
-          if (shouldShowEndToast) { // Show toast only if enabled
+          if (shouldShowEndToast) {
             toast({
               title: "Schedule Completed!",
               description: `"${scheduleTitle}" has finished.`,
             });
           }
           
-          // Calculate final accumulated times before saving
-          const finalFocusSeconds = accumulatedFocusSeconds + (timerType === 'focus' && currentPhaseStartTime !== null ? (Date.now() - currentPhaseStartTime) / 1000 : 0);
-          const finalBreakSeconds = accumulatedBreakSeconds + (timerType === 'break' && currentPhaseStartTime !== null ? (Date.now() - currentPhaseStartTime) / 1000 : 0);
+          // Final accumulated times are already updated above
+          const finalFocusSeconds = accumulatedFocusSeconds;
+          const finalBreakSeconds = accumulatedBreakSeconds;
           const totalSession = finalFocusSeconds + finalBreakSeconds;
 
-          // Call saveSession from ProfileContext here
           saveSession(
             seshTitle,
             notes,
@@ -375,10 +373,37 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             finalBreakSeconds,
             totalSession,
             activeJoinedSessionCoworkerCount,
-            sessionStartTime || Date.now() // Use sessionStartTime or current time if null
+            sessionStartTime || Date.now()
           );
 
-          resetSchedule(); // Reset all timer states after saving
+          resetSchedule();
+        }
+      } else { // Manual timer logic
+        if (shouldShowEndToast) {
+          toast({
+            title: "Timer Ended!",
+            description: `Your ${timerType} session has finished.`,
+          });
+        }
+
+        if (manualTransition) {
+          // Manual transition is ON: stop and flash, wait for user input
+          setIsRunning(false);
+          setIsFlashing(true);
+          setCurrentPhaseStartTime(null); // No active phase being tracked
+        } else {
+          // Manual transition is OFF: automatically switch phases
+          setIsFlashing(false); // No flashing
+          setIsRunning(true); // Keep running
+
+          if (timerType === 'focus') {
+            setTimerType('break');
+            setTimeLeft(breakMinutes * 60);
+          } else {
+            setTimerType('focus');
+            setTimeLeft(focusMinutes * 60);
+          }
+          setCurrentPhaseStartTime(Date.now()); // Start new phase timer immediately
         }
       }
     }
@@ -388,7 +413,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
