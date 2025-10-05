@@ -49,13 +49,13 @@ const Login = () => {
             variables: {
               sign_in: {
                 email_label: ' ',
-                password_label: 'Password',
+                password_label: ' ',
                 email_input_placeholder: 'Email',
                 password_input_placeholder: 'Password',
               },
               sign_up: {
-                email_label: 'Email',
-                password_label: 'Password',
+                email_label: ' ',
+                password_label: ' ',
                 email_input_placeholder: 'Email',
                 password_input_placeholder: 'Password',
               },
