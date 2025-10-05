@@ -61,7 +61,8 @@ export interface TimerContextType {
   isSchedulingMode: boolean;
   setIsSchedulingMode: React.Dispatch<React.SetStateAction<boolean>>;
   startSchedule: () => void;
-  commencePreparedSchedule: () => void; // NEW: Added this line
+  commenceSpecificPreparedSchedule: (templateId: string) => void; // NEW: Added this line
+  discardPreparedSchedule: (templateId: string) => void; // NEW: Added this line
   resetSchedule: () => void;
   scheduleTitle: string;
   setScheduleTitle: React.Dispatch<React.SetStateAction<string>>;
@@ -89,13 +90,16 @@ export interface TimerContextType {
   activeTimerColors: Record<string, string>; // NEW
   setActiveTimerColors: React.Dispatch<React.SetStateAction<Record<string, string>>>; // NEW
   activeScheduleDisplayTitle: string; // NEW: Title for the active/prepared schedule timeline
-  setActiveScheduleDisplayTitle: React.Dispatch<React.SetStateAction<string>>; // NEW
 
   // Saved Schedules (Templates)
   savedSchedules: ScheduledTimerTemplate[]; // Added
   saveCurrentScheduleAsTemplate: () => void; // Added
   loadScheduleTemplate: (templateId: string) => void; // Added
   deleteScheduleTemplate: (templateId: string) => void; // Added
+
+  // Prepared Schedules (Upcoming)
+  preparedSchedules: ScheduledTimerTemplate[]; // NEW
+  setPreparedSchedules: React.Dispatch<React.SetStateAction<ScheduledTimerTemplate[]>>; // NEW
 
   // Timer Colors
   timerColors: Record<string, string>; // NEW
@@ -159,7 +163,7 @@ export interface TimerContextType {
   lock: boolean;
   setLock: React.Dispatch<React.SetStateAction<boolean>>;
   exemptionsEnabled: boolean;
-  setExemptionsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  setExemptionsEnabled: React.ReactDispatch<React.SetStateAction<boolean>>;
   phoneCalls: boolean;
   setPhoneCalls: React.Dispatch<React.SetStateAction<boolean>>;
   favourites: boolean;
@@ -182,8 +186,8 @@ export interface TimerContextType {
   setBreakNotificationsVibrate: React.Dispatch<React.SetStateAction<boolean>>;
   verificationStandard: 'anyone' | 'phone1' | 'organisation' | 'id1';
   setVerificationStandard: React.Dispatch<React.SetStateAction<'anyone' | 'phone1' | 'organisation' | 'id1'>>;
-  profileVisibility: ('public' | 'friends' | 'organisation' | 'private')[]; // Updated to array
-  setProfileVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>; // Updated to array
+  profileVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  setProfileVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
   locationSharing: boolean;
   setLocationSharing: React.Dispatch<React.SetStateAction<boolean>>;
   isGlobalPrivate: boolean;

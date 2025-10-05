@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext"; // Ensure useProfile is imported
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
 import { format } from 'date-fns'; // Import date-fns for time formatting
+import { ScheduledTimerTemplate, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import ScheduledTimerTemplate and DAYS_OF_WEEK
 
 // Define types for Ask items (copied from TimerContext to ensure consistency)
 interface ExtendSuggestion {
@@ -164,13 +165,14 @@ const Index = () => {
     setIsSchedulingMode,
     isScheduleActive,
     setIsScheduleActive, // Destructure setIsScheduleActive
-    isSchedulePrepared, // NEW
+    isSchedulePrepared, // NEW: Derived state from preparedSchedules.length > 0
     startSchedule,
-    commencePreparedSchedule, // NEW
+    commenceSpecificPreparedSchedule, // NEW: Function to commence a specific prepared schedule
+    discardPreparedSchedule, // NEW: Function to discard a specific prepared schedule
     resetSchedule,
-    scheduleTitle,
-    commenceTime,
-    commenceDay, // Now can be null
+    scheduleTitle, // This is the title for the schedule being *edited*
+    commenceTime, // This is the commenceTime for the schedule being *edited*
+    commenceDay, // This is the commenceDay for the schedule being *edited*
     isGlobalPrivate,
     activeScheduleDisplayTitle, // NEW: Get activeScheduleDisplayTitle
 
@@ -185,18 +187,19 @@ const Index = () => {
     setAccumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
-    // saveSessionToHistory, // REMOVED from useTimer destructuring
 
     // Active Asks from TimerContext
     activeAsks,
     addAsk,
     updateAsk,
 
-    // New: Schedule pending state
+    // New: Schedule pending state (for the *active* schedule)
     isSchedulePending,
     setIsSchedulePending,
     scheduleStartOption, // Get scheduleStartOption from context
     is24HourFormat, // NEW: Get is24HourFormat from context
+
+    preparedSchedules, // NEW: Get the array of prepared schedules
   } = useTimer();
   
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
@@ -206,7 +209,6 @@ const Index = () => {
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
-  // Removed local activeAsks state, now using context
   const [isHoveringTimer, setIsHoveringTimer] = useState(false); // NEW: State for timer hover
 
   const currentUserId = profile?.id || "mock-user-id-123"; 
@@ -341,7 +343,7 @@ const Index = () => {
       setCurrentPhaseStartTime(Date.now());
       toast({
         title: "Schedule Resumed!",
-        description: `"${scheduleTitle}" has resumed.`,
+        description: `"${activeScheduleDisplayTitle}" has resumed.`,
       });
     } else if (currentPhaseStartTime === null) {
       // If it was a manual timer paused, restart phase tracking
@@ -686,7 +688,37 @@ const Index = () => {
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
   // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
-  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending || isSchedulePrepared; // Check for prepared schedule too
+  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePrepared || isSchedulePending; // Check for prepared schedule too
+
+  // NEW: Sort prepared schedules
+  const sortedPreparedSchedules = useMemo(() => {
+    const now = new Date();
+    return [...preparedSchedules].sort((a, b) => {
+      // Manual schedules first
+      if (a.scheduleStartOption === 'manual' && b.scheduleStartOption !== 'manual') return -1;
+      if (b.scheduleStartOption === 'manual' && a.scheduleStartOption !== 'manual') return 1;
+
+      // Then custom_time schedules chronologically
+      if (a.scheduleStartOption === 'custom_time' && b.scheduleStartOption === 'custom_time') {
+        const getTargetDate = (template: ScheduledTimerTemplate) => {
+          const [hours, minutes] = template.commenceTime.split(':').map(Number);
+          const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+          const currentDay = now.getDay();
+          const templateDay = template.commenceDay === null ? currentDay : template.commenceDay; // If null, assume today
+          const daysToAdd = (templateDay - currentDay + 7) % 7;
+          targetDate.setDate(now.getDate() + daysToAdd);
+          if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
+            targetDate.setDate(targetDate.getDate() + 7);
+          }
+          return targetDate;
+        };
+        const dateA = getTargetDate(a);
+        const dateB = getTargetDate(b);
+        return dateA.getTime() - dateB.getTime();
+      }
+      return 0;
+    });
+  }, [preparedSchedules]);
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
@@ -796,7 +828,11 @@ const Index = () => {
                       className="px-8" 
                       onClick={() => {
                         if (isSchedulePrepared) {
-                          commencePreparedSchedule(); // Commence the prepared schedule
+                          // If there are prepared schedules, and one is pending, commence it.
+                          // If multiple, this button should probably not be here or should open a selection.
+                          // For now, we'll assume the user will use the UpcomingScheduleCard's commence button.
+                          // This button will only start a manual timer if no schedule is active/prepared.
+                          startNewManualTimer(); 
                         } else if (isRunning) {
                           pauseTimer();
                         } else if (isPaused) {
@@ -807,7 +843,7 @@ const Index = () => {
                       }}
                       data-name={`${isSchedulePrepared ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))} Timer Button`}
                     >
-                      {isSchedulePrepared ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))}
+                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
                   )}
                 </div>
@@ -1073,29 +1109,34 @@ const Index = () => {
             schedule={activeSchedule} // NEW: Pass activeSchedule
             currentScheduleIndex={currentScheduleIndex}
             timeLeft={timeLeft}
-            commenceTime={commenceTime}
-            commenceDay={commenceDay === null ? new Date().getDay() : commenceDay}
-            isSchedulePending={isSchedulePending && scheduleStartOption === 'custom_time'} // Keep this prop for Timeline's internal logic
+            commenceTime={commenceTime} // This will be from the active schedule's original template
+            commenceDay={commenceDay === null ? new Date().getDay() : commenceDay} // This will be from the active schedule's original template
+            isSchedulePending={isSchedulePending} // Keep this prop for Timeline's internal logic
             onCountdownEnd={handleCountdownEnd}
             timerColors={activeTimerColors} // NEW: Pass activeTimerColors
           />
         </div>
       )}
 
-      {/* NEW: Upcoming Section (for prepared schedules, including pending custom_time) */}
-      {isSchedulePrepared && !isScheduleActive && ( // Show if prepared but not active
+      {/* NEW: Upcoming Section (for prepared schedules) */}
+      {sortedPreparedSchedules.length > 0 && (
         <div className="mt-8" data-name="Upcoming Section">
-          <h3 className="text-xl font-bold text-foreground mb-4">Upcoming</h3>
-          <UpcomingScheduleCard
-            schedule={activeSchedule}
-            scheduleTitle={activeScheduleDisplayTitle}
-            commenceTime={commenceTime}
-            commenceDay={commenceDay}
-            scheduleStartOption={scheduleStartOption}
-            activeTimerColors={activeTimerColors}
-            commencePreparedSchedule={commencePreparedSchedule}
-            resetSchedule={resetSchedule}
-          />
+          <h3 className="text-xl font-bold text-foreground mb-4">Upcoming Schedules</h3>
+          <div className="space-y-4">
+            {sortedPreparedSchedules.map((template) => (
+              <UpcomingScheduleCard
+                key={template.id}
+                schedule={template.schedule}
+                scheduleTitle={template.title}
+                commenceTime={template.commenceTime}
+                commenceDay={template.commenceDay}
+                scheduleStartOption={template.scheduleStartOption}
+                activeTimerColors={template.timerColors}
+                commencePreparedSchedule={() => commenceSpecificPreparedSchedule(template.id)}
+                resetSchedule={() => discardPreparedSchedule(template.id)}
+              />
+            ))}
+          </div>
         </div>
       )}
     </main>

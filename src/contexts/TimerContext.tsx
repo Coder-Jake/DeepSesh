@@ -32,27 +32,30 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Schedule related states
-  const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
+  const [schedule, setSchedule] = useState<ScheduledTimer[]>([]); // This is the schedule being *edited* in ScheduleForm
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
   const [isSchedulingMode, setIsSchedulingMode] = useState(false);
   const [isScheduleActive, setIsScheduleActive] = useState(false); // True when schedule is actively running/paused as part of its execution
-  const [isSchedulePrepared, setIsSchedulePrepared] = useState(false); // NEW: True when a schedule is set for later, but not actively running
-  const [scheduleTitle, setScheduleTitle] = useState("My Focus Sesh");
-  const [commenceTime, setCommenceTime] = useState(""); // Changed default to empty string
-  const [commenceDay, setCommenceDay] = useState<number | null>(null); // 0 for Sunday, 1 for Monday, etc.
+  const [scheduleTitle, setScheduleTitle] = useState("My Focus Sesh"); // Title for the schedule being *edited*
+  const [commenceTime, setCommenceTime] = useState(""); // Commence time for the schedule being *edited*
+  const [commenceDay, setCommenceDay] = useState<number | null>(null); // Commence day for the schedule being *edited*
   const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false); // Added
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily'); // Added
+  const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now'); // Start option for the schedule being *edited*
 
-  // Snapshot of the schedule when it's active or prepared
-  const [activeSchedule, setActiveSchedule] = useState<ScheduledTimer[]>([]); // NEW
-  const [activeTimerColors, setActiveTimerColors] = useState<Record<string, string>>({}); // NEW
-  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitle] = useState("My Focus Sesh"); // NEW: Title for the active/prepared schedule timeline
+  // Snapshot of the schedule when it's active
+  const [activeSchedule, setActiveSchedule] = useState<ScheduledTimer[]>([]); // The schedule that is *currently running*
+  const [activeTimerColors, setActiveTimerColors] = useState<Record<string, string>>({}); // Colors for the *currently running* schedule
+  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitle] = useState("My Focus Sesh"); // Title for the *currently running* schedule timeline
 
   // Saved Schedules (Templates)
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]); // Added
   
-  // Timer Colors
+  // Prepared Schedules (Upcoming) - NEW STATE
+  const [preparedSchedules, setPreparedSchedules] = useState<ScheduledTimerTemplate[]>([]);
+  
+  // Timer Colors for the schedule being *edited*
   const [timerColors, setTimerColors] = useState<Record<string, string>>({}); // NEW
 
   // New session tracking states
@@ -66,10 +69,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]
   );
 
-  // Schedule pending state
+  // Schedule pending state (only for the *active* schedule if it's custom_time and waiting)
   const [isSchedulePending, setIsSchedulePending] = useState(false);
-  const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now'); // Added 'manual'
-
+  
   // Settings states
   const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false); // Changed default to false
   const [shouldShowEndToast, setShouldShowEndToast] = useState(false); // Changed default to false
@@ -93,6 +95,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]); // Added
   const [is24HourFormat, setIs24HourFormat] = useState(true); // NEW: Default to 24-hour format
+
+  // Derived state for isSchedulePrepared (true if there's at least one prepared schedule)
+  const isSchedulePrepared = preparedSchedules.length > 0;
+  // Derived state for setIsSchedulePrepared (setter is not needed as it's derived)
+  // For type consistency, we can provide a no-op setter or remove it from context type if not strictly needed.
+  // For now, I'll keep it in the type and provide a no-op here.
+  const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
+
 
   const playSound = useCallback(() => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -160,9 +170,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const resetSchedule = useCallback(() => {
     setIsScheduleActive(false);
-    setIsSchedulePrepared(false); // Reset prepared state too
     setCurrentScheduleIndex(0);
-    setSchedule([]);
+    setSchedule([]); // Clear the editing schedule
     setScheduleTitle("My Focus Sesh");
     setCommenceTime(""); // Changed to empty string
     setCommenceDay(null);
@@ -183,58 +192,56 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setNotes("");
     _setSeshTitle("Notes"); // Reset internal seshTitle
     setIsSeshTitleCustomized(false); // Reset customization flag
-    setTimerColors({}); // Reset timer colors
+    setTimerColors({}); // Reset timer colors for the editing schedule
     setActiveSchedule([]); // NEW: Clear active schedule
     setActiveTimerColors({}); // NEW: Clear active timer colors
     setActiveScheduleDisplayTitle("My Focus Sesh"); // NEW: Reset timeline title
+    setPreparedSchedules([]); // NEW: Clear all prepared schedules
   }, [focusMinutes]);
 
   const startSchedule = useCallback(() => {
     if (schedule.length === 0) {
+      // This case is handled by toast in ScheduleForm, so just return
       return;
     }
 
     let needsOverrideConfirmation = false;
     let confirmationMessageParts: string[] = [];
     let shouldResetManualTimer = false;
-    let shouldResetExistingSchedule = false;
+    let shouldResetExistingSchedules = false; // Changed to plural
 
-    // Determine what needs overriding based on the start option
-    if (scheduleStartOption === 'now') {
-        // If starting immediately, check for both existing schedules AND manual timers
-        if (isScheduleActive || isSchedulePrepared) {
-            confirmationMessageParts.push("Another schedule is already active or prepared.");
-            shouldResetExistingSchedule = true;
-        }
-        if (isRunning || isPaused) {
-            confirmationMessageParts.push("A manual timer is also active.");
-            shouldResetManualTimer = true;
-        }
-        if (confirmationMessageParts.length > 0) {
-            needsOverrideConfirmation = true;
-        }
-    } else { // scheduleStartOption is 'manual' or 'custom_time' (preparing a schedule)
-        // If preparing, only check for existing schedules. Manual timers should NOT be interrupted.
-        if (isScheduleActive || isSchedulePrepared) {
-            confirmationMessageParts.push("Another schedule is already active or prepared.");
-            shouldResetExistingSchedule = true;
-            needsOverrideConfirmation = true;
-        }
-        // IMPORTANT: Do NOT set shouldResetManualTimer = true here.
-        // The manual timer should continue running if it is.
+    // Check for existing active schedule
+    if (isScheduleActive) {
+        confirmationMessageParts.push("An active schedule is running.");
+        shouldResetExistingSchedules = true;
+    }
+    // Check for existing prepared schedules
+    if (preparedSchedules.length > 0) {
+        confirmationMessageParts.push("Other schedules are prepared.");
+        shouldResetExistingSchedules = true;
+    }
+
+    // Check for existing manual timer, only if the new schedule is starting 'now'
+    if (scheduleStartOption === 'now' && (isRunning || isPaused)) {
+        confirmationMessageParts.push("A manual timer is also active.");
+        shouldResetManualTimer = true;
+    }
+
+    if (confirmationMessageParts.length > 0) {
+        needsOverrideConfirmation = true;
     }
 
     if (needsOverrideConfirmation) {
         const actionText = scheduleStartOption === 'now' ? "start this new schedule now" : "prepare this new schedule";
-        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override it and ${actionText}?`;
+        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and ${actionText}?`;
         if (!confirm(finalMessage)) {
             return;
         }
         // If confirmed, perform resets
-        if (shouldResetExistingSchedule) {
-            resetSchedule(); // This resets all schedule-related states
+        if (shouldResetExistingSchedules) {
+            resetSchedule(); // This resets all schedule-related states, including preparedSchedules
         }
-        if (shouldResetManualTimer) { // This will only be true if scheduleStartOption was 'now'
+        if (shouldResetManualTimer) {
             // Reset manual timer states
             setIsRunning(false);
             setIsPaused(false);
@@ -247,20 +254,20 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     // Proceed with starting/preparing the new schedule
-    setActiveSchedule([...schedule]);
-    setActiveTimerColors({ ...timerColors });
-    setActiveScheduleDisplayTitle(scheduleTitle);
-
-    setCurrentScheduleIndex(0);
-    setTimerType(schedule[0].type);
-    setTimeLeft(schedule[0].durationMinutes * 60);
-    setIsFlashing(false);
-    setSessionStartTime(Date.now());
-    setIsSchedulingMode(false);
-
     if (scheduleStartOption === 'now') {
-        setIsSchedulePrepared(false);
+        setActiveSchedule([...schedule]);
+        setActiveTimerColors({ ...timerColors });
+        setActiveScheduleDisplayTitle(scheduleTitle);
+
+        setCurrentScheduleIndex(0);
+        setTimerType(schedule[0].type);
+        setTimeLeft(schedule[0].durationMinutes * 60);
+        setIsFlashing(false);
+        setSessionStartTime(Date.now());
+        setIsSchedulingMode(false);
+
         setIsScheduleActive(true);
+        setIsSchedulePending(false); // Not pending, it's active
         setIsRunning(true);
         setIsPaused(false);
         setCurrentPhaseStartTime(Date.now());
@@ -269,54 +276,117 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             title: "Schedule Started!",
             description: `"${scheduleTitle}" has begun.`,
         });
-    } else { // 'manual' or 'custom_time'
-        setIsSchedulePrepared(true);
-        setIsScheduleActive(false);
-        setIsSchedulePending(scheduleStartOption === 'custom_time');
-        setCurrentPhaseStartTime(null);
+    } else { // 'manual' or 'custom_time' - add to prepared schedules
+        const newPreparedSchedule: ScheduledTimerTemplate = {
+            id: crypto.randomUUID(), // Generate a new ID for the prepared schedule
+            title: scheduleTitle,
+            schedule: [...schedule], // Deep copy
+            commenceTime: commenceTime,
+            commenceDay: commenceDay,
+            scheduleStartOption: scheduleStartOption,
+            isRecurring: isRecurring,
+            recurrenceFrequency: recurrenceFrequency,
+            timerColors: { ...timerColors }, // Deep copy
+        };
+        setPreparedSchedules(prev => [...prev, newPreparedSchedule]);
+        setIsSchedulingMode(false); // Exit scheduling mode
         toast({
             title: "Schedule Prepared!",
             description: `"${scheduleTitle}" is ready. ${scheduleStartOption === 'custom_time' ? 'It will begin at the scheduled time.' : 'Hit \'Commence\' to begin.'}`,
         });
     }
 }, [
-    schedule, scheduleTitle, scheduleStartOption, isRunning, isPaused,
-    isScheduleActive, isSchedulePrepared, timerColors, updateSeshTitleWithSchedule,
+    schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
+    isRunning, isPaused, isScheduleActive, preparedSchedules, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast
 ]);
 
-  const commencePreparedSchedule = useCallback(() => {
-    if (!isSchedulePrepared) return; // Only commence if a schedule is prepared
+  const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
+    const templateToCommence = preparedSchedules.find(template => template.id === templateId);
+    if (!templateToCommence) return;
 
-    // If a manual timer is running, prompt to override
-    if (isRunning || isPaused) { // Check for any active manual timer state
-      if (!confirm("A manual timer is currently active. Do you want to override it and start the prepared schedule?")) {
-        return;
-      }
-      // If confirmed, stop the manual timer
-      setIsRunning(false);
-      setIsPaused(false);
-      setAccumulatedFocusSeconds(0);
-      setAccumulatedBreakSeconds(0);
-      setNotes("");
-      _setSeshTitle("Notes"); // Reset internal seshTitle
-      setIsSeshTitleCustomized(false); // Reset customization flag
+    let needsOverrideConfirmation = false;
+    let confirmationMessageParts: string[] = [];
+    let shouldResetManualTimer = false;
+    let shouldResetExistingActiveSchedule = false;
+
+    // Check for existing active schedule
+    if (isScheduleActive) {
+        confirmationMessageParts.push("An active schedule is running.");
+        shouldResetExistingActiveSchedule = true;
+    }
+    // Check for existing manual timer
+    if (isRunning || isPaused) {
+        confirmationMessageParts.push("A manual timer is currently active.");
+        shouldResetManualTimer = true;
+    }
+
+    if (confirmationMessageParts.length > 0) {
+        needsOverrideConfirmation = true;
+    }
+
+    if (needsOverrideConfirmation) {
+        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and commence "${templateToCommence.title}"?`;
+        if (!confirm(finalMessage)) {
+            return;
+        }
+        // If confirmed, perform resets
+        if (shouldResetExistingActiveSchedule) {
+            // Only reset the active schedule, not all prepared ones
+            setIsScheduleActive(false);
+            setCurrentScheduleIndex(0);
+            setActiveSchedule([]);
+            setActiveTimerColors({});
+            setActiveScheduleDisplayTitle("My Focus Sesh");
+            setIsSchedulePending(false);
+        }
+        if (shouldResetManualTimer) {
+            // Reset manual timer states
+            setIsRunning(false);
+            setIsPaused(false);
+            setAccumulatedFocusSeconds(0);
+            setAccumulatedBreakSeconds(0);
+            setNotes("");
+            _setSeshTitle("Notes");
+            setIsSeshTitleCustomized(false);
+        }
     }
 
     // Now, actually start the prepared schedule
-    setIsSchedulePrepared(false); // No longer just prepared, it's active
-    setIsScheduleActive(true); // Now it's actively running
+    setActiveSchedule(templateToCommence.schedule);
+    setActiveTimerColors(templateToCommence.timerColors || {});
+    setActiveScheduleDisplayTitle(templateToCommence.title);
+
+    setCurrentScheduleIndex(0);
+    setTimerType(templateToCommence.schedule[0].type);
+    setTimeLeft(templateToCommence.schedule[0].durationMinutes * 60);
+    setIsFlashing(false);
+    setSessionStartTime(Date.now()); // Record overall session start time
+
+    setIsScheduleActive(true);
+    setIsSchedulePending(templateToCommence.scheduleStartOption === 'custom_time');
     setIsRunning(true);
     setIsPaused(false);
     setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
-    setActiveScheduleDisplayTitle(scheduleTitle); // NEW: Set timeline title on commence
-    updateSeshTitleWithSchedule(scheduleTitle); // Update seshTitle when prepared schedule commences
+    updateSeshTitleWithSchedule(templateToCommence.title);
+    
+    // Remove the commenced schedule from preparedSchedules
+    setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
+
     toast({
       title: "Schedule Commenced!",
-      description: `"${scheduleTitle}" has begun.`,
+      description: `"${templateToCommence.title}" has begun.`,
     });
-  }, [isSchedulePrepared, isRunning, isPaused, scheduleTitle, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast]);
+
+  const discardPreparedSchedule = useCallback((templateId: string) => {
+    setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
+    toast({
+      title: "Schedule Discarded",
+      description: "The upcoming schedule has been removed.",
+    });
+  }, []);
 
   const saveCurrentScheduleAsTemplate = useCallback(() => {
     if (!scheduleTitle.trim() || schedule.length === 0) {
@@ -350,33 +420,25 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const loadScheduleTemplate = useCallback((templateId: string) => {
     const templateToLoad = savedSchedules.find(template => template.id === templateId);
     if (templateToLoad) {
+      // When loading a template, populate the *editing* schedule states
       setSchedule(templateToLoad.schedule);
-      setScheduleTitle(templateToLoad.title); // RE-ENABLED: Update scheduleTitle on load
+      setScheduleTitle(templateToLoad.title);
       setCommenceTime(templateToLoad.commenceTime);
       setCommenceDay(templateToLoad.commenceDay);
       setScheduleStartOption(templateToLoad.scheduleStartOption);
       setIsRecurring(templateToLoad.isRecurring);
       setRecurrenceFrequency(templateToLoad.recurrenceFrequency);
-      setIsSchedulePrepared(true); // Loading a template means it's prepared
-      setIsScheduleActive(false); // Not active until commenced
-      setIsSchedulePending(templateToLoad.scheduleStartOption === 'custom_time'); // Set pending if custom_time
-      setIsRunning(false);
-      setIsPaused(true); // Paused, waiting for start/countdown
-      setTimerColors(templateToLoad.timerColors || {}); // NEW: Load timer colors from the template
+      setTimerColors(templateToLoad.timerColors || {}); // Load timer colors for editing
       
-      // Also set the active schedule and colors when loading a template
-      setActiveSchedule(templateToLoad.schedule);
-      setActiveTimerColors(templateToLoad.timerColors || {});
-
-      // When a template is loaded, the seshTitle and activeScheduleDisplayTitle should NOT sync yet
-      // They will sync when the schedule is actually commenced.
-
+      // Do NOT automatically add to preparedSchedules here.
+      // The user needs to explicitly click "Begin" or "Prepare" in ScheduleForm.
+      
       toast({
-        title: "Schedule Loaded!",
-        description: `"${templateToLoad.title}" has been loaded.`,
+        title: "Template Loaded!",
+        description: `"${templateToLoad.title}" has been loaded into the editor.`,
       });
     }
-  }, [savedSchedules]); // Removed isSeshTitleCustomized from dependencies
+  }, [savedSchedules]);
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
@@ -527,7 +589,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
       setIsScheduleActive(data.isScheduleActive ?? false);
-      setIsSchedulePrepared(data.isSchedulePrepared ?? false); // NEW
+      // isSchedulePrepared is now derived
       setScheduleTitle(data.scheduleTitle ?? "My Focus Sesh");
       setCommenceTime(data.commenceTime ?? ""); // Changed default to empty string
       setCommenceDay(data.commenceDay ?? null);
@@ -571,6 +633,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Load savedSchedules, merging with defaults if local storage is empty for schedules
       const loadedSchedules = data.savedSchedules ?? [];
       setSavedSchedules(loadedSchedules.length > 0 ? loadedSchedules : DEFAULT_SCHEDULE_TEMPLATES);
+      
+      // NEW: Load preparedSchedules
+      setPreparedSchedules(data.preparedSchedules ?? []);
     } else {
       // If no data in local storage, initialize with default templates
       setSavedSchedules(DEFAULT_SCHEDULE_TEMPLATES);
@@ -582,7 +647,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const dataToSave = {
       focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
       notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, // NEW: _seshTitle and isSeshTitleCustomized
-      isSchedulingMode, isScheduleActive, isSchedulePrepared, scheduleTitle, commenceTime, commenceDay, // NEW
+      isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay, // NEW
       isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
@@ -592,12 +657,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
       locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
       is24HourFormat, // NEW: Save is24HourFormat
+      preparedSchedules, // NEW: Save prepared schedules
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
   }, [
     focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
     notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, // NEW: _seshTitle and isSeshTitleCustomized
-    isSchedulingMode, isScheduleActive, isSchedulePrepared, scheduleTitle, commenceTime, commenceDay, // NEW
+    isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay, // NEW
     isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
     currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
@@ -607,6 +673,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
     locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
     is24HourFormat, // NEW: Save is24HourFormat
+    preparedSchedules, // NEW: Save prepared schedules
   ]);
 
   const value = {
@@ -643,10 +710,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsSchedulingMode,
     isScheduleActive,
     setIsScheduleActive,
-    isSchedulePrepared, // NEW
-    setIsSchedulePrepared, // NEW
+    isSchedulePrepared, // NEW: Derived state
+    setIsSchedulePrepared, // NEW: No-op setter for derived state
     startSchedule,
-    commencePreparedSchedule, // NEW
+    commenceSpecificPreparedSchedule, // NEW
+    discardPreparedSchedule, // NEW
     resetSchedule,
     scheduleTitle,
     setScheduleTitle,
@@ -672,6 +740,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     saveCurrentScheduleAsTemplate,
     loadScheduleTemplate,
     deleteScheduleTemplate,
+
+    preparedSchedules, // NEW
+    setPreparedSchedules, // NEW
 
     timerColors, // NEW
     setTimerColors, // NEW

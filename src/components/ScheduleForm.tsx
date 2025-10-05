@@ -33,13 +33,12 @@ const ScheduleForm: React.FC = () => {
     setIsRecurring, // Now exists on TimerContextType
     recurrenceFrequency, // Now exists on TimerContextType
     setRecurrenceFrequency, // Now exists on TimerContextType
-    isSchedulePending,
-    isSchedulePrepared, // NEW
-    saveCurrentScheduleAsTemplate, // Now exists on TimerContextType
+    isSchedulePending, // This is for the *active* schedule, not the prepared ones
+    isScheduleActive, // Added for confirmation check
     isRunning, // Added for confirmation check
     isPaused, // Added for confirmation check
-    isScheduleActive, // Added for confirmation check
     resetSchedule, // Added for confirmation check
+    saveCurrentScheduleAsTemplate, // Now exists on TimerContextType
     timerColors, // NEW: Get from context
     setTimerColors, // NEW: Get from context
   } = useTimer();
@@ -231,19 +230,7 @@ const ScheduleForm: React.FC = () => {
       return;
     }
 
-    // Only prompt if the new schedule is 'now' OR if another schedule is already active/prepared
-    const shouldPrompt = scheduleStartOption === 'now' && (isRunning || isPaused || isScheduleActive || isSchedulePrepared) ||
-                         (scheduleStartOption !== 'now' && (isScheduleActive || isSchedulePrepared));
-
-    if (shouldPrompt) {
-      if (!confirm("A timer or schedule is already active. Do you want to override it and commence this new schedule?")) {
-        return;
-      }
-      // If confirmed, reset existing schedule/timer before starting new one
-      resetSchedule();
-    }
-
-    startSchedule();
+    startSchedule(); // Call the context function
   };
 
   const handleLongPressStart = (timer: ScheduledTimer) => {

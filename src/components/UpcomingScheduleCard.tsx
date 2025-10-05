@@ -13,8 +13,8 @@ interface UpcomingScheduleCardProps {
   commenceDay: number | null;
   scheduleStartOption: 'now' | 'manual' | 'custom_time';
   activeTimerColors: Record<string, string>;
-  commencePreparedSchedule: () => void;
-  resetSchedule: () => void;
+  commencePreparedSchedule: () => void; // Now takes no arguments, as it's specific to this card's template
+  resetSchedule: () => void; // Now takes no arguments, as it's specific to this card's template
 }
 
 const UpcomingScheduleCard: React.FC<UpcomingScheduleCardProps> = ({
@@ -72,7 +72,7 @@ const UpcomingScheduleCard: React.FC<UpcomingScheduleCardProps> = ({
           </div>
         </div>
 
-        <div className="space-y-1 pr-2"> {/* Removed max-h-40 and overflow-y-auto */}
+        <div className="space-y-1 pr-2">
           {schedule.map((item, index) => (
             <div
               key={item.id}
