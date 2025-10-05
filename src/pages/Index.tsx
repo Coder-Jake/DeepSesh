@@ -150,6 +150,7 @@ const Index = () => {
     setNotes,
     seshTitle, // Get seshTitle from context
     setSeshTitle, // Get setSeshTitle from context
+    isSeshTitleCustomized, // NEW: Get customization flag
     formatTime,
     showSessionsWhileActive,
     timerIncrement,
@@ -315,7 +316,7 @@ const Index = () => {
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
     }
 
     playStartSound();
@@ -389,7 +390,7 @@ const Index = () => {
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
     };
 
     const handleSaveAndStop = async () => {
@@ -438,7 +439,7 @@ const Index = () => {
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
         setIsRunning(false);
@@ -453,7 +454,7 @@ const Index = () => {
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
         setNotes("");
-        setSeshTitle("Notes");
+        setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
       }
     }
   };
@@ -518,7 +519,7 @@ const Index = () => {
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
     }
 
     setActiveJoinedSession(session);

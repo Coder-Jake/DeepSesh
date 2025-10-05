@@ -118,6 +118,7 @@ export interface TimerContextType {
   setNotes: React.Dispatch<React.SetStateAction<string>>;
   seshTitle: string;
   setSeshTitle: React.Dispatch<React.SetStateAction<string>>;
+  isSeshTitleCustomized: boolean; // NEW: Added customization flag
   formatTime: (seconds: number) => string;
   timerIncrement: number;
   setTimerIncrement: React.Dispatch<React.SetStateAction<number>>; // Added
@@ -187,4 +188,6 @@ export interface TimerContextType {
   setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>;
   openSettingsAccordions: string[];
   setOpenSettingsAccordions: React.Dispatch<React.SetStateAction<string[]>>;
+  is24HourFormat: boolean; // NEW
+  setIs24HourFormat: React.Dispatch<React.SetStateAction<boolean>>; // NEW
 }

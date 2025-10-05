@@ -26,7 +26,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
-  const [seshTitle, setSeshTitle] = useState("Notes");
+  const [_seshTitle, _setSeshTitle] = useState("Notes"); // Renamed internal state
+  const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false); // New state for customization
   const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false); // Changed default to false
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -137,24 +138,28 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  const updateSeshTitleWithSchedule = useCallback((currentScheduleTitle: string) => {
-    setSeshTitle(prevSeshTitle => {
-      if (prevSeshTitle === "Notes" || prevSeshTitle.trim() === "") {
-        return `${currentScheduleTitle} Notes`; // Changed to include " Notes"
-      }
-      // If current seshTitle already starts with scheduleTitle, don't duplicate
-      if (prevSeshTitle.startsWith(currentScheduleTitle)) {
-        return prevSeshTitle;
-      }
-      return `${currentScheduleTitle} - ${prevSeshTitle}`;
-    });
+  // Public setter for seshTitle, also manages customization flag
+  const setSeshTitle = useCallback((newTitle: string) => {
+    _setSeshTitle(newTitle);
+    // If the new title is not the default "Notes" and not empty, it's customized.
+    // If it's set back to "Notes" or cleared, it's no longer customized.
+    if (newTitle !== "Notes" && newTitle.trim() !== "") {
+      setIsSeshTitleCustomized(true);
+    } else {
+      setIsSeshTitleCustomized(false);
+    }
   }, []);
+
+  // Function to automatically update seshTitle based on scheduleTitle
+  const updateSeshTitleWithSchedule = useCallback((currentScheduleTitle: string) => {
+    if (!isSeshTitleCustomized) { // Only update if not customized by user
+      _setSeshTitle(`${currentScheduleTitle} Notes`);
+    }
+  }, [isSeshTitleCustomized]);
 
   const startSchedule = useCallback(() => {
     if (schedule.length > 0) {
       // Reset manual timer states if a manual timer was running/paused
-      // This ensures a clean slate for the schedule, unless it's a later-starting schedule
-      // and a manual timer is currently running.
       if (scheduleStartOption === 'now' || (!isRunning && !isPaused)) {
         setIsRunning(false);
         setIsPaused(false);
@@ -162,7 +167,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
         setNotes("");
-        // setSeshTitle("Notes"); // This will be handled by updateSeshTitleWithSchedule
+        _setSeshTitle("Notes"); // Reset internal seshTitle
+        setIsSeshTitleCustomized(false); // Reset customization flag
       }
 
       // Take a snapshot of the current schedule and its colors
@@ -226,7 +232,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
+      _setSeshTitle("Notes"); // Reset internal seshTitle
+      setIsSeshTitleCustomized(false); // Reset customization flag
     }
 
     // Now, actually start the prepared schedule
@@ -266,7 +273,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
     setNotes("");
-    setSeshTitle("Notes");
+    _setSeshTitle("Notes"); // Reset internal seshTitle
+    setIsSeshTitleCustomized(false); // Reset customization flag
     setTimerColors({}); // Reset timer colors
     setActiveSchedule([]); // NEW: Clear active schedule
     setActiveTimerColors({}); // NEW: Clear active timer colors
@@ -322,12 +330,17 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setActiveSchedule(templateToLoad.schedule);
       setActiveTimerColors(templateToLoad.timerColors || {});
 
+      // When a template is loaded, the seshTitle should sync if not customized
+      if (!isSeshTitleCustomized) {
+        _setSeshTitle(`${templateToLoad.title} Notes`);
+      }
+
       toast({
         title: "Schedule Loaded!",
         description: `"${templateToLoad.title}" has been loaded.`,
       });
     }
-  }, [savedSchedules]);
+  }, [savedSchedules, isSeshTitleCustomized]);
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
@@ -382,7 +395,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const totalSession = finalFocusSeconds + finalBreakSeconds;
 
           saveSession(
-            seshTitle,
+            _seshTitle, // Use internal seshTitle for saving
             notes,
             finalFocusSeconds,
             finalBreakSeconds,
@@ -428,7 +441,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
@@ -455,7 +468,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const data = JSON.parse(storedData);
       setFocusMinutes(data.focusMinutes ?? 25);
       setBreakMinutes(data.breakMinutes ?? 5);
-      setSeshTitle(data.seshTitle ?? "Notes");
+      _setSeshTitle(data._seshTitle ?? "Notes"); // Load internal state
+      setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false); // Load new state
       setNotes(data.notes ?? "");
       setShowSessionsWhileActive(data.showSessionsWhileActive ?? false);
       setIsGlobalPrivate(data.isGlobalPrivate ?? false);
@@ -521,7 +535,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const dataToSave = {
       focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
-      notes, seshTitle, showSessionsWhileActive, schedule, currentScheduleIndex,
+      notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, // NEW: _seshTitle and isSeshTitleCustomized
       isSchedulingMode, isScheduleActive, isSchedulePrepared, scheduleTitle, commenceTime, commenceDay, // NEW
       isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
@@ -536,7 +550,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
   }, [
     focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
-    notes, seshTitle, showSessionsWhileActive, schedule, currentScheduleIndex,
+    notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, // NEW: _seshTitle and isSeshTitleCustomized
     isSchedulingMode, isScheduleActive, isSchedulePrepared, scheduleTitle, commenceTime, commenceDay, // NEW
     isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
     currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
@@ -566,8 +580,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsFlashing,
     notes,
     setNotes,
-    seshTitle,
-    setSeshTitle,
+    seshTitle: _seshTitle, // Expose internal state
+    setSeshTitle, // Expose public setter
+    isSeshTitleCustomized, // Expose customization flag
     formatTime,
     showSessionsWhileActive,
     setShowSessionsWhileActive,
