@@ -1066,8 +1066,8 @@ const Index = () => {
           </TooltipProvider>
         </div>
       </div>
-      {/* Timeline Section (for active schedule and upcoming) */}
-      {(isScheduleActive || isSchedulePending) && ( // Show if active or pending
+      {/* Timeline Section (for active schedule) */}
+      {isScheduleActive && ( // Show only if active
         <div className="mt-8" data-name="Timeline Section"> {/* Add some top margin for separation */}
           <Timeline
             schedule={activeSchedule} // NEW: Pass activeSchedule
@@ -1075,15 +1075,15 @@ const Index = () => {
             timeLeft={timeLeft}
             commenceTime={commenceTime}
             commenceDay={commenceDay === null ? new Date().getDay() : commenceDay}
-            isSchedulePending={isSchedulePending && scheduleStartOption === 'custom_time'}
+            isSchedulePending={isSchedulePending && scheduleStartOption === 'custom_time'} // Keep this prop for Timeline's internal logic
             onCountdownEnd={handleCountdownEnd}
             timerColors={activeTimerColors} // NEW: Pass activeTimerColors
           />
         </div>
       )}
 
-      {/* NEW: Upcoming Section (for prepared schedules) */}
-      {isSchedulePrepared && !isScheduleActive && !isSchedulePending && (
+      {/* NEW: Upcoming Section (for prepared schedules, including pending custom_time) */}
+      {isSchedulePrepared && !isScheduleActive && ( // Show if prepared but not active
         <div className="mt-8" data-name="Upcoming Section">
           <h3 className="text-xl font-bold text-foreground mb-4">Upcoming</h3>
           <UpcomingScheduleCard
