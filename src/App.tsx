@@ -28,6 +28,7 @@ const AppContent = () => {
   const navigate = useNavigate();
   const { toasts } = useToast();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
   const lastHoveredElementRef = useRef<HTMLElement | null>(null);
 
   const getElementName = (element: HTMLElement): string | null => {
@@ -205,7 +206,7 @@ const AppContent = () => {
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Toaster toasts={toasts} />
+      {areToastsEnabled && <Toaster toasts={toasts} />} {/* NEW: Conditionally render Toaster */}
       <GlobalTooltip />
     </div>
   );

@@ -95,6 +95,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]); // Added
   const [is24HourFormat, setIs24HourFormat] = useState(true); // NEW: Default to 24-hour format
+  const [areToastsEnabled, setAreToastsEnabled] = useState(false); // NEW: Default to false
 
   // Derived state for isSchedulePrepared (true if there's at least one prepared schedule)
   const isSchedulePrepared = preparedSchedules.length > 0;
@@ -220,10 +221,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
         setPreparedSchedules(prev => [...prev, newPreparedSchedule]);
         setIsSchedulingMode(false);
-        toast({
-            title: "Schedule Prepared!",
-            description: `"${scheduleTitle}" is ready. ${scheduleStartOption === 'custom_time' ? 'It will begin at the scheduled time.' : 'Hit \'Commence\' to begin.'}`,
-        });
+        if (areToastsEnabled) { // Conditionally show toast
+            toast({
+                title: "Schedule Prepared!",
+                description: `"${scheduleTitle}" is ready. ${scheduleStartOption === 'custom_time' ? 'It will begin at the scheduled time.' : 'Hit \'Commence\' to begin.'}`,
+            });
+        }
         return; // Exit early, no override logic needed for preparing
     }
 
@@ -283,15 +286,17 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsPaused(false);
     setCurrentPhaseStartTime(Date.now());
     updateSeshTitleWithSchedule(scheduleTitle);
-    toast({
-        title: "Schedule Started!",
-        description: `"${scheduleTitle}" has begun.`,
-    });
+    if (areToastsEnabled) { // Conditionally show toast
+        toast({
+            title: "Schedule Started!",
+            description: `"${scheduleTitle}" has begun.`,
+        });
+    }
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast
+    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -366,27 +371,33 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Remove the commenced schedule from preparedSchedules
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
 
-    toast({
-      title: "Schedule Commenced!",
-      description: `"${templateToCommence.title}" has begun.`,
-    });
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast]);
+    if (areToastsEnabled) { // Conditionally show toast
+        toast({
+            title: "Schedule Commenced!",
+            description: `"${templateToCommence.title}" has begun.`,
+        });
+    }
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
-    toast({
-      title: "Schedule Discarded",
-      description: "The upcoming schedule has been removed.",
-    });
-  }, []);
+    if (areToastsEnabled) { // Conditionally show toast
+        toast({
+            title: "Schedule Discarded",
+            description: "The upcoming schedule has been removed.",
+        });
+    }
+  }, [areToastsEnabled, toast]);
 
   const saveCurrentScheduleAsTemplate = useCallback(() => {
     if (!scheduleTitle.trim() || schedule.length === 0) {
-      toast({
-        title: "Cannot save schedule",
-        description: "Please provide a title and add timers to your schedule.",
-        variant: "destructive",
-      });
+      if (areToastsEnabled) { // Conditionally show toast
+        toast({
+          title: "Cannot save schedule",
+          description: "Please provide a title and add timers to your schedule.",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
@@ -403,11 +414,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     setSavedSchedules((prev) => [...prev, newTemplate]);
-    toast({
-      title: "Schedule Saved!",
-      description: `"${scheduleTitle}" has been saved as a template.`,
-    });
-  }, [scheduleTitle, schedule, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency, timerColors]);
+    if (areToastsEnabled) { // Conditionally show toast
+        toast({
+            title: "Schedule Saved!",
+            description: `"${scheduleTitle}" has been saved as a template.`,
+        });
+    }
+  }, [scheduleTitle, schedule, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency, timerColors, areToastsEnabled, toast]);
 
   const loadScheduleTemplate = useCallback((templateId: string) => {
     const templateToLoad = savedSchedules.find(template => template.id === templateId);
@@ -425,20 +438,24 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Do NOT automatically add to preparedSchedules here.
       // The user needs to explicitly click "Begin" or "Prepare" in ScheduleForm.
       
-      toast({
-        title: "Template Loaded!",
-        description: `"${templateToLoad.title}" has been loaded into the editor.`,
-      });
+      if (areToastsEnabled) { // Conditionally show toast
+        toast({
+          title: "Template Loaded!",
+          description: `"${templateToLoad.title}" has been loaded into the editor.`,
+        });
+      }
     }
-  }, [savedSchedules]);
+  }, [savedSchedules, areToastsEnabled, toast]);
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
-    toast({
-      title: "Schedule Deleted!",
-      description: "The schedule template has been removed.",
-    });
-  }, []);
+    if (areToastsEnabled) { // Conditionally show toast
+        toast({
+            title: "Schedule Deleted!",
+            description: "The schedule template has been removed.",
+        });
+    }
+  }, [areToastsEnabled, toast]);
 
   // Timer logic
   useEffect(() => {
@@ -472,7 +489,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setCurrentPhaseStartTime(Date.now()); // Start new phase timer
         } else {
           // Schedule completed
-          if (shouldShowEndToast) {
+          if (shouldShowEndToast && areToastsEnabled) { // Conditionally show toast
             toast({
               title: "Schedule Completed!",
               description: `"${scheduleTitle}" has finished.`,
@@ -497,7 +514,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           resetSchedule();
         }
       } else { // Manual timer logic
-        if (shouldShowEndToast) {
+        if (shouldShowEndToast && areToastsEnabled) { // Conditionally show toast
           toast({
             title: "Timer Ended!",
             description: `Your ${timerType} session has finished.`,
@@ -531,7 +548,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
@@ -622,6 +639,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setActiveTimerColors(data.activeTimerColors ?? {}); // NEW: Load active timer colors
       setActiveScheduleDisplayTitle(data.activeScheduleDisplayTitle ?? "My Focus Sesh"); // NEW: Load active schedule display title
       setIs24HourFormat(data.is24HourFormat ?? true); // NEW: Load is24HourFormat
+      setAreToastsEnabled(data.areToastsEnabled ?? false); // NEW: Load areToastsEnabled
 
       // Load savedSchedules, merging with defaults if local storage is empty for schedules
       const loadedSchedules = data.savedSchedules ?? [];
@@ -652,6 +670,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       is24HourFormat, // NEW: Save is24HourFormat
       preparedSchedules, // NEW: Save prepared schedules
       timerIncrement, // Save timerIncrement
+      areToastsEnabled, // NEW: Save areToastsEnabled
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
   }, [
@@ -669,6 +688,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     is24HourFormat, // NEW: Save is24HourFormat
     preparedSchedules, // NEW: Save prepared schedules
     timerIncrement, // Save timerIncrement
+    areToastsEnabled, // NEW: Save areToastsEnabled
   ]);
 
   const value = {
@@ -803,10 +823,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProfileVisibility,
     locationSharing,
     setLocationSharing,
+    isGlobalPrivate,
+    setIsGlobalPrivate,
     openSettingsAccordions,
     setOpenSettingsAccordions,
     is24HourFormat, // NEW
     setIs24HourFormat, // NEW
+    areToastsEnabled, // NEW
+    setAreToastsEnabled, // NEW
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

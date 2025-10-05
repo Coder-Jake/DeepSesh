@@ -196,4 +196,6 @@ export interface TimerContextType {
   setOpenSettingsAccordions: React.Dispatch<React.SetStateAction<string[]>>;
   is24HourFormat: boolean; // NEW
   setIs24HourFormat: React.Dispatch<React.SetStateAction<boolean>>; // NEW
+  areToastsEnabled: boolean; // NEW
+  setAreToastsEnabled: React.Dispatch<React.SetStateAction<boolean>>; // NEW
 }

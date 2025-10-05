@@ -74,6 +74,8 @@ const Settings = () => {
     setOpenSettingsAccordions, // Get from context
     is24HourFormat, // NEW: Get from context
     setIs24HourFormat, // NEW: Get from context
+    areToastsEnabled, // NEW: Get from context
+    setAreToastsEnabled, // NEW: Get from context
   } = useTimer();
 
   const { user } = useAuth(); // Get user from AuthContext
@@ -119,6 +121,7 @@ const Settings = () => {
     shouldShowEndToast,
     isDarkMode, // Added isDarkMode to saved settings
     is24HourFormat, // NEW: Added is24HourFormat
+    areToastsEnabled, // NEW: Added areToastsEnabled
   });
 
   // Effect to sync local UI states with context on initial load
@@ -167,6 +170,7 @@ const Settings = () => {
       shouldShowEndToast,
       isDarkMode, // Added isDarkMode to current UI settings
       is24HourFormat, // NEW: Added is24HourFormat
+      areToastsEnabled, // NEW: Added areToastsEnabled
     };
 
     const changed = Object.keys(currentUiSettings).some(key => {
@@ -190,6 +194,7 @@ const Settings = () => {
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
     isDarkMode, // Added isDarkMode dependency
     is24HourFormat, // NEW: Added is24HourFormat dependency
+    areToastsEnabled, // NEW: Added areToastsEnabled dependency
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -367,6 +372,7 @@ const Settings = () => {
     setShouldShowEndToast(shouldShowEndToast);
     // isDarkMode is handled by ThemeContext and its useEffect
     // is24HourFormat is handled by its own button
+    setAreToastsEnabled(areToastsEnabled); // NEW: Save areToastsEnabled
 
     // After saving, update the ref to reflect the new "saved" state
     savedSettingsRef.current = {
@@ -397,6 +403,7 @@ const Settings = () => {
       shouldShowEndToast,
       isDarkMode, // Save current dark mode state
       is24HourFormat, // NEW: Save current time format state
+      areToastsEnabled, // NEW: Save areToastsEnabled
     };
     setHasChanges(false);
   };
@@ -727,11 +734,11 @@ const Settings = () => {
                     onChange={(e) => setBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setBreakMinutes(currentTimerIncrement);
+                        setBreakMinutes(timerIncrement);
                       }
                     }}
-                    min={currentTimerIncrement}
-                    step={currentTimerIncrement}
+                    min={timerIncrement}
+                    step={timerIncrement}
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
@@ -956,6 +963,19 @@ const Settings = () => {
                 title="Friend Activity"
                 value={friendActivity}
               />
+
+              {/* NEW: Toasts Switch */}
+              <div className="flex items-center justify-between border-t border-border pt-6 mt-6">
+                <div className="space-y-0.5">
+                  <Label htmlFor="toasts-toggle">Toasts</Label>
+                  <p className="text-sm text-muted-foreground">Show general app notifications.</p>
+                </div>
+                <Switch
+                  id="toasts-toggle"
+                  checked={areToastsEnabled}
+                  onCheckedChange={setAreToastsEnabled}
+                />
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
