@@ -921,6 +921,44 @@ const Settings = () => {
               </div>
             </AccordionContent>
           </AccordionItem>
+
+          {/* Notifications */}
+          <AccordionItem value="notifications" className="border rounded-lg px-6">
+            <AccordionTrigger className="text-xl font-semibold">
+              Notifications
+            </AccordionTrigger>
+            <AccordionContent className="space-y-8 pt-4">
+              <NotificationControl
+                type="ask"
+                title="Asks"
+                value={askNotifications}
+              />
+
+              <NotificationControl
+                type="ask"
+                title="Joins"
+                value={askNotifications}
+              />
+              
+              <NotificationControl
+                type="break"
+                title="Break Reminders"
+                value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }}
+              />
+              
+              <NotificationControl
+                type="invites"
+                title="Session Invites"
+                value={sessionInvites}
+              />
+              
+              <NotificationControl
+                type="activity"
+                title="Friend Activity"
+                value={friendActivity}
+              />
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </div>
 
