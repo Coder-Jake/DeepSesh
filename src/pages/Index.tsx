@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
+import { format } from 'date-fns'; // Import date-fns for time formatting
 
 // Define types for Ask items (copied from TimerContext to ensure consistency)
 interface ExtendSuggestion {
@@ -60,7 +61,7 @@ interface DemoSession {
   currentPhaseDurationMinutes: number; // Added missing property
   startTime: number;
   location: string;
-  workspaceImage: string;
+  workspaceImage: "/api/placeholder/200/120";
   workspaceDescription: string;
   participants: { id: number; name: string; sociability: number; intention?: string; bio?: string }[];
 }
@@ -192,6 +193,7 @@ const Index = () => {
     isSchedulePending,
     setIsSchedulePending,
     scheduleStartOption, // Get scheduleStartOption from context
+    is24HourFormat, // NEW: Get is24HourFormat from context
   } = useTimer();
   
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
@@ -202,6 +204,7 @@ const Index = () => {
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   // Removed local activeAsks state, now using context
+  const [isHoveringTimer, setIsHoveringTimer] = useState(false); // NEW: State for timer hover
 
   const currentUserId = profile?.id || "mock-user-id-123"; 
   const currentUserName = profile?.first_name || localFirstName || "You"; // Use localFirstName as fallback
@@ -249,6 +252,8 @@ const Index = () => {
     if (longPressRef.current) {
       clearTimeout(longPressRef.current);
     }
+    isLongPress.current = false; // Reset long press flag
+    setIsHoveringTimer(false); // Also reset hover state on mouse leave
   };
   
   const handlePublicPrivateToggle = () => {
@@ -742,7 +747,11 @@ const Index = () => {
                   </div>
                 </div>
                 
-                <div className="flex justify-center mb-4">
+                <div 
+                  className="flex flex-col items-center mb-4" // Changed to flex-col and items-center
+                  onMouseEnter={() => setIsHoveringTimer(true)}
+                  onMouseLeave={handleLongPressEnd} // Use handleLongPressEnd to clear hover and long press
+                >
                   <CircularProgress
                     size={280}
                     strokeWidth={12}
@@ -757,6 +766,11 @@ const Index = () => {
                       {formatTime(timeLeft)}
                     </div>
                   </CircularProgress>
+                  {isHoveringTimer && isActiveTimer && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="flex gap-3 justify-center mb-6">
