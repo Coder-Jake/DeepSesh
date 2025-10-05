@@ -7,6 +7,8 @@ import { TimerProvider } from "@/contexts/TimerContext";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Import AuthProvider
 import { ThemeProvider } from "@/contexts/ThemeContext"; // Import ThemeProvider
+import { GlobalTooltipProvider, useGlobalTooltip } from "@/contexts/GlobalTooltipContext"; // NEW: Import GlobalTooltipProvider and useGlobalTooltip
+import GlobalTooltip from "@/components/GlobalTooltip"; // NEW: Import GlobalTooltip
 import Header from "@/components/Header";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -17,7 +19,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Credits from "./pages/Credits"; // Import the new Credits page
 import Login from "./pages/Login"; // Import the new Login page
 import NotFound from "./pages/NotFound";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react"; // NEW: Import useRef
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const queryClient = new QueryClient();
@@ -25,9 +27,52 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const navigate = useNavigate();
   const { toasts } = useToast(); // Get toasts from useToast hook
+  const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip(); // NEW: Use global tooltip context
+  const lastHoveredElementRef = useRef<HTMLElement | null>(null); // NEW: Ref to track last hovered element
+
+  // NEW: Helper function to get element's name
+  const getElementName = (element: HTMLElement): string | null => {
+    // Prioritize data-name attribute
+    if (element.dataset.name) {
+      return element.dataset.name;
+    }
+    // Common attributes
+    if (element.ariaLabel) {
+      return element.ariaLabel;
+    }
+    if (element.title) {
+      return element.title;
+    }
+    if (element instanceof HTMLInputElement && element.placeholder) {
+      return element.placeholder;
+    }
+    if (element instanceof HTMLImageElement && element.alt) {
+      return element.alt;
+    }
+    // Text content for buttons, labels, titles, etc.
+    if (element.tagName === 'BUTTON' || element.tagName === 'LABEL' || element.tagName.startsWith('H')) {
+      const text = element.textContent?.trim();
+      if (text && text.length > 0 && text.length < 50) { // Limit length to avoid large blocks of text
+        return text;
+      }
+    }
+    // Fallback to tag name
+    return element.tagName;
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Shift' && !isShiftPressed) {
+        setIsShiftPressed(true);
+        // If an element is already hovered, show tooltip immediately
+        if (lastHoveredElementRef.current) {
+          const name = getElementName(lastHoveredElementRef.current);
+          if (name) {
+            setTooltip(name, event.clientX, event.clientY);
+          }
+        }
+      }
+
       // Prevent navigation if user is typing in an input field
       const targetTagName = (event.target as HTMLElement).tagName;
       if (targetTagName === 'INPUT' || targetTagName === 'TEXTAREA' || targetTagName === 'SELECT') {
@@ -70,12 +115,58 @@ const AppContent = () => {
       }
     };
 
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') {
+        setIsShiftPressed(false);
+        hideTooltip();
+      }
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (isShiftPressed) {
+        // Update tooltip position if already visible
+        if (lastHoveredElementRef.current) {
+          const name = getElementName(lastHoveredElementRef.current);
+          if (name) {
+            setTooltip(name, event.clientX, event.clientY);
+          }
+        }
+      }
+    };
+
+    const handleMouseOver = (event: MouseEvent) => {
+      lastHoveredElementRef.current = event.target as HTMLElement;
+      if (isShiftPressed) {
+        const name = getElementName(event.target as HTMLElement);
+        if (name) {
+          setTooltip(name, event.clientX, event.clientY);
+        }
+      }
+    };
+
+    const handleMouseOut = (event: MouseEvent) => {
+      if (lastHoveredElementRef.current === (event.target as HTMLElement)) {
+        lastHoveredElementRef.current = null;
+      }
+      if (isShiftPressed) {
+        hideTooltip();
+      }
+    };
+
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mouseout', handleMouseOut);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mouseout', handleMouseOut);
     };
-  }, [navigate]);
+  }, [isShiftPressed, setIsShiftPressed, setTooltip, hideTooltip, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,6 +184,7 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster toasts={toasts} /> {/* Pass toasts prop here */}
+      <GlobalTooltip /> {/* NEW: Render the global tooltip */}
     </div>
   );
 };
@@ -104,11 +196,13 @@ const App = () => (
         <AuthProvider>
           <ProfileProvider>
             <TimerProvider>
-              {/* Toaster is now rendered inside AppContent */}
-              <Sonner />
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
+              <GlobalTooltipProvider> {/* NEW: GlobalTooltipProvider wraps AppContent */}
+                {/* Toaster is now rendered inside AppContent */}
+                <Sonner />
+                <BrowserRouter>
+                  <AppContent />
+                </BrowserRouter>
+              </GlobalTooltipProvider>
             </TimerProvider>
           </ProfileProvider>
         </AuthProvider>
