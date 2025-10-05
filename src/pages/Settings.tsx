@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { Bell, Smartphone, Volume2 } from "lucide-react";
+import { Bell, Smartphone, Volume2, UserX, X } from "lucide-react"; // Added UserX and X icons
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 import { Input } from "@/components/ui/input"; // Import Input
@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
+import { useProfile } from "@/contexts/ProfileContext"; // NEW: Import useProfile
 
 const Settings = () => {
   const { 
@@ -82,9 +83,12 @@ const Settings = () => {
   const navigate = useNavigate(); // Initialize useNavigate
   const { toast } = useToast(); // Use shadcn toast for UI feedback
   const { isDarkMode, toggleDarkMode } = useTheme(); // Use theme context
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile(); // NEW: Get from ProfileContext
 
   // Local state for temporary UI interactions or derived values
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
+  const [userNameToBlock, setUserNameToBlock] = useState(""); // NEW: State for input field
+  const [selectedCoworkerToBlock, setSelectedCoworkerToBlock] = useState<string | undefined>(undefined); // NEW: State for select field
 
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -122,6 +126,7 @@ const Settings = () => {
     isDarkMode, // Added isDarkMode to saved settings
     is24HourFormat, // NEW: Added is24HourFormat
     areToastsEnabled, // NEW: Added areToastsEnabled
+    blockedUsers, // NEW: Added blockedUsers to saved settings
   });
 
   // Effect to sync local UI states with context on initial load
@@ -171,13 +176,14 @@ const Settings = () => {
       isDarkMode, // Added isDarkMode to current UI settings
       is24HourFormat, // NEW: Added is24HourFormat
       areToastsEnabled, // NEW: Added areToastsEnabled
+      blockedUsers, // NEW: Compare blockedUsers
     };
 
     const changed = Object.keys(currentUiSettings).some(key => {
       const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
       const savedVal = savedSettingsRef.current[key as keyof typeof savedSettingsRef.current];
 
-      // Deep comparison for objects/arrays (like NotificationSettings and profileVisibility)
+      // Deep comparison for objects/arrays (like NotificationSettings, profileVisibility, and blockedUsers)
       if (typeof currentVal === 'object' && currentVal !== null) {
         return JSON.stringify(currentVal) !== JSON.stringify(savedVal);
       }
@@ -195,6 +201,7 @@ const Settings = () => {
     isDarkMode, // Added isDarkMode dependency
     is24HourFormat, // NEW: Added is24HourFormat dependency
     areToastsEnabled, // NEW: Added areToastsEnabled dependency
+    blockedUsers, // NEW: Added blockedUsers dependency
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -344,6 +351,16 @@ const Settings = () => {
     });
   };
 
+  const handleBlockUser = () => {
+    if (userNameToBlock.trim()) {
+      blockUser(userNameToBlock.trim());
+      setUserNameToBlock("");
+    } else if (selectedCoworkerToBlock) {
+      blockUser(selectedCoworkerToBlock);
+      setSelectedCoworkerToBlock(undefined);
+    }
+  };
+
   const handleSave = () => {
     // Focus and Break minutes are now updated directly by their input fields
     // No need for newFocusMinutes/newBreakMinutes parsing here
@@ -404,6 +421,7 @@ const Settings = () => {
       isDarkMode, // Save current dark mode state
       is24HourFormat, // NEW: Save current time format state
       areToastsEnabled, // NEW: Save areToastsEnabled
+      blockedUsers, // NEW: Save blockedUsers
     };
     setHasChanges(false);
   };
@@ -827,7 +845,7 @@ const Settings = () => {
                         onCheckedChange={(checked) => handleProfileVisibilityChange('friends', !!checked)}
                       />
                       <Label htmlFor="profile-friends" className="text-sm font-normal">
-                        Friends
+                        Friends Only
                       </Label>
                     </div>
 
@@ -844,7 +862,7 @@ const Settings = () => {
                           </Label>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Members of your organisation can see details</p>
+                          <p>Only members of your organisation can see details</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -924,6 +942,69 @@ const Settings = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* NEW: Block Section */}
+              <div className="border-t border-border pt-6 mt-6">
+                <h3 className="text-lg font-semibold mb-4">Block Users</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Blocked users will not be able to see sessions you host or join.
+                </p>
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter username to block"
+                      value={userNameToBlock}
+                      onChange={(e) => setUserNameToBlock(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleBlockUser();
+                        }
+                      }}
+                    />
+                    <Button onClick={handleBlockUser} disabled={!userNameToBlock.trim() && !selectedCoworkerToBlock}>
+                      <UserX className="h-4 w-4 mr-2" /> Block
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="block-coworker-select">Or select from recent coworkers:</Label>
+                    <Select
+                      value={selectedCoworkerToBlock}
+                      onValueChange={(value) => setSelectedCoworkerToBlock(value)}
+                    >
+                      <SelectTrigger id="block-coworker-select">
+                        <SelectValue placeholder="Select a coworker" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {recentCoworkers.length === 0 ? (
+                          <SelectItem value="no-coworkers" disabled>No recent coworkers</SelectItem>
+                        ) : (
+                          recentCoworkers.map(coworker => (
+                            <SelectItem key={coworker} value={coworker} disabled={blockedUsers.includes(coworker)}>
+                              {coworker} {blockedUsers.includes(coworker) && "(Blocked)"}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {blockedUsers.length > 0 && (
+                  <div className="mt-6 space-y-2">
+                    <h4 className="font-medium text-foreground">Currently Blocked:</h4>
+                    <ul className="space-y-1">
+                      {blockedUsers.map((user, index) => (
+                        <li key={index} className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span>{user}</span>
+                          <Button variant="ghost" size="sm" onClick={() => unblockUser(user)} className="h-auto px-2 py-1 text-red-500 hover:text-red-700">
+                            <X className="h-3 w-3 mr-1" /> Unblock
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>

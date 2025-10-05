@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from 'sonner'; // Using sonner for notifications
@@ -181,6 +181,12 @@ interface ProfileContextType {
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
   ) => Promise<void>;
+
+  // NEW: Blocked users and related functions
+  blockedUsers: string[];
+  blockUser: (userName: string) => void;
+  unblockUser: (userName: string) => void;
+  recentCoworkers: string[]; // NEW: List of unique coworker names
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -199,6 +205,7 @@ interface ProfileProviderProps {
 
 const LOCAL_STORAGE_KEY = 'deepsesh_profile_data'; // New local storage key for profile data
 const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name'; // New local storage key for local first name
+const BLOCKED_USERS_KEY = 'deepsesh_blocked_users'; // NEW: Local storage key for blocked users
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -214,6 +221,74 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [historyTimePeriod, setHistoryTimePeriod] = useState<TimePeriod>('week');
   const [leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod] = useState<TimePeriod>('week');
   const [leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod] = useState<TimePeriod>('week');
+
+  // NEW: Blocked users state
+  const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
+
+  // Derived state for recent coworkers
+  const recentCoworkers = useMemo(() => {
+    const uniqueNames = new Set<string>();
+    // For demo, we'll use mock data from Index.tsx for recent coworkers
+    // In a real app, this would come from actual session participants in the database
+    const mockNearbyParticipants = [
+      { id: 1, name: "Alex", sociability: 90, intention: "Reviewing differential equations." },
+      { id: 2, name: "Sam", sociability: 80, intention: "Working on problem set 3." },
+      { id: 3, name: "Taylor", sociability: 90, intention: "Preparing for the midterm exam." },
+      { id: 4, name: "Morgan", sociability: 20, intention: "Debugging a Python script." },
+      { id: 5, name: "Jordan", sociability: 10, intention: "Writing documentation for API." },
+      { id: 6, name: "Casey", sociability: 20, intention: "Learning new framework." },
+      { id: 7, name: "Riley", sociability: 20, intention: "Code refactoring." },
+      { id: 8, name: "Avery", sociability: 30, intention: "Designing database schema." },
+    ];
+    const mockFriendsParticipants = [
+      { id: 9, name: "Jamie", sociability: 60, intention: "Reviewing cognitive psychology." },
+      { id: 10, name: "Quinn", sociability: 60, intention: "Memorizing key terms." },
+      { id: 11, name: "Blake", sociability: 70, intention: "Practicing essay questions." },
+      { id: 12, name: "Drew", sociability: 60, intention: "Summarizing research papers." },
+      { id: 13, name: "Chris", sociability: 50, intention: "Creating flashcards." },
+      { id: 14, name: "Pat", sociability: 55, intention: "Discussing theories." },
+      { id: 15, name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
+      { id: 16, name: "Jess", sociability: 70, intention: "Peer teaching." },
+    ];
+
+    [...mockNearbyParticipants, ...mockFriendsParticipants].forEach(p => uniqueNames.add(p.name));
+    
+    // Also add names from the initialSessions data
+    // Note: initialSessions doesn't have participant names directly, only count.
+    // If it had a list of participant objects, we'd iterate through them.
+    // For now, we'll rely on the mock data above.
+
+    return Array.from(uniqueNames).sort();
+  }, [sessions]); // sessions is a dependency, but currently doesn't contain participant names for derivation
+
+  const blockUser = useCallback((userName: string) => {
+    const trimmedName = userName.trim();
+    if (trimmedName && !blockedUsers.includes(trimmedName)) {
+      setBlockedUsers(prev => [...prev, trimmedName]);
+      toast.success(`'${trimmedName}' has been blocked.`, {
+        description: "They will no longer see your sessions.",
+      });
+    } else if (trimmedName && blockedUsers.includes(trimmedName)) {
+      toast.info(`'${trimmedName}' is already blocked.`, {
+        description: "No changes made.",
+      });
+    }
+  }, [blockedUsers]);
+
+  const unblockUser = useCallback((userName: string) => {
+    const trimmedName = userName.trim();
+    if (trimmedName && blockedUsers.includes(trimmedName)) {
+      setBlockedUsers(prev => prev.filter(name => name !== trimmedName));
+      toast.success(`'${trimmedName}' has been unblocked.`, {
+        description: "They can now see your sessions again.",
+      });
+    } else if (trimmedName && !blockedUsers.includes(trimmedName)) {
+      toast.info(`'${trimmedName}' is not in your blocked list.`, {
+        description: "No changes made.",
+      });
+    }
+  }, [blockedUsers]);
+
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -429,6 +504,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (storedLocalFirstName) {
       setLocalFirstName(storedLocalFirstName);
     }
+
+    // NEW: Load blocked users from local storage
+    const storedBlockedUsers = localStorage.getItem(BLOCKED_USERS_KEY);
+    if (storedBlockedUsers) {
+      setBlockedUsers(JSON.parse(storedBlockedUsers));
+    }
     
     fetchProfile(); // Always try to fetch the latest profile from Supabase
     
@@ -467,6 +548,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(LOCAL_FIRST_NAME_KEY, localFirstName);
   }, [localFirstName]);
 
+  // NEW: Save blockedUsers to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(BLOCKED_USERS_KEY, JSON.stringify(blockedUsers));
+  }, [blockedUsers]);
+
   const value = {
     profile,
     loading,
@@ -486,6 +572,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     leaderboardCollaborationTimePeriod,
     setLeaderboardCollaborationTimePeriod,
     saveSession,
+    blockedUsers, // NEW
+    blockUser,    // NEW
+    unblockUser,  // NEW
+    recentCoworkers, // NEW
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
