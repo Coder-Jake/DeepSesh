@@ -844,7 +844,7 @@ const Settings = () => {
                           </Label>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Only members of your organisation can see details</p>
+                          <p>Members of your organisation can see details</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
