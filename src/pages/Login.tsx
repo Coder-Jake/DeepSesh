@@ -48,7 +48,6 @@ const Login = () => {
           localization={{
             variables: {
               sign_in: {
-                email_label: 'Email',
                 password_label: 'Password',
                 email_input_placeholder: 'Email',
                 password_input_placeholder: 'Password',
