@@ -452,6 +452,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
 
+  // Effect to synchronize seshTitle with activeScheduleDisplayTitle
+  useEffect(() => {
+    // Only update seshTitle if it hasn't been manually customized
+    if (!isSeshTitleCustomized && activeScheduleDisplayTitle.trim() !== "") {
+      _setSeshTitle(`${activeScheduleDisplayTitle} Notes`);
+    }
+  }, [activeScheduleDisplayTitle, isSeshTitleCustomized]);
+
+
   // Active Asks functions
   const addAsk = useCallback((ask: ActiveAskItem) => {
     setActiveAsks((prev) => [...prev, ask]);
