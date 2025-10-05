@@ -86,7 +86,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
   }, [onSelectColor]);
 
   return (
-    <div className="p-2 bg-popover border rounded-md shadow-lg w-[50px] h-[300px] overflow-y-auto" onMouseLeave={onClose}>
+    <div className="p-2 bg-popover border rounded-md shadow-lg w-[100px] h-[300px] overflow-y-auto" onMouseLeave={onClose}>
       {recentColors.length > 0 && (
         <div className="mb-3">
           <div className="grid grid-cols-1 gap-1">
@@ -107,9 +107,10 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
         </div>
       )}
 
-      <div className="mb-3">
+      <div className="grid grid-cols-3 gap-1"> {/* New grid for 3 columns */}
+        {/* Lighter Column */}
         <div className="grid grid-cols-1 gap-1">
-          {darkerFixedColors.map((color) => (
+          {lighterFixedColors.map((color) => (
             <button
               key={color}
               className={cn(
@@ -118,13 +119,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
               )}
               style={{ backgroundColor: color }}
               onClick={() => handleColorSelection(color)}
-              aria-label={`Select darker color ${color}`}
+              aria-label={`Select lighter color ${color}`}
             />
           ))}
         </div>
-      </div>
 
-      <div className="mb-3">
+        {/* Original Column */}
         <div className="grid grid-cols-1 gap-1">
           {fixedColors.map((color) => (
             <button
@@ -139,11 +139,10 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
             />
           ))}
         </div>
-      </div>
 
-      <div>
+        {/* Darker Column */}
         <div className="grid grid-cols-1 gap-1">
-          {lighterFixedColors.map((color) => (
+          {darkerFixedColors.map((color) => (
             <button
               key={color}
               className={cn(
@@ -152,7 +151,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
               )}
               style={{ backgroundColor: color }}
               onClick={() => handleColorSelection(color)}
-              aria-label={`Select lighter color ${color}`}
+              aria-label={`Select darker color ${color}`}
             />
           ))}
         </div>
