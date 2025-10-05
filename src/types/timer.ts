@@ -90,6 +90,7 @@ export interface TimerContextType {
   activeTimerColors: Record<string, string>; // NEW
   setActiveTimerColors: React.Dispatch<React.SetStateAction<Record<string, string>>>; // NEW
   activeScheduleDisplayTitle: string; // NEW: Title for the active/prepared schedule timeline
+  setActiveScheduleDisplayTitle: React.Dispatch<React.SetStateAction<string>>; // NEW: Setter for activeScheduleDisplayTitle
 
   // Saved Schedules (Templates)
   savedSchedules: ScheduledTimerTemplate[]; // Added
@@ -163,7 +164,7 @@ export interface TimerContextType {
   lock: boolean;
   setLock: React.Dispatch<React.SetStateAction<boolean>>;
   exemptionsEnabled: boolean;
-  setExemptionsEnabled: React.ReactDispatch<React.SetStateAction<boolean>>;
+  setExemptionsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   phoneCalls: boolean;
   setPhoneCalls: React.Dispatch<React.SetStateAction<boolean>>;
   favourites: boolean;

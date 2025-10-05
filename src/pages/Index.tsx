@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
 import { format } from 'date-fns'; // Import date-fns for time formatting
-import { ScheduledTimerTemplate, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import ScheduledTimerTemplate and DAYS_OF_WEEK
+import { ScheduledTimerTemplate } from "@/types/timer"; // Corrected import path for ScheduledTimerTemplate
+import { DAYS_OF_WEEK } from "@/contexts/TimerContext"; // DAYS_OF_WEEK is still exported from TimerContext
 import { Accordion } from "@/components/ui/accordion"; // NEW
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem"; // NEW
 import UpcomingScheduleCardContent from "@/components/UpcomingScheduleCard"; // Renamed import
