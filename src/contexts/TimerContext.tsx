@@ -191,19 +191,62 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const startSchedule = useCallback(() => {
     if (schedule.length === 0) {
-      // This case is handled by toast in ScheduleForm, so just return
       return;
     }
 
-    // Check for existing *schedule* (active or prepared)
-    if (isScheduleActive || isSchedulePrepared) {
-      if (!confirm("Another schedule is already active or prepared. Do you want to override it?")) {
-        return;
-      }
-      resetSchedule(); // Reset existing schedule if confirmed
+    let needsOverrideConfirmation = false;
+    let confirmationMessageParts: string[] = [];
+    let shouldResetManualTimer = false;
+    let shouldResetExistingSchedule = false;
+
+    // Determine what needs overriding based on the start option
+    if (scheduleStartOption === 'now') {
+        // If starting immediately, check for both existing schedules AND manual timers
+        if (isScheduleActive || isSchedulePrepared) {
+            confirmationMessageParts.push("Another schedule is already active or prepared.");
+            shouldResetExistingSchedule = true;
+        }
+        if (isRunning || isPaused) {
+            confirmationMessageParts.push("A manual timer is also active.");
+            shouldResetManualTimer = true;
+        }
+        if (confirmationMessageParts.length > 0) {
+            needsOverrideConfirmation = true;
+        }
+    } else { // scheduleStartOption is 'manual' or 'custom_time' (preparing a schedule)
+        // If preparing, only check for existing schedules. Manual timers should NOT be interrupted.
+        if (isScheduleActive || isSchedulePrepared) {
+            confirmationMessageParts.push("Another schedule is already active or prepared.");
+            shouldResetExistingSchedule = true;
+            needsOverrideConfirmation = true;
+        }
+        // IMPORTANT: Do NOT set shouldResetManualTimer = true here.
+        // The manual timer should continue running if it is.
     }
 
-    // Take a snapshot of the current schedule and its colors
+    if (needsOverrideConfirmation) {
+        const actionText = scheduleStartOption === 'now' ? "start this new schedule now" : "prepare this new schedule";
+        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override it and ${actionText}?`;
+        if (!confirm(finalMessage)) {
+            return;
+        }
+        // If confirmed, perform resets
+        if (shouldResetExistingSchedule) {
+            resetSchedule(); // This resets all schedule-related states
+        }
+        if (shouldResetManualTimer) { // This will only be true if scheduleStartOption was 'now'
+            // Reset manual timer states
+            setIsRunning(false);
+            setIsPaused(false);
+            setAccumulatedFocusSeconds(0);
+            setAccumulatedBreakSeconds(0);
+            setNotes("");
+            _setSeshTitle("Notes");
+            setIsSeshTitleCustomized(false);
+        }
+    }
+
+    // Proceed with starting/preparing the new schedule
     setActiveSchedule([...schedule]);
     setActiveTimerColors({ ...timerColors });
     setActiveScheduleDisplayTitle(scheduleTitle);
@@ -212,52 +255,36 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setTimerType(schedule[0].type);
     setTimeLeft(schedule[0].durationMinutes * 60);
     setIsFlashing(false);
-    setSessionStartTime(Date.now()); // Record overall session start time for the schedule
-    setIsSchedulingMode(false); // Exit scheduling mode
+    setSessionStartTime(Date.now());
+    setIsSchedulingMode(false);
 
     if (scheduleStartOption === 'now') {
-      // This path starts the schedule immediately, overriding any manual timer
-      if (isRunning || isPaused) {
-        if (!confirm("A manual timer is currently active. Do you want to override it and start this schedule now?")) {
-          return;
-        }
-        // Reset manual timer states
-        setIsRunning(false);
+        setIsSchedulePrepared(false);
+        setIsScheduleActive(true);
+        setIsRunning(true);
         setIsPaused(false);
-        setAccumulatedFocusSeconds(0);
-        setAccumulatedBreakSeconds(0);
-        setNotes("");
-        _setSeshTitle("Notes");
-        setIsSeshTitleCustomized(false);
-      }
-
-      setIsSchedulePrepared(false); // Not just prepared, it's starting now
-      setIsScheduleActive(true);
-      setIsRunning(true);
-      setIsPaused(false);
-      setCurrentPhaseStartTime(Date.now());
-      updateSeshTitleWithSchedule(scheduleTitle);
-      toast({
-        title: "Schedule Started!",
-        description: `"${scheduleTitle}" has begun.`,
-      });
-    } else { // 'manual' or 'custom_time' - prepare without affecting manual timer
-      setIsSchedulePrepared(true);
-      setIsScheduleActive(false); // Not actively running yet
-      setIsSchedulePending(scheduleStartOption === 'custom_time'); // Only pending if custom_time
-      // Do NOT change isRunning or isPaused here. Let the manual timer continue if it was running.
-      setCurrentPhaseStartTime(null); // No phase started yet for this prepared schedule
-      toast({
-        title: "Schedule Prepared!",
-        description: `"${scheduleTitle}" is ready. ${scheduleStartOption === 'custom_time' ? 'It will begin at the scheduled time.' : 'Hit \'Commence\' to begin.'}`,
-      });
+        setCurrentPhaseStartTime(Date.now());
+        updateSeshTitleWithSchedule(scheduleTitle);
+        toast({
+            title: "Schedule Started!",
+            description: `"${scheduleTitle}" has begun.`,
+        });
+    } else { // 'manual' or 'custom_time'
+        setIsSchedulePrepared(true);
+        setIsScheduleActive(false);
+        setIsSchedulePending(scheduleStartOption === 'custom_time');
+        setCurrentPhaseStartTime(null);
+        toast({
+            title: "Schedule Prepared!",
+            description: `"${scheduleTitle}" is ready. ${scheduleStartOption === 'custom_time' ? 'It will begin at the scheduled time.' : 'Hit \'Commence\' to begin.'}`,
+        });
     }
-  }, [
+}, [
     schedule, scheduleTitle, scheduleStartOption, isRunning, isPaused,
     isScheduleActive, isSchedulePrepared, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast
-  ]);
+]);
 
   const commencePreparedSchedule = useCallback(() => {
     if (!isSchedulePrepared) return; // Only commence if a schedule is prepared
