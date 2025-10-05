@@ -278,12 +278,12 @@ const Profile = () => {
 
               {/* NEW: LinkedIn URL Input */}
               <div>
-                <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
+                <Label htmlFor="linkedin-url">LinkedIn URL</Label>
                 <div className="flex items-center gap-2 mt-2">
                   <Input
                     id="linkedin-url"
                     type="url"
-                    placeholder="e.g., https://linkedin.com/in/yourprofile"
+                    placeholder="https://linkedin.com/in/yourprofile"
                     value={linkedinUrl}
                     onChange={(e) => handleLinkedinUrlChange(e.target.value)}
                   />
