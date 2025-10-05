@@ -5,8 +5,8 @@ export interface ScheduledTimer {
   title: string;
   type: 'focus' | 'break';
   durationMinutes: number;
-  isCustom: boolean;
-  customTitle?: string;
+  // Removed isCustom: boolean;
+  // Removed customTitle?: string;
 }
 
 export interface ScheduledTimerTemplate {

@@ -48,12 +48,12 @@ const ScheduleForm: React.FC = () => {
   useEffect(() => {
     if (schedule.length === 0) {
       setSchedule([
-        { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25, isCustom: false },
-        { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
-        { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60, isCustom: false },
-        { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30, isCustom: false },
-        { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45, isCustom: false },
-        { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15, isCustom: false },
+        { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25 },
+        { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
+        { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60 },
+        { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30 },
+        { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45 },
+        { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15 },
       ]);
     }
   }, [schedule, setSchedule]);
@@ -80,11 +80,7 @@ const ScheduleForm: React.FC = () => {
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
   const scheduleTitleInputRef = useRef<HTMLInputElement>(null);
 
-  const [editingCustomTitleId, setEditingCustomTitleId] = useState<string | null>(null);
-  const [tempCustomTitle, setTempCustomTitle] = useState<string>("");
-  const customTitleInputRef = useRef<HTMLInputElement>(null);
-  const longPressRef = useRef<NodeJS.Timeout | null>(null);
-  const isLongPress = useRef(false);
+  // Removed editingCustomTitleId, tempCustomTitle, customTitleInputRef, longPressRef, isLongPress
   const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false);
 
   // New state for color picker
@@ -117,12 +113,7 @@ const ScheduleForm: React.FC = () => {
     }
   }, [isEditingScheduleTitle]);
 
-  useEffect(() => {
-    if (editingCustomTitleId && customTitleInputRef.current) {
-      customTitleInputRef.current.focus();
-      customTitleInputRef.current.select();
-    }
-  }, [editingCustomTitleId]);
+  // Removed useEffect for editingCustomTitleId
 
   const handleEnterKeyNavigation = useCallback((e: React.KeyboardEvent<HTMLElement>) => {
     if (e.key === 'Enter') {
@@ -180,7 +171,7 @@ const ScheduleForm: React.FC = () => {
   const handleAddTimer = () => {
     setSchedule((prev: ScheduledTimer[]) => [
       ...prev,
-      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement, isCustom: false } as ScheduledTimer // Explicitly cast
+      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement }
     ]);
   };
 
@@ -188,12 +179,8 @@ const ScheduleForm: React.FC = () => {
     setSchedule((prev: ScheduledTimer[]) =>
       prev.map(timer => {
         if (timer.id === id) {
-          if (field === 'customTitle') {
-            return { ...timer, [field]: value, isCustom: value.trim() !== "" } as ScheduledTimer; // Explicitly cast
-          } else if (field === 'type') {
-            return { ...timer, [field]: value, customTitle: undefined, isCustom: false } as ScheduledTimer; // Explicitly cast
-          }
-          return { ...timer, [field]: value } as ScheduledTimer; // Explicitly cast
+          // Simplified logic: 'type' is now directly updated by the Select component
+          return { ...timer, [field]: value };
         }
         return timer;
       })
@@ -233,40 +220,7 @@ const ScheduleForm: React.FC = () => {
     startSchedule(); // Call the context function
   };
 
-  const handleLongPressStart = (timer: ScheduledTimer) => {
-    isLongPress.current = false;
-    longPressRef.current = setTimeout(() => {
-      isLongPress.current = true;
-      setEditingCustomTitleId(timer.id);
-      setTempCustomTitle(timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break'));
-    }, 500);
-  };
-
-  const handleLongPressEnd = () => {
-    if (longPressRef.current) {
-      clearTimeout(longPressRef.current);
-    }
-  };
-
-  const handleCustomTitleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, timerId: string) => {
-    if (e.key === 'Enter') {
-      handleUpdateTimer(timerId, 'customTitle', tempCustomTitle);
-      setEditingCustomTitleId(null);
-      e.currentTarget.blur();
-      handleEnterKeyNavigation(e); // Call navigation after handling local logic
-    }
-  };
-
-  const handleCustomTitleInputBlur = (timerId: string) => {
-    handleUpdateTimer(timerId, 'customTitle', tempCustomTitle);
-    setEditingCustomTitleId(null);
-  };
-
-  const handleTypeButtonClick = (timer: ScheduledTimer) => {
-    if (!isLongPress.current) {
-      handleUpdateTimer(timer.id, 'type', timer.type === 'focus' ? 'break' : 'focus');
-    }
-  };
+  // Removed handleLongPressStart, handleLongPressEnd, handleCustomTitleInputKeyDown, handleCustomTitleInputBlur, handleTypeButtonClick
 
   const handleSaveSchedule = () => {
     saveCurrentScheduleAsTemplate();
@@ -325,10 +279,10 @@ const ScheduleForm: React.FC = () => {
             {schedule.map((timer, index) => (
               <div 
                 key={timer.id} 
-                className="relative flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-1 border rounded-md bg-muted/50"
+                className="relative flex items-center gap-x-2 px-3 py-1 border rounded-md bg-muted/50" // Changed to flex-nowrap and reduced gap
                 style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }} // Apply dynamic background color or default baby blue for focus
               >
-                <div className="flex items-center gap-2 flex-grow">
+                <div className="flex items-center gap-2 flex-grow-0"> {/* Adjusted flex-grow */}
                   <span 
                     className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => setEditingColorTimerId(timer.id)} // Open color picker on click
@@ -380,37 +334,19 @@ const ScheduleForm: React.FC = () => {
                   data-input-type="timer-duration" // Added data-input-type
                 />
                 
-                {editingCustomTitleId === timer.id ? (
-                  <Input
-                    ref={customTitleInputRef}
-                    value={tempCustomTitle}
-                    onChange={(e) => setTempCustomTitle(e.target.value)}
-                    onKeyDown={(e) => handleCustomTitleInputKeyDown(e, timer.id)}
-                    onBlur={() => handleCustomTitleInputBlur(timer.id)}
-                    className="w-24 h-10 text-sm font-medium flex-shrink-0 text-center"
-                    onFocus={(e) => e.target.select()}
-                    data-input-type="timer-custom-title" // Added data-input-type
-                  />
-                ) : (
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-20 h-7 text-xs font-medium whitespace-normal text-center flex items-center justify-center", // Updated classes
-                      timer.isCustom ? "bg-blue-100 text-blue-800 hover:bg-blue-200" :
-                      timer.type === 'focus' ? "text-public-bg-foreground bg-public-bg hover:bg-public-bg/80" : "text-private-bg-foreground bg-private-bg hover:bg-private-bg/80"
-                    )}
-                    onMouseDown={() => handleLongPressStart(timer)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(timer)}
-                    onTouchEnd={handleLongPressEnd}
-                    onClick={() => handleTypeButtonClick(timer)}
-                    onKeyDown={handleEnterKeyNavigation} // Add navigation to button
-                    data-input-type="timer-type-button" // Added data-input-type for consistency, though it's a button
-                  >
-                    {timer.customTitle || (timer.type === 'focus' ? 'Focus' : 'Break')}
-                  </Button>
-                )}
+                {/* Replaced custom title input/button with Select for timer type */}
+                <Select
+                  value={timer.type}
+                  onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
+                >
+                  <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="focus">Focus</SelectItem>
+                    <SelectItem value="break">Break</SelectItem>
+                  </SelectContent>
+                </Select>
                 
                 <Trash2 
                   className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
