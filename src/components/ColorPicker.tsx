@@ -10,7 +10,51 @@ interface ColorPickerProps {
 const LOCAL_STORAGE_RECENT_COLORS_KEY = 'deepsesh_recent_colors';
 const MAX_RECENT_COLORS = 10; // Limit the number of recently chosen colors
 
-const pastelColors = [
+// Helper function to convert Hex to HSL
+const hexToHsl = (hex: string) => {
+  let r = 0, g = 0, b = 0;
+  // Handle different hex formats
+  if (hex.length === 4) {
+    r = parseInt(hex[1] + hex[1], 16);
+    g = parseInt(hex[2] + hex[2], 16);
+    b = parseInt(hex[3] + hex[3], 16);
+  } else if (hex.length === 7) {
+    r = parseInt(hex.substring(1, 3), 16);
+    g = parseInt(hex.substring(3, 5), 16);
+    b = parseInt(hex.substring(5, 7), 16);
+  }
+
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0; // achromatic
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+
+  return { h: h * 360, s: s * 100, l: l * 100 };
+};
+
+const unsortedPastelColors = [
   '#FFD1DC', // Pastel Pink
   '#FFABAB', // Light Red
   '#FFC3A0', // Peach
@@ -56,6 +100,23 @@ const pastelColors = [
   '#F7CAC9', // Rose Quartz
   '#B5EAD7', // Mint Green Pastel
 ];
+
+// Sort pastelColors by HSL values for visual similarity
+const pastelColors = [...unsortedPastelColors].sort((a, b) => {
+  const hslA = hexToHsl(a);
+  const hslB = hexToHsl(b);
+
+  // Primary sort by Hue
+  if (hslA.h !== hslB.h) {
+    return hslA.h - hslB.h;
+  }
+  // Secondary sort by Saturation
+  if (hslA.s !== hslB.s) {
+    return hslA.s - hslB.s;
+  }
+  // Tertiary sort by Lightness
+  return hslA.l - hslB.l;
+});
 
 const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, currentColor }) => {
   const [recentColors, setRecentColors] = useState<string[]>(() => {
