@@ -51,10 +51,13 @@ const Login = () => {
                 email_label: 'Email',
                 password_label: 'Password',
                 email_input_placeholder: 'Email',
+                password_input_placeholder: 'Password',
               },
               sign_up: {
                 email_label: 'Email',
                 password_label: 'Password',
+                email_input_placeholder: 'Email',
+                password_input_placeholder: 'Password',
               },
               forgotten_password: {
                 email_label: 'Email',
