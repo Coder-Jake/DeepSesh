@@ -30,7 +30,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       case 'choice':
         return "e.g., Bear, Shark";
       case 'selection':
-        return "e.g., Feature A, Feature B, Feature C";
+        return "e.g., FishBowl, Sushi, GYGs, Burgers";
       default:
         return "Enter options, comma-separated";
     }
@@ -43,7 +43,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       case 'choice':
         return "e.g., 'If a bear & a shark had a fight, who would win?'";
       case 'selection':
-        return "e.g., 'Which features should we prioritize?'";
+        return "e.g., 'What would you like for Lunch?'";
       default:
         return "Enter your poll question...";
     }
