@@ -38,8 +38,8 @@ const ScheduleTemplates: React.FC<ScheduleTemplatesProps> = ({ setActiveTab }) =
     };
 
     setSchedule([
-      { id: generateId(), title: "Beginning", type: "focus", durationMinutes: 25, isCustom: false },
-      { id: generateId(), title: "Short Break", type: "break", durationMinutes: 5, isCustom: false },
+      { id: generateId(), title: "Beginning", type: "focus", durationMinutes: 25 },
+      { id: generateId(), title: "Short Break", type: "break", durationMinutes: 5 },
     ]);
     setScheduleTitle("My New Schedule");
     setCommenceTime("09:00");
