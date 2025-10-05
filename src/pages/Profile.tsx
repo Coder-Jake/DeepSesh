@@ -30,7 +30,7 @@ const Profile = () => {
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([30]);
   const [organization, setOrganization] = useState(""); // New state for organization
-  const [linkedinUrl, setLinkedinUrl] = useState(""); // NEW: State for LinkedIn URL
+  const [linkedinUrl, setLinkedinUrl] = useState(""); // State for LinkedIn username (only)
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
     firstName: "", // This will now track localFirstName
@@ -38,7 +38,7 @@ const Profile = () => {
     intention: "",
     sociability: [30],
     organization: "", // Added organization to original values
-    linkedinUrl: "", // NEW: Added linkedinUrl to original values
+    linkedinUrl: "", // Stores original LinkedIn username (only)
   });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
@@ -53,7 +53,13 @@ const Profile = () => {
     setIntention(profile?.intention || "");
     setSociability([profile?.sociability || 50]);
     setOrganization(profile?.organization || ""); // Initialize organization
-    setLinkedinUrl(profile?.linkedin_url || ""); // NEW: Initialize LinkedIn URL
+
+    // Extract username from full LinkedIn URL
+    const fullLinkedinUrl = profile?.linkedin_url || "";
+    const linkedinUsername = fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
+                             ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
+                             : "";
+    setLinkedinUrl(linkedinUsername); // Initialize LinkedIn URL with just the username
 
     // Set original values for change detection
     setOriginalValues({
@@ -62,7 +68,7 @@ const Profile = () => {
       intention: profile?.intention || "",
       sociability: [profile?.sociability || 50],
       organization: profile?.organization || "", // Set original organization
-      linkedinUrl: profile?.linkedin_url || "", // NEW: Set original LinkedIn URL
+      linkedinUrl: linkedinUsername, // Set original LinkedIn username
     });
     setHasChanges(false);
   }, [profile, setLocalFirstName]); // Depend on profile and setLocalFirstName
@@ -80,43 +86,43 @@ const Profile = () => {
     newIntention: string, 
     newSociability: number[], 
     newOrganization: string,
-    newLinkedinUrl: string // NEW: Added newLinkedinUrl
+    newLinkedinUsername: string // Now represents only the username
   ) => {
     const changed = newFirstName !== originalValues.firstName ||
                    newBio !== originalValues.bio || 
                    newIntention !== originalValues.intention || 
                    newSociability[0] !== originalValues.sociability[0] ||
                    newOrganization !== originalValues.organization ||
-                   newLinkedinUrl !== originalValues.linkedinUrl; // NEW: Check for LinkedIn URL changes
+                   newLinkedinUsername !== originalValues.linkedinUrl; // Compare against original username
     setHasChanges(changed);
   };
 
   const handleFirstNameChange = (value: string) => {
     setLocalFirstName(value); // Update local state
-    checkForChanges(value, bio, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
+    checkForChanges(value, bio, intention, sociability, organization, linkedinUrl); // Pass username
   };
 
   const handleBioChange = (value: string) => {
     setBio(value);
-    checkForChanges(localFirstName, value, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
+    checkForChanges(localFirstName, value, intention, sociability, organization, linkedinUrl); // Pass username
   };
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
-    checkForChanges(localFirstName, bio, value, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
+    checkForChanges(localFirstName, bio, value, sociability, organization, linkedinUrl); // Pass username
   };
 
   const handleSociabilityChange = (value: number[]) => {
     setSociability(value);
-    checkForChanges(localFirstName, bio, intention, value, organization, linkedinUrl); // NEW: Pass linkedinUrl
+    checkForChanges(localFirstName, bio, intention, value, organization, linkedinUrl); // Pass username
   };
 
   const handleOrganizationChange = (value: string) => {
     setOrganization(value);
-    checkForChanges(localFirstName, bio, intention, sociability, value, linkedinUrl); // NEW: Pass linkedinUrl
+    checkForChanges(localFirstName, bio, intention, sociability, value, linkedinUrl); // Pass username
   };
 
-  const handleLinkedinUrlChange = (value: string) => { // NEW: Handler for LinkedIn URL
+  const handleLinkedinUrlChange = (value: string) => { // This value is now just the username
     setLinkedinUrl(value);
     checkForChanges(localFirstName, bio, intention, sociability, organization, value);
   };
@@ -135,7 +141,7 @@ const Profile = () => {
         await updateProfile({ first_name: nameToSave });
       }
       setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-      checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
+      checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl); // Pass username
     }
   };
 
@@ -147,7 +153,7 @@ const Profile = () => {
       await updateProfile({ first_name: nameToSave });
     }
     setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-    checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
+    checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl); // Pass username
   };
 
   const handleSaveOrganization = async () => {
@@ -156,7 +162,7 @@ const Profile = () => {
       setIsOrganizationDialogOpen(false);
       // Update originalValues for change detection
       setOriginalValues(prev => ({ ...prev, organization: organization.trim() === "" ? null : organization.trim() }));
-      checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
+      checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl); // Pass username
     } else {
       toast({
         title: "Not Logged In",
@@ -171,13 +177,14 @@ const Profile = () => {
     setLocalFirstName(nameToSave); // Ensure local state is updated
 
     if (user) { // Only update Supabase if logged in
+      const fullLinkedinUrlToSave = linkedinUrl.trim() === "" ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`;
       await updateProfile({
         first_name: nameToSave,
         bio,
         intention,
         sociability: sociability[0],
         organization: organization.trim() === "" ? null : organization.trim(), // Save organization
-        linkedin_url: linkedinUrl.trim() === "" ? null : linkedinUrl.trim(), // NEW: Save LinkedIn URL
+        linkedin_url: fullLinkedinUrlToSave, // Save constructed LinkedIn URL
         updated_at: new Date().toISOString(),
       });
     } else {
@@ -188,7 +195,7 @@ const Profile = () => {
       });
     }
     // After successful update, reset original values and hasChanges
-    setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization, linkedinUrl }); // NEW: Include linkedinUrl
+    setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization, linkedinUrl }); // linkedinUrl here is the username
     setHasChanges(false);
   };
 
@@ -278,21 +285,25 @@ const Profile = () => {
 
               {/* NEW: LinkedIn URL Input */}
               <div>
-                <Label htmlFor="linkedin-url">LinkedIn URL</Label>
-                <div className="flex items-center gap-2 mt-2">
+                <Label htmlFor="linkedin-username">LinkedIn Username</Label>
+                <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                  <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
+                    linkedin.com/in/
+                  </span>
                   <Input
-                    id="linkedin-url"
-                    type="url"
-                    placeholder="https://linkedin.com/in/yourprofile"
-                    value={linkedinUrl}
+                    id="linkedin-username"
+                    type="text" // Changed to text as it's just the username
+                    placeholder="yourusername"
+                    value={linkedinUrl} // This now holds only the username
                     onChange={(e) => handleLinkedinUrlChange(e.target.value)}
+                    className="flex-1 border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-l-none" // Remove border and focus ring
                   />
                   {linkedinUrl && (
                     <a 
-                      href={linkedinUrl} 
+                      href={`https://www.linkedin.com/in/${linkedinUrl}`} // Construct full URL
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                      className="text-blue-600 hover:text-blue-800 transition-colors p-2"
                       aria-label="Visit LinkedIn Profile"
                     >
                       <Linkedin size={20} />
