@@ -15,6 +15,7 @@ import AskMenu from "@/components/AskMenu";
 import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
+import UpcomingScheduleCard from "@/components/UpcomingScheduleCard"; // NEW: Import UpcomingScheduleCard
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -171,6 +172,7 @@ const Index = () => {
     commenceTime,
     commenceDay, // Now can be null
     isGlobalPrivate,
+    activeScheduleDisplayTitle, // NEW: Get activeScheduleDisplayTitle
 
     // New session tracking states and functions
     sessionStartTime,
@@ -304,7 +306,7 @@ const Index = () => {
   };
   
   const startNewManualTimer = () => { // Renamed to be explicit
-    if (isRunning || isPaused || isScheduleActive) { // Only check for actively running/paused manual timer or immediate schedule
+    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) { // Only check for actively running/paused manual timer or immediate schedule
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
       }
@@ -1065,7 +1067,7 @@ const Index = () => {
         </div>
       </div>
       {/* Timeline Section (for active schedule and upcoming) */}
-      {(isScheduleActive || isSchedulePrepared || (isSchedulePending && scheduleStartOption === 'custom_time')) && ( // Show if prepared
+      {(isScheduleActive || isSchedulePending) && ( // Show if active or pending
         <div className="mt-8" data-name="Timeline Section"> {/* Add some top margin for separation */}
           <Timeline
             schedule={activeSchedule} // NEW: Pass activeSchedule
@@ -1076,6 +1078,23 @@ const Index = () => {
             isSchedulePending={isSchedulePending && scheduleStartOption === 'custom_time'}
             onCountdownEnd={handleCountdownEnd}
             timerColors={activeTimerColors} // NEW: Pass activeTimerColors
+          />
+        </div>
+      )}
+
+      {/* NEW: Upcoming Section (for prepared schedules) */}
+      {isSchedulePrepared && !isScheduleActive && !isSchedulePending && (
+        <div className="mt-8" data-name="Upcoming Section">
+          <h3 className="text-xl font-bold text-foreground mb-4">Upcoming</h3>
+          <UpcomingScheduleCard
+            schedule={activeSchedule}
+            scheduleTitle={activeScheduleDisplayTitle}
+            commenceTime={commenceTime}
+            commenceDay={commenceDay}
+            scheduleStartOption={scheduleStartOption}
+            activeTimerColors={activeTimerColors}
+            commencePreparedSchedule={commencePreparedSchedule}
+            resetSchedule={resetSchedule}
           />
         </div>
       )}
