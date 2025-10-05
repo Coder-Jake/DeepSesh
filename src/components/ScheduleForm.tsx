@@ -169,10 +169,22 @@ const ScheduleForm: React.FC = () => {
   };
 
   const handleAddTimer = () => {
-    setSchedule((prev: ScheduledTimer[]) => [
-      ...prev,
-      { id: crypto.randomUUID(), title: "New Timer", type: "focus", durationMinutes: timerIncrement }
-    ]);
+    setSchedule((prev: ScheduledTimer[]) => {
+      const lastTimerType = prev.length > 0 ? prev[prev.length - 1].type : null;
+      const newTimerType = lastTimerType === 'focus' ? 'break' : 'focus';
+      const newTimerTitle = newTimerType === 'focus' ? "Focus" : "Break"; // Default title based on type
+      const newTimerDuration = newTimerType === 'focus' ? 25 : 5; // Default duration based on type
+
+      return [
+        ...prev,
+        { 
+          id: crypto.randomUUID(), 
+          title: newTimerTitle, 
+          type: newTimerType, 
+          durationMinutes: newTimerDuration 
+        }
+      ];
+    });
   };
 
   const handleUpdateTimer = (id: string, field: keyof ScheduledTimer, value: any) => {
@@ -339,7 +351,7 @@ const ScheduleForm: React.FC = () => {
                   value={timer.type}
                   onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
                 >
-                  <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
+                  <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center hidden" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
