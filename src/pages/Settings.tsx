@@ -946,10 +946,16 @@ const Settings = () => {
 
               {/* NEW: Block Section */}
               <div className="border-t border-border pt-6 mt-6">
-                <h3 className="text-lg font-semibold mb-4">Block Users</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Blocked users will not be able to see sessions you host or join.
-                </p>
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <h3 className="text-lg font-semibold mb-4 cursor-help">Block Users</h3>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Blocked users will not be able to see sessions you host or join.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input
