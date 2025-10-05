@@ -250,8 +250,8 @@ const ScheduleForm: React.FC = () => {
   const handleOpenColorPicker = (e: React.MouseEvent, timerId: string) => {
     // Use clientX/clientY for fixed positioning, add a small offset
     setPickerPosition({
-      top: e.clientY + 15, 
-      left: e.clientX + 15,
+      top: e.clientY + 5, 
+      left: e.clientX + 5,
     });
     setEditingColorTimerId(timerId);
   };
