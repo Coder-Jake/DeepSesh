@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { Linkedin } from "lucide-react"; // NEW: Import Linkedin icon
 
 const Profile = () => {
   const { profile, loading, updateProfile, localFirstName, setLocalFirstName } = useProfile(); // Use profile context and localFirstName
@@ -29,13 +30,15 @@ const Profile = () => {
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([30]);
   const [organization, setOrganization] = useState(""); // New state for organization
+  const [linkedinUrl, setLinkedinUrl] = useState(""); // NEW: State for LinkedIn URL
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
     firstName: "", // This will now track localFirstName
     bio: "",
     intention: "",
     sociability: [30],
-    organization: "" // Added organization to original values
+    organization: "", // Added organization to original values
+    linkedinUrl: "", // NEW: Added linkedinUrl to original values
   });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
@@ -50,6 +53,7 @@ const Profile = () => {
     setIntention(profile?.intention || "");
     setSociability([profile?.sociability || 50]);
     setOrganization(profile?.organization || ""); // Initialize organization
+    setLinkedinUrl(profile?.linkedin_url || ""); // NEW: Initialize LinkedIn URL
 
     // Set original values for change detection
     setOriginalValues({
@@ -57,7 +61,8 @@ const Profile = () => {
       bio: profile?.bio || "",
       intention: profile?.intention || "",
       sociability: [profile?.sociability || 50],
-      organization: profile?.organization || "" // Set original organization
+      organization: profile?.organization || "", // Set original organization
+      linkedinUrl: profile?.linkedin_url || "", // NEW: Set original LinkedIn URL
     });
     setHasChanges(false);
   }, [profile, setLocalFirstName]); // Depend on profile and setLocalFirstName
@@ -69,38 +74,51 @@ const Profile = () => {
     }
   }, [isEditingFirstName]);
 
-  const checkForChanges = (newFirstName: string, newBio: string, newIntention: string, newSociability: number[], newOrganization: string) => {
+  const checkForChanges = (
+    newFirstName: string, 
+    newBio: string, 
+    newIntention: string, 
+    newSociability: number[], 
+    newOrganization: string,
+    newLinkedinUrl: string // NEW: Added newLinkedinUrl
+  ) => {
     const changed = newFirstName !== originalValues.firstName ||
                    newBio !== originalValues.bio || 
                    newIntention !== originalValues.intention || 
                    newSociability[0] !== originalValues.sociability[0] ||
-                   newOrganization !== originalValues.organization; // Check for organization changes
+                   newOrganization !== originalValues.organization ||
+                   newLinkedinUrl !== originalValues.linkedinUrl; // NEW: Check for LinkedIn URL changes
     setHasChanges(changed);
   };
 
   const handleFirstNameChange = (value: string) => {
     setLocalFirstName(value); // Update local state
-    checkForChanges(value, bio, intention, sociability, organization);
+    checkForChanges(value, bio, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
   };
 
   const handleBioChange = (value: string) => {
     setBio(value);
-    checkForChanges(localFirstName, value, intention, sociability, organization);
+    checkForChanges(localFirstName, value, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
   };
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
-    checkForChanges(localFirstName, bio, value, sociability, organization);
+    checkForChanges(localFirstName, bio, value, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
   };
 
   const handleSociabilityChange = (value: number[]) => {
     setSociability(value);
-    checkForChanges(localFirstName, bio, intention, value, organization);
+    checkForChanges(localFirstName, bio, intention, value, organization, linkedinUrl); // NEW: Pass linkedinUrl
   };
 
   const handleOrganizationChange = (value: string) => {
     setOrganization(value);
-    checkForChanges(localFirstName, bio, intention, sociability, value);
+    checkForChanges(localFirstName, bio, intention, sociability, value, linkedinUrl); // NEW: Pass linkedinUrl
+  };
+
+  const handleLinkedinUrlChange = (value: string) => { // NEW: Handler for LinkedIn URL
+    setLinkedinUrl(value);
+    checkForChanges(localFirstName, bio, intention, sociability, organization, value);
   };
 
   const handleFirstNameClick = () => {
@@ -117,7 +135,7 @@ const Profile = () => {
         await updateProfile({ first_name: nameToSave });
       }
       setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-      checkForChanges(nameToSave, bio, intention, sociability, organization);
+      checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
     }
   };
 
@@ -129,7 +147,7 @@ const Profile = () => {
       await updateProfile({ first_name: nameToSave });
     }
     setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-    checkForChanges(nameToSave, bio, intention, sociability, organization);
+    checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
   };
 
   const handleSaveOrganization = async () => {
@@ -138,7 +156,7 @@ const Profile = () => {
       setIsOrganizationDialogOpen(false);
       // Update originalValues for change detection
       setOriginalValues(prev => ({ ...prev, organization: organization.trim() === "" ? null : organization.trim() }));
-      checkForChanges(localFirstName, bio, intention, sociability, organization); // Re-check for changes
+      checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl); // NEW: Pass linkedinUrl
     } else {
       toast({
         title: "Not Logged In",
@@ -159,6 +177,7 @@ const Profile = () => {
         intention,
         sociability: sociability[0],
         organization: organization.trim() === "" ? null : organization.trim(), // Save organization
+        linkedin_url: linkedinUrl.trim() === "" ? null : linkedinUrl.trim(), // NEW: Save LinkedIn URL
         updated_at: new Date().toISOString(),
       });
     } else {
@@ -169,7 +188,7 @@ const Profile = () => {
       });
     }
     // After successful update, reset original values and hasChanges
-    setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization });
+    setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization, linkedinUrl }); // NEW: Include linkedinUrl
     setHasChanges(false);
   };
 
@@ -255,6 +274,31 @@ const Profile = () => {
                   onChange={(e) => handleIntentionChange(e.target.value)}
                   className="mt-2"
                 />
+              </div>
+
+              {/* NEW: LinkedIn URL Input */}
+              <div>
+                <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <Input
+                    id="linkedin-url"
+                    type="url"
+                    placeholder="e.g., https://linkedin.com/in/yourprofile"
+                    value={linkedinUrl}
+                    onChange={(e) => handleLinkedinUrlChange(e.target.value)}
+                  />
+                  {linkedinUrl && (
+                    <a 
+                      href={linkedinUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                      aria-label="Visit LinkedIn Profile"
+                    >
+                      <Linkedin size={20} />
+                    </a>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

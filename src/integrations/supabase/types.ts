@@ -22,6 +22,7 @@ export type Database = {
           id: string
           intention: string | null
           last_name: string | null
+          linkedin_url: string | null // NEW: Added linkedin_url
           organization: string | null
           sociability: number | null
           updated_at: string | null
@@ -33,6 +34,7 @@ export type Database = {
           id: string
           intention?: string | null
           last_name?: string | null
+          linkedin_url?: string | null // NEW: Added linkedin_url
           organization?: string | null
           sociability?: number | null
           updated_at?: string | null
@@ -44,6 +46,7 @@ export type Database = {
           id?: string
           intention?: string | null
           last_name?: string | null
+          linkedin_url?: string | null // NEW: Added linkedin_url
           organization?: string | null
           sociability?: number | null
           updated_at?: string | null
