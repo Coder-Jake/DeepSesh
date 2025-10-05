@@ -32,12 +32,32 @@ const pastelColors = [
   '#CDEAC0', // Mint Green
   '#F5DEB3', // Wheat
   '#FFEFD5', // Papaya Whip
+  '#D3F8E2', // Mint Cream
+  '#FADADD', // Cherry Blossom Pink
+  '#E2F0CB', // Light Sage
+  '#BEE9E4', // Aqua Haze
+  '#FCE8D5', // Apricot Wash
+  '#D4E2FC', // Periwinkle Blue
+  '#F0E0F0', // Lavender Blush
+  '#C8E6C9', // Light Greenish Gray
+  '#FFF0F5', // Lavender Rose
+  '#D7EEFF', // Sky Blue Light
+  '#F5F5DC', // Beige
+  '#E0BBE4', // Mauve
+  '#957DAD', // Medium Purple
+  '#D291BC', // Light Magenta
+  '#FFC72C', // Goldenrod (light)
+  '#A7DBD8', // Light Teal Blue
+  '#E8D3FF', // Light Violet
+  '#C9E4DE', // Light Seafoam
+  '#F7CAC9', // Rose Quartz
+  '#B5EAD7', // Mint Green Pastel
 ];
 
 const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, currentColor }) => {
   return (
-    <div className="absolute z-10 mt-2 p-2 bg-popover border rounded-md shadow-lg" onMouseLeave={onClose}>
-      <div className="grid grid-cols-6 gap-1"> {/* Changed to grid-cols-6 for more horizontal spread */}
+    <div className="absolute z-10 mt-2 p-2 bg-popover border rounded-md shadow-lg w-1/4 min-w-[280px]" onMouseLeave={onClose}>
+      <div className="grid grid-cols-10 gap-1"> {/* Changed to grid-cols-10 for more horizontal spread */}
         {pastelColors.map((color) => (
           <button
             key={color}
