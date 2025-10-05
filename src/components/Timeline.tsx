@@ -26,11 +26,48 @@ const Timeline: React.FC<TimelineProps> = ({
   onCountdownEnd,
   timerColors, // NEW: Destructure timerColors
 }) => {
-  const { formatTime, isScheduleActive, is24HourFormat, activeScheduleDisplayTitle } = useTimer(); // Removed scheduleTitle, added activeScheduleDisplayTitle
+  const { formatTime, isScheduleActive, is24HourFormat, activeScheduleDisplayTitle, setActiveScheduleDisplayTitle } = useTimer(); // Added setActiveScheduleDisplayTitle
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Removed localTimelineTitle state and its useEffect, now using activeScheduleDisplayTitle directly
+  // State for title editing
+  const [isTitleEditing, setIsTitleEditing] = useState(false);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const LONG_PRESS_DURATION = 500; // milliseconds
+
+  const handleMouseDown = useCallback(() => {
+    longPressTimerRef.current = setTimeout(() => {
+      setIsTitleEditing(true);
+    }, LONG_PRESS_DURATION);
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setActiveScheduleDisplayTitle(e.target.value);
+  }, [setActiveScheduleDisplayTitle]);
+
+  const handleTitleBlur = useCallback(() => {
+    setIsTitleEditing(false);
+  }, []);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur(); // Trigger onBlur to exit editing
+    }
+  }, []);
 
   const getCommenceTargetDate = useCallback(() => {
     const now = new Date();
@@ -109,10 +146,19 @@ const Timeline: React.FC<TimelineProps> = ({
         <CardTitle className="text-xl flex justify-center">
           <Input
             value={activeScheduleDisplayTitle} // Use activeScheduleDisplayTitle
-            readOnly // Make it read-only as it's controlled by context
-            className="text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center"
-            aria-label="Timeline Title" // Changed aria-label for clarity
-            data-name="Timeline Title Input" // Added data-name
+            readOnly={!isTitleEditing} // Make it read-only unless editing
+            onChange={handleTitleChange}
+            onBlur={handleTitleBlur}
+            onKeyDown={handleKeyDown}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            className={cn(
+              "text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center",
+              isTitleEditing && "border-b border-primary-foreground/50 bg-muted/50 cursor-text" // Visual cue for editing
+            )}
+            aria-label="Timeline Title"
+            data-name="Timeline Title Input"
           />
         </CardTitle>
       </CardHeader>
