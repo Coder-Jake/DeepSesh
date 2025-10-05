@@ -26,7 +26,7 @@ const Timeline: React.FC<TimelineProps> = ({
   onCountdownEnd,
   timerColors, // NEW: Destructure timerColors
 }) => {
-  const { formatTime, scheduleTitle, isScheduleActive } = useTimer(); // Removed setScheduleTitle, added timerColors
+  const { formatTime, scheduleTitle, isScheduleActive, is24HourFormat } = useTimer(); // Removed setScheduleTitle, added timerColors, and is24HourFormat
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -101,7 +101,11 @@ const Timeline: React.FC<TimelineProps> = ({
   }
 
   const formattedFinishTime = estimatedFinishTime 
-    ? estimatedFinishTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) // Changed to 24-hour format
+    ? estimatedFinishTime.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hourCycle: is24HourFormat ? 'h23' : 'h12' // Use is24HourFormat here
+      }) 
     : null;
 
   return (

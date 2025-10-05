@@ -90,6 +90,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [profileVisibility, setProfileVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // Updated to array
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]); // Added
+  const [is24HourFormat, setIs24HourFormat] = useState(true); // NEW: Default to 24-hour format
 
   const playSound = useCallback(() => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -465,6 +466,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setTimerColors(data.timerColors ?? {}); // NEW: Load timer colors
       setActiveSchedule(data.activeSchedule ?? []); // NEW: Load active schedule
       setActiveTimerColors(data.activeTimerColors ?? {}); // NEW: Load active timer colors
+      setIs24HourFormat(data.is24HourFormat ?? true); // NEW: Load is24HourFormat
 
       // Load savedSchedules, merging with defaults if local storage is empty for schedules
       const loadedSchedules = data.savedSchedules ?? [];
@@ -489,6 +491,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
       friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
       locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, // NEW: Save active schedule and colors
+      is24HourFormat, // NEW: Save is24HourFormat
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
   }, [
@@ -503,6 +506,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
     friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
     locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, // NEW: Save active schedule and colors
+    is24HourFormat, // NEW: Save is24HourFormat
   ]);
 
   const value = {
@@ -632,6 +636,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setLocationSharing,
     openSettingsAccordions,
     setOpenSettingsAccordions,
+    is24HourFormat, // NEW
+    setIs24HourFormat, // NEW
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

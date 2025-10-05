@@ -72,6 +72,8 @@ const Settings = () => {
     setIsGlobalPrivate, // Renamed from setIsGlobalPublic
     openSettingsAccordions, // Get from context
     setOpenSettingsAccordions, // Get from context
+    is24HourFormat, // NEW: Get from context
+    setIs24HourFormat, // NEW: Get from context
   } = useTimer();
 
   const { user } = useAuth(); // Get user from AuthContext
@@ -117,6 +119,7 @@ const Settings = () => {
     shouldPlayEndSound,
     shouldShowEndToast,
     isDarkMode, // Added isDarkMode to saved settings
+    is24HourFormat, // NEW: Added is24HourFormat
   });
 
   // Effect to sync local UI states with context on initial load
@@ -165,6 +168,7 @@ const Settings = () => {
       shouldPlayEndSound,
       shouldShowEndToast,
       isDarkMode, // Added isDarkMode to current UI settings
+      is24HourFormat, // NEW: Added is24HourFormat
     };
 
     const changed = Object.keys(currentUiSettings).some(key => {
@@ -187,6 +191,7 @@ const Settings = () => {
     isGlobalPrivate, // Renamed
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
     isDarkMode, // Added isDarkMode dependency
+    is24HourFormat, // NEW: Added is24HourFormat dependency
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -363,6 +368,7 @@ const Settings = () => {
     setShouldPlayEndSound(shouldPlayEndSound);
     setShouldShowEndToast(shouldShowEndToast);
     // isDarkMode is handled by ThemeContext and its useEffect
+    // is24HourFormat is handled by its own button
 
     // After saving, update the ref to reflect the new "saved" state
     savedSettingsRef.current = {
@@ -392,6 +398,7 @@ const Settings = () => {
       shouldPlayEndSound,
       shouldShowEndToast,
       isDarkMode, // Save current dark mode state
+      is24HourFormat, // NEW: Save current time format state
     };
     setHasChanges(false);
   };
@@ -690,6 +697,22 @@ const Settings = () => {
                   )}
                 >
                   {!isGlobalPrivate ? "Public" : "Private"} {/* Display Public when false, Private when true */}
+                </Button>
+              </div>
+
+              {/* Time Format Toggle Button */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="time-format-toggle">Time Format</Label>
+                </div>
+                <Button
+                  id="time-format-toggle"
+                  onClick={() => setIs24HourFormat(prev => !prev)}
+                  className={cn(
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80 select-none"
+                  )}
+                >
+                  {is24HourFormat ? "24hr" : "AM/PM"}
                 </Button>
               </div>
 
