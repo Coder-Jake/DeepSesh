@@ -36,13 +36,26 @@ const lighterFixedColors = [
   '#ffffff', // Lighter Baby Powder (pure white)
 ];
 
+// A darker version of the fixed colors
+const darkerFixedColors = [
+  '#cc8a8a', // Darker Melon
+  '#ccac84', // Darker Sunset
+  '#c9cc92', // Darker Cream
+  '#9fcc98', // Darker Tea Green
+  '#7ab7cc', // Darker Electric Blue
+  '#7f9ccb', // Darker Jordy Blue
+  '#968fcc', // Darker Periwinkle
+  '#cc9fcc', // Darker Mauve
+  '#ccccca', // Darker Baby Powder (light grey)
+];
+
 const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, currentColor }) => {
   const [recentColors, setRecentColors] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const storedColors = localStorage.getItem(LOCAL_STORAGE_RECENT_COLORS_KEY);
       const initialColors = storedColors ? JSON.parse(storedColors) : [];
-      // Filter out any old recent colors that are not in the new fixed palette (both original and lighter)
-      const allAvailableColors = [...fixedColors, ...lighterFixedColors];
+      // Filter out any old recent colors that are not in the new fixed palette (all three versions)
+      const allAvailableColors = [...fixedColors, ...lighterFixedColors, ...darkerFixedColors];
       const filteredInitialColors = initialColors.filter((color: string) => allAvailableColors.includes(color));
       return filteredInitialColors;
     }
@@ -89,7 +102,25 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
         </div>
       )}
 
-      <div className="mb-3"> {/* Added mb-3 for spacing between rows */}
+      <div className="mb-3">
+        <p className="text-xs text-muted-foreground mb-1">Darker</p>
+        <div className="grid grid-cols-10 gap-1">
+          {darkerFixedColors.map((color) => (
+            <button
+              key={color}
+              className={cn(
+                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+                currentColor === color && "border-primary"
+              )}
+              style={{ backgroundColor: color }}
+              onClick={() => handleColorSelection(color)}
+              aria-label={`Select darker color ${color}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-3">
         <p className="text-xs text-muted-foreground mb-1">Original</p>
         <div className="grid grid-cols-10 gap-1">
           {fixedColors.map((color) => (
