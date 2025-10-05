@@ -705,6 +705,7 @@ const Index = () => {
                     size="sm" 
                     onClick={() => setIsSchedulingMode(true)}
                     className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                    data-name="Schedule Button"
                   >
                     <CalendarPlus size={16} />
                     <span className="text-sm font-medium">Schedule</span>
@@ -718,6 +719,7 @@ const Index = () => {
                       onTouchEnd={handleLongPressEnd}
                       onClick={handlePublicPrivateToggle}
                       className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
+                      data-name="Public/Private Toggle Button"
                     >
                       {!isPrivate ? <>
                           <Globe size={16} />
@@ -735,14 +737,15 @@ const Index = () => {
                           variant="ghost" 
                           size="sm" 
                           className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                          data-name="Share Options Button"
                         >
                           <Share2 size={16} />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')}>QR</DropdownMenuItem>
-                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')}>Link</DropdownMenuItem>
-                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')}>NFC</DropdownMenuItem>
+                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')} data-name="Share QR Option">QR</DropdownMenuItem>
+                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')} data-name="Share Link Option">Link</DropdownMenuItem>
+                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -756,17 +759,18 @@ const Index = () => {
                     className={isFlashing ? 'animate-pulse' : ''}
                     timerType={timerType}
                     isActiveTimer={isActiveTimer}
+                    data-name="Main Circular Timer Progress"
                   >
                     <div 
                       className={`relative flex flex-col items-center text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}
                       onMouseEnter={() => setIsHoveringTimer(true)}
                       onMouseLeave={() => setIsHoveringTimer(false)}
                     >
-                      <div className="h-10 flex items-center"> {/* Fixed height for time display */}
+                      <div className="h-10 flex items-center" data-name="Time Left Display"> {/* Fixed height for time display */}
                         {formatTime(timeLeft)}
                       </div>
                       {isHoveringTimer && isActiveTimer && (
-                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap"> {/* Absolute positioning */}
+                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap" data-name="Estimated End Time"> {/* Absolute positioning */}
                           End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
                         </p>
                       )}
@@ -776,7 +780,12 @@ const Index = () => {
                 
                 <div className="flex gap-3 justify-center mb-6">
                   {isFlashing ? (
-                    <Button size="lg" className="px-8" onClick={timerType === 'focus' ? switchToBreak : switchToFocus}>
+                    <Button 
+                      size="lg" 
+                      className="px-8" 
+                      onClick={timerType === 'focus' ? switchToBreak : switchToFocus}
+                      data-name={`Start ${timerType === 'focus' ? 'Break' : 'Focus'} Button`}
+                    >
                       Start {timerType === 'focus' ? 'Break' : 'Focus'}
                     </Button>
                   ) : (
@@ -794,6 +803,7 @@ const Index = () => {
                           startNewManualTimer(); // Call the new explicit function for starting a fresh timer
                         }
                       }}
+                      data-name={`${isSchedulePrepared ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))} Timer Button`}
                     >
                       {isSchedulePrepared ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))}
                     </Button>
@@ -816,6 +826,7 @@ const Index = () => {
                           "w-full h-full rounded-none bg-transparent hover:bg-transparent",
                           isPaused ? "text-red-500" : "text-secondary-foreground" // Conditional red color
                         )}
+                        data-name="Stop Timer Button"
                       >
                         <Square size={16} fill="currentColor" /> {/* Solid Square icon */}
                       </Button>
@@ -832,6 +843,7 @@ const Index = () => {
                           timerType === 'focus' && "font-bold text-foreground"
                         )}
                         onClick={() => handleModeToggle('focus')}
+                        data-name="Focus Mode Toggle"
                       >
                         Focus:
                       </span>
@@ -856,6 +868,7 @@ const Index = () => {
                         max="120" 
                         step={timerIncrement}
                         onFocus={(e) => e.target.select()}
+                        data-name="Focus Duration Input"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -865,6 +878,7 @@ const Index = () => {
                           timerType === 'break' && "font-bold text-foreground"
                         )}
                         onClick={() => handleModeToggle('break')}
+                        data-name="Break Mode Toggle"
                       >
                         Break:
                       </span>
@@ -889,6 +903,7 @@ const Index = () => {
                         max="60" 
                         step={timerIncrement}
                         onFocus={(e) => e.target.select()}
+                        data-name="Break Duration Input"
                       />
                     </div>
                   </div>
@@ -928,6 +943,7 @@ const Index = () => {
                       // Optional: short press action, e.g., copy to clipboard or show full text
                     }
                   }}
+                  data-name="My Intention Text"
                 >
                   {profile.intention}
                 </p>
@@ -948,6 +964,7 @@ const Index = () => {
                   placeholder="Sesh Title"
                   className="text-lg font-semibold h-auto py-1 px-2"
                   onFocus={(e) => e.target.select()}
+                  data-name="Sesh Title Input"
                 />
               ) : (
                 <CardTitle 
@@ -958,6 +975,7 @@ const Index = () => {
                   onMouseLeave={handleLongPressEnd}
                   onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
                   onTouchEnd={handleLongPressEnd}
+                  data-name="Sesh Title Display"
                 >
                   {seshTitle}
                 </CardTitle>
@@ -970,6 +988,7 @@ const Index = () => {
                 onChange={(e) => setNotes(e.target.value)}
                 className="min-h-[120px] resize-none"
                 onFocus={(e) => e.target.select()}
+                data-name="Notes Textarea"
               />
             </CardContent>
           </Card>
@@ -984,7 +1003,7 @@ const Index = () => {
                 {currentCoworkers.map(participant => (
                   <Tooltip key={participant.id}>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-default select-none">
+                      <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-default select-none" data-name={`Coworker: ${participant.name}`}>
                         <span className="font-medium text-foreground">{participant.name}</span>
                         <span className="text-sm text-muted-foreground">Sociability: {participant.sociability}%</span>
                       </div>
@@ -1013,7 +1032,7 @@ const Index = () => {
           <TooltipProvider>
             {/* Nearby Sessions */}
             {!shouldHideSessionLists && !isPrivate && (
-              <div className="mb-6">
+              <div className="mb-6" data-name="Nearby Sessions Section">
                 <h3 className="text-lg font-semibold text-foreground mb-3">Nearby</h3>
                 <div className="space-y-3">
                   {mockNearbySessions.map(session => (
@@ -1029,7 +1048,7 @@ const Index = () => {
 
             {/* Friends Sessions */}
             {!shouldHideSessionLists && (
-              <div>
+              <div data-name="Friends Sessions Section">
                 <h3 className="text-lg font-semibold text-foreground mb-3">Friends</h3>
                 <div className="space-y-3">
                   {mockFriendsSessions.map(session => (
@@ -1047,7 +1066,7 @@ const Index = () => {
       </div>
       {/* Timeline Section (for active schedule and upcoming) */}
       {(isScheduleActive || isSchedulePrepared || (isSchedulePending && scheduleStartOption === 'custom_time')) && ( // Show if prepared
-        <div className="mt-8"> {/* Add some top margin for separation */}
+        <div className="mt-8" data-name="Timeline Section"> {/* Add some top margin for separation */}
           <Timeline
             schedule={activeSchedule} // NEW: Pass activeSchedule
             currentScheduleIndex={currentScheduleIndex}

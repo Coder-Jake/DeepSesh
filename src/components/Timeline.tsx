@@ -118,6 +118,7 @@ const Timeline: React.FC<TimelineProps> = ({
             onChange={(e) => setLocalTimelineTitle(e.target.value)} // Update local state
             className="text-2xl font-semibold p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-center"
             aria-label="Timeline Title" // Changed aria-label for clarity
+            data-name="Timeline Title Input" // Added data-name
           />
         </CardTitle>
       </CardHeader>
@@ -140,6 +141,7 @@ const Timeline: React.FC<TimelineProps> = ({
                 !isCurrent && !isCompleted && "bg-background hover:bg-muted/50"
               )}
               style={{ backgroundColor: itemBackgroundColor }} // Apply custom background color
+              data-name={`Timeline Item ${index + 1}: ${item.title}`}
             >
               {isCurrent && (
                 <div
@@ -167,7 +169,7 @@ const Timeline: React.FC<TimelineProps> = ({
         })}
 
         {isSchedulePending && (
-          <div className="mt-8 pt-6 border-t border-border space-y-2">
+          <div className="mt-8 pt-6 border-t border-border space-y-2" data-name="Upcoming Schedule Details">
             <h3 className="text-lg font-semibold text-foreground text-left">Upcoming</h3>
             <div className="text-base font-bold text-foreground text-left"> {/* New container */}
               {commenceTime} on {targetDayName}, {formattedTargetDate}
@@ -182,7 +184,7 @@ const Timeline: React.FC<TimelineProps> = ({
           </div>
         )}
 
-        <div className="mt-8 pt-6 border-t border-border text-center space-y-1">
+        <div className="mt-8 pt-6 border-t border-border text-center space-y-1" data-name="Total Schedule Duration and Finish Time">
           <p className="text-sm text-muted-foreground">Total: {totalScheduleDuration} mins</p>
           {formattedFinishTime && (
             <p className="text-sm text-muted-foreground">Finish: {formattedFinishTime}</p>

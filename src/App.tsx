@@ -5,10 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { TimerProvider } from "@/contexts/TimerContext";
 import { ProfileProvider } from "@/contexts/ProfileContext";
-import { AuthProvider } from "@/contexts/AuthContext"; // Import AuthProvider
-import { ThemeProvider } from "@/contexts/ThemeContext"; // Import ThemeProvider
-import { GlobalTooltipProvider, useGlobalTooltip } from "@/contexts/GlobalTooltipContext"; // NEW: Import GlobalTooltipProvider and useGlobalTooltip
-import GlobalTooltip from "@/components/GlobalTooltip"; // NEW: Import GlobalTooltip
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { GlobalTooltipProvider, useGlobalTooltip } from "@/contexts/GlobalTooltipContext";
+import GlobalTooltip from "@/components/GlobalTooltip";
 import Header from "@/components/Header";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -16,27 +16,27 @@ import History from "./pages/History";
 import Settings from "./pages/Settings";
 import ChipIn from "./pages/ChipIn";
 import Leaderboard from "./pages/Leaderboard";
-import Credits from "./pages/Credits"; // Import the new Credits page
-import Login from "./pages/Login"; // Import the new Login page
+import Credits from "./pages/Credits";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
-import { useEffect, useRef } from "react"; // NEW: Import useRef
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { useEffect, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const navigate = useNavigate();
-  const { toasts } = useToast(); // Get toasts from useToast hook
-  const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip(); // NEW: Use global tooltip context
-  const lastHoveredElementRef = useRef<HTMLElement | null>(null); // NEW: Ref to track last hovered element
+  const { toasts } = useToast();
+  const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
+  const lastHoveredElementRef = useRef<HTMLElement | null>(null);
 
-  // NEW: Helper function to get element's name
   const getElementName = (element: HTMLElement): string | null => {
-    // Prioritize data-name attribute
+    // 1. Prioritize data-name attribute for explicit naming
     if (element.dataset.name) {
       return element.dataset.name;
     }
-    // Common attributes
+
+    // 2. Common accessibility and semantic attributes
     if (element.ariaLabel) {
       return element.ariaLabel;
     }
@@ -44,27 +44,60 @@ const AppContent = () => {
       return element.title;
     }
     if (element instanceof HTMLInputElement && element.placeholder) {
-      return element.placeholder;
+      return `${element.placeholder} Input`;
     }
     if (element instanceof HTMLImageElement && element.alt) {
-      return element.alt;
+      return `${element.alt} Image`;
     }
-    // Text content for buttons, labels, titles, etc.
-    if (element.tagName === 'BUTTON' || element.tagName === 'LABEL' || element.tagName.startsWith('H')) {
+
+    // 3. Specific component/element types based on text content or structure
+    if (element.tagName === 'BUTTON') {
       const text = element.textContent?.trim();
-      if (text && text.length > 0 && text.length < 50) { // Limit length to avoid large blocks of text
-        return text;
+      if (text && text.length > 0 && text.length < 50) {
+        return `${text} Button`;
       }
     }
-    // Fallback to tag name
-    return element.tagName;
+    if (element.tagName === 'LABEL') {
+      const text = element.textContent?.trim();
+      if (text && text.length > 0 && text.length < 50) {
+        return `${text} Label`;
+      }
+    }
+    if (element.tagName === 'INPUT') {
+      if (element.type === 'number') return 'Number Input';
+      if (element.type === 'email') return 'Email Input';
+      if (element.type === 'password') return 'Password Input';
+      if (element.type === 'text') return 'Text Input';
+      return 'Input Field';
+    }
+    if (element.tagName === 'TEXTAREA') {
+      return 'Textarea Field';
+    }
+    if (element.tagName === 'SELECT') {
+      return 'Select Dropdown';
+    }
+    if (element.tagName.startsWith('H')) { // H1, H2, H3, etc.
+      const text = element.textContent?.trim();
+      if (text && text.length > 0 && text.length < 50) {
+        return `${text} Heading`;
+      }
+    }
+
+    // 4. Contextual naming for shadcn/ui Card Titles
+    const parentCardHeader = element.closest('.card-header'); // Assuming CardHeader has this class
+    if (parentCardHeader && element.tagName.startsWith('H')) {
+      const cardTitle = element.textContent?.trim();
+      if (cardTitle) return `${cardTitle} Card Title`;
+    }
+
+    // 5. Fallback to a more descriptive tag name
+    return `${element.tagName} Element`;
   };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Shift' && !isShiftPressed) {
         setIsShiftPressed(true);
-        // If an element is already hovered, show tooltip immediately
         if (lastHoveredElementRef.current) {
           const name = getElementName(lastHoveredElementRef.current);
           if (name) {
@@ -73,13 +106,11 @@ const AppContent = () => {
         }
       }
 
-      // Prevent navigation if user is typing in an input field
       const targetTagName = (event.target as HTMLElement).tagName;
       if (targetTagName === 'INPUT' || targetTagName === 'TEXTAREA' || targetTagName === 'SELECT') {
         return;
       }
 
-      // Prevent navigation if any modifier key is pressed
       if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
         return;
       }
@@ -124,7 +155,6 @@ const AppContent = () => {
 
     const handleMouseMove = (event: MouseEvent) => {
       if (isShiftPressed) {
-        // Update tooltip position if already visible
         if (lastHoveredElementRef.current) {
           const name = getElementName(lastHoveredElementRef.current);
           if (name) {
@@ -178,13 +208,12 @@ const AppContent = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/chip-in" element={<ChipIn />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/credits" element={<Credits />} /> {/* New Credits route */}
-        <Route path="/login" element={<Login />} /> {/* New Login route */}
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="/credits" element={<Credits />} />
+        <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Toaster toasts={toasts} /> {/* Pass toasts prop here */}
-      <GlobalTooltip /> {/* NEW: Render the global tooltip */}
+      <Toaster toasts={toasts} />
+      <GlobalTooltip />
     </div>
   );
 };
@@ -192,12 +221,11 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <ThemeProvider> {/* ThemeProvider wraps AuthProvider */}
+      <ThemeProvider>
         <AuthProvider>
           <ProfileProvider>
             <TimerProvider>
-              <GlobalTooltipProvider> {/* NEW: GlobalTooltipProvider wraps AppContent */}
-                {/* Toaster is now rendered inside AppContent */}
+              <GlobalTooltipProvider>
                 <Sonner />
                 <BrowserRouter>
                   <AppContent />
