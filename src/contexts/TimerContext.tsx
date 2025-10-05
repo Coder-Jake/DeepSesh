@@ -137,6 +137,19 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  const updateSeshTitleWithSchedule = useCallback((currentScheduleTitle: string) => {
+    setSeshTitle(prevSeshTitle => {
+      if (prevSeshTitle === "Notes" || prevSeshTitle.trim() === "") {
+        return `${currentScheduleTitle} Notes`; // Changed to include " Notes"
+      }
+      // If current seshTitle already starts with scheduleTitle, don't duplicate
+      if (prevSeshTitle.startsWith(currentScheduleTitle)) {
+        return prevSeshTitle;
+      }
+      return `${currentScheduleTitle} - ${prevSeshTitle}`;
+    });
+  }, []);
+
   const startSchedule = useCallback(() => {
     if (schedule.length > 0) {
       // Reset manual timer states if a manual timer was running/paused
@@ -149,7 +162,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
         setNotes("");
-        setSeshTitle("Notes");
+        // setSeshTitle("Notes"); // This will be handled by updateSeshTitleWithSchedule
       }
 
       // Take a snapshot of the current schedule and its colors
@@ -190,13 +203,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsRunning(true);
         setIsPaused(false);
         setCurrentPhaseStartTime(Date.now());
+        updateSeshTitleWithSchedule(scheduleTitle); // Update seshTitle immediately
         toast({
           title: "Schedule Started!",
           description: `"${scheduleTitle}" has begun.`,
         });
       }
     }
-  }, [schedule, scheduleTitle, scheduleStartOption, isRunning, isPaused, timerColors]);
+  }, [schedule, scheduleTitle, scheduleStartOption, isRunning, isPaused, timerColors, updateSeshTitleWithSchedule]);
 
   const commencePreparedSchedule = useCallback(() => {
     if (!isSchedulePrepared) return; // Only commence if a schedule is prepared
@@ -221,11 +235,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsRunning(true);
     setIsPaused(false);
     setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
+    updateSeshTitleWithSchedule(scheduleTitle); // Update seshTitle when prepared schedule commences
     toast({
       title: "Schedule Commenced!",
       description: `"${scheduleTitle}" has begun.`,
     });
-  }, [isSchedulePrepared, isRunning, isPaused, scheduleTitle]);
+  }, [isSchedulePrepared, isRunning, isPaused, scheduleTitle, updateSeshTitleWithSchedule]);
 
 
   const resetSchedule = useCallback(() => {
