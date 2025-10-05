@@ -88,7 +88,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  timeoutRefs.current = useRef<Record<string, NodeJS.Timeout>>({});
+  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Ref to store the *last saved* or *initial loaded* state for comparison
   // Initialize with current context values on first render
@@ -438,6 +438,44 @@ const Settings = () => {
           value={openSettingsAccordions} // Bind to context state
           onValueChange={setOpenSettingsAccordions} // Update context state
         >
+          {/* Notifications */}
+          <AccordionItem value="notifications" className="border rounded-lg px-6">
+            <AccordionTrigger className="text-xl font-semibold">
+              Notifications
+            </AccordionTrigger>
+            <AccordionContent className="space-y-8 pt-4">
+              <NotificationControl
+                type="ask"
+                title="Asks"
+                value={askNotifications}
+              />
+
+              <NotificationControl
+                type="ask"
+                title="Joins"
+                value={askNotifications}
+              />
+              
+              <NotificationControl
+                type="break"
+                title="Break Reminders"
+                value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }}
+              />
+              
+              <NotificationControl
+                type="invites"
+                title="Session Invites"
+                value={sessionInvites}
+              />
+              
+              <NotificationControl
+                type="activity"
+                title="Friend Activity"
+                value={friendActivity}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
           {/* Behaviour */}
           <AccordionItem value="behaviour" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
@@ -918,44 +956,6 @@ const Settings = () => {
                   </Select>
                 </div>
               </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* Notifications */}
-          <AccordionItem value="notifications" className="border rounded-lg px-6">
-            <AccordionTrigger className="text-xl font-semibold">
-              Notifications
-            </AccordionTrigger>
-            <AccordionContent className="space-y-8 pt-4">
-              <NotificationControl
-                type="ask"
-                title="Asks"
-                value={askNotifications}
-              />
-
-              <NotificationControl
-                type="ask"
-                title="Joins"
-                value={askNotifications}
-              />
-              
-              <NotificationControl
-                type="break"
-                title="Break Reminders"
-                value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }}
-              />
-              
-              <NotificationControl
-                type="invites"
-                title="Session Invites"
-                value={sessionInvites}
-              />
-              
-              <NotificationControl
-                type="activity"
-                title="Friend Activity"
-                value={friendActivity}
-              />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
