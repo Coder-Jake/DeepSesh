@@ -248,13 +248,12 @@ const ScheduleForm: React.FC = () => {
   };
 
   const handleOpenColorPicker = (e: React.MouseEvent, timerId: string) => {
-    const target = e.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    setEditingColorTimerId(timerId);
+    // Use clientX/clientY for fixed positioning, add a small offset
     setPickerPosition({
-      top: rect.bottom + window.scrollY, // Position below the clicked element
-      left: rect.left + window.scrollX,
+      top: e.clientY + 15, 
+      left: e.clientX + 15,
     });
+    setEditingColorTimerId(timerId);
   };
 
   const handleCloseColorPicker = () => {
@@ -478,7 +477,7 @@ const ScheduleForm: React.FC = () => {
 
       {editingColorTimerId && pickerPosition && (
         <div
-          className="absolute z-50" // High z-index to ensure it's on top
+          className="fixed z-50" // Changed to fixed positioning
           style={{ top: pickerPosition.top, left: pickerPosition.left }}
         >
           <ColorPicker
