@@ -28,7 +28,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       case 'closed':
         return "Options are fixed (Yes, No, Don't Mind)";
       case 'choice':
-        return "e.g., Bear, Shark";
+        return "Bear, Shark";
       case 'selection':
         return "e.g., FishBowl, Sushi, GYGs, Burgers";
       default:
@@ -39,11 +39,11 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const getQuestionPlaceholderText = (type: PollType) => {
     switch (type) {
       case 'closed':
-        return "e.g., 'Would you be keen to grab a meal after this?'";
+        return "Would you be keen to grab a meal after this?";
       case 'choice':
-        return "e.g., 'If a bear & a shark had a fight, who would win?'";
+        return "If a bear & a shark had a fight, who would win?";
       case 'selection':
-        return "e.g., 'What would you like for Lunch?'";
+        return "What would you like for Lunch?";
       default:
         return "Enter your poll question...";
     }
