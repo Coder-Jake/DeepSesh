@@ -59,6 +59,23 @@ const ScheduleForm: React.FC = () => {
     }
   }, [schedule, setSchedule]);
 
+  // Initialize commenceTime to the nearest following hour if not already set and custom_time is selected
+  useEffect(() => {
+    if (!commenceTime && scheduleStartOption === 'custom_time') {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // If current minutes are not 0, move to the next hour
+      if (minutes > 0) {
+        hours = (hours + 1) % 24; // Handle midnight (23 -> 0)
+      }
+
+      const nearestHour = String(hours).padStart(2, '0') + ":00";
+      setCommenceTime(nearestHour);
+    }
+  }, [commenceTime, setCommenceTime, scheduleStartOption]);
+
   const [activeTab, setActiveTab] = useState("plan");
 
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
