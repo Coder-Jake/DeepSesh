@@ -201,23 +201,43 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const startSchedule = useCallback(() => {
     if (schedule.length === 0) {
-      // This case is handled by toast in ScheduleForm, so just return
       return;
     }
 
+    // If the schedule is being prepared (manual or custom_time), do NOT prompt for override.
+    // Just add it to preparedSchedules.
+    if (scheduleStartOption === 'manual' || scheduleStartOption === 'custom_time') {
+        const newPreparedSchedule: ScheduledTimerTemplate = {
+            id: crypto.randomUUID(),
+            title: scheduleTitle,
+            schedule: [...schedule],
+            commenceTime: commenceTime,
+            commenceDay: commenceDay,
+            scheduleStartOption: scheduleStartOption,
+            isRecurring: isRecurring,
+            recurrenceFrequency: recurrenceFrequency,
+            timerColors: { ...timerColors },
+        };
+        setPreparedSchedules(prev => [...prev, newPreparedSchedule]);
+        setIsSchedulingMode(false);
+        toast({
+            title: "Schedule Prepared!",
+            description: `"${scheduleTitle}" is ready. ${scheduleStartOption === 'custom_time' ? 'It will begin at the scheduled time.' : 'Hit \'Commence\' to begin.'}`,
+        });
+        return; // Exit early, no override logic needed for preparing
+    }
+
+    // If scheduleStartOption is 'now', then proceed with override checks.
     let needsOverrideConfirmation = false;
     let confirmationMessageParts: string[] = [];
     let shouldResetManualTimer = false;
-    let shouldResetExistingActiveSchedule = false; // Renamed for clarity
+    let shouldResetExistingActiveSchedule = false;
 
-    // Check for existing active schedule
     if (isScheduleActive) {
         confirmationMessageParts.push("An active schedule is running.");
         shouldResetExistingActiveSchedule = true;
     }
-
-    // Check for existing manual timer, only if the new schedule is starting 'now'
-    if (scheduleStartOption === 'now' && (isRunning || isPaused)) {
+    if (isRunning || isPaused) { // This covers manual timer
         confirmationMessageParts.push("A manual timer is also active.");
         shouldResetManualTimer = true;
     }
@@ -227,18 +247,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     if (needsOverrideConfirmation) {
-        const actionText = scheduleStartOption === 'now' ? "start this new schedule now" : "prepare this new schedule";
-        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and ${actionText}?`;
+        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and start this new schedule now?`;
         if (!confirm(finalMessage)) {
             return;
         }
-        // If confirmed, perform resets
         if (shouldResetExistingActiveSchedule) {
-            // This will also clear preparedSchedules if an active schedule was running
-            resetSchedule(); 
+            resetSchedule(); // This resets all schedule-related states
         }
         if (shouldResetManualTimer) {
-            // Reset manual timer states
             setIsRunning(false);
             setIsPaused(false);
             setAccumulatedFocusSeconds(0);
@@ -249,48 +265,28 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }
 
-    // Proceed with starting/preparing the new schedule
-    if (scheduleStartOption === 'now') {
-        setActiveSchedule([...schedule]);
-        setActiveTimerColors({ ...timerColors });
-        setActiveScheduleDisplayTitle(scheduleTitle);
+    // Logic for starting 'now'
+    setActiveSchedule([...schedule]);
+    setActiveTimerColors({ ...timerColors });
+    setActiveScheduleDisplayTitle(scheduleTitle);
 
-        setCurrentScheduleIndex(0);
-        setTimerType(schedule[0].type);
-        setTimeLeft(schedule[0].durationMinutes * 60);
-        setIsFlashing(false);
-        setSessionStartTime(Date.now());
-        setIsSchedulingMode(false);
+    setCurrentScheduleIndex(0);
+    setTimerType(schedule[0].type);
+    setTimeLeft(schedule[0].durationMinutes * 60);
+    setIsFlashing(false);
+    setSessionStartTime(Date.now());
+    setIsSchedulingMode(false);
 
-        setIsScheduleActive(true);
-        setIsSchedulePending(false); // Not pending, it's active
-        setIsRunning(true);
-        setIsPaused(false);
-        setCurrentPhaseStartTime(Date.now());
-        updateSeshTitleWithSchedule(scheduleTitle);
-        toast({
-            title: "Schedule Started!",
-            description: `"${scheduleTitle}" has begun.`,
-        });
-    } else { // 'manual' or 'custom_time' - add to prepared schedules
-        const newPreparedSchedule: ScheduledTimerTemplate = {
-            id: crypto.randomUUID(), // Generate a new ID for the prepared schedule
-            title: scheduleTitle,
-            schedule: [...schedule], // Deep copy
-            commenceTime: commenceTime,
-            commenceDay: commenceDay,
-            scheduleStartOption: scheduleStartOption,
-            isRecurring: isRecurring,
-            recurrenceFrequency: recurrenceFrequency,
-            timerColors: { ...timerColors }, // Deep copy
-        };
-        setPreparedSchedules(prev => [...prev, newPreparedSchedule]);
-        setIsSchedulingMode(false); // Exit scheduling mode
-        toast({
-            title: "Schedule Prepared!",
-            description: `"${scheduleTitle}" is ready. ${scheduleStartOption === 'custom_time' ? 'It will begin at the scheduled time.' : 'Hit \'Commence\' to begin.'}`,
-        });
-    }
+    setIsScheduleActive(true);
+    setIsSchedulePending(false);
+    setIsRunning(true);
+    setIsPaused(false);
+    setCurrentPhaseStartTime(Date.now());
+    updateSeshTitleWithSchedule(scheduleTitle);
+    toast({
+        title: "Schedule Started!",
+        description: `"${scheduleTitle}" has begun.`,
+    });
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
