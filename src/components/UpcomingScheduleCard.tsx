@@ -72,7 +72,7 @@ const UpcomingScheduleCard: React.FC<UpcomingScheduleCardProps> = ({
           </div>
         </div>
 
-        <div className="space-y-1 max-h-40 overflow-y-auto pr-2">
+        <div className="space-y-1 pr-2"> {/* Removed max-h-40 and overflow-y-auto */}
           {schedule.map((item, index) => (
             <div
               key={item.id}
