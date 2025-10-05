@@ -122,7 +122,9 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
   const [recentColors, setRecentColors] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const storedColors = localStorage.getItem(LOCAL_STORAGE_RECENT_COLORS_KEY);
-      return storedColors ? JSON.parse(storedColors) : [];
+      const initialColors = storedColors ? JSON.parse(storedColors) : [];
+      console.log("ColorPicker: Initial recentColors from localStorage:", initialColors); // DEBUG
+      return initialColors;
     }
     return [];
   });
@@ -130,6 +132,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_RECENT_COLORS_KEY, JSON.stringify(recentColors));
+      console.log("ColorPicker: Saved recentColors to localStorage:", recentColors); // DEBUG
     }
   }, [recentColors]);
 
@@ -139,7 +142,9 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
       // Remove the color if it already exists to move it to the front
       const filtered = prevColors.filter(c => c !== color);
       // Add the new color to the front and limit the array size
-      return [color, ...filtered].slice(0, MAX_RECENT_COLORS);
+      const newRecentColors = [color, ...filtered].slice(0, MAX_RECENT_COLORS);
+      console.log("ColorPicker: New recentColors after selection:", newRecentColors); // DEBUG
+      return newRecentColors;
     });
   }, [onSelectColor]);
 
