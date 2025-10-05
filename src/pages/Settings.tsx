@@ -827,7 +827,7 @@ const Settings = () => {
                         onCheckedChange={(checked) => handleProfileVisibilityChange('friends', !!checked)}
                       />
                       <Label htmlFor="profile-friends" className="text-sm font-normal">
-                        Friends Only
+                        Friends
                       </Label>
                     </div>
 
