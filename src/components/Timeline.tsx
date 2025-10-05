@@ -26,7 +26,7 @@ const Timeline: React.FC<TimelineProps> = ({
   onCountdownEnd,
   timerColors, // NEW: Destructure timerColors
 }) => {
-  const { formatTime, isScheduleActive, is24HourFormat, activeScheduleDisplayTitle, setActiveScheduleDisplayTitle } = useTimer(); // Added setActiveScheduleDisplayTitle
+  const { formatTime, isScheduleActive, is24HourFormat, activeScheduleDisplayTitle, setActiveScheduleDisplayTitle, sessionStartTime, isSchedulePrepared } = useTimer(); // Added sessionStartTime and isSchedulePrepared
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -129,7 +129,12 @@ const Timeline: React.FC<TimelineProps> = ({
       remainingDurationSeconds += schedule[i].durationMinutes * 60; // Add future items
     }
     estimatedFinishTime = new Date(now + remainingDurationSeconds * 1000);
+  } else if (isSchedulePrepared) { // For manually prepared schedules
+    // If prepared but not active/pending, assume it starts "now" for display purposes
+    const now = Date.now();
+    estimatedFinishTime = new Date(now + totalScheduleDuration * 60 * 1000);
   }
+
 
   const formattedFinishTime = estimatedFinishTime 
     ? estimatedFinishTime.toLocaleTimeString('en-US', { 
@@ -141,14 +146,24 @@ const Timeline: React.FC<TimelineProps> = ({
 
   // Calculate start times for each item in the schedule
   const itemStartTimes = useMemo(() => {
-    if (!isSchedulePending || schedule.length === 0) return {};
+    if (schedule.length === 0) return {};
+
+    let baseDate: Date;
+    if (isSchedulePending) { // Custom time start
+      baseDate = getCommenceTargetDate();
+    } else if (isScheduleActive && sessionStartTime !== null) { // Schedule is running
+      baseDate = new Date(sessionStartTime);
+    } else if (isSchedulePrepared) { // Schedule is prepared (manual start)
+      baseDate = new Date(); // Show times relative to "now" for display
+    } else {
+      return {}; // Should not happen if Timeline is rendered correctly
+    }
 
     const startTimes: Record<string, string> = {};
-    const baseCommenceDate = getCommenceTargetDate();
     let currentAccumulatedMinutes = 0;
 
     schedule.forEach((item) => {
-      const itemStartDate = new Date(baseCommenceDate.getTime() + currentAccumulatedMinutes * 60 * 1000);
+      const itemStartDate = new Date(baseDate.getTime() + currentAccumulatedMinutes * 60 * 1000);
       startTimes[item.id] = itemStartDate.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
@@ -157,7 +172,7 @@ const Timeline: React.FC<TimelineProps> = ({
       currentAccumulatedMinutes += item.durationMinutes;
     });
     return startTimes;
-  }, [schedule, isSchedulePending, getCommenceTargetDate, is24HourFormat]);
+  }, [schedule, isSchedulePending, isScheduleActive, isSchedulePrepared, sessionStartTime, getCommenceTargetDate, is24HourFormat]);
 
   return (
     <Card className="mt-6">
@@ -219,11 +234,10 @@ const Timeline: React.FC<TimelineProps> = ({
                   {item.customTitle || (item.type === 'focus' ? 'Focus' : 'Break')} • {item.durationMinutes} mins
                 </p>
               </div>
-              {isSchedulePending && ( // Only show for pending schedules
-                <div className="relative z-10 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  {itemStartTimes[item.id]}
-                </div>
-              )}
+              {/* Start time for all items, visible on hover */}
+              <div className="relative z-10 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                {itemStartTimes[item.id]}
+              </div>
               {isCurrent && (
                 <div className="relative z-10 text-lg font-bold">
                   {formatTime(timeLeft)}
