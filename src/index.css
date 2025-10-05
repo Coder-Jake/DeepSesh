@@ -75,7 +75,7 @@
 
     --public-bg: 120 60% 20%; /* Darker green for public */
     --private-bg: 240 60% 20%; /* Darker blue for private */
-    --olive: 80 20% 50%; /* Olive green */
+    --olive: 80 80% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */
 
     --focus-background: 210 40% 25%; /* Dark mode pastel blue for focus */
