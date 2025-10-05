@@ -50,6 +50,7 @@ const Login = () => {
               sign_in: {
                 email_label: 'Email',
                 password_label: 'Password',
+                email_input_placeholder: 'Email',
               },
               sign_up: {
                 email_label: 'Email',
