@@ -620,14 +620,7 @@ const Settings = () => {
               </div>
             </AccordionContent>
           </AccordionItem>
-        </Accordion>
 
-        <Accordion 
-          type="multiple" 
-          className="space-y-4"
-          value={openSettingsAccordions} // Bind to context state
-          onValueChange={setOpenSettingsAccordions} // Update context state
-        >
           {/* Session Defaults */}
           <AccordionItem value="session-defaults" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
@@ -748,6 +741,14 @@ const Settings = () => {
               </div>
             </AccordionContent>
           </AccordionItem>
+        </Accordion>
+
+        <Accordion 
+          type="multiple" 
+          className="space-y-4"
+          value={openSettingsAccordions} // Bind to context state
+          onValueChange={setOpenSettingsAccordions} // Update context state
+        >
 
           {/* Location & Discovery */}
           <AccordionItem value="location" className="border rounded-lg px-6">
