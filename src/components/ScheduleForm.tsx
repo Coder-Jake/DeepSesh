@@ -291,7 +291,7 @@ const ScheduleForm: React.FC = () => {
             {schedule.map((timer, index) => (
               <div 
                 key={timer.id} 
-                className="relative flex items-center gap-x-2 px-2 py-1 border rounded-md bg-muted/50" // Changed px-3 to px-2
+                className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50" // Changed px-3 to px-2
                 style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }} // Apply dynamic background color or default baby blue for focus
               >
                 <div className="flex items-center gap-1 flex-grow-0"> {/* Adjusted gap to gap-1 */}
