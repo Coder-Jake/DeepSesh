@@ -15,7 +15,6 @@ import AskMenu from "@/components/AskMenu";
 import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
-import UpcomingScheduleCard from "@/components/UpcomingScheduleCard"; // NEW: Import UpcomingScheduleCard
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +24,9 @@ import {
 import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
 import { format } from 'date-fns'; // Import date-fns for time formatting
 import { ScheduledTimerTemplate, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import ScheduledTimerTemplate and DAYS_OF_WEEK
+import { Accordion } from "@/components/ui/accordion"; // NEW
+import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem"; // NEW
+import UpcomingScheduleCardContent from "@/components/UpcomingScheduleCard"; // Renamed import
 
 // Define types for Ask items (copied from TimerContext to ensure consistency)
 interface ExtendSuggestion {
@@ -688,7 +690,7 @@ const Index = () => {
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
   // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
-  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePrepared || isSchedulePending; // Check for prepared schedule too
+  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending; // Check for prepared schedule too
 
   // Helper function to get the effective start timestamp for sorting
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
@@ -1130,21 +1132,17 @@ const Index = () => {
       {sortedPreparedSchedules.length > 0 && (
         <div className="mt-8" data-name="Upcoming Section">
           <h3 className="text-xl font-bold text-foreground mb-4">Upcoming Schedules</h3>
-          <div className="space-y-4">
+          <Accordion type="multiple" className="w-full space-y-4"> {/* Use Accordion here */}
             {sortedPreparedSchedules.map((template) => (
-              <UpcomingScheduleCard
+              <UpcomingScheduleAccordionItem
                 key={template.id}
-                schedule={template.schedule}
-                scheduleTitle={template.title}
-                commenceTime={template.commenceTime}
-                commenceDay={template.commenceDay}
-                scheduleStartOption={template.scheduleStartOption}
-                activeTimerColors={template.timerColors}
+                template={template}
                 commencePreparedSchedule={() => commenceSpecificPreparedSchedule(template.id)}
-                resetSchedule={() => discardPreparedSchedule(template.id)}
+                discardPreparedSchedule={() => discardPreparedSchedule(template.id)}
+                showCommenceButton={!isActiveTimer} // Pass the condition
               />
             ))}
-          </div>
+          </Accordion>
         </div>
       )}
     </main>
