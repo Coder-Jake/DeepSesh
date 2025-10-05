@@ -37,7 +37,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isScheduleActive, setIsScheduleActive] = useState(false); // True when schedule is actively running/paused as part of its execution
   const [isSchedulePrepared, setIsSchedulePrepared] = useState(false); // NEW: True when a schedule is set for later, but not actively running
   const [scheduleTitle, setScheduleTitle] = useState("My Focus Sesh");
-  const [commenceTime, setCommenceTime] = useState("09:00");
+  const [commenceTime, setCommenceTime] = useState(""); // Changed default to empty string
   const [commenceDay, setCommenceDay] = useState<number | null>(null); // 0 for Sunday, 1 for Monday, etc.
   const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false); // Added
@@ -233,7 +233,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentScheduleIndex(0);
     setSchedule([]);
     setScheduleTitle("My Focus Sesh");
-    setCommenceTime("09:00");
+    setCommenceTime(""); // Changed to empty string
     setCommenceDay(null);
     setIsSchedulePending(false);
     setScheduleStartOption('now');
@@ -429,7 +429,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsScheduleActive(data.isScheduleActive ?? false);
       setIsSchedulePrepared(data.isSchedulePrepared ?? false); // NEW
       setScheduleTitle(data.scheduleTitle ?? "My Focus Sesh");
-      setCommenceTime(data.commenceTime ?? "09:00");
+      setCommenceTime(data.commenceTime ?? ""); // Changed default to empty string
       setCommenceDay(data.commenceDay ?? null);
       setIsRecurring(data.isRecurring ?? false);
       setRecurrenceFrequency(data.recurrenceFrequency ?? 'daily');
