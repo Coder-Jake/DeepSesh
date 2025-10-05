@@ -208,17 +208,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let needsOverrideConfirmation = false;
     let confirmationMessageParts: string[] = [];
     let shouldResetManualTimer = false;
-    let shouldResetExistingSchedules = false; // Changed to plural
+    let shouldResetExistingActiveSchedule = false; // Renamed for clarity
 
     // Check for existing active schedule
     if (isScheduleActive) {
         confirmationMessageParts.push("An active schedule is running.");
-        shouldResetExistingSchedules = true;
-    }
-    // Check for existing prepared schedules
-    if (preparedSchedules.length > 0) {
-        confirmationMessageParts.push("Other schedules are prepared.");
-        shouldResetExistingSchedules = true;
+        shouldResetExistingActiveSchedule = true;
     }
 
     // Check for existing manual timer, only if the new schedule is starting 'now'
@@ -238,8 +233,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             return;
         }
         // If confirmed, perform resets
-        if (shouldResetExistingSchedules) {
-            resetSchedule(); // This resets all schedule-related states, including preparedSchedules
+        if (shouldResetExistingActiveSchedule) {
+            // This will also clear preparedSchedules if an active schedule was running
+            resetSchedule(); 
         }
         if (shouldResetManualTimer) {
             // Reset manual timer states
@@ -297,7 +293,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
-    isRunning, isPaused, isScheduleActive, preparedSchedules, timerColors, updateSeshTitleWithSchedule,
+    isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast
 ]);
@@ -578,6 +574,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       _setSeshTitle(data._seshTitle ?? "Notes"); // Load internal state
       setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false); // Load new state
       setNotes(data.notes ?? "");
+      setTimerIncrementInternal(data.timerIncrement ?? 5); // Load timerIncrement
       setShowSessionsWhileActive(data.showSessionsWhileActive ?? false);
       setIsGlobalPrivate(data.isGlobalPrivate ?? false);
       setTimerType(data.timerType ?? 'focus');
@@ -658,6 +655,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
       is24HourFormat, // NEW: Save is24HourFormat
       preparedSchedules, // NEW: Save prepared schedules
+      timerIncrement, // Save timerIncrement
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
   }, [
@@ -674,6 +672,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
     is24HourFormat, // NEW: Save is24HourFormat
     preparedSchedules, // NEW: Save prepared schedules
+    timerIncrement, // Save timerIncrement
   ]);
 
   const value = {
