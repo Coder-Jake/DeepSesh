@@ -294,9 +294,9 @@ const ScheduleForm: React.FC = () => {
                 className="relative flex items-center gap-x-2 px-3 py-1 border rounded-md bg-muted/50" // Changed to flex-nowrap and reduced gap
                 style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }} // Apply dynamic background color or default baby blue for focus
               >
-                <div className="flex items-center gap-2 flex-grow-0"> {/* Adjusted flex-grow */}
+                <div className="flex items-center gap-1 flex-grow-0"> {/* Adjusted gap to gap-1 */}
                   <span 
-                    className="font-semibold text-sm text-gray-500 flex-shrink-0 self-start cursor-pointer hover:text-foreground transition-colors"
+                    className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors" // Removed self-start
                     onClick={() => setEditingColorTimerId(timer.id)} // Open color picker on click
                   >
                     {index + 1}.
