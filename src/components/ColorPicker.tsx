@@ -10,7 +10,7 @@ interface ColorPickerProps {
 const LOCAL_STORAGE_RECENT_COLORS_KEY = 'deepsesh_recent_colors';
 const MAX_RECENT_COLORS = 10; // Limit the number of recently chosen colors
 
-// The original set of colors
+// The original set of colors with new blue and green
 const fixedColors = [
   '#ffadad', // Melon
   '#ffd6a5', // Sunset
@@ -21,9 +21,11 @@ const fixedColors = [
   '#bdb2ff', // Periwinkle
   '#ffc6ff', // Mauve
   '#fffffc', // Baby Powder
+  '#87CEEB', // Sky Blue (New Blue)
+  '#90EE90', // Light Green (New Green)
 ];
 
-// A lighter version of the fixed colors
+// A lighter version of the fixed colors with new blue and green
 const lighterFixedColors = [
   '#ffe0e0', // Lighter Melon
   '#ffedda', // Lighter Sunset
@@ -34,9 +36,11 @@ const lighterFixedColors = [
   '#e0daff', // Lighter Periwinkle
   '#ffeaff', // Lighter Mauve
   '#ffffff', // Lighter Baby Powder (pure white)
+  '#ADD8E6', // Lighter Sky Blue
+  '#C1FFC1', // Lighter Light Green
 ];
 
-// A darker version of the fixed colors
+// A darker version of the fixed colors with new blue and green
 const darkerFixedColors = [
   '#cc8a8a', // Darker Melon
   '#ccac84', // Darker Sunset
@@ -47,6 +51,8 @@ const darkerFixedColors = [
   '#968fcc', // Darker Periwinkle
   '#cc9fcc', // Darker Mauve
   '#ccccca', // Darker Baby Powder (light grey)
+  '#6A9ACD', // Darker Sky Blue
+  '#6BCC6B', // Darker Light Green
 ];
 
 const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, currentColor }) => {
@@ -84,7 +90,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
       {recentColors.length > 0 && (
         <div className="mb-3">
           <p className="text-xs text-muted-foreground mb-1">Recently Used</p>
-          <div className="grid grid-cols-10 gap-1">
+          <div className="grid grid-cols-11 gap-1"> {/* Adjusted grid-cols to 11 */}
             {recentColors.map((color) => (
               <button
                 key={color}
@@ -104,7 +110,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
 
       <div className="mb-3">
         <p className="text-xs text-muted-foreground mb-1">Darker</p>
-        <div className="grid grid-cols-10 gap-1">
+        <div className="grid grid-cols-11 gap-1"> {/* Adjusted grid-cols to 11 */}
           {darkerFixedColors.map((color) => (
             <button
               key={color}
@@ -122,7 +128,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
 
       <div className="mb-3">
         <p className="text-xs text-muted-foreground mb-1">Original</p>
-        <div className="grid grid-cols-10 gap-1">
+        <div className="grid grid-cols-11 gap-1"> {/* Adjusted grid-cols to 11 */}
           {fixedColors.map((color) => (
             <button
               key={color}
@@ -140,7 +146,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
 
       <div>
         <p className="text-xs text-muted-foreground mb-1">Lighter</p>
-        <div className="grid grid-cols-10 gap-1">
+        <div className="grid grid-cols-11 gap-1"> {/* Adjusted grid-cols to 11 */}
           {lighterFixedColors.map((color) => (
             <button
               key={color}
