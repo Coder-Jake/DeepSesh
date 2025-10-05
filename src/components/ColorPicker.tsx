@@ -86,15 +86,15 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
   }, [onSelectColor]);
 
   return (
-    <div className="p-2 bg-popover border rounded-md shadow-lg w-[300px]" onMouseLeave={onClose}>
+    <div className="p-2 bg-popover border rounded-md shadow-lg w-[50px] h-[300px] overflow-y-auto" onMouseLeave={onClose}>
       {recentColors.length > 0 && (
         <div className="mb-3">
-          <div className="grid grid-cols-11 gap-1">
+          <div className="grid grid-cols-1 gap-1">
             {recentColors.map((color) => (
               <button
                 key={color}
                 className={cn(
-                  "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+                  "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all mx-auto",
                   currentColor === color && "border-primary"
                 )}
                 style={{ backgroundColor: color }}
@@ -108,12 +108,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
       )}
 
       <div className="mb-3">
-        <div className="grid grid-cols-11 gap-1">
+        <div className="grid grid-cols-1 gap-1">
           {darkerFixedColors.map((color) => (
             <button
               key={color}
               className={cn(
-                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all mx-auto",
                 currentColor === color && "border-primary"
               )}
               style={{ backgroundColor: color }}
@@ -125,12 +125,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
       </div>
 
       <div className="mb-3">
-        <div className="grid grid-cols-11 gap-1">
+        <div className="grid grid-cols-1 gap-1">
           {fixedColors.map((color) => (
             <button
               key={color}
               className={cn(
-                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all mx-auto",
                 currentColor === color && "border-primary"
               )}
               style={{ backgroundColor: color }}
@@ -142,12 +142,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
       </div>
 
       <div>
-        <div className="grid grid-cols-11 gap-1">
+        <div className="grid grid-cols-1 gap-1">
           {lighterFixedColors.map((color) => (
             <button
               key={color}
               className={cn(
-                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all mx-auto",
                 currentColor === color && "border-primary"
               )}
               style={{ backgroundColor: color }}
@@ -157,10 +157,6 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
           ))}
         </div>
       </div>
-      
-      <button onClick={onClose} className="mt-2 w-full text-sm text-muted-foreground hover:text-foreground">
-        Close
-      </button>
     </div>
   );
 };
