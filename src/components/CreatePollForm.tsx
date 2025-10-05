@@ -39,7 +39,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const getQuestionPlaceholderText = (type: PollType) => {
     switch (type) {
       case 'closed':
-        return "e.g., 'Should we extend the focus session?'";
+        return "e.g., 'Would you be keen to grab a meal after this?'";
       case 'choice':
         return "e.g., 'If a bear & a shark had a fight, who would win?'";
       case 'selection':
