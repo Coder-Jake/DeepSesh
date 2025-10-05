@@ -101,7 +101,7 @@ const Timeline: React.FC<TimelineProps> = ({
   }
 
   const formattedFinishTime = estimatedFinishTime 
-    ? estimatedFinishTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+    ? estimatedFinishTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) // Changed to 24-hour format
     : null;
 
   return (
