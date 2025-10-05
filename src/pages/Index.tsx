@@ -757,13 +757,15 @@ const Index = () => {
                     isActiveTimer={isActiveTimer}
                   >
                     <div 
-                      className={`flex flex-col items-center text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}
+                      className={`relative flex flex-col items-center text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}
                       onMouseEnter={() => setIsHoveringTimer(true)}
                       onMouseLeave={() => setIsHoveringTimer(false)}
                     >
-                      {formatTime(timeLeft)}
+                      <div className="h-10 flex items-center"> {/* Fixed height for time display */}
+                        {formatTime(timeLeft)}
+                      </div>
                       {isHoveringTimer && isActiveTimer && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap"> {/* Absolute positioning */}
                           End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
                         </p>
                       )}
