@@ -10,7 +10,7 @@ interface ColorPickerProps {
 const LOCAL_STORAGE_RECENT_COLORS_KEY = 'deepsesh_recent_colors';
 const MAX_RECENT_COLORS = 10; // Limit the number of recently chosen colors
 
-// The new, limited set of colors provided by the user
+// The original set of colors
 const fixedColors = [
   '#ffadad', // Melon
   '#ffd6a5', // Sunset
@@ -23,13 +23,27 @@ const fixedColors = [
   '#fffffc', // Baby Powder
 ];
 
+// A lighter version of the fixed colors
+const lighterFixedColors = [
+  '#ffe0e0', // Lighter Melon
+  '#ffedda', // Lighter Sunset
+  '#feffdd', // Lighter Cream
+  '#e0ffdf', // Lighter Tea Green
+  '#d0faff', // Lighter Electric Blue
+  '#d4e3ff', // Lighter Jordy Blue
+  '#e0daff', // Lighter Periwinkle
+  '#ffeaff', // Lighter Mauve
+  '#ffffff', // Lighter Baby Powder (pure white)
+];
+
 const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, currentColor }) => {
   const [recentColors, setRecentColors] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const storedColors = localStorage.getItem(LOCAL_STORAGE_RECENT_COLORS_KEY);
       const initialColors = storedColors ? JSON.parse(storedColors) : [];
-      // Filter out any old recent colors that are not in the new fixed palette
-      const filteredInitialColors = initialColors.filter((color: string) => fixedColors.includes(color));
+      // Filter out any old recent colors that are not in the new fixed palette (both original and lighter)
+      const allAvailableColors = [...fixedColors, ...lighterFixedColors];
+      const filteredInitialColors = initialColors.filter((color: string) => allAvailableColors.includes(color));
       return filteredInitialColors;
     }
     return [];
@@ -75,20 +89,42 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
         </div>
       )}
 
-      <div className="grid grid-cols-10 gap-1">
-        {fixedColors.map((color) => (
-          <button
-            key={color}
-            className={cn(
-              "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
-              currentColor === color && "border-primary"
-            )}
-            style={{ backgroundColor: color }}
-            onClick={() => handleColorSelection(color)}
-            aria-label={`Select color ${color}`}
-          />
-        ))}
+      <div className="mb-3"> {/* Added mb-3 for spacing between rows */}
+        <p className="text-xs text-muted-foreground mb-1">Original</p>
+        <div className="grid grid-cols-10 gap-1">
+          {fixedColors.map((color) => (
+            <button
+              key={color}
+              className={cn(
+                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+                currentColor === color && "border-primary"
+              )}
+              style={{ backgroundColor: color }}
+              onClick={() => handleColorSelection(color)}
+              aria-label={`Select color ${color}`}
+            />
+          ))}
+        </div>
       </div>
+
+      <div>
+        <p className="text-xs text-muted-foreground mb-1">Lighter</p>
+        <div className="grid grid-cols-10 gap-1">
+          {lighterFixedColors.map((color) => (
+            <button
+              key={color}
+              className={cn(
+                "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+                currentColor === color && "border-primary"
+              )}
+              style={{ backgroundColor: color }}
+              onClick={() => handleColorSelection(color)}
+              aria-label={`Select lighter color ${color}`}
+            />
+          ))}
+        </div>
+      </div>
+      
       <button onClick={onClose} className="mt-2 w-full text-sm text-muted-foreground hover:text-foreground">
         Close
       </button>
