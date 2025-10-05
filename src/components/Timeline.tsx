@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScheduledTimer } from "@/types/timer";
@@ -139,6 +139,26 @@ const Timeline: React.FC<TimelineProps> = ({
       }) 
     : null;
 
+  // Calculate start times for each item in the schedule
+  const itemStartTimes = useMemo(() => {
+    if (!isSchedulePending || schedule.length === 0) return {};
+
+    const startTimes: Record<string, string> = {};
+    const baseCommenceDate = getCommenceTargetDate();
+    let currentAccumulatedMinutes = 0;
+
+    schedule.forEach((item) => {
+      const itemStartDate = new Date(baseCommenceDate.getTime() + currentAccumulatedMinutes * 60 * 1000);
+      startTimes[item.id] = itemStartDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: is24HourFormat ? 'h23' : 'h12'
+      });
+      currentAccumulatedMinutes += item.durationMinutes;
+    });
+    return startTimes;
+  }, [schedule, isSchedulePending, getCommenceTargetDate, is24HourFormat]);
+
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -173,7 +193,7 @@ const Timeline: React.FC<TimelineProps> = ({
             <div
               key={item.id}
               className={cn(
-                "relative flex items-center justify-between p-3 rounded-md transition-all duration-300",
+                "relative flex items-center justify-between p-3 rounded-md transition-all duration-300 group", // Added 'group' for hover effect
                 isCompleted && "bg-muted text-muted-foreground opacity-70",
                 isCurrent && (item.isCustom ? "bg-blue-100 text-blue-800 shadow-md" :
                               item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
@@ -199,6 +219,11 @@ const Timeline: React.FC<TimelineProps> = ({
                   {item.customTitle || (item.type === 'focus' ? 'Focus' : 'Break')} • {item.durationMinutes} mins
                 </p>
               </div>
+              {isSchedulePending && ( // Only show for pending schedules
+                <div className="relative z-10 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {itemStartTimes[item.id]}
+                </div>
+              )}
               {isCurrent && (
                 <div className="relative z-10 text-lg font-bold">
                   {formatTime(timeLeft)}
