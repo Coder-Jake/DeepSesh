@@ -253,7 +253,7 @@ const Index = () => {
       clearTimeout(longPressRef.current);
     }
     isLongPress.current = false; // Reset long press flag
-    setIsHoveringTimer(false); // Also reset hover state on mouse leave
+    // Removed setIsHoveringTimer(false) from here, now handled by onMouseLeave on the specific div
   };
   
   const handlePublicPrivateToggle = () => {
@@ -747,30 +747,28 @@ const Index = () => {
                   </div>
                 </div>
                 
-                <div 
-                  className="flex flex-col items-center mb-4" // Changed to flex-col and items-center
-                  onMouseEnter={() => setIsHoveringTimer(true)}
-                  onMouseLeave={handleLongPressEnd} // Use handleLongPressEnd to clear hover and long press
-                >
+                <div className="flex flex-col items-center mb-4">
                   <CircularProgress
                     size={280}
                     strokeWidth={12}
                     progress={(timeLeft / (currentItemDuration * 60)) * 100}
-                    // Removed interactive prop
-                    // Removed onInteract prop
                     className={isFlashing ? 'animate-pulse' : ''}
-                    timerType={timerType} // Pass timerType here
-                    isActiveTimer={isActiveTimer} // Pass isActiveTimer here
+                    timerType={timerType}
+                    isActiveTimer={isActiveTimer}
                   >
-                    <div className={`text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}>
+                    <div 
+                      className={`flex flex-col items-center text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}
+                      onMouseEnter={() => setIsHoveringTimer(true)}
+                      onMouseLeave={() => setIsHoveringTimer(false)}
+                    >
                       {formatTime(timeLeft)}
+                      {isHoveringTimer && isActiveTimer && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
+                        </p>
+                      )}
                     </div>
                   </CircularProgress>
-                  {isHoveringTimer && isActiveTimer && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
-                    </p>
-                  )}
                 </div>
                 
                 <div className="flex gap-3 justify-center mb-6">
@@ -901,7 +899,7 @@ const Index = () => {
           <ActiveAskSection 
             activeAsks={activeAsks} 
             onVoteExtend={handleVoteExtend} 
-            onVotePoll={handleVotePoll} 
+            onVotePoll={handlePollSubmit} 
             currentUserId={currentUserId} 
           />
         </div>
