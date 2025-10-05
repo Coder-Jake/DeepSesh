@@ -41,7 +41,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       case 'closed':
         return "e.g., 'Should we extend the focus session?'";
       case 'choice':
-        return "e.g., 'Who would win in a fight?'";
+        return "e.g., 'If a bear & a shark had a fight, who would win?'";
       case 'selection':
         return "e.g., 'Which features should we prioritize?'";
       default:
