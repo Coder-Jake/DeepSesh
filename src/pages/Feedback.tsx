@@ -25,7 +25,7 @@ const Feedback = () => {
           <iframe
             src={googleFormUrl}
             width="100%"
-            height="800" // Adjust height as needed
+            height="900" // Adjust height as needed
             frameBorder="0"
             marginHeight={0}
             marginWidth={0}
