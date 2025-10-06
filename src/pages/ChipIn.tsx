@@ -4,10 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
+import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb, MessageSquare } from "lucide-react"; // Added MessageSquare
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom"; // Import Link
-import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection"; // Import the new component
 import { Toaster } from 'sonner'; // Import Toaster from sonner
 
 const ChipIn = () => {
@@ -71,8 +70,20 @@ const ChipIn = () => {
         </p>
       </div>
 
-      {/* New Feedback and Collaborate Section */}
-      <FeedbackAndCollaborateSection />
+      {/* "Get in Touch" CardHeader now links to Feedback page */}
+      <Card className="mt-8">
+        <CardHeader className="p-0">
+          <Link
+            to="/feedback"
+            className="block p-6 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer"
+          >
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Get in Touch
+            </CardTitle>
+          </Link>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8"> {/* Added mt-8 for spacing */}
         {/* Donation Form */}

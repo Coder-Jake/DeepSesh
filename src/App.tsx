@@ -17,16 +17,16 @@ import ChipIn from "./pages/ChipIn";
 import Leaderboard from "./pages/Leaderboard";
 import Credits from "./pages/Credits";
 import Login from "./pages/Login";
+import Feedback from "./pages/Feedback"; // Import the new Feedback page
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef } from "react";
-import ToastManager from "@/components/ToastManager"; // Import the new ToastManager
+import ToastManager from "@/components/ToastManager";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const navigate = useNavigate();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
-  // Removed areToastsEnabled from useTimer() here, now handled by ToastManager
   const lastHoveredElementRef = useRef<HTMLElement | null>(null);
 
   const getElementName = (element: HTMLElement): string | null => {
@@ -202,9 +202,10 @@ const AppContent = () => {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/credits" element={<Credits />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/feedback" element={<Feedback />} /> {/* New Feedback route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <ToastManager /> {/* Render ToastManager here */}
+      <ToastManager />
       <GlobalTooltip />
     </div>
   );
