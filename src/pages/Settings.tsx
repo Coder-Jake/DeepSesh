@@ -482,10 +482,10 @@ const Settings = () => {
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Disable other apps during Focus.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div >
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div >
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -556,11 +556,12 @@ const Settings = () => {
                           if (value === "") {
                             setCustomBatchMinutes(0);
                           } else {
-                            setCustomBatchMinutes(parseFloat(value) || 0);
+                            setCustomBatchMinutes(Math.max(0, parseFloat(value) || 0));
                           }
                         }}
-                        onBlur={() => {
-                          if (customBatchMinutes === 0) {
+                        onBlur={(e) => {
+                          const currentValue = parseFloat(e.target.value);
+                          if (isNaN(currentValue) || currentValue < timerIncrement) {
                             setCustomBatchMinutes(timerIncrement);
                           }
                         }}
@@ -730,10 +731,19 @@ const Settings = () => {
                     id="focus-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={focusMinutes}
-                    onChange={(e) => setFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    value={focusMinutes === 0 ? "" : focusMinutes}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        setFocusMinutes(0); // Allow temporary 0 for typing
+                      } else {
+                        setFocusMinutes(Math.max(0, parseInt(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
+                      }
+                    }}
                     onBlur={(e) => {
-                      if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                      const currentValue = parseInt(e.target.value);
+                      // If empty, NaN, or less than currentTimerIncrement, set to currentTimerIncrement
+                      if (isNaN(currentValue) || currentValue < currentTimerIncrement) {
                         setFocusMinutes(currentTimerIncrement);
                       }
                     }}
@@ -750,10 +760,19 @@ const Settings = () => {
                     id="break-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={breakMinutes}
-                    onChange={(e) => setBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    value={breakMinutes === 0 ? "" : breakMinutes}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        setBreakMinutes(0); // Allow temporary 0 for typing
+                      } else {
+                        setBreakMinutes(Math.max(0, parseInt(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
+                      }
+                    }}
                     onBlur={(e) => {
-                      if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                      const currentValue = parseInt(e.target.value);
+                      // If empty, NaN, or less than timerIncrement, set to timerIncrement
+                      if (isNaN(currentValue) || currentValue < timerIncrement) {
                         setBreakMinutes(timerIncrement);
                       }
                     }}

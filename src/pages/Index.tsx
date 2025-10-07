@@ -902,13 +902,15 @@ const Index = () => {
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
-                            setFocusMinutes(0);
+                            setFocusMinutes(0); // Allow temporary 0 for typing
                           } else {
-                            setFocusMinutes(parseFloat(value) || 0);
+                            setFocusMinutes(Math.max(0, parseFloat(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
                           }
                         }} 
-                        onBlur={() => {
-                          if (focusMinutes === 0) {
+                        onBlur={(e) => {
+                          const currentValue = parseFloat(e.target.value);
+                          // If empty, NaN, or less than timerIncrement, set to timerIncrement
+                          if (isNaN(currentValue) || currentValue < timerIncrement) {
                             setFocusMinutes(timerIncrement);
                           }
                         }}
@@ -937,13 +939,15 @@ const Index = () => {
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
-                            setBreakMinutes(0);
+                            setBreakMinutes(0); // Allow temporary 0 for typing
                           } else {
-                            setBreakMinutes(parseFloat(value) || 0);
+                            setBreakMinutes(Math.max(0, parseFloat(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
                           }
                         }} 
-                        onBlur={() => {
-                          if (breakMinutes === 0) {
+                        onBlur={(e) => {
+                          const currentValue = parseFloat(e.target.value);
+                          // If empty, NaN, or less than timerIncrement, set to timerIncrement
+                          if (isNaN(currentValue) || currentValue < timerIncrement) {
                             setBreakMinutes(timerIncrement);
                           }
                         }}
