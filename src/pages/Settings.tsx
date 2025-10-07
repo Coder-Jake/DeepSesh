@@ -94,6 +94,19 @@ const Settings = () => {
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
   const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
+  // Local states for focus and break minutes inputs
+  const [localFocusMinutes, setLocalFocusMinutes] = useState(focusMinutes);
+  const [localBreakMinutes, setLocalBreakMinutes] = useState(breakMinutes);
+
+  // Effect to update local states when context values change (e.g., on reset or schedule load)
+  useEffect(() => {
+    setLocalFocusMinutes(focusMinutes);
+  }, [focusMinutes]);
+
+  useEffect(() => {
+    setLocalBreakMinutes(breakMinutes);
+  }, [breakMinutes]);
+
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
     isBatchNotificationsEnabled,
@@ -106,8 +119,8 @@ const Settings = () => {
     workApps,
     intentionalBreaches,
     manualTransition,
-    focusMinutes,
-    breakMinutes,
+    focusMinutes, // Use context value for comparison
+    breakMinutes, // Use context value for comparison
     maxDistance,
     askNotifications,
     breakNotificationsVibrate,
@@ -133,9 +146,6 @@ const Settings = () => {
   ]);
 
   useEffect(() => {
-    const currentFocusVal = focusMinutes;
-    const currentBreakVal = breakMinutes;
-
     const currentUiSettings = {
       showSessionsWhileActive,
       isBatchNotificationsEnabled,
@@ -148,8 +158,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: currentFocusVal,
-      breakMinutes: currentBreakVal,
+      focusMinutes: localFocusMinutes, // Compare local state
+      breakMinutes: localBreakMinutes, // Compare local state
       maxDistance,
       askNotifications,
       breakNotificationsVibrate,
@@ -181,7 +191,7 @@ const Settings = () => {
   }, [
     showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, focusMinutes, breakMinutes, maxDistance,
+    manualTransition, localFocusMinutes, localBreakMinutes, maxDistance, // Use local states here
     askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPrivate,
@@ -367,6 +377,10 @@ const Settings = () => {
     setShouldShowEndToast(shouldShowEndToast);
     setAreToastsEnabled(areToastsEnabled);
 
+    // Update context focus/break minutes from local states
+    setFocusMinutes(localFocusMinutes);
+    setBreakMinutes(localBreakMinutes);
+
     savedSettingsRef.current = {
       showSessionsWhileActive,
       isBatchNotificationsEnabled,
@@ -379,8 +393,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: focusMinutes,
-      breakMinutes: breakMinutes,
+      focusMinutes: localFocusMinutes, // Save local state
+      breakMinutes: localBreakMinutes, // Save local state
       maxDistance,
       askNotifications,
       breakNotificationsVibrate,
@@ -731,20 +745,23 @@ const Settings = () => {
                     id="focus-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={focusMinutes === 0 ? "" : focusMinutes}
+                    value={localFocusMinutes === 0 ? "" : localFocusMinutes}
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === "") {
-                        setFocusMinutes(0); // Allow temporary 0 for typing
+                        setLocalFocusMinutes(0); // Allow temporary 0 for typing
                       } else {
-                        setFocusMinutes(Math.max(0, parseInt(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
+                        setLocalFocusMinutes(Math.max(0, parseInt(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
                       }
                     }}
-                    onBlur={(e) => {
-                      const currentValue = parseInt(e.target.value);
+                    onBlur={() => {
+                      const currentValue = localFocusMinutes;
                       // If empty, NaN, or less than currentTimerIncrement, set to currentTimerIncrement
                       if (isNaN(currentValue) || currentValue < currentTimerIncrement) {
                         setFocusMinutes(currentTimerIncrement);
+                        setLocalFocusMinutes(currentTimerIncrement); // Also update local state
+                      } else {
+                        setFocusMinutes(currentValue);
                       }
                     }}
                     min={currentTimerIncrement}
@@ -760,20 +777,23 @@ const Settings = () => {
                     id="break-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={breakMinutes === 0 ? "" : breakMinutes}
+                    value={localBreakMinutes === 0 ? "" : localBreakMinutes}
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === "") {
-                        setBreakMinutes(0); // Allow temporary 0 for typing
+                        setLocalBreakMinutes(0); // Allow temporary 0 for typing
                       } else {
-                        setBreakMinutes(Math.max(0, parseInt(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
+                        setLocalBreakMinutes(Math.max(0, parseInt(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
                       }
                     }}
-                    onBlur={(e) => {
-                      const currentValue = parseInt(e.target.value);
+                    onBlur={() => {
+                      const currentValue = localBreakMinutes;
                       // If empty, NaN, or less than timerIncrement, set to timerIncrement
                       if (isNaN(currentValue) || currentValue < timerIncrement) {
                         setBreakMinutes(timerIncrement);
+                        setLocalBreakMinutes(timerIncrement); // Also update local state
+                      } else {
+                        setBreakMinutes(currentValue);
                       }
                     }}
                     min={timerIncrement}

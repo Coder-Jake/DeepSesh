@@ -221,6 +221,19 @@ const Index = () => {
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
+  // Local states for focus and break minutes inputs
+  const [localFocusMinutes, setLocalFocusMinutes] = useState(focusMinutes);
+  const [localBreakMinutes, setLocalBreakMinutes] = useState(breakMinutes);
+
+  // Effect to update local states when context values change (e.g., on reset or schedule load)
+  useEffect(() => {
+    setLocalFocusMinutes(focusMinutes);
+  }, [focusMinutes]);
+
+  useEffect(() => {
+    setLocalBreakMinutes(breakMinutes);
+  }, [breakMinutes]);
+
   // Effect to update local isPrivate when isGlobalPrivate changes
   useEffect(() => {
     setIsPrivate(isGlobalPrivate);
@@ -898,20 +911,23 @@ const Index = () => {
                       </span>
                       <Input 
                         type="number" 
-                        value={focusMinutes === 0 ? "" : focusMinutes} 
+                        value={localFocusMinutes === 0 ? "" : localFocusMinutes} 
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
-                            setFocusMinutes(0); // Allow temporary 0 for typing
+                            setLocalFocusMinutes(0); // Allow temporary 0 for typing
                           } else {
-                            setFocusMinutes(Math.max(0, parseFloat(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
+                            setLocalFocusMinutes(Math.max(0, parseFloat(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
                           }
                         }} 
-                        onBlur={(e) => {
-                          const currentValue = parseFloat(e.target.value);
+                        onBlur={() => {
+                          const currentValue = localFocusMinutes;
                           // If empty, NaN, or less than timerIncrement, set to timerIncrement
                           if (isNaN(currentValue) || currentValue < timerIncrement) {
                             setFocusMinutes(timerIncrement);
+                            setLocalFocusMinutes(timerIncrement); // Also update local state
+                          } else {
+                            setFocusMinutes(currentValue);
                           }
                         }}
                         className="w-16 h-8 text-center" 
@@ -935,20 +951,23 @@ const Index = () => {
                       </span>
                       <Input 
                         type="number" 
-                        value={breakMinutes === 0 ? "" : breakMinutes} 
+                        value={localBreakMinutes === 0 ? "" : localBreakMinutes} 
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
-                            setBreakMinutes(0); // Allow temporary 0 for typing
+                            setLocalBreakMinutes(0); // Allow temporary 0 for typing
                           } else {
-                            setBreakMinutes(Math.max(0, parseFloat(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
+                            setLocalBreakMinutes(Math.max(0, parseFloat(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
                           }
                         }} 
-                        onBlur={(e) => {
-                          const currentValue = parseFloat(e.target.value);
+                        onBlur={() => {
+                          const currentValue = localBreakMinutes;
                           // If empty, NaN, or less than timerIncrement, set to timerIncrement
                           if (isNaN(currentValue) || currentValue < timerIncrement) {
                             setBreakMinutes(timerIncrement);
+                            setLocalBreakMinutes(timerIncrement); // Also update local state
+                          } else {
+                            setBreakMinutes(currentValue);
                           }
                         }}
                         className="w-16 h-8 text-center" 
