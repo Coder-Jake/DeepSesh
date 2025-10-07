@@ -748,21 +748,13 @@ const Settings = () => {
                     value={localFocusMinutes === 0 ? "" : localFocusMinutes}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value === "") {
-                        setLocalFocusMinutes(0); // Allow temporary 0 for typing
-                      } else {
-                        setLocalFocusMinutes(Math.max(0, parseInt(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
-                      }
+                      setLocalFocusMinutes(value === "" ? "" : Math.max(0, parseInt(value) || 0));
                     }}
                     onBlur={() => {
-                      const currentValue = localFocusMinutes;
-                      // If empty, NaN, or less than currentTimerIncrement, set to currentTimerIncrement
-                      if (isNaN(currentValue) || currentValue < currentTimerIncrement) {
-                        setFocusMinutes(currentTimerIncrement);
-                        setLocalFocusMinutes(currentTimerIncrement); // Also update local state
-                      } else {
-                        setFocusMinutes(currentValue);
-                      }
+                      const currentValue = typeof localFocusMinutes === 'string' ? parseInt(localFocusMinutes) : localFocusMinutes;
+                      const finalValue = (isNaN(currentValue) || currentValue < currentTimerIncrement) ? currentTimerIncrement : currentValue;
+                      setFocusMinutes(finalValue);
+                      setLocalFocusMinutes(finalValue); // Also update local state
                     }}
                     min={currentTimerIncrement}
                     step={currentTimerIncrement}
@@ -780,21 +772,13 @@ const Settings = () => {
                     value={localBreakMinutes === 0 ? "" : localBreakMinutes}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value === "") {
-                        setLocalBreakMinutes(0); // Allow temporary 0 for typing
-                      } else {
-                        setLocalBreakMinutes(Math.max(0, parseInt(value) || 0)); // Parse, ensure non-negative, allow 0 temporarily
-                      }
+                      setLocalBreakMinutes(value === "" ? "" : Math.max(0, parseInt(value) || 0));
                     }}
                     onBlur={() => {
-                      const currentValue = localBreakMinutes;
-                      // If empty, NaN, or less than timerIncrement, set to timerIncrement
-                      if (isNaN(currentValue) || currentValue < timerIncrement) {
-                        setBreakMinutes(timerIncrement);
-                        setLocalBreakMinutes(timerIncrement); // Also update local state
-                      } else {
-                        setBreakMinutes(currentValue);
-                      }
+                      const currentValue = typeof localBreakMinutes === 'string' ? parseInt(localBreakMinutes) : localBreakMinutes;
+                      const finalValue = (isNaN(currentValue) || currentValue < timerIncrement) ? timerIncrement : currentValue;
+                      setBreakMinutes(finalValue);
+                      setLocalBreakMinutes(finalValue); // Also update local state
                     }}
                     min={timerIncrement}
                     step={timerIncrement}
