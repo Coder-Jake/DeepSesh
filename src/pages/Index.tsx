@@ -222,8 +222,8 @@ const Index = () => {
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   // Local states for focus and break minutes inputs
-  const [localFocusMinutes, setLocalFocusMinutes] = useState(focusMinutes);
-  const [localBreakMinutes, setLocalBreakMinutes] = useState(breakMinutes);
+  const [localFocusMinutes, setLocalFocusMinutes] = useState<number>(focusMinutes);
+  const [localBreakMinutes, setLocalBreakMinutes] = useState<number>(breakMinutes);
 
   // Effect to update local states when context values change (e.g., on reset or schedule load)
   useEffect(() => {
@@ -914,10 +914,14 @@ const Index = () => {
                         value={localFocusMinutes === 0 ? "" : localFocusMinutes} 
                         onChange={e => {
                           const value = e.target.value;
-                          setLocalFocusMinutes(value === "" ? 0 : Math.max(0, parseFloat(value) || 0));
+                          const parsedValue = value === "" ? 0 : parseInt(value, 10);
+                          setLocalFocusMinutes(isNaN(parsedValue) ? 0 : parsedValue);
                         }} 
                         onBlur={() => {
-                          const finalValue = Math.max(timerIncrement, Number(localFocusMinutes) || timerIncrement);
+                          let finalValue = Math.max(timerIncrement, localFocusMinutes);
+                          finalValue = Math.round(finalValue / timerIncrement) * timerIncrement;
+                          if (finalValue === 0 && timerIncrement > 0) finalValue = timerIncrement;
+
                           setFocusMinutes(finalValue);
                           setLocalFocusMinutes(finalValue); // Also update local state
                         }}
@@ -945,10 +949,14 @@ const Index = () => {
                         value={localBreakMinutes === 0 ? "" : localBreakMinutes} 
                         onChange={e => {
                           const value = e.target.value;
-                          setLocalBreakMinutes(value === "" ? 0 : Math.max(0, parseFloat(value) || 0));
+                          const parsedValue = value === "" ? 0 : parseInt(value, 10);
+                          setLocalBreakMinutes(isNaN(parsedValue) ? 0 : parsedValue);
                         }} 
                         onBlur={() => {
-                          const finalValue = Math.max(timerIncrement, Number(localBreakMinutes) || timerIncrement);
+                          let finalValue = Math.max(timerIncrement, localBreakMinutes);
+                          finalValue = Math.round(finalValue / timerIncrement) * timerIncrement;
+                          if (finalValue === 0 && timerIncrement > 0) finalValue = timerIncrement;
+
                           setBreakMinutes(finalValue);
                           setLocalBreakMinutes(finalValue); // Also update local state
                         }}

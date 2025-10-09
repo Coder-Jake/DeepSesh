@@ -95,8 +95,8 @@ const Settings = () => {
   const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Local states for focus and break minutes inputs
-  const [localFocusMinutes, setLocalFocusMinutes] = useState(focusMinutes);
-  const [localBreakMinutes, setLocalBreakMinutes] = useState(breakMinutes);
+  const [localFocusMinutes, setLocalFocusMinutes] = useState<number>(focusMinutes);
+  const [localBreakMinutes, setLocalBreakMinutes] = useState<number>(breakMinutes);
 
   // Effect to update local states when context values change (e.g., on reset or schedule load)
   useEffect(() => {
@@ -363,7 +363,7 @@ const Settings = () => {
     setPhoneCalls(phoneCalls);
     setFavourites(favourites);
     setWorkApps(workApps);
-    setIntentionalBreaches(intentionalBreaks);
+    setIntentionalBreaches(intentionalBreaches);
     setManualTransition(manualTransition);
     setMaxDistance(maxDistance);
     setAskNotifications(askNotifications);
@@ -748,10 +748,14 @@ const Settings = () => {
                     value={localFocusMinutes === 0 ? "" : localFocusMinutes}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setLocalFocusMinutes(value === "" ? 0 : Math.max(0, parseInt(value) || 0));
+                      const parsedValue = value === "" ? 0 : parseInt(value, 10);
+                      setLocalFocusMinutes(isNaN(parsedValue) ? 0 : parsedValue);
                     }}
                     onBlur={() => {
-                      const finalValue = Math.max(currentTimerIncrement, Number(localFocusMinutes) || currentTimerIncrement);
+                      let finalValue = Math.max(currentTimerIncrement, localFocusMinutes);
+                      finalValue = Math.round(finalValue / currentTimerIncrement) * currentTimerIncrement;
+                      if (finalValue === 0 && currentTimerIncrement > 0) finalValue = currentTimerIncrement;
+
                       setFocusMinutes(finalValue);
                       setLocalFocusMinutes(finalValue); // Also update local state
                     }}
@@ -771,10 +775,14 @@ const Settings = () => {
                     value={localBreakMinutes === 0 ? "" : localBreakMinutes}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setLocalBreakMinutes(value === "" ? 0 : Math.max(0, parseInt(value) || 0));
+                      const parsedValue = value === "" ? 0 : parseInt(value, 10);
+                      setLocalBreakMinutes(isNaN(parsedValue) ? 0 : parsedValue);
                     }}
                     onBlur={() => {
-                      const finalValue = Math.max(currentTimerIncrement, Number(localBreakMinutes) || currentTimerIncrement);
+                      let finalValue = Math.max(currentTimerIncrement, localBreakMinutes);
+                      finalValue = Math.round(finalValue / currentTimerIncrement) * currentTimerIncrement;
+                      if (finalValue === 0 && currentTimerIncrement > 0) finalValue = currentTimerIncrement;
+
                       setBreakMinutes(finalValue);
                       setLocalBreakMinutes(finalValue); // Also update local state
                     }}
