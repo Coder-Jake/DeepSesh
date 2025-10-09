@@ -188,6 +188,8 @@ const Index = () => {
     setAccumulatedFocusSeconds,
     accumulatedBreakSeconds,
     setAccumulatedBreakSeconds,
+    activeJoinedSessionCoworkerCount,
+    setActiveJoinedSessionCoworkerCount,
 
     // Active Asks from TimerContext
     activeAsks,
@@ -419,7 +421,7 @@ const Index = () => {
       await performStopActions();
     };
 
-    if (isLongPress.current) {
+    if (longPressRef.current) {
       // Long press: save without confirmation
       await handleSaveAndStop();
     } else {
@@ -431,7 +433,7 @@ const Index = () => {
   };
   
   const resetTimer = () => {
-    if (isLongPress.current) {
+    if (longPressRef.current) {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
@@ -729,16 +731,6 @@ const Index = () => {
     });
   }, [preparedSchedules, getEffectiveStartTime]);
 
-  const timerStatusText = useMemo(() => {
-    if (isScheduleActive) {
-      const currentItem = activeSchedule[currentScheduleIndex];
-      if (currentItem) {
-        return currentItem.type === 'focus' ? 'Focusing' : 'Breaking';
-      }
-    }
-    return timerType === 'focus' ? 'Focusing' : 'Breaking';
-  }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType]);
-
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
       <div className="mb-6">
@@ -752,11 +744,10 @@ const Index = () => {
               <ScheduleForm />
             ) : (
               <>
-                {/* Top Bar for Schedule, Public/Private, Share */}
-                <div className="flex justify-between items-center px-4 py-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                <div className="flex justify-between items-start mb-6">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
                     onClick={() => setIsSchedulingMode(true)}
                     className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
                     data-name="Schedule Button"
@@ -764,8 +755,8 @@ const Index = () => {
                     <CalendarPlus size={16} />
                     <span className="text-sm font-medium">Schedule</span>
                   </Button>
-                  <div className="flex items-center gap-2">
-                    <button
+                  <div className="flex flex-col items-end gap-2">
+                    <button 
                       onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
                       onMouseUp={handleLongPressEnd}
                       onMouseLeave={handleLongPressEnd}
@@ -776,19 +767,20 @@ const Index = () => {
                       data-name="Public/Private Toggle Button"
                     >
                       {!isPrivate ? <>
-                        <Globe size={16} />
-                        <span className="text-sm font-medium">Public</span>
-                      </> : <>
-                        <Lock size={16} />
-                        <span className="text-sm font-medium">Private</span>
-                      </>}
+                          <Globe size={16} />
+                          <span className="text-sm font-medium">Public</span>
+                        </> : <>
+                          <Lock size={16} />
+                          <span className="text-sm font-medium">Private</span>
+                        </>}
                     </button>
-
+                    
+                    {/* Share Dropdown */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
                           className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
                           data-name="Share Options Button"
                         >
@@ -803,9 +795,8 @@ const Index = () => {
                     </DropdownMenu>
                   </div>
                 </div>
-
-                {/* Main Timer Display */}
-                <div className="flex flex-col items-center justify-center my-8">
+                
+                <div className="flex flex-col items-center mb-4">
                   <CircularProgress
                     size={280}
                     strokeWidth={12}
@@ -815,63 +806,87 @@ const Index = () => {
                     isActiveTimer={isActiveTimer}
                     data-name="Main Circular Timer Progress"
                   >
-                    <div
+                    <div 
                       className={`relative flex flex-col items-center text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}
                       onMouseEnter={() => setIsHoveringTimer(true)}
                       onMouseLeave={() => setIsHoveringTimer(false)}
                     >
-                      <p className="text-base text-muted-foreground mb-1">{timerStatusText}</p> {/* Status text */}
-                      <div className="h-10 flex items-center" data-name="Time Left Display">
+                      <div className="h-10 flex items-center" data-name="Time Left Display"> {/* Fixed height for time display */}
                         {formatTime(timeLeft)}
                       </div>
                       {isHoveringTimer && isActiveTimer && (
-                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap" data-name="Estimated End Time">
+                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap" data-name="Estimated End Time"> {/* Absolute positioning */}
                           End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
                         </p>
                       )}
                     </div>
                   </CircularProgress>
                 </div>
-
-                {/* Main Action Buttons */}
-                <div className="flex flex-col items-center gap-4 mb-6">
+                
+                <div className="flex gap-3 justify-center mb-6">
                   {isFlashing ? (
-                    <Button
-                      size="lg"
-                      className="px-8 w-48"
+                    <Button 
+                      size="lg" 
+                      className="px-8" 
                       onClick={timerType === 'focus' ? switchToBreak : switchToFocus}
                       data-name={`Start ${timerType === 'focus' ? 'Break' : 'Focus'} Button`}
                     >
                       Start {timerType === 'focus' ? 'Break' : 'Focus'}
                     </Button>
                   ) : (
-                    <Button
-                      size="lg"
-                      className="px-8 w-48"
+                    <Button 
+                      size="lg" 
+                      className="px-8" 
                       onClick={() => {
-                        if (isSchedulePrepared && isSchedulePending) {
-                          // If a schedule is pending, this button should resume it
-                          resumeTimer();
+                        if (isSchedulePrepared) {
+                          // If there are prepared schedules, and one is pending, commence it.
+                          // If multiple, this button should probably not be here or should open a selection.
+                          // For now, we'll assume the user will use the UpcomingScheduleCard's commence button.
+                          // This button will only start a manual timer if no schedule is active/prepared.
+                          startNewManualTimer(); 
                         } else if (isRunning) {
                           pauseTimer();
                         } else if (isPaused) {
                           resumeTimer();
                         } else {
-                          startNewManualTimer();
+                          startNewManualTimer(); // Call the new explicit function for starting a fresh timer
                         }
                       }}
-                      data-name={`${isSchedulePrepared && isSchedulePending ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))} Timer Button`}
+                      data-name={`${isSchedulePrepared ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))} Timer Button`}
                     >
-                      {isSchedulePrepared && isSchedulePending ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))}
+                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
                   )}
                 </div>
 
-                {/* Focus and Break Duration Inputs (only when timer is inactive and no schedule is active/prepared) */}
-                {!isActiveTimer && (
-                  <div className="flex justify-center gap-4 text-sm mb-6">
+                {(isPaused || isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending) && ( // Show stop button if pending or prepared
+                  <div className="absolute bottom-4 left-4 flex flex-col gap-1">
+                    <div className="shape-octagon w-10 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onMouseDown={() => handleLongPressStart(stopTimer)}
+                        onMouseUp={handleLongPressEnd}
+                        onMouseLeave={handleLongPressEnd}
+                        onTouchStart={() => handleLongPressStart(stopTimer)}
+                        onTouchEnd={handleLongPressEnd}
+                        onClick={stopTimer}
+                        className={cn(
+                          "w-full h-full rounded-none bg-transparent hover:bg-transparent",
+                          isPaused ? "text-red-500" : "text-secondary-foreground" // Conditional red color
+                        )}
+                        data-name="Stop Timer Button"
+                      >
+                        <Square size={16} fill="currentColor" /> {/* Solid Square icon */}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {!isScheduleActive && !isSchedulePrepared && ( // Hide timer settings if schedule is active or prepared
+                  <div className="flex justify-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
-                      <span
+                      <span 
                         className={cn(
                           "text-muted-foreground cursor-pointer select-none",
                           timerType === 'focus' && "font-bold text-foreground"
@@ -881,9 +896,9 @@ const Index = () => {
                       >
                         Focus:
                       </span>
-                      <Input
-                        type="number"
-                        value={focusMinutes === 0 ? "" : focusMinutes}
+                      <Input 
+                        type="number" 
+                        value={focusMinutes === 0 ? "" : focusMinutes} 
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
@@ -891,22 +906,22 @@ const Index = () => {
                           } else {
                             setFocusMinutes(parseFloat(value) || 0);
                           }
-                        }}
+                        }} 
                         onBlur={() => {
                           if (focusMinutes === 0) {
                             setFocusMinutes(timerIncrement);
                           }
                         }}
-                        className="w-16 h-8 text-center"
-                        min={timerIncrement}
-                        max="120"
+                        className="w-16 h-8 text-center" 
+                        min={timerIncrement} 
+                        max="120" 
                         step={timerIncrement}
                         onFocus={(e) => e.target.select()}
                         data-name="Focus Duration Input"
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span
+                      <span 
                         className={cn(
                           "text-muted-foreground cursor-pointer select-none",
                           timerType === 'break' && "font-bold text-foreground"
@@ -916,9 +931,9 @@ const Index = () => {
                       >
                         Break:
                       </span>
-                      <Input
-                        type="number"
-                        value={breakMinutes === 0 ? "" : breakMinutes}
+                      <Input 
+                        type="number" 
+                        value={breakMinutes === 0 ? "" : breakMinutes} 
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
@@ -926,15 +941,15 @@ const Index = () => {
                           } else {
                             setBreakMinutes(parseFloat(value) || 0);
                           }
-                        }}
+                        }} 
                         onBlur={() => {
                           if (breakMinutes === 0) {
                             setBreakMinutes(timerIncrement);
                           }
                         }}
-                        className="w-16 h-8 text-center"
-                        min={timerIncrement}
-                        max="60"
+                        className="w-16 h-8 text-center" 
+                        min={timerIncrement} 
+                        max="60" 
                         step={timerIncrement}
                         onFocus={(e) => e.target.select()}
                         data-name="Break Duration Input"
@@ -942,44 +957,17 @@ const Index = () => {
                     </div>
                   </div>
                 )}
-
-                {/* Stop Button (bottom-left) */}
-                {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && (
-                  <div className="absolute bottom-4 left-4 flex flex-col gap-1">
-                    <div className="shape-octagon w-10 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onMouseDown={() => handleLongPressStart(stopTimer)}
-                        onMouseUp={handleLongPressEnd}
-                        onMouseLeave={handleLongPressEnd}
-                        onTouchStart={() => handleLongPressStart(stopTimer)}
-                        onTouchEnd={handleLongPressEnd}
-                        onClick={stopTimer}
-                        className={cn(
-                          "w-full h-full rounded-none bg-transparent hover:bg-transparent",
-                          isPaused ? "text-red-500" : "text-secondary-foreground"
-                        )}
-                        data-name="Stop Timer Button"
-                      >
-                        <Square size={16} fill="currentColor" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Ask Menu (bottom-right) */}
                 {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
               </>
             )}
           </div>
 
           {/* Active Asks Section */}
-          <ActiveAskSection
-            activeAsks={activeAsks}
-            onVoteExtend={handleVoteExtend}
-            onVotePoll={handleVotePoll}
-            currentUserId={currentUserId}
+          <ActiveAskSection 
+            activeAsks={activeAsks} 
+            onVoteExtend={handleVoteExtend} 
+            onVotePoll={handleVotePoll} // Corrected prop here
+            currentUserId={currentUserId} 
           />
         </div>
 
@@ -992,7 +980,7 @@ const Index = () => {
                 <CardTitle className="text-lg">My Intention</CardTitle>
               </CardHeader>
               <CardContent>
-                <p
+                <p 
                   className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
                   onMouseDown={() => handleLongPressStart(handleIntentionLongPress)}
                   onMouseUp={handleLongPressEnd}
@@ -1014,7 +1002,7 @@ const Index = () => {
 
           {/* Notes Section - Always visible */}
           <Card>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2"> {/* Reduced bottom padding */}
               {isEditingSeshTitle ? (
                 <Input
                   ref={titleInputRef}
@@ -1028,7 +1016,7 @@ const Index = () => {
                   data-name="Sesh Title Input"
                 />
               ) : (
-                <CardTitle
+                <CardTitle 
                   className="text-lg cursor-pointer select-none"
                   onClick={handleTitleClick}
                   onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
