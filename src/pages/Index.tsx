@@ -221,19 +221,6 @@ const Index = () => {
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
-  // Local states for focus and break minutes inputs
-  const [localFocusMinutes, setLocalFocusMinutes] = useState<number>(focusMinutes);
-  const [localBreakMinutes, setLocalBreakMinutes] = useState<number>(breakMinutes);
-
-  // Effect to update local states when context values change (e.g., on reset or schedule load)
-  useEffect(() => {
-    setLocalFocusMinutes(focusMinutes);
-  }, [focusMinutes]);
-
-  useEffect(() => {
-    setLocalBreakMinutes(breakMinutes);
-  }, [breakMinutes]);
-
   // Effect to update local isPrivate when isGlobalPrivate changes
   useEffect(() => {
     setIsPrivate(isGlobalPrivate);
@@ -911,19 +898,19 @@ const Index = () => {
                       </span>
                       <Input 
                         type="number" 
-                        value={localFocusMinutes === 0 ? "" : localFocusMinutes} 
+                        value={focusMinutes === 0 ? "" : focusMinutes} 
                         onChange={e => {
                           const value = e.target.value;
-                          const parsedValue = value === "" ? 0 : parseInt(value, 10);
-                          setLocalFocusMinutes(isNaN(parsedValue) ? 0 : parsedValue);
+                          if (value === "") {
+                            setFocusMinutes(0);
+                          } else {
+                            setFocusMinutes(parseFloat(value) || 0);
+                          }
                         }} 
                         onBlur={() => {
-                          let finalValue = Math.max(timerIncrement, localFocusMinutes);
-                          finalValue = Math.round(finalValue / timerIncrement) * timerIncrement;
-                          if (finalValue === 0 && timerIncrement > 0) finalValue = timerIncrement;
-
-                          setFocusMinutes(finalValue);
-                          setLocalFocusMinutes(finalValue); // Also update local state
+                          if (focusMinutes === 0) {
+                            setFocusMinutes(timerIncrement);
+                          }
                         }}
                         className="w-16 h-8 text-center" 
                         min={timerIncrement} 
@@ -946,19 +933,19 @@ const Index = () => {
                       </span>
                       <Input 
                         type="number" 
-                        value={localBreakMinutes === 0 ? "" : localBreakMinutes} 
+                        value={breakMinutes === 0 ? "" : breakMinutes} 
                         onChange={e => {
                           const value = e.target.value;
-                          const parsedValue = value === "" ? 0 : parseInt(value, 10);
-                          setLocalBreakMinutes(isNaN(parsedValue) ? 0 : parsedValue);
+                          if (value === "") {
+                            setBreakMinutes(0);
+                          } else {
+                            setBreakMinutes(parseFloat(value) || 0);
+                          }
                         }} 
                         onBlur={() => {
-                          let finalValue = Math.max(timerIncrement, localBreakMinutes);
-                          finalValue = Math.round(finalValue / timerIncrement) * timerIncrement;
-                          if (finalValue === 0 && timerIncrement > 0) finalValue = timerIncrement;
-
-                          setBreakMinutes(finalValue);
-                          setLocalBreakMinutes(finalValue); // Also update local state
+                          if (breakMinutes === 0) {
+                            setBreakMinutes(timerIncrement);
+                          }
                         }}
                         className="w-16 h-8 text-center" 
                         min={timerIncrement} 

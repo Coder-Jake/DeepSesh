@@ -94,19 +94,6 @@ const Settings = () => {
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
   const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
-  // Local states for focus and break minutes inputs
-  const [localFocusMinutes, setLocalFocusMinutes] = useState<number>(focusMinutes);
-  const [localBreakMinutes, setLocalBreakMinutes] = useState<number>(breakMinutes);
-
-  // Effect to update local states when context values change (e.g., on reset or schedule load)
-  useEffect(() => {
-    setLocalFocusMinutes(focusMinutes);
-  }, [focusMinutes]);
-
-  useEffect(() => {
-    setLocalBreakMinutes(breakMinutes);
-  }, [breakMinutes]);
-
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
     isBatchNotificationsEnabled,
@@ -119,8 +106,8 @@ const Settings = () => {
     workApps,
     intentionalBreaches,
     manualTransition,
-    focusMinutes, // Use context value for comparison
-    breakMinutes, // Use context value for comparison
+    focusMinutes,
+    breakMinutes,
     maxDistance,
     askNotifications,
     breakNotificationsVibrate,
@@ -146,6 +133,9 @@ const Settings = () => {
   ]);
 
   useEffect(() => {
+    const currentFocusVal = focusMinutes;
+    const currentBreakVal = breakMinutes;
+
     const currentUiSettings = {
       showSessionsWhileActive,
       isBatchNotificationsEnabled,
@@ -158,8 +148,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: localFocusMinutes, // Compare local state
-      breakMinutes: localBreakMinutes, // Compare local state
+      focusMinutes: currentFocusVal,
+      breakMinutes: currentBreakVal,
       maxDistance,
       askNotifications,
       breakNotificationsVibrate,
@@ -191,7 +181,7 @@ const Settings = () => {
   }, [
     showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, localFocusMinutes, localBreakMinutes, maxDistance, // Use local states here
+    manualTransition, focusMinutes, breakMinutes, maxDistance,
     askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPrivate,
@@ -377,10 +367,6 @@ const Settings = () => {
     setShouldShowEndToast(shouldShowEndToast);
     setAreToastsEnabled(areToastsEnabled);
 
-    // Update context focus/break minutes from local states
-    setFocusMinutes(localFocusMinutes);
-    setBreakMinutes(localBreakMinutes);
-
     savedSettingsRef.current = {
       showSessionsWhileActive,
       isBatchNotificationsEnabled,
@@ -393,8 +379,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: localFocusMinutes, // Save local state
-      breakMinutes: localBreakMinutes, // Save local state
+      focusMinutes: focusMinutes,
+      breakMinutes: breakMinutes,
       maxDistance,
       askNotifications,
       breakNotificationsVibrate,
@@ -496,10 +482,10 @@ const Settings = () => {
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Disable other apps during Focus.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div >
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div >
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -570,12 +556,11 @@ const Settings = () => {
                           if (value === "") {
                             setCustomBatchMinutes(0);
                           } else {
-                            setCustomBatchMinutes(Math.max(0, parseFloat(value) || 0));
+                            setCustomBatchMinutes(parseFloat(value) || 0);
                           }
                         }}
-                        onBlur={(e) => {
-                          const currentValue = parseFloat(e.target.value);
-                          if (isNaN(currentValue) || currentValue < timerIncrement) {
+                        onBlur={() => {
+                          if (customBatchMinutes === 0) {
                             setCustomBatchMinutes(timerIncrement);
                           }
                         }}
@@ -745,19 +730,12 @@ const Settings = () => {
                     id="focus-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={localFocusMinutes === 0 ? "" : localFocusMinutes}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const parsedValue = value === "" ? 0 : parseInt(value, 10);
-                      setLocalFocusMinutes(isNaN(parsedValue) ? 0 : parsedValue);
-                    }}
-                    onBlur={() => {
-                      let finalValue = Math.max(currentTimerIncrement, localFocusMinutes);
-                      finalValue = Math.round(finalValue / currentTimerIncrement) * currentTimerIncrement;
-                      if (finalValue === 0 && currentTimerIncrement > 0) finalValue = currentTimerIncrement;
-
-                      setFocusMinutes(finalValue);
-                      setLocalFocusMinutes(finalValue); // Also update local state
+                    value={focusMinutes}
+                    onChange={(e) => setFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    onBlur={(e) => {
+                      if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                        setFocusMinutes(currentTimerIncrement);
+                      }
                     }}
                     min={currentTimerIncrement}
                     step={currentTimerIncrement}
@@ -772,22 +750,15 @@ const Settings = () => {
                     id="break-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={localBreakMinutes === 0 ? "" : localBreakMinutes}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const parsedValue = value === "" ? 0 : parseInt(value, 10);
-                      setLocalBreakMinutes(isNaN(parsedValue) ? 0 : parsedValue);
+                    value={breakMinutes}
+                    onChange={(e) => setBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    onBlur={(e) => {
+                      if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                        setBreakMinutes(timerIncrement);
+                      }
                     }}
-                    onBlur={() => {
-                      let finalValue = Math.max(currentTimerIncrement, localBreakMinutes);
-                      finalValue = Math.round(finalValue / currentTimerIncrement) * currentTimerIncrement;
-                      if (finalValue === 0 && currentTimerIncrement > 0) finalValue = currentTimerIncrement;
-
-                      setBreakMinutes(finalValue);
-                      setLocalBreakMinutes(finalValue); // Also update local state
-                    }}
-                    min={currentTimerIncrement}
-                    step={currentTimerIncrement}
+                    min={timerIncrement}
+                    step={timerIncrement}
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
