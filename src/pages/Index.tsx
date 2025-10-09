@@ -914,7 +914,7 @@ const Index = () => {
                         value={localFocusMinutes === 0 ? "" : localFocusMinutes} 
                         onChange={e => {
                           const value = e.target.value;
-                          setLocalFocusMinutes(value === "" ? "" : Math.max(0, parseFloat(value) || 0));
+                          setLocalFocusMinutes(value === "" ? 0 : Math.max(0, parseFloat(value) || 0));
                         }} 
                         onBlur={() => {
                           const currentValue = typeof localFocusMinutes === 'string' ? parseFloat(localFocusMinutes) : localFocusMinutes;
@@ -946,7 +946,7 @@ const Index = () => {
                         value={localBreakMinutes === 0 ? "" : localBreakMinutes} 
                         onChange={e => {
                           const value = e.target.value;
-                          setLocalBreakMinutes(value === "" ? "" : Math.max(0, parseFloat(value) || 0));
+                          setLocalBreakMinutes(value === "" ? 0 : Math.max(0, parseFloat(value) || 0));
                         }} 
                         onBlur={() => {
                           const currentValue = typeof localBreakMinutes === 'string' ? parseFloat(localBreakMinutes) : localBreakMinutes;
