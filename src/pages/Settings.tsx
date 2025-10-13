@@ -444,7 +444,7 @@ const Settings = () => {
   };
 
   return (
-    <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
+    <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
         {!user && (
