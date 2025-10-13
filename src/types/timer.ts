@@ -106,11 +106,18 @@ export interface TimerContextType {
   timerColors: Record<string, string>; // NEW
   setTimerColors: React.Dispatch<React.SetStateAction<Record<string, string>>>; // NEW
 
-  // Core Timer states
-  focusMinutes: number;
-  setFocusMinutes: React.Dispatch<React.SetStateAction<number>>;
-  breakMinutes: number;
-  setBreakMinutes: React.Dispatch<React.SetStateAction<number>>;
+  // Core Timer states (homepage current values)
+  focusMinutes: number; // Current focus minutes on homepage
+  setHomepageFocusMinutes: React.Dispatch<React.SetStateAction<number>>; // Setter for homepage focus minutes
+  breakMinutes: number; // Current break minutes on homepage
+  setHomepageBreakMinutes: React.Dispatch<React.SetStateAction<number>>; // Setter for homepage break minutes
+  
+  // Default Timer states (settings values)
+  defaultFocusMinutes: number; // Default focus minutes from settings
+  setDefaultFocusMinutes: React.Dispatch<React.SetStateAction<number>>; // Setter for default focus minutes
+  defaultBreakMinutes: number; // Default break minutes from settings
+  setDefaultBreakMinutes: React.Dispatch<React.SetStateAction<number>>; // Setter for default break minutes
+
   isRunning: boolean;
   setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
   isPaused: boolean;

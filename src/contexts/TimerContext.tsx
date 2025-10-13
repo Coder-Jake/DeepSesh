@@ -18,8 +18,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5); // Default increment for focus/break minutes
 
-  const [focusMinutes, setFocusMinutes] = useState(25);
-  const [breakMinutes, setBreakMinutes] = useState(5);
+  // Default timer settings (controlled by Settings page)
+  const [_defaultFocusMinutes, _setDefaultFocusMinutes] = useState(25);
+  const [_defaultBreakMinutes, _setDefaultBreakMinutes] = useState(5);
+
+  // Current timer settings (used by homepage, initialized from defaults)
+  const [focusMinutes, _setFocusMinutes] = useState(_defaultFocusMinutes);
+  const [breakMinutes, _setBreakMinutes] = useState(_defaultBreakMinutes);
+
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(focusMinutes * 60);
@@ -47,8 +53,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Snapshot of the schedule when it's active
   const [activeSchedule, setActiveSchedule] = useState<ScheduledTimer[]>([]); // The schedule that is *currently running*
   const [activeTimerColors, setActiveTimerColors] = useState<Record<string, string>>({}); // Colors for the *currently running* schedule
-  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitle] = useState("My Focus Sesh"); // Title for the *currently running* schedule timeline
-  const [_, setActiveScheduleDisplayTitleInternal] = useState("My Focus Sesh"); // Internal state for activeScheduleDisplayTitle
+  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitleInternal] = useState("My Focus Sesh"); // Title for the *currently running* schedule timeline
 
   // Saved Schedules (Templates)
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]); // Added
@@ -104,6 +109,32 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // For type consistency, we can provide a no-op setter or remove it from context type if not strictly needed.
   // For now, I'll keep it in the type and provide a no-op here.
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
+
+  // Public setters for homepage timer values
+  const setHomepageFocusMinutes = useCallback((minutes: number) => {
+    _setFocusMinutes(minutes);
+  }, []);
+
+  const setHomepageBreakMinutes = useCallback((minutes: number) => {
+    _setBreakMinutes(minutes);
+  }, []);
+
+  // Public setters for default timer values (from settings)
+  const setDefaultFocusMinutes = useCallback((minutes: number) => {
+    _setDefaultFocusMinutes(minutes);
+    // Also update current homepage value if not running/paused/scheduled
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
+      _setFocusMinutes(minutes);
+    }
+  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
+
+  const setDefaultBreakMinutes = useCallback((minutes: number) => {
+    _setDefaultBreakMinutes(minutes);
+    // Also update current homepage value if not running/paused/scheduled
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
+      _setBreakMinutes(minutes);
+    }
+  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
 
 
   const playSound = useCallback(() => {
@@ -183,7 +214,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setRecurrenceFrequency('daily'); // Reset recurrence frequency
     // Reset main timer to default focus
     setTimerType('focus');
-    setTimeLeft(focusMinutes * 60);
+    _setFocusMinutes(_defaultFocusMinutes); // Reset current focus minutes to default
+    _setBreakMinutes(_defaultBreakMinutes); // Reset current break minutes to default
+    setTimeLeft(_defaultFocusMinutes * 60); // Use default focus minutes for initial timeLeft
     setIsRunning(false);
     setIsPaused(false);
     setIsFlashing(false);
@@ -199,7 +232,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setActiveTimerColors({}); // NEW: Clear active timer colors
     setActiveScheduleDisplayTitleInternal("My Focus Sesh"); // NEW: Reset timeline title
     setPreparedSchedules([]); // NEW: Clear all prepared schedules
-  }, [focusMinutes]);
+  }, [_defaultFocusMinutes, _defaultBreakMinutes]);
 
   const startSchedule = useCallback(() => {
     if (schedule.length === 0) {
@@ -583,8 +616,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     if (storedData) {
       const data = JSON.parse(storedData);
-      setFocusMinutes(data.focusMinutes ?? 25);
-      setBreakMinutes(data.breakMinutes ?? 5);
+      _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25); // Load default focus minutes
+      _setDefaultBreakMinutes(data._defaultBreakMinutes ?? 5);   // Load default break minutes
+      _setFocusMinutes(data.focusMinutes ?? data._defaultFocusMinutes ?? 25); // Initialize current from stored or default
+      _setBreakMinutes(data.breakMinutes ?? data._defaultBreakMinutes ?? 5);   // Initialize current from stored or default
       _setSeshTitle(data._seshTitle ?? "Notes"); // Load internal state
       setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false); // Load new state
       setNotes(data.notes ?? "");
@@ -592,7 +627,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setShowSessionsWhileActive(data.showSessionsWhileActive ?? false);
       setIsGlobalPrivate(data.isGlobalPrivate ?? false);
       setTimerType(data.timerType ?? 'focus');
-      setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? data.focusMinutes * 60 : data.breakMinutes * 60));
+      setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? (data.focusMinutes ?? data._defaultFocusMinutes ?? 25) * 60 : (data.breakMinutes ?? data._defaultBreakMinutes ?? 5) * 60));
       setIsRunning(data.isRunning ?? false);
       setIsPaused(data.isPaused ?? false);
       setIsFlashing(data.isFlashing ?? false);
@@ -657,7 +692,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Save TimerContext states to local storage whenever they change
   useEffect(() => {
     const dataToSave = {
-      focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
+      _defaultFocusMinutes, _defaultBreakMinutes, // Save default minutes
+      focusMinutes, breakMinutes, // Save current homepage minutes
+      isRunning, isPaused, timeLeft, timerType, isFlashing,
       notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, // NEW: _seshTitle and isSeshTitleCustomized
       isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay, // NEW
       isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
@@ -675,7 +712,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
   }, [
-    focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
+    _defaultFocusMinutes, _defaultBreakMinutes, // Dependencies for default minutes
+    focusMinutes, breakMinutes, // Dependencies for current homepage minutes
+    isRunning, isPaused, timeLeft, timerType, isFlashing,
     notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, // NEW: _seshTitle and isSeshTitleCustomized
     isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay, // NEW
     isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
@@ -693,10 +732,18 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   ]);
 
   const value = {
+    // Current homepage timer values
     focusMinutes,
-    setFocusMinutes,
+    setHomepageFocusMinutes,
     breakMinutes,
-    setBreakMinutes,
+    setHomepageBreakMinutes,
+    
+    // Default timer values (from settings)
+    defaultFocusMinutes: _defaultFocusMinutes,
+    setDefaultFocusMinutes,
+    defaultBreakMinutes: _defaultBreakMinutes,
+    setDefaultBreakMinutes,
+
     isRunning,
     setIsRunning,
     isPaused,

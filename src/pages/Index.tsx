@@ -137,10 +137,15 @@ const mockFriendsSessions: DemoSession[] = [
 
 const Index = () => {
   const {
+    // Current homepage timer values and their setters
     focusMinutes,
-    setFocusMinutes,
+    setHomepageFocusMinutes,
     breakMinutes,
-    setBreakMinutes,
+    setHomepageBreakMinutes,
+    // Default timer values from settings
+    defaultFocusMinutes,
+    defaultBreakMinutes,
+
     isRunning,
     setIsRunning,
     isPaused,
@@ -334,6 +339,10 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now()); // Record current phase start time
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
+    // Reset current homepage timer values to defaults when starting a new manual timer
+    setHomepageFocusMinutes(defaultFocusMinutes);
+    setHomepageBreakMinutes(defaultBreakMinutes);
+    setTimeLeft(defaultFocusMinutes * 60); // Set initial time based on default focus
   };
 
   const resumeTimer = () => {
@@ -389,7 +398,10 @@ const Index = () => {
       setIsPaused(false);
       setIsFlashing(false);
       setTimerType('focus'); // Reset to default focus type
-      setTimeLeft(focusMinutes * 60); // Reset to default focus time
+      // Reset current homepage timer values to defaults
+      setHomepageFocusMinutes(defaultFocusMinutes);
+      setHomepageBreakMinutes(defaultBreakMinutes);
+      setTimeLeft(defaultFocusMinutes * 60); // Reset to default focus time
       setActiveJoinedSession(null);
       if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setSessionStartTime(null);
@@ -437,7 +449,10 @@ const Index = () => {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+      // Reset current homepage timer values to defaults
+      setHomepageFocusMinutes(defaultFocusMinutes);
+      setHomepageBreakMinutes(defaultBreakMinutes);
+      const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
       setTimeLeft(initialTime);
       setActiveJoinedSession(null);
       if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
@@ -452,7 +467,10 @@ const Index = () => {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
-        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+        // Reset current homepage timer values to defaults
+        setHomepageFocusMinutes(defaultFocusMinutes);
+        setHomepageBreakMinutes(defaultBreakMinutes);
+        const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
         setTimeLeft(initialTime);
         setActiveJoinedSession(null);
         if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
@@ -902,14 +920,14 @@ const Index = () => {
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
-                            setFocusMinutes(0);
+                            setHomepageFocusMinutes(0);
                           } else {
-                            setFocusMinutes(parseFloat(value) || 0);
+                            setHomepageFocusMinutes(parseFloat(value) || 0);
                           }
                         }} 
                         onBlur={() => {
                           if (focusMinutes === 0) {
-                            setFocusMinutes(timerIncrement);
+                            setHomepageFocusMinutes(timerIncrement);
                           }
                         }}
                         className="w-16 h-8 text-center" 
@@ -937,14 +955,14 @@ const Index = () => {
                         onChange={e => {
                           const value = e.target.value;
                           if (value === "") {
-                            setBreakMinutes(0);
+                            setHomepageBreakMinutes(0);
                           } else {
-                            setBreakMinutes(parseFloat(value) || 0);
+                            setHomepageBreakMinutes(parseFloat(value) || 0);
                           }
                         }} 
                         onBlur={() => {
                           if (breakMinutes === 0) {
-                            setBreakMinutes(timerIncrement);
+                            setHomepageBreakMinutes(timerIncrement);
                           }
                         }}
                         className="w-16 h-8 text-center" 

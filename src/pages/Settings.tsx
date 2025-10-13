@@ -23,10 +23,11 @@ const Settings = () => {
   const { 
     showSessionsWhileActive, 
     setShowSessionsWhileActive, 
-    focusMinutes, 
-    setFocusMinutes, 
-    breakMinutes, 
-    setBreakMinutes, 
+    // Use defaultFocusMinutes and defaultBreakMinutes for settings
+    defaultFocusMinutes, 
+    setDefaultFocusMinutes, 
+    defaultBreakMinutes, 
+    setDefaultBreakMinutes, 
     timerIncrement, 
     setTimerIncrement, // Use the setter from context
     shouldPlayEndSound, 
@@ -109,8 +110,8 @@ const Settings = () => {
     workApps,
     intentionalBreaches,
     manualTransition,
-    focusMinutes,
-    breakMinutes,
+    focusMinutes: defaultFocusMinutes, // Use defaultFocusMinutes for comparison
+    breakMinutes: defaultBreakMinutes, // Use defaultBreakMinutes for comparison
     maxDistance,
     askNotifications,
     breakNotificationsVibrate,
@@ -144,8 +145,8 @@ const Settings = () => {
   // Effect to detect changes in local UI states compared to saved settings
   useEffect(() => {
     // Directly use context values for comparison
-    const currentFocusVal = focusMinutes;
-    const currentBreakVal = breakMinutes;
+    const currentFocusVal = defaultFocusMinutes; // Use defaultFocusMinutes for comparison
+    const currentBreakVal = defaultBreakMinutes; // Use defaultBreakMinutes for comparison
 
     const currentUiSettings = {
       showSessionsWhileActive,
@@ -193,7 +194,7 @@ const Settings = () => {
   }, [
     showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, focusMinutes, breakMinutes, maxDistance, // Updated dependencies
+    manualTransition, defaultFocusMinutes, defaultBreakMinutes, maxDistance, // Updated dependencies
     askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPrivate, // Renamed
@@ -362,8 +363,10 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    // Focus and Break minutes are now updated directly by their input fields
-    // No need for newFocusMinutes/newBreakMinutes parsing here
+    // Update default focus/break minutes in context
+    setDefaultFocusMinutes(defaultFocusMinutes);
+    setDefaultBreakMinutes(defaultBreakMinutes);
+
     setTimerIncrement(currentTimerIncrement); // Corrected type here
     setShowSessionsWhileActive(showSessionsWhileActive);
     setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
@@ -404,8 +407,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: focusMinutes, // Directly use current context value
-      breakMinutes: breakMinutes, // Directly use current context value
+      focusMinutes: defaultFocusMinutes, // Save defaultFocusMinutes
+      breakMinutes: defaultBreakMinutes, // Save defaultBreakMinutes
       maxDistance,
       askNotifications,
       breakNotificationsVibrate,
@@ -755,11 +758,11 @@ const Settings = () => {
                     id="focus-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={focusMinutes}
-                    onChange={(e) => setFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    value={defaultFocusMinutes} // Bind to defaultFocusMinutes
+                    onChange={(e) => setDefaultFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))} // Update defaultFocusMinutes
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setFocusMinutes(currentTimerIncrement); // Default to timerIncrement
+                        setDefaultFocusMinutes(currentTimerIncrement); // Default to timerIncrement
                       }
                     }}
                     min={currentTimerIncrement} // Use currentTimerIncrement
@@ -775,11 +778,11 @@ const Settings = () => {
                     id="break-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={breakMinutes}
-                    onChange={(e) => setBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    value={defaultBreakMinutes} // Bind to defaultBreakMinutes
+                    onChange={(e) => setDefaultBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))} // Update defaultBreakMinutes
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setBreakMinutes(timerIncrement);
+                        setDefaultBreakMinutes(timerIncrement);
                       }
                     }}
                     min={timerIncrement}
