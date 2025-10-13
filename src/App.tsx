@@ -18,6 +18,7 @@ import ChipIn from "./pages/ChipIn";
 import Leaderboard from "./pages/Leaderboard";
 import Credits from "./pages/Credits";
 import Login from "./pages/Login";
+import Feedback from "./pages/Feedback"; // NEW: Import Feedback page
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -204,6 +205,7 @@ const AppContent = () => {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/credits" element={<Credits />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/feedback" element={<Feedback />} /> {/* NEW: Add Feedback route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       {areToastsEnabled && <Toaster toasts={toasts} />} {/* NEW: Conditionally render Toaster */}
