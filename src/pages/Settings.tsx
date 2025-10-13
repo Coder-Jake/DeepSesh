@@ -5,19 +5,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { Bell, Smartphone, Volume2, UserX, X } from "lucide-react";
+import { Bell, Smartphone, Volume2, UserX, X } from "lucide-react"; // Added UserX and X icons
 import { useTimer } from "@/contexts/TimerContext";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { NotificationSettings } from "@/types/timer";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useProfile } from "@/contexts/ProfileContext";
+import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
+import { Input } from "@/components/ui/input"; // Import Input
+import { cn } from "@/lib/utils"; // Import cn for conditional class names
+import { NotificationSettings } from "@/types/timer"; // Import NotificationSettings type
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
+import { useProfile } from "@/contexts/ProfileContext"; // NEW: Import useProfile
 
 const Settings = () => {
   const { 
@@ -28,7 +28,7 @@ const Settings = () => {
     breakMinutes, 
     setBreakMinutes, 
     timerIncrement, 
-    setTimerIncrement,
+    setTimerIncrement, // Use the setter from context
     shouldPlayEndSound, 
     setShouldPlayEndSound, 
     shouldShowEndToast, 
@@ -65,35 +65,38 @@ const Settings = () => {
     setBreakNotificationsVibrate,
     verificationStandard,
     setVerificationStandard,
-    profileVisibility,
-    setProfileVisibility,
+    profileVisibility, // Now an array
+    setProfileVisibility, // Now handles array
     locationSharing,
     setLocationSharing,
-    isGlobalPrivate,
-    setIsGlobalPrivate,
-    openSettingsAccordions,
-    setOpenSettingsAccordions,
-    is24HourFormat,
-    setIs24HourFormat,
-    areToastsEnabled,
-    setAreToastsEnabled,
+    isGlobalPrivate, // Renamed from isGlobalPublic
+    setIsGlobalPrivate, // Renamed from setIsGlobalPublic
+    openSettingsAccordions, // Get from context
+    setOpenSettingsAccordions, // Get from context
+    is24HourFormat, // NEW: Get from context
+    setIs24HourFormat, // NEW: Get from context
+    areToastsEnabled, // NEW: Get from context
+    setAreToastsEnabled, // NEW: Get from context
   } = useTimer();
 
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile();
+  const { user } = useAuth(); // Get user from AuthContext
+  const navigate = useNavigate(); // Initialize useNavigate
+  const { toast } = useToast(); // Use shadcn toast for UI feedback
+  const { isDarkMode, toggleDarkMode } = useTheme(); // Use theme context
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile(); // NEW: Get from ProfileContext
 
+  // Local state for temporary UI interactions or derived values
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
-  const [userNameToBlock, setUserNameToBlock] = useState("");
-  const [selectedCoworkerToBlock, setSelectedCoworkerToBlock] = useState<string | undefined>(undefined);
+  const [userNameToBlock, setUserNameToBlock] = useState(""); // NEW: State for input field
+  const [selectedCoworkerToBlock, setSelectedCoworkerToBlock] = useState<string | undefined>(undefined); // NEW: State for select field
 
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
   const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
+  // Ref to store the *last saved* or *initial loaded* state for comparison
+  // Initialize with current context values on first render
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
     isBatchNotificationsEnabled,
@@ -114,25 +117,33 @@ const Settings = () => {
     sessionInvites,
     friendActivity,
     verificationStandard,
-    profileVisibility,
+    profileVisibility, // Now an array
     locationSharing,
-    isGlobalPrivate,
+    isGlobalPrivate, // Renamed
     timerIncrement,
     shouldPlayEndSound,
     shouldShowEndToast,
-    isDarkMode,
-    is24HourFormat,
-    areToastsEnabled,
-    blockedUsers,
+    isDarkMode, // Added isDarkMode to saved settings
+    is24HourFormat, // NEW: Added is24HourFormat
+    areToastsEnabled, // NEW: Added areToastsEnabled
+    blockedUsers, // NEW: Added blockedUsers to saved settings
   });
 
+  // Effect to sync local UI states with context on initial load
+  // This runs once on mount to set up local states from context.
+  // It does NOT update savedSettingsRef.current after initial mount.
   useEffect(() => {
     setCurrentTimerIncrement(timerIncrement);
+    // No update to savedSettingsRef.current here after initial render
   }, [
-    timerIncrement,
+    timerIncrement, // Only dependencies that affect local state initialization
+    // Other context values are directly used in the UI and don't need local state copies for display
   ]);
 
+
+  // Effect to detect changes in local UI states compared to saved settings
   useEffect(() => {
+    // Directly use context values for comparison
     const currentFocusVal = focusMinutes;
     const currentBreakVal = breakMinutes;
 
@@ -156,22 +167,23 @@ const Settings = () => {
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility,
+      profileVisibility, // Compare array
       locationSharing,
-      isGlobalPrivate,
+      isGlobalPrivate, // Renamed
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
-      isDarkMode,
-      is24HourFormat,
-      areToastsEnabled,
-      blockedUsers,
+      isDarkMode, // Added isDarkMode to current UI settings
+      is24HourFormat, // NEW: Added is24HourFormat
+      areToastsEnabled, // NEW: Added areToastsEnabled
+      blockedUsers, // NEW: Compare blockedUsers
     };
 
     const changed = Object.keys(currentUiSettings).some(key => {
       const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
       const savedVal = savedSettingsRef.current[key as keyof typeof savedSettingsRef.current];
 
+      // Deep comparison for objects/arrays (like NotificationSettings, profileVisibility, and blockedUsers)
       if (typeof currentVal === 'object' && currentVal !== null) {
         return JSON.stringify(currentVal) !== JSON.stringify(savedVal);
       }
@@ -181,15 +193,15 @@ const Settings = () => {
   }, [
     showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, focusMinutes, breakMinutes, maxDistance,
+    manualTransition, focusMinutes, breakMinutes, maxDistance, // Updated dependencies
     askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity,
     verificationStandard, profileVisibility, locationSharing,
-    isGlobalPrivate,
+    isGlobalPrivate, // Renamed
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
-    isDarkMode,
-    is24HourFormat,
-    areToastsEnabled,
-    blockedUsers,
+    isDarkMode, // Added isDarkMode dependency
+    is24HourFormat, // NEW: Added is24HourFormat dependency
+    areToastsEnabled, // NEW: Added areToastsEnabled dependency
+    blockedUsers, // NEW: Added blockedUsers dependency
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -199,7 +211,7 @@ const Settings = () => {
     }
     timeoutRefs.current[key] = setTimeout(() => {
       setMomentaryText(prev => ({ ...prev, [key]: null }));
-    }, 1500);
+    }, 1500); // Text visible for 1.5 seconds
   };
 
   const updateNotificationSetting = (
@@ -307,25 +319,32 @@ const Settings = () => {
 
       if (option === 'private') {
         if (checked) {
+          // If 'private' is checked, it becomes the only option
           newVisibility = ['private'];
         } else {
+          // If 'private' is unchecked, default to 'public'
           newVisibility = ['public']; 
         }
       } else {
+        // If a non-private option is toggled
         if (newVisibility.includes('private')) {
+          // If 'private' was active, deselect it first
           newVisibility = newVisibility.filter(v => v !== 'private');
         }
 
         if (checked) {
+          // Add the option if checked and not already present
           if (!newVisibility.includes(option)) {
             newVisibility.push(option);
           }
         } else {
+          // Remove the option if unchecked
           newVisibility = newVisibility.filter(v => v !== option);
         }
 
+        // Ensure at least one non-private option is selected if not private
         if (newVisibility.length === 0 && !newVisibility.includes('private')) {
-          newVisibility = ['public'];
+          newVisibility = ['public']; // Default to public if nothing else is selected
         }
       }
       return newVisibility;
@@ -343,7 +362,9 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    setTimerIncrement(currentTimerIncrement);
+    // Focus and Break minutes are now updated directly by their input fields
+    // No need for newFocusMinutes/newBreakMinutes parsing here
+    setTimerIncrement(currentTimerIncrement); // Corrected type here
     setShowSessionsWhileActive(showSessionsWhileActive);
     setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
     setBatchNotificationPreference(batchNotificationPreference);
@@ -361,12 +382,16 @@ const Settings = () => {
     setFriendActivity(friendActivity);
     setBreakNotificationsVibrate(breakNotificationsVibrate);
     setVerificationStandard(verificationStandard);
+    // profileVisibility is already updated via handleProfileVisibilityChange
     setLocationSharing(locationSharing);
-    setIsGlobalPrivate(isGlobalPrivate);
+    setIsGlobalPrivate(isGlobalPrivate); // Renamed
     setShouldPlayEndSound(shouldPlayEndSound);
     setShouldShowEndToast(shouldShowEndToast);
-    setAreToastsEnabled(areToastsEnabled);
+    // isDarkMode is handled by ThemeContext and its useEffect
+    // is24HourFormat is handled by its own button
+    setAreToastsEnabled(areToastsEnabled); // NEW: Save areToastsEnabled
 
+    // After saving, update the ref to reflect the new "saved" state
     savedSettingsRef.current = {
       showSessionsWhileActive,
       isBatchNotificationsEnabled,
@@ -379,24 +404,24 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: focusMinutes,
-      breakMinutes: breakMinutes,
+      focusMinutes: focusMinutes, // Directly use current context value
+      breakMinutes: breakMinutes, // Directly use current context value
       maxDistance,
       askNotifications,
       breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility,
+      profileVisibility, // Save the array
       locationSharing,
-      isGlobalPrivate,
+      isGlobalPrivate, // Renamed
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
-      isDarkMode,
-      is24HourFormat,
-      areToastsEnabled,
-      blockedUsers,
+      isDarkMode, // Save current dark mode state
+      is24HourFormat, // NEW: Save current time format state
+      areToastsEnabled, // NEW: Save areToastsEnabled
+      blockedUsers, // NEW: Save blockedUsers
     };
     setHasChanges(false);
   };
@@ -414,12 +439,12 @@ const Settings = () => {
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
-      navigate('/');
+      navigate('/'); // Redirect to home or login page after logout
     }
   };
 
   return (
-    <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
+    <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
         {!user && (
@@ -433,8 +458,8 @@ const Settings = () => {
         <Accordion 
           type="multiple" 
           className="space-y-4" 
-          value={openSettingsAccordions}
-          onValueChange={setOpenSettingsAccordions}
+          value={openSettingsAccordions} // Bind to context state
+          onValueChange={setOpenSettingsAccordions} // Update context state
         >
 
           {/* Behaviour */}
@@ -478,7 +503,7 @@ const Settings = () => {
                   <TooltipProvider delayDuration={0}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Label htmlFor="lock" className="cursor-help text-muted-foreground">Lock in!</Label>
+                        <Label htmlFor="lock" className="cursor-help">Lock in!</Label>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Disable other apps during Focus.</p>
@@ -486,20 +511,11 @@ const Settings = () => {
                     </Tooltip>
                   </TooltipProvider>
                 </div >
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Switch
-                        id="lock"
-                        checked={lock}
-                        onCheckedChange={setLock}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Requires App development</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Switch
+                  id="lock"
+                  checked={lock}
+                  onCheckedChange={setLock}
+                />
               </div>
 
               {/* Updated Batch Notifications Section */}
@@ -509,7 +525,7 @@ const Settings = () => {
                     <TooltipProvider delayDuration={0}>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Label htmlFor="batch-notifications-toggle" className="cursor-help text-muted-foreground">Batch Notifications</Label>
+                          <Label htmlFor="batch-notifications-toggle" className="cursor-help">Batch Notifications</Label>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Notifications will be delayed and delivered as a group at specified times. Exemptions apply.</p>
@@ -517,20 +533,11 @@ const Settings = () => {
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Switch
-                          id="batch-notifications-toggle"
-                          checked={isBatchNotificationsEnabled}
-                          onCheckedChange={setIsBatchNotificationsEnabled}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Requires App development</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Switch
+                    id="batch-notifications-toggle"
+                    checked={isBatchNotificationsEnabled}
+                    onCheckedChange={setIsBatchNotificationsEnabled}
+                  />
                 </div>
 
                 {isBatchNotificationsEnabled && (
@@ -579,22 +586,13 @@ const Settings = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="exemptions" className="text-muted-foreground">Exemptions</Label>
+                    <Label htmlFor="exemptions">Exemptions</Label>
                   </div>
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Switch
-                          id="exemptions"
-                          checked={exemptionsEnabled}
-                          onCheckedChange={setExemptionsEnabled}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Requires App development</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Switch
+                    id="exemptions"
+                    checked={exemptionsEnabled}
+                    onCheckedChange={setExemptionsEnabled}
+                  />
                 </div>
 
                 {/* Checkboxes for Exemptions (conditionally rendered) */}
@@ -671,13 +669,13 @@ const Settings = () => {
                 </div >
                 <Button
                   id="global-visibility-toggle"
-                  variant="outline"
-                  onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)}
+                  variant="outline" // Use outline variant for transparent background and border
+                  onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)} // Toggle isGlobalPrivate
                   className={cn(
-                    "px-3 py-1 rounded-full transition-colors select-none text-foreground hover:bg-muted"
+                    "px-3 py-1 rounded-full transition-colors select-none text-foreground hover:bg-muted" // Apply homepage button styles
                   )}
                 >
-                  {!isGlobalPrivate ? "Public" : "Private"}
+                  {!isGlobalPrivate ? "Public" : "Private"} {/* Display Public when false, Private when true */}
                 </Button>
               </div>
 
@@ -734,11 +732,11 @@ const Settings = () => {
                     onChange={(e) => setFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setFocusMinutes(currentTimerIncrement);
+                        setFocusMinutes(currentTimerIncrement); // Default to timerIncrement
                       }
                     }}
-                    min={currentTimerIncrement}
-                    step={currentTimerIncrement}
+                    min={currentTimerIncrement} // Use currentTimerIncrement
+                    step={currentTimerIncrement} // Use currentTimerIncrement
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
@@ -771,8 +769,8 @@ const Settings = () => {
         <Accordion 
           type="multiple" 
           className="space-y-4"
-          value={openSettingsAccordions}
-          onValueChange={setOpenSettingsAccordions}
+          value={openSettingsAccordions} // Bind to context state
+          onValueChange={setOpenSettingsAccordions} // Update context state
         >
 
           {/* Location & Discovery */}
@@ -790,8 +788,8 @@ const Settings = () => {
                   </div>
                   <div className="relative group">
                     <Slider
-                      value={[maxDistance]}
-                      onValueChange={(val) => setMaxDistance(val[0])}
+                      value={[maxDistance]} // Slider expects an array
+                      onValueChange={(val) => setMaxDistance(val[0])} // Extract single value
                       max={5000}
                       min={100}
                       step={100}
@@ -893,7 +891,7 @@ const Settings = () => {
               {/* Verification Subheading */}
               <div className="border-t border-border pt-6 mt-6">
                 <h3 className="text-lg font-semibold mb-4">Verification</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4"> {/* Changed to grid layout */}
                   <p className="text-sm text-muted-foreground">
                     Get security clearance
                   </p>
@@ -901,9 +899,9 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground">Build trust with peers</p>
                   <p className="text-sm text-muted-foreground">Compete for prizes!</p>
                 </div>
-                  <Label className="mt-4 block">Your Verification</Label>
+                  <Label className="mt-4 block">Your Verification</Label> {/* Added mt-4 block for spacing */}
                   <Select 
-                    value={verificationStandard}
+                    value={verificationStandard} // Corrected to use verificationStandard
                     onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
                   >
                     <SelectTrigger>

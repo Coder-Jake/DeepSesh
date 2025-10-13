@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScheduledTimer } from "@/types/timer";
-import { cn, getContrastingTextColor } from "@/lib/utils"; // Import getContrastingTextColor
+import { cn } from "@/lib/utils";
 import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
 
 interface TimelineProps {
@@ -202,8 +202,7 @@ const Timeline: React.FC<TimelineProps> = ({
           const isCurrent = index === currentScheduleIndex && !isSchedulePending; // Only current if not pending
           const isCompleted = index < currentScheduleIndex && !isSchedulePending; // Only completed if not pending
           const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
-          const itemBackgroundColor = timerColors[item.id];
-          const itemTextColor = itemBackgroundColor ? getContrastingTextColor(itemBackgroundColor) : undefined;
+          const itemBackgroundColor = timerColors[item.id] || (item.type === 'focus' ? 'hsl(var(--focus-background))' : ''); // Get custom color or default focus background
 
           return (
             <div
@@ -211,7 +210,8 @@ const Timeline: React.FC<TimelineProps> = ({
               className={cn(
                 "relative flex items-center justify-between p-3 rounded-md transition-all duration-300 group", // Added 'group' for hover effect
                 isCompleted && "bg-muted text-muted-foreground opacity-70",
-                isCurrent && (item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
+                isCurrent && (item.isCustom ? "bg-blue-100 text-blue-800 shadow-md" :
+                              item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
                               "bg-private-bg/20 text-private-bg-foreground shadow-md"),
                 !isCurrent && !isCompleted && "bg-background hover:bg-muted/50"
               )}
@@ -222,23 +222,24 @@ const Timeline: React.FC<TimelineProps> = ({
                 <div
                   className={cn(
                     "absolute inset-0 rounded-md opacity-50",
+                    item.isCustom ? "bg-blue-200" :
                     item.type === 'focus' ? "bg-public-bg" : "bg-private-bg"
                   )}
                   style={{ width: `${100 - progress}%`, transformOrigin: 'left' }}
                 />
               )}
-              <div className="relative z-10 flex-grow" style={{ color: itemTextColor }}> {/* Apply contrasting text color */}
+              <div className="relative z-10 flex-grow">
                 <h4 className="font-medium">{item.title}</h4>
-                <p className="text-xs text-muted-foreground" style={{ color: itemTextColor }}> {/* Apply contrasting text color */}
-                  {item.title} • {item.durationMinutes} mins
+                <p className="text-xs text-muted-foreground">
+                  {item.customTitle || (item.type === 'focus' ? 'Focus' : 'Break')} • {item.durationMinutes} mins
                 </p>
               </div>
               {/* Start time for all items, visible on hover */}
-              <div className="relative z-10 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: itemTextColor }}> {/* Apply contrasting text color */}
+              <div className="relative z-10 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 {itemStartTimes[item.id]}
               </div>
               {isCurrent && (
-                <div className="relative z-10 text-lg font-bold" style={{ color: itemTextColor }}> {/* Apply contrasting text color */}
+                <div className="relative z-10 text-lg font-bold">
                   {formatTime(timeLeft)}
                 </div>
               )}

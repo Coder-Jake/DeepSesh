@@ -43,7 +43,27 @@ const Login = () => {
               },
             },
           }}
+          theme="light"
           redirectTo={window.location.origin + '/'} // Redirect to home after login
+          localization={{
+            variables: {
+              sign_in: {
+                email_label: ' ',
+                password_label: ' ',
+                email_input_placeholder: 'Email',
+                password_input_placeholder: 'Password',
+              },
+              sign_up: {
+                email_label: ' ',
+                password_label: ' ',
+                email_input_placeholder: 'Email',
+                password_input_placeholder: 'Password',
+              },
+              forgotten_password: {
+                email_label: 'Email',
+              },
+            },
+          }}
         />
       </div>
     </div>

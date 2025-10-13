@@ -1,8 +1,9 @@
+import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { TimerProvider, useTimer } from "@/contexts/TimerContext";
+import { TimerProvider, useTimer } from "@/contexts/TimerContext"; // Import useTimer here
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -17,16 +18,17 @@ import ChipIn from "./pages/ChipIn";
 import Leaderboard from "./pages/Leaderboard";
 import Credits from "./pages/Credits";
 import Login from "./pages/Login";
-import Feedback from "./pages/Feedback"; // Import the new Feedback page
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef } from "react";
-import ToastManager from "@/components/ToastManager";
+import { useToast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const navigate = useNavigate();
+  const { toasts } = useToast();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
   const lastHoveredElementRef = useRef<HTMLElement | null>(null);
 
   const getElementName = (element: HTMLElement): string | null => {
@@ -202,10 +204,9 @@ const AppContent = () => {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/credits" element={<Credits />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/feedback" element={<Feedback />} /> {/* New Feedback route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <ToastManager />
+      {areToastsEnabled && <Toaster toasts={toasts} />} {/* NEW: Conditionally render Toaster */}
       <GlobalTooltip />
     </div>
   );

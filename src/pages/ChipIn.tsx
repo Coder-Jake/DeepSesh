@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb, MessageSquare } from "lucide-react"; // Added MessageSquare
+import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom"; // Import Link
+import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection"; // Import the new component
 import { Toaster } from 'sonner'; // Import Toaster from sonner
 
 const ChipIn = () => {
@@ -70,20 +71,8 @@ const ChipIn = () => {
         </p>
       </div>
 
-      {/* "Get in Touch" CardHeader now links to Feedback page */}
-      <Card className="mt-8">
-        <CardHeader className="p-0">
-          <Link
-            to="/feedback"
-            className="block p-6 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer"
-          >
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Get in Touch
-            </CardTitle>
-          </Link>
-        </CardHeader>
-      </Card>
+      {/* New Feedback and Collaborate Section */}
+      <FeedbackAndCollaborateSection />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8"> {/* Added mt-8 for spacing */}
         {/* Donation Form */}
@@ -205,9 +194,7 @@ const ChipIn = () => {
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>• Sharing DeepSesh with friends</li>
-                <li>
-                  • Providing <Link to="/feedback" className="hover:underline text-muted-foreground">feedback and suggestions</Link>
-                </li>
+                <li>• Providing feedback and suggestions</li>
                 <li>• Reporting bugs you encounter</li>
                 <li>• Contributing to our community</li>
               </ul>
