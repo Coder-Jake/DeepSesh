@@ -631,7 +631,7 @@ const Settings = () => {
                         checked={phoneCalls}
                         onCheckedChange={(checked) => setPhoneCalls(!!checked)}
                       />
-                      <Label htmlFor="phonecalls" className="text-sm font-normal">
+                      <Label htmlFor="phonecalls" className="text-sm font-normal text-muted-foreground">
                         Phone Calls
                       </Label>
                     </div>
@@ -641,7 +641,7 @@ const Settings = () => {
                         checked={favourites}
                         onCheckedChange={(checked) => setFavourites(!!checked)}
                       />
-                      <Label htmlFor="favourites" className="text-sm font-normal">
+                      <Label htmlFor="favourites" className="text-sm font-normal text-muted-foreground">
                         Favourites
                       </Label>
                     </div>
@@ -651,7 +651,7 @@ const Settings = () => {
                         checked={workApps}
                         onCheckedChange={(checked) => setWorkApps(!!checked)}
                       />
-                      <Label htmlFor="work-apps" className="text-sm font-normal">
+                      <Label htmlFor="work-apps" className="text-sm font-normal text-muted-foreground">
                         Work Apps
                       </Label>
                     </div>
@@ -661,7 +661,7 @@ const Settings = () => {
                         checked={intentionalBreaches}
                         onCheckedChange={(checked) => setIntentionalBreaches(!!checked)}
                       />
-                      <Label htmlFor="intentional-breaches" className="text-sm font-normal">
+                      <Label htmlFor="intentional-breaches" className="text-sm font-normal text-muted-foreground">
                         Intentional Breaches
                       </Label>
                     </div>
