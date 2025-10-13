@@ -503,7 +503,7 @@ const Settings = () => {
                   <TooltipProvider delayDuration={0}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Label htmlFor="lock" className="cursor-help">Lock in!</Label>
+                        <Label htmlFor="lock" className="cursor-help text-muted-foreground">Lock in!</Label>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Disable other apps during Focus.</p>
@@ -511,11 +511,20 @@ const Settings = () => {
                     </Tooltip>
                   </TooltipProvider>
                 </div >
-                <Switch
-                  id="lock"
-                  checked={lock}
-                  onCheckedChange={setLock}
-                />
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Switch
+                        id="lock"
+                        checked={lock}
+                        onCheckedChange={setLock}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Requires App development</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               {/* Updated Batch Notifications Section */}
@@ -525,7 +534,7 @@ const Settings = () => {
                     <TooltipProvider delayDuration={0}>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Label htmlFor="batch-notifications-toggle" className="cursor-help">Batch Notifications</Label>
+                          <Label htmlFor="batch-notifications-toggle" className="cursor-help text-muted-foreground">Batch Notifications</Label>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Notifications will be delayed and delivered as a group at specified times. Exemptions apply.</p>
@@ -533,11 +542,20 @@ const Settings = () => {
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <Switch
-                    id="batch-notifications-toggle"
-                    checked={isBatchNotificationsEnabled}
-                    onCheckedChange={setIsBatchNotificationsEnabled}
-                  />
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Switch
+                          id="batch-notifications-toggle"
+                          checked={isBatchNotificationsEnabled}
+                          onCheckedChange={setIsBatchNotificationsEnabled}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Requires App development</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
 
                 {isBatchNotificationsEnabled && (
@@ -586,13 +604,22 @@ const Settings = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="exemptions">Exemptions</Label>
+                    <Label htmlFor="exemptions" className="text-muted-foreground">Exemptions</Label>
                   </div>
-                  <Switch
-                    id="exemptions"
-                    checked={exemptionsEnabled}
-                    onCheckedChange={setExemptionsEnabled}
-                  />
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Switch
+                          id="exemptions"
+                          checked={exemptionsEnabled}
+                          onCheckedChange={setExemptionsEnabled}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Requires App development</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
 
                 {/* Checkboxes for Exemptions (conditionally rendered) */}
