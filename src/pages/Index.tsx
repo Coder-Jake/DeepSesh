@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } => "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
@@ -306,7 +306,7 @@ const Index = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
       setSeshTitle("Notes"); // Revert to default if empty
-    }
+      }
   };
 
   const handleTitleLongPress = () => {
@@ -862,7 +862,7 @@ const Index = () => {
                           startNewManualTimer(); // Call the new explicit function for starting a fresh timer
                         }
                       }}
-                      data-name={`${isSchedulePrepared ? 'Commence' : (isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start'))} Timer Button`}
+                      data-name={`${isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')} Timer Button`}
                     >
                       {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
                     </Button>
