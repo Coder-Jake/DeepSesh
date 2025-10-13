@@ -194,7 +194,7 @@ const ChipIn = () => {
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>• Sharing DeepSesh with friends</li>
-                <li>• Providing feedback and suggestions</li>
+                <li>• <Link to="/feedback" className="text-blue-500 hover:underline">Providing feedback and suggestions</Link></li>
                 <li>• Reporting bugs you encounter</li>
                 <li>• Contributing to our community</li>
               </ul>
