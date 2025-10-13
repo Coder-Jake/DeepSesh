@@ -667,6 +667,54 @@ const Settings = () => {
                     </div>
                   </div>
                 )}
+                {!exemptionsEnabled && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-4 pt-2 border-l border-border ml-2 text-muted-foreground opacity-50 pointer-events-none">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="phonecalls"
+                        checked={phoneCalls}
+                        onCheckedChange={(checked) => setPhoneCalls(!!checked)}
+                        disabled
+                      />
+                      <Label htmlFor="phonecalls" className="text-sm font-normal">
+                        Phone Calls
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="favourites"
+                        checked={favourites}
+                        onCheckedChange={(checked) => setFavourites(!!checked)}
+                        disabled
+                      />
+                      <Label htmlFor="favourites" className="text-sm font-normal">
+                        Favourites
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="work-apps"
+                        checked={workApps}
+                        onCheckedChange={(checked) => setWorkApps(!!checked)}
+                        disabled
+                      />
+                      <Label htmlFor="work-apps" className="text-sm font-normal">
+                        Work Apps
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="intentional-breaches"
+                        checked={intentionalBreaches}
+                        onCheckedChange={(checked) => setIntentionalBreaches(!!checked)}
+                        disabled
+                      />
+                      <Label htmlFor="intentional-breaches" className="text-sm font-normal">
+                        Intentional Breaches
+                      </Label>
+                    </div>
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>
