@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } => "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
@@ -339,10 +339,8 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now()); // Record current phase start time
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    // Reset current homepage timer values to defaults when starting a new manual timer
-    setHomepageFocusMinutes(defaultFocusMinutes);
-    setHomepageBreakMinutes(defaultBreakMinutes);
-    setTimeLeft(defaultFocusMinutes * 60); // Set initial time based on default focus
+    // Use current homepage timer values
+    setTimeLeft(focusMinutes * 60); // Use current focusMinutes
   };
 
   const resumeTimer = () => {
@@ -398,10 +396,8 @@ const Index = () => {
       setIsPaused(false);
       setIsFlashing(false);
       setTimerType('focus'); // Reset to default focus type
-      // Reset current homepage timer values to defaults
-      setHomepageFocusMinutes(defaultFocusMinutes);
-      setHomepageBreakMinutes(defaultBreakMinutes);
-      setTimeLeft(defaultFocusMinutes * 60); // Reset to default focus time
+      // Use current homepage timer values
+      setTimeLeft(focusMinutes * 60); // Reset to current focus time
       setActiveJoinedSession(null);
       if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setSessionStartTime(null);
@@ -449,10 +445,8 @@ const Index = () => {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      // Reset current homepage timer values to defaults
-      setHomepageFocusMinutes(defaultFocusMinutes);
-      setHomepageBreakMinutes(defaultBreakMinutes);
-      const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
+      // Use current homepage timer values
+      const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60; // Use current homepage values
       setTimeLeft(initialTime);
       setActiveJoinedSession(null);
       if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
@@ -467,10 +461,8 @@ const Index = () => {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
-        // Reset current homepage timer values to defaults
-        setHomepageFocusMinutes(defaultFocusMinutes);
-        setHomepageBreakMinutes(defaultBreakMinutes);
-        const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
+        // Use current homepage timer values
+        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60; // Use current homepage values
         setTimeLeft(initialTime);
         setActiveJoinedSession(null);
         if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
