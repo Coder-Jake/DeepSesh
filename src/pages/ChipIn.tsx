@@ -145,7 +145,6 @@ const ChipIn = () => {
                 <DollarSign className="h-5 w-5" />
                 Financial Background
               </CardTitle>
-            </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
@@ -195,7 +194,7 @@ const ChipIn = () => {
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>• Sharing DeepSesh with friends</li>
-                <li>• <Link to="/feedback" className="hover:underline">Providing feedback and suggestions</Link></li>
+                <li>• Providing feedback and suggestions</li>
                 <li>• Reporting bugs you encounter</li>
                 <li>• Contributing to our community</li>
               </ul>
