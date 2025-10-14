@@ -476,16 +476,18 @@ const Profile = () => {
 
               {/* NEW: Hosting Code Section */}
               <div className="border-t border-border pt-6 mt-6">
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <h3 className="text-lg font-semibold mb-2 cursor-help">Hosting Code</h3>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Others can use this code to join your sessions.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <h3 className="text-lg font-semibold mb-2">
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help">Hosting Code</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Others can use this code to join your sessions.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </h3>
                 <div className="flex items-center gap-2"> {/* Flex container for code and icon */}
                   {isEditingHostCode ? (
                     <Input
