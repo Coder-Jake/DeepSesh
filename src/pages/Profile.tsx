@@ -318,7 +318,15 @@ const Profile = () => {
       localStorage.setItem('deepsesh_host_code', trimmedHostCode);
     }
     // After successful update, reset original values and hasChanges
-    setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization, linkedinUrl, hostCode: trimmedHostCode }); // linkedinUrl here is the username
+    setOriginalValues({ 
+      firstName: nameToSave, 
+      bio, 
+      intention, 
+      sociability: [profile?.sociability || 50], // Use the *updated* profile's sociability
+      organization: organization.trim() === "" ? "" : organization.trim(), // Use the updated organization
+      linkedinUrl, 
+      hostCode: trimmedHostCode 
+    }); 
     setHasChanges(false);
   };
 

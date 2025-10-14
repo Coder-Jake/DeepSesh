@@ -632,18 +632,18 @@ const Index = () => {
   const allParticipantsToDisplay = useMemo(() => {
     const participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }> = [];
 
-    // Add the host
-    if (currentSessionRole === 'host') {
-      participants.push({
-        id: currentUserId,
-        name: currentUserName,
-        sociability: profile?.sociability || 50,
-        role: 'host',
-        intention: profile?.intention || undefined,
-        bio: profile?.bio || undefined,
-      });
-    } else if (currentSessionRole === 'coworker' && currentSessionHostName) {
-      // Find host's sociability from mock data or default
+    // Add the current user first
+    participants.push({
+      id: currentUserId,
+      name: currentUserName,
+      sociability: profile?.sociability || 50,
+      role: currentSessionRole === 'host' ? 'host' : 'coworker', // Determine role based on currentSessionRole
+      intention: profile?.intention || undefined,
+      bio: profile?.bio || undefined,
+    });
+
+    // Add the host if they are not the current user
+    if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName) {
       const hostSociability = mockNearbySessions.concat(mockFriendsSessions)
         .flatMap(s => s.participants)
         .find(p => p.name === currentSessionHostName)?.sociability || 50;
@@ -657,30 +657,22 @@ const Index = () => {
       });
     }
 
-    // Add the current user if they are a coworker
-    if (currentSessionRole === 'coworker') {
-      participants.push({
-        id: currentUserId,
-        name: currentUserName,
-        sociability: profile?.sociability || 50,
-        role: 'coworker',
-        intention: profile?.intention || undefined,
-        bio: profile?.bio || undefined,
-      });
-    }
-
-    // Add other participants (already filtered to exclude current user and host)
+    // Add other participants, ensuring no duplicates with current user or host
     currentSessionOtherParticipants.forEach(p => {
-      // Ensure we don't add the current user again if they are already added as a coworker
-      if (p.id !== currentUserId) {
+      if (p.id !== currentUserId && p.name !== currentSessionHostName) { // Check both ID and name for uniqueness
         participants.push({ ...p, role: 'coworker' });
       }
     });
 
-    // Sort alphabetically by name, with host always first
+    // Sort alphabetically by name for participants after the current user and host
     return participants.sort((a, b) => {
+      // Keep current user at the top
+      if (a.id === currentUserId) return -1;
+      if (b.id === currentUserId) return 1;
+      // Keep host (if not current user) second
       if (a.role === 'host' && b.role !== 'host') return -1;
       if (a.role !== 'host' && b.role === 'host') return 1;
+      // Sort others alphabetically
       return a.name.localeCompare(b.name);
     });
   }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, currentUserId, currentUserName, profile?.sociability, profile?.intention, profile?.bio]);
@@ -1219,10 +1211,12 @@ const Index = () => {
                     <TooltipTrigger asChild>
                       <div className={cn(
                         "flex items-center justify-between p-2 rounded-md select-none",
-                        person.role === 'host' ? "bg-muted text-blue-700 font-medium cursor-default" : "hover:bg-muted cursor-default"
+                        person.id === currentUserId ? "bg-primary text-primary-foreground font-medium" : // Highlight current user
+                        person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
+                        "hover:bg-muted cursor-default" // Other participants
                       )} data-name={`Coworker: ${person.name}`}>
                         <span className="font-medium text-foreground">
-                          {person.id === currentUserId && person.role !== 'host' ? "You" : person.name}
+                          {person.id === currentUserId ? "You" : person.name}
                         </span>
                         <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
                       </div>
@@ -1230,7 +1224,7 @@ const Index = () => {
                     <TooltipContent>
                       <div className="text-center max-w-xs">
                         <p className="font-medium mb-1">
-                          {person.id === currentUserId && person.role !== 'host' ? "You" : person.name}
+                          {person.id === currentUserId ? "You" : person.name}
                         </p>
                         <p className="text-sm text-muted-foreground">Sociability: {person.sociability}%</p>
                         {person.role === 'host' && <p className="text-xs text-muted-foreground mt-1">Host</p>}
