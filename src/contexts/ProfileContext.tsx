@@ -71,53 +71,6 @@ const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
   return sessionDate.getMonth() === today.getMonth() && sessionDate.getFullYear() === today.getFullYear();
 };
 
-// Helper function to get a unique session title for a given date
-const getUniqueSessionTitle = (
-  baseTitle: string,
-  sessionDateString: string, // YYYY-MM-DD
-  existingSessions: Array<{ title: string; date: string }> // Simplified type for comparison
-): string => {
-  let uniqueTitle = baseTitle;
-  let counter = 1;
-  let foundDuplicate = true;
-
-  while (foundDuplicate) {
-    foundDuplicate = false;
-    let maxSuffix = 0;
-
-    existingSessions.forEach(existingSession => {
-      const existingSessionDate = existingSession.date.split('T')[0]; // Ensure YYYY-MM-DD
-      const existingTitle = existingSession.title;
-
-      if (existingSessionDate === sessionDateString) {
-        // Check for exact match or match with suffix
-        const regex = new RegExp(`^${baseTitle}( \\((\\d+)\\))?$`);
-        const match = existingTitle.match(regex);
-
-        if (match) {
-          foundDuplicate = true; // Found a session with a similar base title on the same date
-          if (match[2]) { // If it has a number suffix
-            const num = parseInt(match[2], 10);
-            if (num > maxSuffix) {
-              maxSuffix = num;
-            }
-          } else { // Exact match without suffix
-            if (maxSuffix === 0) { // If it's the first exact match, next suffix should be 2
-              maxSuffix = 1;
-            }
-          }
-        }
-      }
-    });
-
-    if (foundDuplicate) {
-      counter = maxSuffix + 1;
-      uniqueTitle = `${baseTitle} (${counter})`;
-    }
-  }
-  return uniqueTitle;
-};
-
 
 // Initial data for sessions
 const initialSessions: SessionHistory[] = [
@@ -447,19 +400,15 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
-    const newSessionDate = new Date(sessionStartTime);
-    const sessionDateString = newSessionDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-    let finalSeshTitle = seshTitle;
-
     if (!user) {
       // User not authenticated, save locally
-      finalSeshTitle = getUniqueSessionTitle(seshTitle, sessionDateString, sessions);
+      const newSessionDate = new Date(sessionStartTime);
+      const today = new Date(); // Get current date for comparison
 
       const newSession: SessionHistory = {
         id: Date.now(), // Unique ID for local session
-        title: finalSeshTitle,
-        date: sessionDateString,
+        title: seshTitle,
+        date: newSessionDate.toISOString().split('T')[0], // YYYY-MM-DD format
         duration: formatSecondsToDurationString(totalSessionSeconds),
         participants: activeJoinedSessionCoworkerCount,
         type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break', // Determine type based on focus time
@@ -491,12 +440,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         updatePeriodStats('all');
 
         // Update 'week' stats if session is in current week
-        if (isDateInCurrentWeek(newSessionDate, new Date())) { // Pass a new Date object for comparison
+        if (isDateInCurrentWeek(newSessionDate, new Date(today))) { // Pass a new Date object for comparison
           updatePeriodStats('week');
         }
 
         // Update 'month' stats if session is in current month
-        if (isDateInCurrentMonth(newSessionDate, new Date())) { // Pass a new Date object for comparison
+        if (isDateInCurrentMonth(newSessionDate, new Date(today))) { // Pass a new Date object for comparison
           updatePeriodStats('month');
         }
 
@@ -511,29 +460,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
 
     // If user is authenticated, save to Supabase
-    // First, fetch existing sessions for the current user on this date to check for duplicates
-    const { data: existingSupabaseSessions, error: fetchSessionsError } = await supabase
-      .from('sessions')
-      .select('title, session_start_time')
-      .eq('user_id', user.id)
-      .gte('session_start_time', `${sessionDateString}T00:00:00.000Z`) // Start of the day
-      .lte('session_start_time', `${sessionDateString}T23:59:59.999Z`); // End of the day
-
-    if (fetchSessionsError) {
-      console.error("Error fetching existing Supabase sessions:", fetchSessionsError);
-      // Proceed with saving without unique title if fetching fails, to avoid blocking
-      // Or handle this error more robustly if needed.
-    } else {
-      const mappedExistingSessions = existingSupabaseSessions.map(s => ({
-        title: s.title,
-        date: s.session_start_time, // Use the full timestamp, getUniqueSessionTitle will split it
-      }));
-      finalSeshTitle = getUniqueSessionTitle(seshTitle, sessionDateString, mappedExistingSessions);
-    }
-
     const sessionData: TablesInsert<'public', 'sessions'> = {
       user_id: user.id,
-      title: finalSeshTitle,
+      title: seshTitle,
       notes: notes,
       focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
       break_duration_seconds: Math.round(finalAccumulatedBreakSeconds),
