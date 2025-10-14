@@ -1,10 +1,10 @@
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { useEffect, useState, useRef, useCallback } from "react";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 import {
