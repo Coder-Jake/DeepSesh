@@ -91,19 +91,19 @@ const ActiveAskSection: React.FC<ActiveAskSectionProps> = ({ activeAsks, onVoteE
               );
             }
           })}
-        </div>
-      )}
 
-      {hiddenCount > 0 && (
-        <button 
-          onClick={handleShowAllHidden}
-          className={cn(
-            "w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors",
-            !isOpen && "mt-0" // Adjust margin if section is closed
+          {hiddenCount > 0 && (
+            <button 
+              onClick={handleShowAllHidden}
+              className={cn(
+                "w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors",
+                !isOpen && "mt-0" // Adjust margin if section is closed
+              )}
+            >
+              Hidden ({hiddenCount})
+            </button>
           )}
-        >
-          Hidden ({hiddenCount})
-        </button>
+        </div>
       )}
     </div>
   );
