@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from 'sonner'; // Using sonner for notifications
 import { ActiveAskItem } from '@/types/timer'; // NEW: Import ActiveAskItem type
+import { Session } from '@supabase/supabase-js'; // NEW: Import Session type
 
 type Profile = Tables<'public', 'profiles'>;
 type ProfileInsert = TablesInsert<'public', 'profiles'>;
@@ -332,7 +333,25 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const fetchProfile = async () => {
     setLoading(true);
     setError(null);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error: getUserError } = await supabase.auth.getUser(); // Safer destructuring
+    const user = data?.user || null; // Access user safely
+
+    if (getUserError) {
+      console.error("Error getting user:", getUserError);
+      setError(getUserError.message);
+      setProfile(null);
+      setLoading(false);
+      // If error getting user, still try to load host code from local storage
+      const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
+      if (storedHostCode) {
+        setHostCode(storedHostCode);
+      } else {
+        const newHostCode = generateRandomHostCode();
+        setHostCode(newHostCode);
+        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+      }
+      return;
+    }
 
     if (!user) {
       setProfile(null);
@@ -653,32 +672,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setBlockedUsers(JSON.parse(storedBlockedUsers));
     }
     
-    // Fetch profile and sessions for authenticated user
-    const checkUserAndFetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await fetchProfile();
-        await fetchSessions(user.id);
-      } else {
-        setProfile(null);
-        // If no user, load host code from local storage or generate new
-        const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
-        if (storedHostCode) {
-          setHostCode(storedHostCode);
-        } else {
-          const newHostCode = generateRandomHostCode();
-          setHostCode(newHostCode);
-          localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-        }
-        setLoading(false); // Ensure loading is set to false if no user
-      }
-    };
-    checkUserAndFetchData();
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const handleAuthChange = async (_event: string, session: Session | null) => {
       if (session) {
-        fetchProfile();
-        fetchSessions(session.user.id);
+        await fetchProfile();
+        await fetchSessions(session.user.id);
       } else {
         setProfile(null);
         setSessions(initialSessions); // Reset to initial local sessions on logout
@@ -692,13 +689,21 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           setHostCode(newHostCode);
           localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
         }
+        setLoading(false); // Ensure loading is set to false if no user
       }
+    };
+
+    // Initial fetch based on current session status
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleAuthChange('INITIAL_SESSION', session);
     });
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange(handleAuthChange);
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   // Save profile and related data to local storage whenever they change
   useEffect(() => {
