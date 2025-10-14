@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 import {
@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { Linkedin } from "lucide-react"; // NEW: Import Linkedin icon
+import { Linkedin, Copy } from "lucide-react"; // NEW: Import Linkedin and Copy icons
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 
 // Lists for random host code generation
@@ -319,6 +319,24 @@ const Profile = () => {
     }
   };
 
+  // NEW: Function to copy host code to clipboard
+  const handleCopyHostCode = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(hostCode);
+      toast({
+        title: "Copied to clipboard!",
+        description: "Your host code has been copied.",
+      });
+    } catch (err) {
+      console.error('Failed to copy host code: ', err);
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy host code. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [hostCode, toast]);
+
   if (loading) {
     return (
       <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6 text-center text-muted-foreground">
@@ -464,26 +482,39 @@ const Profile = () => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                {isEditingHostCode ? (
-                  <Input
-                    ref={hostCodeInputRef}
-                    value={hostCode}
-                    onChange={(e) => handleHostCodeChange(e.target.value)}
-                    onKeyDown={handleHostCodeInputKeyDown}
-                    onBlur={handleHostCodeInputBlur}
-                    placeholder="yourhostcode"
-                    className="text-lg font-semibold h-auto py-1 px-2 italic"
-                    minLength={4}
-                    maxLength={20}
-                  />
-                ) : (
-                  <span
-                    className="text-lg font-semibold text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
-                    onClick={handleHostCodeClick}
-                  >
-                    {hostCode}
-                  </span>
-                )}
+                <div className="flex items-center gap-2"> {/* Flex container for code and icon */}
+                  {isEditingHostCode ? (
+                    <Input
+                      ref={hostCodeInputRef}
+                      value={hostCode}
+                      onChange={(e) => handleHostCodeChange(e.target.value)}
+                      onKeyDown={handleHostCodeInputKeyDown}
+                      onBlur={handleHostCodeInputBlur}
+                      placeholder="yourhostcode"
+                      className="text-lg font-semibold h-auto py-1 px-2 italic flex-grow"
+                      minLength={4}
+                      maxLength={20}
+                    />
+                  ) : (
+                    <span
+                      className="text-lg font-semibold text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none flex-grow"
+                      onClick={handleHostCodeClick}
+                    >
+                      {hostCode}
+                    </span>
+                  )}
+                  {!isEditingHostCode && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCopyHostCode}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label="Copy host code"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
