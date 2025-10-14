@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square } from "lucide-react";
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp } from "lucide-react"; // Added ChevronDown, ChevronUp
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext"; // Ensure useProfile is imported
 import { useNavigate } from "react-router-dom";
@@ -226,6 +226,12 @@ const Index = () => {
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
+  // NEW: States for Nearby/Friends session list visibility
+  const [showNearbySessions, setShowNearbySessions] = useState(true);
+  const [showFriendsSessions, setShowFriendsSessions] = useState(true);
+  const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
+  const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
+
   // Effect to update local isPrivate when isGlobalPrivate changes
   useEffect(() => {
     setIsPrivate(isGlobalPrivate);
@@ -306,7 +312,7 @@ const Index = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
       setSeshTitle("Notes"); // Revert to default if empty
-      }
+    }
   };
 
   const handleTitleLongPress = () => {
@@ -741,6 +747,23 @@ const Index = () => {
     });
   }, [preparedSchedules, getEffectiveStartTime]);
 
+  // Handlers for toggling Nearby/Friends sections
+  const toggleNearbySessions = () => {
+    setShowNearbySessions(prev => {
+      const newState = !prev;
+      setHiddenNearbyCount(newState ? 0 : mockNearbySessions.length);
+      return newState;
+    });
+  };
+
+  const toggleFriendsSessions = () => {
+    setShowFriendsSessions(prev => {
+      const newState = !prev;
+      setHiddenFriendsCount(newState ? 0 : mockFriendsSessions.length);
+      return newState;
+    });
+  };
+
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
       <div className="mb-6">
@@ -1092,32 +1115,58 @@ const Index = () => {
             {/* Nearby Sessions */}
             {!shouldHideSessionLists && !isPrivate && (
               <div className="mb-6" data-name="Nearby Sessions Section">
-                <h3 className="text-lg font-semibold text-foreground mb-3">Nearby</h3>
-                <div className="space-y-3">
-                  {mockNearbySessions.map(session => (
-                    <SessionCard 
-                      key={session.id} 
-                      session={session} 
-                      onJoinSession={handleJoinSession} 
-                    />
-                  ))}
-                </div>
+                <button 
+                  onClick={toggleNearbySessions} 
+                  className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
+                >
+                  <h3>Nearby</h3>
+                  <div className="flex items-center gap-2">
+                    {hiddenNearbyCount > 0 && (
+                      <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
+                    )}
+                    {showNearbySessions ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </div>
+                </button>
+                {showNearbySessions && (
+                  <div className="space-y-3">
+                    {mockNearbySessions.map(session => (
+                      <SessionCard 
+                        key={session.id} 
+                        session={session} 
+                        onJoinSession={handleJoinSession} 
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Friends Sessions */}
             {!shouldHideSessionLists && (
               <div data-name="Friends Sessions Section">
-                <h3 className="text-lg font-semibold text-foreground mb-3">Friends</h3>
-                <div className="space-y-3">
-                  {mockFriendsSessions.map(session => (
-                    <SessionCard 
-                      key={session.id} 
-                      session={session} 
-                      onJoinSession={handleJoinSession} 
-                    />
-                  ))}
-                </div>
+                <button 
+                  onClick={toggleFriendsSessions} 
+                  className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
+                >
+                  <h3>Friends</h3>
+                  <div className="flex items-center gap-2">
+                    {hiddenFriendsCount > 0 && (
+                      <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
+                    )}
+                    {showFriendsSessions ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </div>
+                </button>
+                {showFriendsSessions && (
+                  <div className="space-y-3">
+                    {mockFriendsSessions.map(session => (
+                      <SessionCard 
+                        key={session.id} 
+                        session={session} 
+                        onJoinSession={handleJoinSession} 
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </TooltipProvider>
