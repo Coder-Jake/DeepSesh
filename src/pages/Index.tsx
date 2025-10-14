@@ -1168,16 +1168,30 @@ const Index = () => {
               </CardHeader>
               <CardContent className="space-y-2">
                 {currentSessionRole === 'host' && (
-                  <div className="flex items-center justify-between p-2 rounded-md bg-muted text-foreground font-medium select-none">
-                    <span>You</span>
-                    <span className="text-sm text-muted-foreground">Host</span>
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-between p-2 rounded-md bg-muted text-blue-700 font-medium select-none cursor-default"> {/* Dark blue for host */}
+                        <span>You</span>
+                        <span className="text-sm text-muted-foreground">Host</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Host</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
                 {currentSessionRole === 'coworker' && currentSessionHostName && (
-                  <div className="flex items-center justify-between p-2 rounded-md bg-muted text-foreground font-medium select-none">
-                    <span>{currentSessionHostName}</span>
-                    <span className="text-sm text-muted-foreground">Host</span>
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-between p-2 rounded-md bg-muted text-blue-700 font-medium select-none cursor-default"> {/* Dark blue for host */}
+                        <span>{currentSessionHostName}</span>
+                        <span className="text-sm text-muted-foreground">Host</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Host</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
                 {currentSessionRole === 'coworker' && (
                   <div className="flex items-center justify-between p-2 rounded-md bg-muted text-foreground font-medium select-none">

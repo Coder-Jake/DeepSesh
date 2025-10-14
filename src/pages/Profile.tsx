@@ -62,6 +62,31 @@ const Profile = () => {
   // NEW: Determine if any timer is active (kept for other potential uses, but not for host code)
   const isTimerActive = isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending;
 
+  // Long press state for Sociability
+  const longPressRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPress = useRef(false);
+
+  const handleLongPressStart = (callback: () => void) => {
+    isLongPress.current = false;
+    longPressRef.current = setTimeout(() => {
+      isLongPress.current = true;
+      callback();
+    }, 500); // 500ms for long press
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+    }
+    isLongPress.current = false;
+  };
+
+  const handleSociabilityLongPress = () => {
+    if (isLongPress.current) {
+      navigate('/profile#social-preferences');
+    }
+  };
+
   useEffect(() => {
     // Initialize local states from profile or defaults
     setLocalFirstName(profile?.first_name || localStorage.getItem('flowsesh_local_first_name') || "You");
@@ -431,7 +456,7 @@ const Profile = () => {
           {/* Sociability Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Social Preferences</CardTitle>
+              <CardTitle id="social-preferences">Social Preferences</CardTitle> {/* Added ID for navigation */}
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -453,7 +478,14 @@ const Profile = () => {
                       className="w-full"
                     />
                   </div>
-                  <div className="text-center mt-3 text-sm text-muted-foreground">
+                  <div 
+                    className="text-center mt-3 text-sm text-muted-foreground cursor-pointer select-none"
+                    onMouseDown={() => handleLongPressStart(handleSociabilityLongPress)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                    onTouchStart={() => handleLongPressStart(handleSociabilityLongPress)}
+                    onTouchEnd={handleLongPressEnd}
+                  >
                     {sociability[0] <= 20 && "Looking to collaborate/brainstorm"}
                     {sociability[0] > 20 && sociability[0] <= 40 && "Happy to chat while we work"}
                     {sociability[0] > 40 && sociability[0] <= 60 && "I don't mind"}
