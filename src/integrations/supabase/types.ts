@@ -66,6 +66,7 @@ export type Database = {
       }
       sessions: {
         Row: {
+          active_asks: Json | null // NEW: Added active_asks column
           break_duration_seconds: number
           coworker_count: number
           created_at: string | null
@@ -79,6 +80,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          active_asks?: Json | null // NEW: Added active_asks column
           break_duration_seconds?: number
           coworker_count?: number
           created_at?: string | null
@@ -92,6 +94,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          active_asks?: Json | null // NEW: Added active_asks column
           break_duration_seconds?: number
           coworker_count?: number
           created_at?: string | null
