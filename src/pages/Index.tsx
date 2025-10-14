@@ -291,9 +291,8 @@ const Index = () => {
     if (isLongPress.current) {
       setIsPrivate(!isPrivate);
     } else {
-      if (confirm(`Switch to ${isPrivate ? 'Public' : 'Private'} mode?`)) {
-        setIsPrivate(!isPrivate);
-      }
+      // Removed the confirm dialog here
+      setIsPrivate(!isPrivate);
     }
   };
 
@@ -979,7 +978,7 @@ const Index = () => {
                         }} 
                         onBlur={() => {
                           if (focusMinutes === 0) {
-                            setHomepageFocusMinutes(timerIncrement);
+                            setHomepageFocusMinutes(defaultFocusMinutes); // Use defaultFocusMinutes here
                           }
                         }}
                         className="w-16 h-8 text-center" 
@@ -1014,7 +1013,7 @@ const Index = () => {
                         }} 
                         onBlur={() => {
                           if (breakMinutes === 0) {
-                            setHomepageBreakMinutes(timerIncrement);
+                            setHomepageBreakMinutes(defaultBreakMinutes); // Use defaultBreakMinutes here
                           }
                         }}
                         className="w-16 h-8 text-center" 
