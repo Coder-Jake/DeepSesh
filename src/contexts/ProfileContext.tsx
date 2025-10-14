@@ -2,8 +2,6 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from 'sonner'; // Using sonner for notifications
-import { ActiveAskItem } from '@/types/timer'; // NEW: Import ActiveAskItem type
-import { Session } from '@supabase/supabase-js'; // NEW: Import Session type
 
 type Profile = Tables<'public', 'profiles'>;
 type ProfileInsert = TablesInsert<'public', 'profiles'>;
@@ -20,7 +18,6 @@ export interface SessionHistory {
   participants: number;
   type: 'focus' | 'break';
   notes: string;
-  activeAsks: ActiveAskItem[] | null; // NEW: Added activeAsks to SessionHistory
 }
 
 export interface StatsPeriodData {
@@ -84,8 +81,7 @@ const initialSessions: SessionHistory[] = [
     duration: "45 mins",
     participants: 3,
     type: "focus",
-    notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
-    activeAsks: null, // NEW: Default to null
+    notes: "Great session focusing on project documentation. Made significant progress on the API specs."
   },
   {
     id: 2,
@@ -94,8 +90,7 @@ const initialSessions: SessionHistory[] = [
     duration: "90 mins",
     participants: 5,
     type: "focus",
-    notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive.",
-    activeAsks: null, // NEW: Default to null
+    notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
   },
   {
     id: 3,
@@ -104,8 +99,7 @@ const initialSessions: SessionHistory[] = [
     duration: "30 mins",
     participants: 1,
     type: "focus",
-    notes: "Quick focused session to review quarterly goals and plan next steps.",
-    activeAsks: null, // NEW: Default to null
+    notes: "Quick focused session to review quarterly goals and plan next steps."
   },
   {
     id: 4,
@@ -114,8 +108,7 @@ const initialSessions: SessionHistory[] = [
     duration: "120 mins",
     participants: 2,
     type: "focus",
-    notes: "Pair programming session working on the new user interface components. Fixed several bugs.",
-    activeAsks: null, // NEW: Default to null
+    notes: "Pair programming session working on the new user interface components. Fixed several bugs."
   },
   {
     id: 5,
@@ -124,8 +117,7 @@ const initialSessions: SessionHistory[] = [
     duration: "60 mins",
     participants: 4,
     type: "focus",
-    notes: "Market research session for the new product launch. Gathered valuable competitive intelligence.",
-    activeAsks: null, // NEW: Default to null
+    notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
   }
 ];
 
@@ -209,7 +201,6 @@ interface ProfileContextType {
     totalSessionSeconds: number,
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
-    activeAsks: ActiveAskItem[] // NEW: Added activeAsks parameter
   ) => Promise<void>;
 
   // NEW: Blocked users and related functions
@@ -241,8 +232,6 @@ const LOCAL_STORAGE_KEY = 'deepsesh_profile_data'; // New local storage key for 
 const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name'; // New local storage key for local first name
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users'; // NEW: Local storage key for blocked users
 const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code'; // NEW: Local storage key for host code
-const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions'; // NEW: Local storage key for local sessions
-const LOCAL_STORAGE_STATS_KEY = 'deepsesh_local_stats'; // NEW: Local storage key for local stats
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -333,25 +322,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const fetchProfile = async () => {
     setLoading(true);
     setError(null);
-    const { data, error: getUserError } = await supabase.auth.getUser(); // Safer destructuring
-    const user = data?.user || null; // Access user safely
-
-    if (getUserError) {
-      console.error("Error getting user:", getUserError);
-      setError(getUserError.message);
-      setProfile(null);
-      setLoading(false);
-      // If error getting user, still try to load host code from local storage
-      const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
-      if (storedHostCode) {
-        setHostCode(storedHostCode);
-      } else {
-        const newHostCode = generateRandomHostCode();
-        setHostCode(newHostCode);
-        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-      }
-      return;
-    }
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       setProfile(null);
@@ -446,40 +417,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
-  const fetchSessions = async (userId: string) => {
-    setLoading(true);
-    setError(null);
-
-    const { data, error: fetchError } = await supabase
-      .from('sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('session_start_time', { ascending: false });
-
-    if (fetchError) {
-      console.error("Error fetching sessions:", fetchError);
-      setError(fetchError.message);
-      toast.error("Error fetching sessions", {
-        description: fetchError.message,
-      });
-      setSessions([]);
-    } else if (data) {
-      const fetchedSessions: SessionHistory[] = data.map(s => ({
-        id: parseInt(s.id.substring(0, 8), 16), // Convert UUID to a number for demo consistency
-        title: s.title,
-        date: s.session_start_time.split('T')[0],
-        duration: formatSecondsToDurationString(s.total_session_seconds),
-        participants: s.coworker_count,
-        type: s.focus_duration_seconds > s.break_duration_seconds ? 'focus' : 'break',
-        notes: s.notes || '',
-        activeAsks: s.active_asks as ActiveAskItem[] | null, // NEW: Cast JSONB to ActiveAskItem[]
-      }));
-      setSessions(fetchedSessions);
-      // TODO: Recalculate stats based on fetched sessions
-    }
-    setLoading(false);
-  };
-
   const updateProfile = async (data: ProfileUpdate) => {
     setLoading(true);
     setError(null);
@@ -531,7 +468,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     totalSessionSeconds: number,
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
-    activeAsks: ActiveAskItem[] // NEW: Added activeAsks parameter
   ) => {
     setLoading(true);
     setError(null);
@@ -550,7 +486,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         participants: activeJoinedSessionCoworkerCount,
         type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break', // Determine type based on focus time
         notes: notes,
-        activeAsks: activeAsks.length > 0 ? activeAsks : null, // NEW: Save activeAsks locally
       };
 
       setSessions(prevSessions => [newSession, ...prevSessions]);
@@ -608,7 +543,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       coworker_count: activeJoinedSessionCoworkerCount,
       session_start_time: new Date(sessionStartTime).toISOString(),
       session_end_time: new Date().toISOString(),
-      active_asks: activeAsks.length > 0 ? activeAsks : null, // NEW: Save activeAsks to Supabase
     };
 
     const { data, error: insertError } = await supabase
@@ -628,37 +562,24 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       toast.success("Session saved!", {
         description: "Your session has been successfully recorded.",
       });
-      // After saving to Supabase, refetch sessions to update the history page
-      fetchSessions(user.id);
+      // Optionally, update local sessions state if needed for immediate display
+      // For now, we'll just log and toast.
     }
     setLoading(false);
   };
 
   // Initial load effect
   useEffect(() => {
-    // Load profile data
-    const storedProfileData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedProfileData) {
-      const data = JSON.parse(storedProfileData);
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (storedData) {
+      const data = JSON.parse(storedData);
       setProfile(data.profile ?? null);
+      console.log("Profile loaded from local storage:", data.profile?.first_name);
+      setSessions(data.sessions ?? initialSessions);
+      setStatsData(data.statsData ?? initialStatsData);
       setHistoryTimePeriod(data.historyTimePeriod ?? 'week');
       setLeaderboardFocusTimePeriod(data.leaderboardFocusTimePeriod ?? 'week');
       setLeaderboardCollaborationTimePeriod(data.leaderboardCollaborationTimePeriod ?? 'week');
-    }
-
-    // Load local sessions and stats
-    const storedLocalSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
-    if (storedLocalSessions) {
-      setSessions(JSON.parse(storedLocalSessions));
-    } else {
-      setSessions(initialSessions); // Use initial data if nothing in local storage
-    }
-
-    const storedLocalStats = localStorage.getItem(LOCAL_STORAGE_STATS_KEY);
-    if (storedLocalStats) {
-      setStatsData(JSON.parse(storedLocalStats));
-    } else {
-      setStatsData(initialStatsData); // Use initial data if nothing in local storage
     }
 
     const storedLocalFirstName = localStorage.getItem(LOCAL_FIRST_NAME_KEY);
@@ -672,14 +593,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setBlockedUsers(JSON.parse(storedBlockedUsers));
     }
     
-    const handleAuthChange = async (_event: string, session: Session | null) => {
+    fetchProfile(); // Always try to fetch the latest profile from Supabase
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        await fetchProfile();
-        await fetchSessions(session.user.id);
+        fetchProfile();
       } else {
         setProfile(null);
-        setSessions(initialSessions); // Reset to initial local sessions on logout
-        setStatsData(initialStatsData); // Reset to initial local stats on logout
         // When logging out, ensure hostCode is loaded from local storage or generated
         const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
         if (storedHostCode) {
@@ -689,45 +609,30 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           setHostCode(newHostCode);
           localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
         }
-        setLoading(false); // Ensure loading is set to false if no user
       }
-    };
-
-    // Initial fetch based on current session status
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleAuthChange('INITIAL_SESSION', session);
     });
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange(handleAuthChange);
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   // Save profile and related data to local storage whenever they change
   useEffect(() => {
     const dataToSave = {
       profile,
+      sessions,
+      statsData,
       historyTimePeriod,
       leaderboardFocusTimePeriod,
       leaderboardCollaborationTimePeriod,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+    console.log("Profile saved to local storage:", profile?.first_name);
   }, [
-    profile,
+    profile, sessions, statsData,
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
   ]);
-
-  // Save local sessions to local storage whenever they change
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(sessions));
-  }, [sessions]);
-
-  // Save local stats to local storage whenever they change
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_STATS_KEY, JSON.stringify(statsData));
-  }, [statsData]);
 
   // Save localFirstName to local storage whenever it changes
   useEffect(() => {

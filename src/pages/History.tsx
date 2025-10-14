@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
-import SessionPollDisplay from "@/components/SessionPollDisplay"; // NEW: Import SessionPollDisplay
 
 const History = () => {
   const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData } = useProfile(); // Use persistent state from context
@@ -156,17 +155,12 @@ const History = () => {
                     </div>
                   </CardHeader>
                   
-                  {(session.notes || (session.activeAsks && session.activeAsks.length > 0)) && (
+                  {session.notes && (
                     <CardContent>
-                      {session.notes && (
-                        <div className="flex items-start gap-2">
-                          <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-muted-foreground">{session.notes}</p>
-                        </div>
-                      )}
-                      {session.activeAsks && session.activeAsks.length > 0 && (
-                        <SessionPollDisplay activeAsks={session.activeAsks} />
-                      )}
+                      <div className="flex items-start gap-2">
+                        <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-muted-foreground">{session.notes}</p>
+                      </div>
                     </CardContent>
                   )}
                 </Card>
