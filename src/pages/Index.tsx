@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp } from "lucide-react"; // Added ChevronDown, ChevronUp
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react"; // Added Users icon
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext"; // Ensure useProfile is imported
 import { useNavigate } from "react-router-dom";
@@ -231,6 +231,10 @@ const Index = () => {
   const [showFriendsSessions, setShowFriendsSessions] = useState(true);
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
+
+  // NEW: State for Join input box visibility and value
+  const [showJoinInput, setShowJoinInput] = useState(false);
+  const [joinSessionCode, setJoinSessionCode] = useState("");
 
   // Effect to update local isPrivate when isGlobalPrivate changes
   useEffect(() => {
@@ -567,6 +571,19 @@ const Index = () => {
     });
   };
 
+  const handleJoinCodeSubmit = () => {
+    if (joinSessionCode.trim()) {
+      toast({
+        title: "Joining Session",
+        description: `Attempting to join session with code: ${joinSessionCode.trim()}`,
+      });
+      // In a real application, you would send this code to your backend
+      // to validate and join the user to the corresponding session.
+      setJoinSessionCode(""); // Clear input after attempt
+      setShowJoinInput(false); // Hide input after attempt
+    }
+  };
+
   const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending); // Check for prepared schedule too
 
   const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
@@ -808,24 +825,60 @@ const Index = () => {
                         </>}
                     </button>
                     
-                    {/* Share Dropdown */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                    {isActiveTimer ? ( // Conditionally render Share Dropdown
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                            data-name="Share Options Button"
+                          >
+                            <Share2 size={16} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')} data-name="Share QR Option">QR</DropdownMenuItem>
+                          <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')} data-name="Share Link Option">Link</DropdownMenuItem>
+                          <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : ( // Render Join button and input when no timer is active
+                      <div className="flex flex-col items-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowJoinInput(prev => !prev)}
                           className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                          data-name="Share Options Button"
+                          data-name="Join Session Button"
                         >
-                          <Share2 size={16} />
+                          <Users size={16} />
+                          <span className="text-sm font-medium">Join</span>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')} data-name="Share QR Option">QR</DropdownMenuItem>
-                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')} data-name="Share Link Option">Link</DropdownMenuItem>
-                        <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        {showJoinInput && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <Input
+                              type="text"
+                              placeholder="Enter session code"
+                              value={joinSessionCode}
+                              onChange={(e) => setJoinSessionCode(e.target.value)}
+                              className="w-40 h-8 text-sm"
+                              onFocus={(e) => e.target.select()}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleJoinCodeSubmit(); }}
+                              data-name="Join Session Code Input"
+                            />
+                            <Button 
+                              size="sm" 
+                              onClick={handleJoinCodeSubmit} 
+                              disabled={!joinSessionCode.trim()}
+                              data-name="Submit Join Code Button"
+                            >
+                              Go
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 
