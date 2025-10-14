@@ -628,15 +628,59 @@ const Index = () => {
 
   const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending); // Check for prepared schedule too
 
-  // NEW: Use currentSessionOtherParticipants for display
-  const displayParticipants = useMemo(() => {
+  // NEW: Unified list of all participants to display in the Coworkers card
+  const allParticipantsToDisplay = useMemo(() => {
+    const participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }> = [];
+
+    // Add the host
     if (currentSessionRole === 'host') {
-      return currentSessionOtherParticipants; // Should be empty initially
-    } else if (currentSessionRole === 'coworker') {
-      return currentSessionOtherParticipants;
+      participants.push({
+        id: currentUserId,
+        name: currentUserName,
+        sociability: profile?.sociability || 50,
+        role: 'host',
+        intention: profile?.intention || undefined,
+        bio: profile?.bio || undefined,
+      });
+    } else if (currentSessionRole === 'coworker' && currentSessionHostName) {
+      // Find host's sociability from mock data or default
+      const hostSociability = mockNearbySessions.concat(mockFriendsSessions)
+        .flatMap(s => s.participants)
+        .find(p => p.name === currentSessionHostName)?.sociability || 50;
+
+      participants.push({
+        id: "host-id", // Placeholder ID for the host if not current user
+        name: currentSessionHostName,
+        sociability: hostSociability,
+        role: 'host',
+        // intention and bio would come from actual host profile in a real app
+      });
     }
-    return [];
-  }, [currentSessionRole, currentSessionOtherParticipants]);
+
+    // Add the current user if they are a coworker
+    if (currentSessionRole === 'coworker') {
+      participants.push({
+        id: currentUserId,
+        name: currentUserName,
+        sociability: profile?.sociability || 50,
+        role: 'coworker',
+        intention: profile?.intention || undefined,
+        bio: profile?.bio || undefined,
+      });
+    }
+
+    // Add other participants (already filtered to exclude current user and host)
+    currentSessionOtherParticipants.forEach(p => {
+      participants.push({ ...p, role: 'coworker' });
+    });
+
+    // Sort alphabetically by name, with host always first
+    return participants.sort((a, b) => {
+      if (a.role === 'host' && b.role !== 'host') return -1;
+      if (a.role !== 'host' && b.role === 'host') return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, currentUserId, currentUserName, profile?.sociability, profile?.intention, profile?.bio]);
 
 
   const handleExtendSubmit = (minutes: number) => {
@@ -737,7 +781,7 @@ const Index = () => {
 
     const updatedOptions = currentPoll.options.map(option => {
       if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
-        option.votes = option.votes.filter(v => v.userId !== currentUserId); // Filter out current user's previous vote
+        option.votes = option.votes.filter(v => v.userId === currentUserId); // Filter out current user's previous vote
       }
 
       if (optionIds.includes(option.id)) {
@@ -1167,53 +1211,28 @@ const Index = () => {
                 <CardTitle className="text-lg">Coworkers</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {currentSessionRole === 'host' && (
-                  <Tooltip>
+                {allParticipantsToDisplay.map(person => (
+                  <Tooltip key={person.id}>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between p-2 rounded-md bg-muted text-blue-700 font-medium select-none cursor-default"> {/* Dark blue for host */}
-                        <span>You</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Host</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                {currentSessionRole === 'coworker' && currentSessionHostName && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between p-2 rounded-md bg-muted text-blue-700 font-medium select-none cursor-default"> {/* Dark blue for host */}
-                        <span>{currentSessionHostName}</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Host</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                {currentSessionRole === 'coworker' && (
-                  <div className="flex items-center justify-between p-2 rounded-md bg-muted text-foreground font-medium select-none">
-                    <span>You</span>
-                  </div>
-                )}
-                {displayParticipants.map(participant => (
-                  <Tooltip key={participant.id}>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-default select-none" data-name={`Coworker: ${participant.name}`}>
-                        <span className="font-medium text-foreground">{participant.name}</span>
-                        <span className="text-sm text-muted-foreground">Sociability: {participant.sociability}%</span>
+                      <div className={cn(
+                        "flex items-center justify-between p-2 rounded-md select-none",
+                        person.role === 'host' ? "bg-muted text-blue-700 font-medium cursor-default" : "hover:bg-muted cursor-default"
+                      )} data-name={`Coworker: ${person.name}`}>
+                        <span className="font-medium text-foreground">{person.name}</span>
+                        <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="text-center max-w-xs">
-                        <p className="font-medium mb-1">{participant.name}</p>
-                        <p className="text-sm text-muted-foreground">Sociability: {participant.sociability}%</p>
-                        {participant.intention && (
-                          <p className="text-xs text-muted-foreground mt-1">Intention: {participant.intention}</p>
+                        <p className="font-medium mb-1">{person.name}</p>
+                        <p className="text-sm text-muted-foreground">Sociability: {person.sociability}%</p>
+                        {person.role === 'host' && <p className="text-xs text-muted-foreground mt-1">Host</p>}
+                        {person.intention && (
+                          <p className="text-xs text-muted-foreground mt-1">Intention: {person.intention}</p>
                         )}
-                        {timerType === 'break' && (
+                        {timerType === 'break' && person.bio && (
                           <>
-                            <p className="text-xs text-muted-foreground mt-2">Bio: {participant.bio}</p>
+                            <p className="text-xs text-muted-foreground mt-2">Bio: {person.bio}</p>
                           </>
                         )}
                       </div>
