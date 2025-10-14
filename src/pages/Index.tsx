@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react"; // Added Users icon
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext"; // Ensure useProfile is imported
 import { useNavigate } from "react-router-dom";
@@ -21,6 +21,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog, // Import Dialog components
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
 import { format } from 'date-fns'; // Import date-fns for time formatting
 import { ScheduledTimerTemplate } from "@/types/timer"; // Corrected import path for ScheduledTimerTemplate
@@ -844,40 +852,16 @@ const Index = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : ( // Render Join button and input when no timer is active
-                      <div className="flex flex-col items-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowJoinInput(prev => !prev)}
-                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                          data-name="Join Session Button"
-                        >
-                          <Users size={16} />
-                          <span className="text-sm font-medium">Join</span>
-                        </Button>
-                        {showJoinInput && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <Input
-                              type="text"
-                              placeholder="Enter session code"
-                              value={joinSessionCode}
-                              onChange={(e) => setJoinSessionCode(e.target.value)}
-                              className="w-40 h-8 text-sm"
-                              onFocus={(e) => e.target.select()}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleJoinCodeSubmit(); }}
-                              data-name="Join Session Code Input"
-                            />
-                            <Button 
-                              size="sm" 
-                              onClick={handleJoinCodeSubmit} 
-                              disabled={!joinSessionCode.trim()}
-                              data-name="Submit Join Code Button"
-                            >
-                              Go
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowJoinInput(true)} // Open the dialog
+                        className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                        data-name="Join Session Button"
+                      >
+                        <Users size={16} />
+                        <span className="text-sm font-medium">Join</span>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -1258,6 +1242,37 @@ const Index = () => {
           </Accordion>
         </div>
       )}
+
+      {/* Join Session Dialog */}
+      <Dialog open={showJoinInput} onOpenChange={setShowJoinInput}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Join Session</DialogTitle>
+            <DialogDescription>
+              Enter the session code to join an active session.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Input
+              id="session-code"
+              placeholder="Enter code"
+              value={joinSessionCode}
+              onChange={(e) => setJoinSessionCode(e.target.value)}
+              className="col-span-3"
+              onFocus={(e) => e.target.select()}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleJoinCodeSubmit(); }}
+            />
+          </div>
+          <DialogFooter>
+            <Button 
+              onClick={handleJoinCodeSubmit} 
+              disabled={!joinSessionCode.trim()}
+            >
+              Join
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };
