@@ -5,16 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom"; // Import Link
-import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection"; // Import the new component
-import { Toaster } from 'sonner'; // Import Toaster from sonner
+import { toast } from 'sonner'; // Import toast from sonner directly
+import { Link } from "react-router-dom";
+import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const { toast } = useToast(); // This toast is from shadcn/ui, we'll use sonner for form feedback
 
   const quickAmounts = [5, 10, 25, 50];
 
@@ -32,23 +30,19 @@ const ChipIn = () => {
     const donationAmount = parseFloat(amount);
 
     if (!amount || donationAmount <= 0) {
-      toast({
-        title: "Invalid amount",
+      toast.error("Invalid amount", {
         description: "Please enter a valid donation amount.",
-        variant: "destructive",
       });
       return;
     }
 
     // In a real app, this would integrate with a payment processor
     if (donationAmount > 50) {
-      toast({
-        title: "Congratulations! 🎉",
+      toast.success("Congratulations! 🎉", {
         description: "Please speak to the dev to collect your prize!",
       });
     } else {
-      toast({
-        title: "Is that really all you've got? 💜",
+      toast.info("Is that really all you've got? 💜", {
         description: `Please donate a larger amount!`,
       });
     }
@@ -208,7 +202,6 @@ const ChipIn = () => {
           Credits
         </Link>
       </div>
-      <Toaster /> {/* Add Sonner Toaster for notifications */}
     </main>
   );
 };
