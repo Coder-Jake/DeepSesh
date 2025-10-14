@@ -737,7 +737,7 @@ const Index = () => {
 
     const updatedOptions = currentPoll.options.map(option => {
       if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
-        option.votes = option.votes.filter(v => v.userId === currentUserId); // Filter out current user's previous vote
+        option.votes = option.votes.filter(v => v.userId !== currentUserId); // Filter out current user's previous vote
       }
 
       if (optionIds.includes(option.id)) {
@@ -1172,7 +1172,6 @@ const Index = () => {
                     <TooltipTrigger asChild>
                       <div className="flex items-center justify-between p-2 rounded-md bg-muted text-blue-700 font-medium select-none cursor-default"> {/* Dark blue for host */}
                         <span>You</span>
-                        <span className="text-sm text-muted-foreground">Host</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -1185,7 +1184,6 @@ const Index = () => {
                     <TooltipTrigger asChild>
                       <div className="flex items-center justify-between p-2 rounded-md bg-muted text-blue-700 font-medium select-none cursor-default"> {/* Dark blue for host */}
                         <span>{currentSessionHostName}</span>
-                        <span className="text-sm text-muted-foreground">Host</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -1196,7 +1194,6 @@ const Index = () => {
                 {currentSessionRole === 'coworker' && (
                   <div className="flex items-center justify-between p-2 rounded-md bg-muted text-foreground font-medium select-none">
                     <span>You</span>
-                    <span className="text-sm text-muted-foreground">Coworker</span>
                   </div>
                 )}
                 {displayParticipants.map(participant => (
