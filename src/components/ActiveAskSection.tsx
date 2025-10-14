@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ExtendSuggestionCard from './ExtendSuggestionCard';
 import PollCard from './PollCard';
 import { ChevronDown, ChevronUp } from 'lucide-react'; // Import icons for toggle
+import { cn } from '@/lib/utils'; // Import cn for conditional class names
 
 interface ExtendSuggestion {
   id: string;
@@ -38,8 +39,20 @@ interface ActiveAskSectionProps {
 
 const ActiveAskSection: React.FC<ActiveAskSectionProps> = ({ activeAsks, onVoteExtend, onVotePoll, currentUserId }) => {
   const [isOpen, setIsOpen] = useState(true); // State to manage toggle
+  const [hiddenAskIds, setHiddenAskIds] = useState<string[]>([]); // NEW: State to store IDs of hidden asks
 
-  if (activeAsks.length === 0) {
+  const handleHideAsk = (id: string) => {
+    setHiddenAskIds(prev => [...prev, id]);
+  };
+
+  const handleShowAllHidden = () => {
+    setHiddenAskIds([]);
+  };
+
+  const visibleAsks = activeAsks.filter(ask => !hiddenAskIds.includes(ask.id));
+  const hiddenCount = activeAsks.length - visibleAsks.length;
+
+  if (activeAsks.length === 0 && hiddenCount === 0) {
     return null;
   }
 
@@ -55,7 +68,7 @@ const ActiveAskSection: React.FC<ActiveAskSectionProps> = ({ activeAsks, onVoteE
       
       {isOpen && (
         <div className="grid grid-cols-1 gap-4"> {/* Removed md:grid-cols-2 to ensure stacking */}
-          {activeAsks.map(item => {
+          {visibleAsks.map(item => {
             if ('minutes' in item) { // It's an ExtendSuggestion
               return (
                 <ExtendSuggestionCard 
@@ -63,6 +76,7 @@ const ActiveAskSection: React.FC<ActiveAskSectionProps> = ({ activeAsks, onVoteE
                   suggestion={item} 
                   onVote={onVoteExtend} 
                   currentUserId={currentUserId} 
+                  onHide={handleHideAsk} // Pass the hide handler
                 />
               );
             } else { // It's a Poll
@@ -72,11 +86,24 @@ const ActiveAskSection: React.FC<ActiveAskSectionProps> = ({ activeAsks, onVoteE
                   poll={item} 
                   onVote={onVotePoll} 
                   currentUserId={currentUserId} 
+                  onHide={handleHideAsk} // Pass the hide handler
                 />
               );
             }
           })}
         </div>
+      )}
+
+      {hiddenCount > 0 && (
+        <button 
+          onClick={handleShowAllHidden}
+          className={cn(
+            "w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors",
+            !isOpen && "mt-0" // Adjust margin if section is closed
+          )}
+        >
+          Hidden ({hiddenCount})
+        </button>
       )}
     </div>
   );

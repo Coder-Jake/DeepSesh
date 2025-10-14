@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
+import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus, X } from "lucide-react"; // Import X icon
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -29,9 +29,10 @@ interface PollCardProps {
   poll: Poll;
   onVote: (pollId: string, optionIds: string[], customOptionText?: string) => void;
   currentUserId: string;
+  onHide: (id: string) => void; // NEW: Prop to handle hiding the card
 }
 
-const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
+const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide }) => {
   const { toast } = useToast();
   const [selectedOption, setSelectedOption] = useState<string | null>(() => {
     if (poll.type === 'closed' || poll.type === 'choice') {
@@ -161,7 +162,16 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId }) => {
   const neutralVotes = getTotalVotes('closed-dont-mind');
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-card border-border relative"> {/* Added relative for absolute positioning */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onHide(poll.id)}
+        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-foreground"
+        aria-label="Hide ask"
+      >
+        <X className="h-4 w-4" />
+      </Button>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg">
           <MessageSquarePlus className="h-5 w-5 text-primary" />

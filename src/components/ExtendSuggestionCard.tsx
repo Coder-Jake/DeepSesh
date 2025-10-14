@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
+import { PlusCircle, ThumbsUp, ThumbsDown, Minus, X } from "lucide-react"; // Import X icon
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -17,9 +17,10 @@ interface ExtendSuggestionCardProps {
   suggestion: ExtendSuggestion;
   onVote: (id: string, vote: 'yes' | 'no' | 'neutral' | null) => void;
   currentUserId: string;
+  onHide: (id: string) => void; // NEW: Prop to handle hiding the card
 }
 
-const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion, onVote, currentUserId }) => {
+const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion, onVote, currentUserId, onHide }) => {
   const { toast } = useToast();
   const userVote = suggestion.votes.find(v => v.userId === currentUserId)?.vote;
 
@@ -46,7 +47,16 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
   };
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-card border-border relative"> {/* Added relative for absolute positioning */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onHide(suggestion.id)}
+        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-foreground"
+        aria-label="Hide ask"
+      >
+        <X className="h-4 w-4" />
+      </Button>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg">
           <PlusCircle className="h-5 w-5 text-primary" />
