@@ -296,18 +296,20 @@ const Profile = () => {
       return; // Prevent saving if host code is invalid
     }
 
+    // Construct the data to be saved
+    const dataToUpdate = {
+      first_name: nameToSave,
+      bio,
+      intention,
+      sociability: sociability[0], // Use the current local state value
+      organization: organization.trim() === "" ? null : organization.trim(),
+      linkedin_url: linkedinUrl.trim() === "" ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`,
+      host_code: trimmedHostCode,
+      updated_at: new Date().toISOString(),
+    };
+
     if (user) { // Only update Supabase if logged in
-      const fullLinkedinUrlToSave = linkedinUrl.trim() === "" ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`;
-      await updateProfile({
-        first_name: nameToSave,
-        bio,
-        intention,
-        sociability: sociability[0],
-        organization: organization.trim() === "" ? null : organization.trim(), // Save organization
-        linkedin_url: fullLinkedinUrlToSave, // Save constructed LinkedIn URL
-        host_code: trimmedHostCode, // NEW: Save host code
-        updated_at: new Date().toISOString(),
-      });
+      await updateProfile(dataToUpdate);
     } else {
       // If not logged in, just update local storage (already handled by useEffect for localFirstName)
       toast({
@@ -317,13 +319,13 @@ const Profile = () => {
       // For unauthenticated users, also save hostCode to local storage directly
       localStorage.setItem('deepsesh_host_code', trimmedHostCode);
     }
-    // After successful update, reset original values and hasChanges
+    // After successful update (or local save), update originalValues with the *new* values
     setOriginalValues({ 
       firstName: nameToSave, 
       bio, 
       intention, 
-      sociability: [profile?.sociability || 50], // Use the *updated* profile's sociability
-      organization: organization.trim() === "" ? "" : organization.trim(), // Use the updated organization
+      sociability: [sociability[0]], // Use the value that was just saved
+      organization: organization.trim() === "" ? "" : organization.trim(), 
       linkedinUrl, 
       hostCode: trimmedHostCode 
     }); 
