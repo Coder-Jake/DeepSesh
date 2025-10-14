@@ -157,6 +157,20 @@ export interface TimerContextType {
   addAsk: (ask: ActiveAskItem) => void;
   updateAsk: (ask: ActiveAskItem) => void;
 
+  // NEW: Host/Coworker role states
+  currentSessionRole: 'host' | 'coworker' | null;
+  setCurrentSessionRole: React.Dispatch<React.SetStateAction<'host' | 'coworker' | null>>;
+  currentSessionHostName: string | null;
+  setCurrentSessionHostName: React.Dispatch<React.SetStateAction<string | null>>;
+  currentSessionOtherParticipants: { id: string; name: string; sociability?: number; intention?: string; bio?: string }[];
+  setCurrentSessionOtherParticipants: React.Dispatch<React.SetStateAction<{ id: string; name: string; sociability?: number; intention?: string; bio?: string }[]>>;
+
+  // Schedule pending state (only for the *active* schedule if it's custom_time and waiting)
+  isSchedulePending: boolean;
+  setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>;
+  scheduleStartOption: 'now' | 'manual' | 'custom_time';
+  setScheduleStartOption: React.Dispatch<React.SetStateAction<'now' | 'manual' | 'custom_time'>>;
+
   // Settings states
   shouldPlayEndSound: boolean;
   setShouldPlayEndSound: React.Dispatch<React.SetStateAction<boolean>>;

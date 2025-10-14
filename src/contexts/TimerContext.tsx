@@ -14,7 +14,7 @@ const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context'; // New local storage k
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth(); // Get user from AuthContext
-  const { saveSession } = useProfile(); // Get saveSession from useProfile
+  const { saveSession, localFirstName } = useProfile(); // Get saveSession and localFirstName from useProfile
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5); // Default increment for focus/break minutes
 
@@ -74,6 +74,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Active Asks state
   const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]
   );
+
+  // NEW: Host/Coworker role states
+  const [currentSessionRole, setCurrentSessionRole] = useState<'host' | 'coworker' | null>(null);
+  const [currentSessionHostName, setCurrentSessionHostName] = useState<string | null>(null);
+  const [currentSessionOtherParticipants, setCurrentSessionOtherParticipants] = useState<{ id: string; name: string; sociability?: number; intention?: string; bio?: string }[]>([]);
 
   // Schedule pending state (only for the *active* schedule if it's custom_time and waiting)
   const [isSchedulePending, setIsSchedulePending] = useState(false);
@@ -232,6 +237,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setActiveTimerColors({}); // NEW: Clear active timer colors
     setActiveScheduleDisplayTitleInternal("My Focus Sesh"); // NEW: Reset timeline title
     setPreparedSchedules([]); // NEW: Clear all prepared schedules
+
+    // NEW: Reset role states
+    setCurrentSessionRole(null);
+    setCurrentSessionHostName(null);
+    setCurrentSessionOtherParticipants([]);
   }, [_defaultFocusMinutes, _defaultBreakMinutes]);
 
   const startSchedule = useCallback(() => {
@@ -326,11 +336,16 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             description: `"${scheduleTitle}" has begun.`,
         });
     }
+
+    // NEW: Set role to host
+    setCurrentSessionRole('host');
+    setCurrentSessionHostName(localFirstName); // Use localFirstName as the host name
+    setCurrentSessionOtherParticipants([]);
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled
+    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -411,7 +426,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             description: `"${templateToCommence.title}" has begun.`,
         });
     }
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled]);
+
+    // NEW: Set role to host
+    setCurrentSessionRole('host');
+    setCurrentSessionHostName(localFirstName); // Use localFirstName as the host name
+    setCurrentSessionOtherParticipants([]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -677,6 +697,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIs24HourFormat(data.is24HourFormat ?? true); // NEW: Load is24HourFormat
       setAreToastsEnabled(data.areToastsEnabled ?? false); // NEW: Load areToastsEnabled
 
+      // NEW: Load role states
+      setCurrentSessionRole(data.currentSessionRole ?? null);
+      setCurrentSessionHostName(data.currentSessionHostName ?? null);
+      setCurrentSessionOtherParticipants(data.currentSessionOtherParticipants ?? []);
+
       // Load savedSchedules, merging with defaults if local storage is empty for schedules
       const loadedSchedules = data.savedSchedules ?? [];
       setSavedSchedules(loadedSchedules.length > 0 ? loadedSchedules : DEFAULT_SCHEDULE_TEMPLATES);
@@ -709,6 +734,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       preparedSchedules, // NEW: Save prepared schedules
       timerIncrement, // Save timerIncrement
       areToastsEnabled, // NEW: Save areToastsEnabled
+      // NEW: Save role states
+      currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
   }, [
@@ -729,6 +756,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     preparedSchedules, // NEW: Save prepared schedules
     timerIncrement, // Save timerIncrement
     areToastsEnabled, // NEW: Save areToastsEnabled
+    // NEW: Dependencies for role states
+    currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
   ]);
 
   const value = {
@@ -825,6 +854,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     activeAsks,
     addAsk,
     updateAsk,
+
+    // NEW: Host/Coworker role states
+    currentSessionRole,
+    setCurrentSessionRole,
+    currentSessionHostName,
+    setCurrentSessionHostName,
+    currentSessionOtherParticipants,
+    setCurrentSessionOtherParticipants,
 
     isSchedulePending,
     setIsSchedulePending,

@@ -66,7 +66,7 @@ type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
 
 interface DemoSession {
-  id: number;
+  id: string; // Changed to string
   title: string;
   type: 'focus' | 'break';
   totalDurationMinutes: number;
@@ -76,12 +76,12 @@ interface DemoSession {
   location: string;
   workspaceImage: "/api/placeholder/200/120";
   workspaceDescription: string;
-  participants: { id: number; name: string; sociability: number; intention?: string; bio?: string }[];
+  participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[]; // Changed to string
 }
 
 const mockNearbySessions: DemoSession[] = [
   {
-    id: 101,
+    id: "101",
     title: "Advanced Calculus Study Group",
     type: "focus",
     totalDurationMinutes: 90,
@@ -92,13 +92,13 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Quiet study space with whiteboards",
     participants: [
-      { id: 1, name: "Alex", sociability: 90, intention: "Reviewing differential equations." },
-      { id: 2, name: "Sam", sociability: 80, intention: "Working on problem set 3." },
-      { id: 3, name: "Taylor", sociability: 90, intention: "Preparing for the midterm exam." },
+      { id: "1", name: "Alex", sociability: 90, intention: "Reviewing differential equations." },
+      { id: "2", name: "Sam", sociability: 80, intention: "Working on problem set 3." },
+      { id: "3", name: "Taylor", sociability: 90, intention: "Preparing for the midterm exam." },
     ],
   },
   {
-    id: 102,
+    id: "102",
     title: "Computer Science Lab",
     type: "focus",
     totalDurationMinutes: 120,
@@ -109,18 +109,18 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: 4, name: "Morgan", sociability: 20, intention: "Debugging a Python script." },
-      { id: 5, name: "Jordan", sociability: 10, intention: "Writing documentation for API." },
-      { id: 6, name: "Casey", sociability: 20, intention: "Learning new framework." },
-      { id: 7, name: "Riley", sociability: 20, intention: "Code refactoring." },
-      { id: 8, name: "Avery", sociability: 30, intention: "Designing database schema." },
+      { id: "4", name: "Morgan", sociability: 20, intention: "Debugging a Python script." },
+      { id: "5", name: "Jordan", sociability: 10, intention: "Writing documentation for API." },
+      { id: "6", name: "Casey", sociability: 20, intention: "Learning new framework." },
+      { id: "7", name: "Riley", sociability: 20, intention: "Code refactoring." },
+      { id: "8", name: "Avery", sociability: 30, intention: "Designing database schema." },
     ],
   },
 ];
 
 const mockFriendsSessions: DemoSession[] = [
   {
-    id: 201,
+    id: "201",
     title: "Psychology 101 Final Review",
     type: "focus",
     currentPhase: "break",
@@ -131,14 +131,14 @@ const mockFriendsSessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
     participants: [
-      { id: 9, name: "Jamie", sociability: 60, intention: "Reviewing cognitive psychology." },
-      { id: 10, name: "Quinn", sociability: 60, intention: "Memorizing key terms." },
-      { id: 11, name: "Blake", sociability: 70, intention: "Practicing essay questions." },
-      { id: 12, name: "Drew", sociability: 60, intention: "Summarizing research papers." },
-      { id: 13, name: "Chris", sociability: 50, intention: "Creating flashcards." },
-      { id: 14, name: "Pat", sociability: 55, intention: "Discussing theories." },
-      { id: 15, name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
-      { id: 16, name: "Jess", sociability: 70, intention: "Peer teaching." },
+      { id: "9", name: "Jamie", sociability: 60, intention: "Reviewing cognitive psychology." },
+      { id: "10", name: "Quinn", sociability: 60, intention: "Memorizing key terms." },
+      { id: "11", name: "Blake", sociability: 70, intention: "Practicing essay questions." },
+      { id: "12", name: "Drew", sociability: 60, intention: "Summarizing research papers." },
+      { id: "13", name: "Chris", sociability: 50, intention: "Creating flashcards." },
+      { id: "14", name: "Pat", sociability: 55, intention: "Discussing theories." },
+      { id: "15", name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
+      { id: "16", name: "Jess", sociability: 70, intention: "Peer teaching." },
     ],
   },
 ];
@@ -216,6 +216,14 @@ const Index = () => {
     is24HourFormat, // NEW: Get is24HourFormat from context
 
     preparedSchedules, // NEW: Get the array of prepared schedules
+
+    // NEW: Host/Coworker role states
+    currentSessionRole,
+    setCurrentSessionRole,
+    currentSessionHostName,
+    setCurrentSessionHostName,
+    currentSessionOtherParticipants,
+    setCurrentSessionOtherParticipants,
   } = useTimer();
   
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
@@ -358,6 +366,11 @@ const Index = () => {
     setAccumulatedBreakSeconds(0);
     // Use current homepage timer values
     setTimeLeft(focusMinutes * 60); // Use current focusMinutes
+
+    // NEW: Set role to host
+    setCurrentSessionRole('host');
+    setCurrentSessionHostName(currentUserName);
+    setCurrentSessionOtherParticipants([]);
   };
 
   const resumeTimer = () => {
@@ -423,6 +436,11 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setNotes("");
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+
+      // NEW: Reset role states
+      setCurrentSessionRole(null);
+      setCurrentSessionHostName(null);
+      setCurrentSessionOtherParticipants([]);
     };
 
     const handleSaveAndStop = async () => {
@@ -473,6 +491,11 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setNotes("");
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+
+      // NEW: Reset role states
+      setCurrentSessionRole(null);
+      setCurrentSessionHostName(null);
+      setCurrentSessionOtherParticipants([]);
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
         setIsRunning(false);
@@ -487,8 +510,13 @@ const Index = () => {
         setCurrentPhaseStartTime(null); // Reset current phase start time
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
-        setNotes("");
-        setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setNotes("");
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+
+      // NEW: Reset role states
+      setCurrentSessionRole(null);
+      setCurrentSessionHostName(null);
+      setCurrentSessionOtherParticipants([]);
       }
     }
   };
@@ -576,6 +604,13 @@ const Index = () => {
       title: "Session Joined!",
       description: `You've joined "${session.title}".`,
     });
+
+    // NEW: Set role to coworker
+    setCurrentSessionRole('coworker');
+    // Assuming the first participant in the demo session is the host
+    setCurrentSessionHostName(session.participants[0]?.name || session.title);
+    // Filter out the current user from the participants list to get other coworkers
+    setCurrentSessionOtherParticipants(session.participants.filter(p => p.id !== currentUserId));
   };
 
   const handleJoinCodeSubmit = () => {
@@ -593,7 +628,16 @@ const Index = () => {
 
   const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending); // Check for prepared schedule too
 
-  const currentCoworkers = activeJoinedSession ? activeJoinedSession.participants : [];
+  // NEW: Use currentSessionOtherParticipants for display
+  const displayParticipants = useMemo(() => {
+    if (currentSessionRole === 'host') {
+      return currentSessionOtherParticipants; // Should be empty initially
+    } else if (currentSessionRole === 'coworker') {
+      return currentSessionOtherParticipants;
+    }
+    return [];
+  }, [currentSessionRole, currentSessionOtherParticipants]);
+
 
   const handleExtendSubmit = (minutes: number) => {
     const newSuggestion: ExtendSuggestion = {
@@ -646,7 +690,7 @@ const Index = () => {
     const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
     const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
     
-    const totalParticipants = (activeJoinedSession?.participants.length || 0) + 1; 
+    const totalParticipants = (activeJoinedSessionCoworkerCount || 0) + (currentSessionRole === 'host' ? 1 : 0); // If hosting, count self. If joined, activeJoinedSessionCoworkerCount already includes host.
     const threshold = Math.ceil(totalParticipants / 2);
 
     let newStatus = currentAsk.status;
@@ -723,7 +767,12 @@ const Index = () => {
       title: "Schedule Commenced!",
       description: "Your scheduled session has now begun.",
     });
-  }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, toast]);
+
+    // NEW: Set role to host when schedule starts
+    setCurrentSessionRole('host');
+    setCurrentSessionHostName(currentUserName);
+    setCurrentSessionOtherParticipants([]);
+  }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, toast, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, currentUserName]);
 
   // Determine the total duration of the current timer phase for CircularProgress
   const currentItemDuration = isScheduleActive && activeSchedule[currentScheduleIndex] // Use activeSchedule here
@@ -1112,13 +1161,31 @@ const Index = () => {
           </Card>
 
           {/* Coworkers Section - Show when running or paused */}
-          {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && currentCoworkers.length > 0 && ( // Show if pending or prepared
+          {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && (currentSessionRole !== null) && ( // Show if pending or prepared and a role is assigned
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Coworkers</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {currentCoworkers.map(participant => (
+                {currentSessionRole === 'host' && (
+                  <div className="flex items-center justify-between p-2 rounded-md bg-muted text-foreground font-medium select-none">
+                    <span>You</span>
+                    <span className="text-sm text-muted-foreground">Host</span>
+                  </div>
+                )}
+                {currentSessionRole === 'coworker' && currentSessionHostName && (
+                  <div className="flex items-center justify-between p-2 rounded-md bg-muted text-foreground font-medium select-none">
+                    <span>{currentSessionHostName}</span>
+                    <span className="text-sm text-muted-foreground">Host</span>
+                  </div>
+                )}
+                {currentSessionRole === 'coworker' && (
+                  <div className="flex items-center justify-between p-2 rounded-md bg-muted text-foreground font-medium select-none">
+                    <span>You</span>
+                    <span className="text-sm text-muted-foreground">Coworker</span>
+                  </div>
+                )}
+                {displayParticipants.map(participant => (
                   <Tooltip key={participant.id}>
                     <TooltipTrigger asChild>
                       <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-default select-none" data-name={`Coworker: ${participant.name}`}>
