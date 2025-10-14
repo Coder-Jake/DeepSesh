@@ -59,7 +59,7 @@ const Profile = () => {
 
   const [isOrganizationDialogOpen, setIsOrganizationDialogOpen] = useState(false); // State for organization dialog
 
-  // NEW: Determine if any timer is active
+  // NEW: Determine if any timer is active (kept for other potential uses, but not for host code)
   const isTimerActive = isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending;
 
   useEffect(() => {
@@ -164,15 +164,8 @@ const Profile = () => {
   };
 
   const handleHostCodeClick = () => {
-    if (!isTimerActive) { // Only allow editing if no timer is active
-      setIsEditingHostCode(true);
-    } else {
-      toast({
-        title: "Timer Active",
-        description: "Host code cannot be changed while a timer or schedule is active.",
-        variant: "destructive",
-      });
-    }
+    // Host code is always editable now
+    setIsEditingHostCode(true);
   };
 
   const handleHostCodeInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -480,15 +473,12 @@ const Profile = () => {
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Others can use this code to join your sessions.</p>
-                        {isTimerActive && (
-                          <p className="text-red-400 mt-1">Cannot change while a timer is active.</p>
-                        )}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </h3>
                 <div className="flex items-center gap-2"> {/* Flex container for code and icon */}
-                  {isEditingHostCode && !isTimerActive ? (
+                  {isEditingHostCode ? (
                     <Input
                       ref={hostCodeInputRef}
                       value={hostCode}
@@ -499,13 +489,12 @@ const Profile = () => {
                       className="text-lg font-semibold h-auto py-1 px-2 italic flex-grow"
                       minLength={4}
                       maxLength={20}
-                      disabled={isTimerActive} // Disable input if timer is active
                     />
                   ) : (
                     <span
                       className={cn(
                         "text-lg font-semibold flex-grow select-none",
-                        isTimerActive ? "text-muted-foreground" : "text-foreground cursor-pointer hover:text-primary"
+                        "text-foreground cursor-pointer hover:text-primary"
                       )}
                       onClick={handleHostCodeClick}
                     >
@@ -554,9 +543,9 @@ const Profile = () => {
         <div className="mt-8 flex justify-end">
           <Button 
             onClick={handleSave}
-            disabled={!hasChanges || loading || isTimerActive} // Disable save if timer is active
+            disabled={!hasChanges || loading} // Disable save if timer is active
             className={cn(
-              !hasChanges || loading || isTimerActive ? "opacity-50 cursor-not-allowed" : ""
+              !hasChanges || loading ? "opacity-50 cursor-not-allowed" : ""
             )}
           >
             {loading ? "Saving..." : "Save Profile"}
