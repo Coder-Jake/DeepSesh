@@ -26,6 +26,7 @@ export type Database = {
           organization: string | null
           sociability: number | null
           updated_at: string | null
+          host_code: string | null // NEW: Added host_code
         }
         Insert: {
           avatar_url?: string | null
@@ -38,6 +39,7 @@ export type Database = {
           organization?: string | null
           sociability?: number | null
           updated_at?: string | null
+          host_code?: string | null // NEW: Added host_code
         }
         Update: {
           avatar_url?: string | null
@@ -50,6 +52,7 @@ export type Database = {
           organization?: string | null
           sociability?: number | null
           updated_at?: string | null
+          host_code?: string | null // NEW: Added host_code
         }
         Relationships: [
           {

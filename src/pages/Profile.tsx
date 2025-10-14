@@ -20,6 +20,27 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { Linkedin } from "lucide-react"; // NEW: Import Linkedin icon
 
+// Lists for random host code generation
+const colors = [
+  "red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "grey", "black", "white",
+  "gold", "silver", "bronze", "indigo", "violet", "teal", "cyan", "magenta", "lime", "maroon",
+  "navy", "olive", "aqua", "fuchsia", "azure", "beige", "coral", "crimson", "lavender", "plum"
+];
+const animals = [
+  "fox", "bear", "cat", "dog", "lion", "tiger", "wolf", "deer", "zebra", "panda", "koala",
+  "eagle", "hawk", "owl", "duck", "swan", "robin", "sparrow", "penguin", "parrot", "flamingo",
+  "shark", "whale", "dolphin", "octopus", "squid", "crab", "lobster", "jellyfish", "starfish",
+  "snake", "lizard", "frog", "toad", "turtle", "snail", "spider", "bee", "ant", "butterfly",
+  "elephant", "giraffe", "monkey", "gorilla", "chimpanzee", "hippopotamus", "rhinoceros", "camel",
+  "horse", "cow", "pig", "sheep", "goat", "chicken", "rabbit", "mouse", "rat", "squirrel", "badger"
+];
+
+const generateRandomHostCode = () => {
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+  return `${randomColor}${randomAnimal}`;
+};
+
 const Profile = () => {
   const { profile, loading, updateProfile, localFirstName, setLocalFirstName } = useProfile(); // Use profile context and localFirstName
   const { user } = useAuth(); // Get user from AuthContext
@@ -31,6 +52,10 @@ const Profile = () => {
   const [sociability, setSociability] = useState([30]);
   const [organization, setOrganization] = useState(""); // New state for organization
   const [linkedinUrl, setLinkedinUrl] = useState(""); // State for LinkedIn username (only)
+  const [hostCode, setHostCode] = useState(""); // NEW: State for host code
+  const [isEditingHostCode, setIsEditingHostCode] = useState(false); // NEW: State for editing host code
+  const hostCodeInputRef = useRef<HTMLInputElement>(null); // NEW: Ref for host code input
+
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
     firstName: "", // This will now track localFirstName
@@ -39,6 +64,7 @@ const Profile = () => {
     sociability: [30],
     organization: "", // Added organization to original values
     linkedinUrl: "", // Stores original LinkedIn username (only)
+    hostCode: "", // NEW: Added hostCode to original values
   });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
@@ -61,6 +87,10 @@ const Profile = () => {
                              : "";
     setLinkedinUrl(linkedinUsername); // Initialize LinkedIn URL with just the username
 
+    // NEW: Initialize host code
+    const initialHostCode = profile?.host_code || generateRandomHostCode();
+    setHostCode(initialHostCode);
+
     // Set original values for change detection
     setOriginalValues({
       firstName: profile?.first_name || localStorage.getItem('flowsesh_local_first_name') || "You",
@@ -69,6 +99,7 @@ const Profile = () => {
       sociability: [profile?.sociability || 50],
       organization: profile?.organization || "", // Set original organization
       linkedinUrl: linkedinUsername, // Set original LinkedIn username
+      hostCode: initialHostCode, // NEW: Set original host code
     });
     setHasChanges(false);
   }, [profile, setLocalFirstName]); // Depend on profile and setLocalFirstName
@@ -80,51 +111,110 @@ const Profile = () => {
     }
   }, [isEditingFirstName]);
 
+  // NEW: Effect to focus host code input
+  useEffect(() => {
+    if (isEditingHostCode && hostCodeInputRef.current) {
+      hostCodeInputRef.current.focus();
+      hostCodeInputRef.current.select();
+    }
+  }, [isEditingHostCode]);
+
   const checkForChanges = (
     newFirstName: string, 
     newBio: string, 
     newIntention: string, 
     newSociability: number[], 
     newOrganization: string,
-    newLinkedinUsername: string // Now represents only the username
+    newLinkedinUsername: string, // Now represents only the username
+    newHostCode: string // NEW: Added newHostCode
   ) => {
     const changed = newFirstName !== originalValues.firstName ||
                    newBio !== originalValues.bio || 
                    newIntention !== originalValues.intention || 
                    newSociability[0] !== originalValues.sociability[0] ||
                    newOrganization !== originalValues.organization ||
-                   newLinkedinUsername !== originalValues.linkedinUrl; // Compare against original username
+                   newLinkedinUsername !== originalValues.linkedinUrl ||
+                   newHostCode !== originalValues.hostCode; // NEW: Compare hostCode
     setHasChanges(changed);
   };
 
   const handleFirstNameChange = (value: string) => {
     setLocalFirstName(value); // Update local state
-    checkForChanges(value, bio, intention, sociability, organization, linkedinUrl); // Pass username
+    checkForChanges(value, bio, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleBioChange = (value: string) => {
     setBio(value);
-    checkForChanges(localFirstName, value, intention, sociability, organization, linkedinUrl); // Pass username
+    checkForChanges(localFirstName, value, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
-    checkForChanges(localFirstName, bio, value, sociability, organization, linkedinUrl); // Pass username
+    checkForChanges(localFirstName, bio, value, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleSociabilityChange = (value: number[]) => {
     setSociability(value);
-    checkForChanges(localFirstName, bio, intention, value, organization, linkedinUrl); // Pass username
+    checkForChanges(localFirstName, bio, intention, value, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleOrganizationChange = (value: string) => {
     setOrganization(value);
-    checkForChanges(localFirstName, bio, intention, sociability, value, linkedinUrl); // Pass username
+    checkForChanges(localFirstName, bio, intention, sociability, value, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleLinkedinUrlChange = (value: string) => { // This value is now just the username
     setLinkedinUrl(value);
-    checkForChanges(localFirstName, bio, intention, sociability, organization, value);
+    checkForChanges(localFirstName, bio, intention, sociability, organization, value, hostCode);
+  };
+
+  // NEW: Host code handlers
+  const handleHostCodeChange = (value: string) => {
+    setHostCode(value);
+    checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl, value);
+  };
+
+  const handleHostCodeClick = () => {
+    setIsEditingHostCode(true);
+  };
+
+  const handleHostCodeInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingHostCode(false);
+      e.currentTarget.blur();
+      await validateAndSaveHostCode(hostCode);
+    }
+  };
+
+  const handleHostCodeInputBlur = async () => {
+    setIsEditingHostCode(false);
+    await validateAndSaveHostCode(hostCode);
+  };
+
+  const validateAndSaveHostCode = async (code: string) => {
+    const trimmedCode = code.trim();
+    if (trimmedCode.length < 4 || trimmedCode.length > 20) {
+      toast({
+        title: "Invalid Host Code",
+        description: "Host code must be between 4 and 20 characters.",
+        variant: "destructive",
+      });
+      // Revert to original host code if invalid
+      setHostCode(originalValues.hostCode);
+      checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl, originalValues.hostCode);
+      return;
+    }
+    // If valid, update originalValues and trigger save
+    setOriginalValues(prev => ({ ...prev, hostCode: trimmedCode }));
+    checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl, trimmedCode);
+    if (user) {
+      await updateProfile({ host_code: trimmedCode });
+    } else {
+      toast({
+        title: "Host Code Saved Locally",
+        description: "Your host code has been saved to this browser.",
+      });
+    }
   };
 
   const handleFirstNameClick = () => {
@@ -141,7 +231,7 @@ const Profile = () => {
         await updateProfile({ first_name: nameToSave });
       }
       setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-      checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl); // Pass username
+      checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
     }
   };
 
@@ -153,7 +243,7 @@ const Profile = () => {
       await updateProfile({ first_name: nameToSave });
     }
     setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-    checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl); // Pass username
+    checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleSaveOrganization = async () => {
@@ -162,7 +252,7 @@ const Profile = () => {
       setIsOrganizationDialogOpen(false);
       // Update originalValues for change detection
       setOriginalValues(prev => ({ ...prev, organization: organization.trim() === "" ? null : organization.trim() }));
-      checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl); // Pass username
+      checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
     } else {
       toast({
         title: "Not Logged In",
@@ -176,6 +266,17 @@ const Profile = () => {
     const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
     setLocalFirstName(nameToSave); // Ensure local state is updated
 
+    // Validate host code before saving entire profile
+    const trimmedHostCode = hostCode.trim();
+    if (trimmedHostCode.length < 4 || trimmedHostCode.length > 20) {
+      toast({
+        title: "Invalid Host Code",
+        description: "Host code must be between 4 and 20 characters. Please correct it before saving.",
+        variant: "destructive",
+      });
+      return; // Prevent saving if host code is invalid
+    }
+
     if (user) { // Only update Supabase if logged in
       const fullLinkedinUrlToSave = linkedinUrl.trim() === "" ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`;
       await updateProfile({
@@ -185,6 +286,7 @@ const Profile = () => {
         sociability: sociability[0],
         organization: organization.trim() === "" ? null : organization.trim(), // Save organization
         linkedin_url: fullLinkedinUrlToSave, // Save constructed LinkedIn URL
+        host_code: trimmedHostCode, // NEW: Save host code
         updated_at: new Date().toISOString(),
       });
     } else {
@@ -195,7 +297,7 @@ const Profile = () => {
       });
     }
     // After successful update, reset original values and hasChanges
-    setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization, linkedinUrl }); // linkedinUrl here is the username
+    setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization, linkedinUrl, hostCode: trimmedHostCode }); // linkedinUrl here is the username
     setHasChanges(false);
   };
 
@@ -347,6 +449,34 @@ const Profile = () => {
                     {sociability[0] > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
+              </div>
+
+              {/* NEW: Hosting Code Section */}
+              <div className="border-t border-border pt-6 mt-6">
+                <h3 className="text-lg font-semibold mb-2">Hosting Code</h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Others can use this code to join your sessions.
+                </p>
+                {isEditingHostCode ? (
+                  <Input
+                    ref={hostCodeInputRef}
+                    value={hostCode}
+                    onChange={(e) => handleHostCodeChange(e.target.value)}
+                    onKeyDown={handleHostCodeInputKeyDown}
+                    onBlur={handleHostCodeInputBlur}
+                    placeholder="yourhostcode"
+                    className="text-lg font-semibold h-auto py-1 px-2 italic"
+                    minLength={4}
+                    maxLength={20}
+                  />
+                ) : (
+                  <span
+                    className="text-lg font-semibold text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+                    onClick={handleHostCodeClick}
+                  >
+                    {hostCode}
+                  </span>
+                )}
               </div>
             </CardContent>
           </Card>
