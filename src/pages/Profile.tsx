@@ -19,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { Linkedin } from "lucide-react"; // NEW: Import Linkedin icon
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 
 // Lists for random host code generation
 const colors = [
@@ -453,10 +454,16 @@ const Profile = () => {
 
               {/* NEW: Hosting Code Section */}
               <div className="border-t border-border pt-6 mt-6">
-                <h3 className="text-lg font-semibold mb-2">Hosting Code</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Others can use this code to join your sessions.
-                </p>
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <h3 className="text-lg font-semibold mb-2 cursor-help">Hosting Code</h3>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Others can use this code to join your sessions.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 {isEditingHostCode ? (
                   <Input
                     ref={hostCodeInputRef}
