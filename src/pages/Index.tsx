@@ -671,7 +671,10 @@ const Index = () => {
 
     // Add other participants (already filtered to exclude current user and host)
     currentSessionOtherParticipants.forEach(p => {
-      participants.push({ ...p, role: 'coworker' });
+      // Ensure we don't add the current user again if they are already added as a coworker
+      if (p.id !== currentUserId) {
+        participants.push({ ...p, role: 'coworker' });
+      }
     });
 
     // Sort alphabetically by name, with host always first
@@ -922,7 +925,7 @@ const Index = () => {
                         </> : <>
                           <Lock size={16} />
                           <span className="text-sm font-medium">Private</span>
-                        </>}
+                        }</>}
                     </button>
                     
                     {isActiveTimer ? ( // Conditionally render Share Dropdown
@@ -1218,13 +1221,17 @@ const Index = () => {
                         "flex items-center justify-between p-2 rounded-md select-none",
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium cursor-default" : "hover:bg-muted cursor-default"
                       )} data-name={`Coworker: ${person.name}`}>
-                        <span className="font-medium text-foreground">{person.name}</span>
+                        <span className="font-medium text-foreground">
+                          {person.id === currentUserId && person.role !== 'host' ? "You" : person.name}
+                        </span>
                         <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="text-center max-w-xs">
-                        <p className="font-medium mb-1">{person.name}</p>
+                        <p className="font-medium mb-1">
+                          {person.id === currentUserId && person.role !== 'host' ? "You" : person.name}
+                        </p>
                         <p className="text-sm text-muted-foreground">Sociability: {person.sociability}%</p>
                         {person.role === 'host' && <p className="text-xs text-muted-foreground mt-1">Host</p>}
                         {person.intention && (

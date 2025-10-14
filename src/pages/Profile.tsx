@@ -33,6 +33,7 @@ const Profile = () => {
   // NEW: Get timer states from TimerContext
   const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending } = useTimer();
 
+  const [firstNameInput, setFirstNameInput] = useState(""); // Local state for first name input
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([30]);
@@ -89,7 +90,7 @@ const Profile = () => {
 
   useEffect(() => {
     // Initialize local states from profile or defaults
-    setLocalFirstName(profile?.first_name || localStorage.getItem('flowsesh_local_first_name') || "You");
+    setFirstNameInput(profile?.first_name || localFirstName || "You"); // Initialize local input state
     setBio(profile?.bio || "");
     setIntention(profile?.intention || "");
     setSociability([profile?.sociability || 50]);
@@ -107,7 +108,7 @@ const Profile = () => {
 
     // Set original values for change detection
     setOriginalValues({
-      firstName: profile?.first_name || localStorage.getItem('flowsesh_local_first_name') || "You",
+      firstName: profile?.first_name || localFirstName || "You", // Use context's localFirstName
       bio: profile?.bio || "",
       intention: profile?.intention || "",
       sociability: [profile?.sociability || 50],
@@ -116,7 +117,7 @@ const Profile = () => {
       hostCode: hostCode, // Use the hostCode from context
     });
     setHasChanges(false);
-  }, [profile, setLocalFirstName, hostCode, setHostCode]); // Add hostCode and setHostCode as dependencies
+  }, [profile, localFirstName, hostCode, setHostCode]); // Add localFirstName as dependency
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -153,39 +154,39 @@ const Profile = () => {
   };
 
   const handleFirstNameChange = (value: string) => {
-    setLocalFirstName(value); // Update local state
+    setFirstNameInput(value); // Update local input state
     checkForChanges(value, bio, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleBioChange = (value: string) => {
     setBio(value);
-    checkForChanges(localFirstName, value, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
+    checkForChanges(firstNameInput, value, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
-    checkForChanges(localFirstName, bio, value, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
+    checkForChanges(firstNameInput, bio, value, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleSociabilityChange = (value: number[]) => {
     setSociability(value);
-    checkForChanges(localFirstName, bio, intention, value, organization, linkedinUrl, hostCode); // Pass hostCode
+    checkForChanges(firstNameInput, bio, intention, value, organization, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleOrganizationChange = (value: string) => {
     setOrganization(value);
-    checkForChanges(localFirstName, bio, intention, sociability, value, linkedinUrl, hostCode); // Pass hostCode
+    checkForChanges(firstNameInput, bio, intention, sociability, value, linkedinUrl, hostCode); // Pass hostCode
   };
 
   const handleLinkedinUrlChange = (value: string) => { // This value is now just the username
     setLinkedinUrl(value);
-    checkForChanges(localFirstName, bio, intention, sociability, organization, value, hostCode);
+    checkForChanges(firstNameInput, bio, intention, sociability, organization, value, hostCode);
   };
 
   // NEW: Host code handlers
   const handleHostCodeChange = (value: string) => {
     setHostCode(value);
-    checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl, value);
+    checkForChanges(firstNameInput, bio, intention, sociability, organization, linkedinUrl, value);
   };
 
   const handleHostCodeClick = () => {
@@ -216,12 +217,12 @@ const Profile = () => {
       });
       // Revert to original host code if invalid
       setHostCode(originalValues.hostCode);
-      checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl, originalValues.hostCode);
+      checkForChanges(firstNameInput, bio, intention, sociability, organization, linkedinUrl, originalValues.hostCode);
       return;
     }
     // If valid, update originalValues and trigger save
     setOriginalValues(prev => ({ ...prev, hostCode: trimmedCode }));
-    checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl, trimmedCode);
+    checkForChanges(firstNameInput, bio, intention, sociability, organization, linkedinUrl, trimmedCode);
     if (user) {
       await updateProfile({ host_code: trimmedCode });
     } else {
@@ -229,6 +230,7 @@ const Profile = () => {
         title: "Host Code Saved Locally",
         description: "Your host code has been saved to this browser.",
       });
+      localStorage.setItem('deepsesh_host_code', trimmedCode); // Ensure local storage is updated for unauthenticated users
     }
   };
 
@@ -240,8 +242,9 @@ const Profile = () => {
     if (e.key === 'Enter') {
       setIsEditingFirstName(false);
       e.currentTarget.blur();
-      const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
-      setLocalFirstName(nameToSave); // Ensure local state is updated
+      const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
+      setFirstNameInput(nameToSave); // Update local input state
+      setLocalFirstName(nameToSave); // Update context state
       if (user) { // Only update Supabase if logged in
         await updateProfile({ first_name: nameToSave });
       }
@@ -252,8 +255,9 @@ const Profile = () => {
 
   const handleFirstNameInputBlur = async () => {
     setIsEditingFirstName(false);
-    const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
-    setLocalFirstName(nameToSave); // Ensure local state is updated
+    const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
+    setFirstNameInput(nameToSave); // Update local input state
+    setLocalFirstName(nameToSave); // Update context state
     if (user) { // Only update Supabase if logged in
       await updateProfile({ first_name: nameToSave });
     }
@@ -267,7 +271,7 @@ const Profile = () => {
       setIsOrganizationDialogOpen(false);
       // Update originalValues for change detection
       setOriginalValues(prev => ({ ...prev, organization: organization.trim() === "" ? null : organization.trim() }));
-      checkForChanges(localFirstName, bio, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
+      checkForChanges(firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode); // Pass hostCode
     } else {
       toast({
         title: "Not Logged In",
@@ -278,8 +282,8 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
-    const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
-    setLocalFirstName(nameToSave); // Ensure local state is updated
+    const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
+    setLocalFirstName(nameToSave); // Update context state
 
     // Validate host code before saving entire profile
     const trimmedHostCode = hostCode.trim();
@@ -382,7 +386,7 @@ const Profile = () => {
                 {isEditingFirstName ? (
                   <Input
                     ref={firstNameInputRef}
-                    value={localFirstName} // Use localFirstName
+                    value={firstNameInput} // Use local input state
                     onChange={(e) => handleFirstNameChange(e.target.value)}
                     onKeyDown={handleFirstNameInputKeyDown}
                     onBlur={handleFirstNameInputBlur}
@@ -394,7 +398,7 @@ const Profile = () => {
                     className="cursor-pointer select-none"
                     onClick={handleFirstNameClick}
                   >
-                    {localFirstName || "You"} {/* Use localFirstName */}
+                    {firstNameInput || "You"} {/* Use local input state */}
                   </span>
                 )}
               </CardTitle>
