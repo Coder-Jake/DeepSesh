@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 import {
@@ -18,9 +18,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { Linkedin, ClipboardCopy } from "lucide-react"; // Changed Copy to ClipboardCopy
+import { Linkedin, Copy } from "lucide-react"; // NEW: Import Linkedin and Copy icons
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
-import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 // Lists for random host code generation
 const colors = [
@@ -57,7 +56,6 @@ const Profile = () => {
   const [hostCode, setHostCode] = useState(""); // NEW: State for host code
   const [isEditingHostCode, setIsEditingHostCode] = useState(false); // NEW: State for editing host code
   const hostCodeInputRef = useRef<HTMLInputElement>(null); // NEW: Ref for host code input
-  const [isCopied, setIsCopied] = useState(false); // NEW: State for copy feedback
 
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
@@ -325,8 +323,6 @@ const Profile = () => {
   const handleCopyHostCode = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(hostCode);
-      setIsCopied(true); // Set copied state to true
-      setTimeout(() => setIsCopied(false), 3000); // Reset after 3 seconds
       toast({
         title: "Copied to clipboard!",
         description: "Your host code has been copied.",
@@ -512,13 +508,10 @@ const Profile = () => {
                       variant="ghost"
                       size="icon"
                       onClick={handleCopyHostCode}
-                      className={cn(
-                        "text-muted-foreground hover:text-foreground transition-colors",
-                        isCopied && "text-green-500 hover:text-green-600" // Apply green color when copied
-                      )}
+                      className="text-muted-foreground hover:text-foreground"
                       aria-label="Copy host code"
                     >
-                      <ClipboardCopy className="h-4 w-4" />
+                      <Copy className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -567,7 +560,7 @@ const Profile = () => {
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
-          </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="organization-name">Organisation Name</Label>
