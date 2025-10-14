@@ -21,40 +21,24 @@ import { supabase } from "@/integrations/supabase/client"; // Import supabase cl
 import { Linkedin, Clipboard } from "lucide-react"; // Changed Copy to Clipboard
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
+import { useTimer } from "@/contexts/TimerContext"; // NEW: Import useTimer
 
-// Lists for random host code generation
-const colors = [
-  "red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "grey", "black", "white",
-  "gold", "silver", "bronze", "indigo", "violet", "teal", "cyan", "magenta", "lime", "maroon",
-  "navy", "olive", "aqua", "fuchsia", "azure", "beige", "coral", "crimson", "lavender", "plum"
-];
-const animals = [
-  "fox", "bear", "cat", "dog", "lion", "tiger", "wolf", "deer", "zebra", "panda", "koala",
-  "eagle", "hawk", "owl", "duck", "swan", "robin", "sparrow", "penguin", "parrot", "flamingo",
-  "shark", "whale", "dolphin", "octopus", "squid", "crab", "lobster", "jellyfish", "starfish",
-  "snake", "lizard", "frog", "toad", "turtle", "snail", "spider", "bee", "ant", "butterfly",
-  "elephant", "giraffe", "monkey", "gorilla", "chimpanzee", "hippopotamus", "rhinoceros", "camel",
-  "horse", "cow", "pig", "sheep", "goat", "chicken", "rabbit", "mouse", "rat", "squirrel", "badger"
-];
-
-const generateRandomHostCode = () => {
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-  const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
-  return `${randomColor}${randomAnimal}`;
-};
+// Removed colors and animals arrays, and generateRandomHostCode function as they are now in ProfileContext
 
 const Profile = () => {
-  const { profile, loading, updateProfile, localFirstName, setLocalFirstName } = useProfile(); // Use profile context and localFirstName
+  const { profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode } = useProfile(); // NEW: Get hostCode and setHostCode from useProfile
   const { user } = useAuth(); // Get user from AuthContext
   const navigate = useNavigate(); // Initialize useNavigate
   const { toast } = useToast();
+  // NEW: Get timer states from TimerContext
+  const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending } = useTimer();
 
   const [bio, setBio] = useState("");
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([30]);
   const [organization, setOrganization] = useState(""); // New state for organization
   const [linkedinUrl, setLinkedinUrl] = useState(""); // State for LinkedIn username (only)
-  const [hostCode, setHostCode] = useState(""); // NEW: State for host code
+  // Removed local hostCode state, now using context's hostCode
   const [isEditingHostCode, setIsEditingHostCode] = useState(false); // NEW: State for editing host code
   const hostCodeInputRef = useRef<HTMLInputElement>(null); // NEW: Ref for host code input
   const [isCopied, setIsCopied] = useState(false); // NEW: State for copy feedback
@@ -67,13 +51,16 @@ const Profile = () => {
     sociability: [30],
     organization: "", // Added organization to original values
     linkedinUrl: "", // Stores original LinkedIn username (only)
-    hostCode: "", // NEW: Added hostCode to original values
+    hostCode: "", // Will be initialized from context
   });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
   const firstNameInputRef = useRef<HTMLInputElement>(null);
 
   const [isOrganizationDialogOpen, setIsOrganizationDialogOpen] = useState(false); // State for organization dialog
+
+  // NEW: Determine if any timer is active
+  const isTimerActive = isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending;
 
   useEffect(() => {
     // Initialize local states from profile or defaults
@@ -90,9 +77,8 @@ const Profile = () => {
                              : "";
     setLinkedinUrl(linkedinUsername); // Initialize LinkedIn URL with just the username
 
-    // NEW: Initialize host code
-    const initialHostCode = profile?.host_code || generateRandomHostCode();
-    setHostCode(initialHostCode);
+    // NEW: Initialize host code from context
+    setHostCode(hostCode); // Use the hostCode from context
 
     // Set original values for change detection
     setOriginalValues({
@@ -102,10 +88,10 @@ const Profile = () => {
       sociability: [profile?.sociability || 50],
       organization: profile?.organization || "", // Set original organization
       linkedinUrl: linkedinUsername, // Set original LinkedIn username
-      hostCode: initialHostCode, // NEW: Set original host code
+      hostCode: hostCode, // Use the hostCode from context
     });
     setHasChanges(false);
-  }, [profile, setLocalFirstName]); // Depend on profile and setLocalFirstName
+  }, [profile, setLocalFirstName, hostCode, setHostCode]); // Add hostCode and setHostCode as dependencies
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -178,7 +164,15 @@ const Profile = () => {
   };
 
   const handleHostCodeClick = () => {
-    setIsEditingHostCode(true);
+    if (!isTimerActive) { // Only allow editing if no timer is active
+      setIsEditingHostCode(true);
+    } else {
+      toast({
+        title: "Timer Active",
+        description: "Host code cannot be changed while a timer or schedule is active.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleHostCodeInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -298,6 +292,8 @@ const Profile = () => {
         title: "Profile Saved Locally",
         description: "Your profile changes have been saved to this browser.",
       });
+      // For unauthenticated users, also save hostCode to local storage directly
+      localStorage.setItem('deepsesh_host_code', trimmedHostCode);
     }
     // After successful update, reset original values and hasChanges
     setOriginalValues({ firstName: nameToSave, bio, intention, sociability, organization, linkedinUrl, hostCode: trimmedHostCode }); // linkedinUrl here is the username
@@ -484,12 +480,15 @@ const Profile = () => {
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Others can use this code to join your sessions.</p>
+                        {isTimerActive && (
+                          <p className="text-red-400 mt-1">Cannot change while a timer is active.</p>
+                        )}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </h3>
                 <div className="flex items-center gap-2"> {/* Flex container for code and icon */}
-                  {isEditingHostCode ? (
+                  {isEditingHostCode && !isTimerActive ? (
                     <Input
                       ref={hostCodeInputRef}
                       value={hostCode}
@@ -500,10 +499,14 @@ const Profile = () => {
                       className="text-lg font-semibold h-auto py-1 px-2 italic flex-grow"
                       minLength={4}
                       maxLength={20}
+                      disabled={isTimerActive} // Disable input if timer is active
                     />
                   ) : (
                     <span
-                      className="text-lg font-semibold text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none flex-grow"
+                      className={cn(
+                        "text-lg font-semibold flex-grow select-none",
+                        isTimerActive ? "text-muted-foreground" : "text-foreground cursor-pointer hover:text-primary"
+                      )}
                       onClick={handleHostCodeClick}
                     >
                       {hostCode}
@@ -551,8 +554,10 @@ const Profile = () => {
         <div className="mt-8 flex justify-end">
           <Button 
             onClick={handleSave}
-            disabled={!hasChanges || loading}
-            className={!hasChanges || loading ? "opacity-50 cursor-not-allowed" : ""}
+            disabled={!hasChanges || loading || isTimerActive} // Disable save if timer is active
+            className={cn(
+              !hasChanges || loading || isTimerActive ? "opacity-50 cursor-not-allowed" : ""
+            )}
           >
             {loading ? "Saving..." : "Save Profile"}
           </Button>

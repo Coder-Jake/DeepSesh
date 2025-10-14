@@ -146,6 +146,27 @@ const initialStatsData: StatsData = {
   },
 };
 
+// Lists for random host code generation (moved from Profile.tsx)
+const colors = [
+  "red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "grey", "black", "white",
+  "gold", "silver", "bronze", "indigo", "violet", "teal", "cyan", "magenta", "lime", "maroon",
+  "navy", "olive", "aqua", "fuchsia", "azure", "beige", "coral", "crimson", "lavender", "plum"
+];
+const animals = [
+  "fox", "bear", "cat", "dog", "lion", "tiger", "wolf", "deer", "zebra", "panda", "koala",
+  "eagle", "hawk", "owl", "duck", "swan", "robin", "sparrow", "penguin", "parrot", "flamingo",
+  "shark", "whale", "dolphin", "octopus", "squid", "crab", "lobster", "jellyfish", "starfish",
+  "snake", "lizard", "frog", "toad", "turtle", "snail", "spider", "bee", "ant", "butterfly",
+  "elephant", "giraffe", "monkey", "gorilla", "chimpanzee", "hippopotamus", "rhinoceros", "camel",
+  "horse", "cow", "pig", "sheep", "goat", "chicken", "rabbit", "mouse", "rat", "squirrel", "badger"
+];
+
+const generateRandomHostCode = () => {
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+  return `${randomColor}${randomAnimal}`;
+};
+
 interface ProfileContextType {
   profile: Profile | null;
   loading: boolean;
@@ -187,6 +208,10 @@ interface ProfileContextType {
   blockUser: (userName: string) => void;
   unblockUser: (userName: string) => void;
   recentCoworkers: string[]; // NEW: List of unique coworker names
+
+  // NEW: Host code and its setter
+  hostCode: string;
+  setHostCode: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -206,6 +231,7 @@ interface ProfileProviderProps {
 const LOCAL_STORAGE_KEY = 'deepsesh_profile_data'; // New local storage key for profile data
 const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name'; // New local storage key for local first name
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users'; // NEW: Local storage key for blocked users
+const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code'; // NEW: Local storage key for host code
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -224,6 +250,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   // NEW: Blocked users state
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
+
+  // NEW: Host code state
+  const [hostCode, setHostCode] = useState("");
 
   // Derived state for recent coworkers
   const recentCoworkers = useMemo(() => {
@@ -298,6 +327,15 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (!user) {
       setProfile(null);
       setLoading(false);
+      // If no user, load host code from local storage or generate new
+      const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
+      if (storedHostCode) {
+        setHostCode(storedHostCode);
+      } else {
+        const newHostCode = generateRandomHostCode();
+        setHostCode(newHostCode);
+        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+      }
       return;
     }
 
@@ -318,19 +356,44 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       });
       setProfile(null); // Ensure profile is null on error
       setLoading(false);
+      // Even on error, ensure hostCode is set from local storage if available
+      const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
+      if (storedHostCode) {
+        setHostCode(storedHostCode);
+      } else {
+        const newHostCode = generateRandomHostCode();
+        setHostCode(newHostCode);
+        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+      }
       return;
     }
 
     if (existingProfile) {
       // Profile found
       setProfile({ ...existingProfile, first_name: existingProfile.first_name || "" });
+      // If profile has host_code, use it. Otherwise, generate one and update DB.
+      if (existingProfile.host_code) {
+        setHostCode(existingProfile.host_code);
+        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, existingProfile.host_code); // Keep local storage in sync
+      } else {
+        const newHostCode = generateRandomHostCode();
+        setHostCode(newHostCode);
+        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+        await updateProfile({ host_code: newHostCode }); // Update DB
+      }
       console.log("Profile fetched from Supabase:", { ...existingProfile, first_name: existingProfile.first_name || "" });
     } else {
       // No profile found (either data is null or PGRST116 error occurred), attempt to create one
       console.log("No existing profile found for user, attempting to create one.");
+      const newHostCode = generateRandomHostCode(); // Generate host code for new user
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
-        .insert({ id: user.id, first_name: user.user_metadata.first_name, last_name: user.user_metadata.last_name })
+        .insert({ 
+          id: user.id, 
+          first_name: user.user_metadata.first_name, 
+          last_name: user.user_metadata.last_name,
+          host_code: newHostCode // Include host_code in initial insert
+        })
         .select()
         .single(); // Still using .single() here, which is fine for an insert that returns one row
 
@@ -341,8 +404,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           description: insertError.message,
         });
         setProfile(null); // Ensure profile is null on error
+        // Fallback for hostCode if profile creation fails
+        setHostCode(newHostCode);
+        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       } else if (newProfile) {
         setProfile({ ...newProfile, first_name: newProfile.first_name || "" });
+        setHostCode(newProfile.host_code || newHostCode); // Use newProfile's host_code or fallback
+        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newProfile.host_code || newHostCode);
         console.log("New profile created in Supabase:", { ...newProfile, first_name: newProfile.first_name || "" });
       }
     }
@@ -379,6 +447,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     } else if (updatedData) {
       // Ensure first_name is always a string
       setProfile({ ...updatedData, first_name: updatedData.first_name || "" });
+      // Update hostCode state and local storage if host_code was part of the update
+      if (updatedData.host_code) {
+        setHostCode(updatedData.host_code);
+        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, updatedData.host_code);
+      }
       console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
       toast.success("Profile updated!", {
         description: "Your profile has been successfully saved.",
@@ -495,7 +568,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
-  // Load profile and related data from local storage on initial mount
+  // Initial load effect
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedData) {
@@ -527,6 +600,15 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         fetchProfile();
       } else {
         setProfile(null);
+        // When logging out, ensure hostCode is loaded from local storage or generated
+        const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
+        if (storedHostCode) {
+          setHostCode(storedHostCode);
+        } else {
+          const newHostCode = generateRandomHostCode();
+          setHostCode(newHostCode);
+          localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+        }
       }
     });
 
@@ -562,6 +644,16 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(BLOCKED_USERS_KEY, JSON.stringify(blockedUsers));
   }, [blockedUsers]);
 
+  // NEW: Save hostCode to local storage whenever it changes (if not authenticated)
+  useEffect(() => {
+    // This useEffect ensures that if hostCode changes (e.g., user edits it while logged out),
+    // it's immediately saved to local storage.
+    // For authenticated users, hostCode is also updated in local storage via fetchProfile/updateProfile.
+    if (hostCode) { // Only save if hostCode is not empty
+      localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, hostCode);
+    }
+  }, [hostCode]);
+
   const value = {
     profile,
     loading,
@@ -585,6 +677,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     blockUser,    // NEW
     unblockUser,  // NEW
     recentCoworkers, // NEW
+    hostCode, // NEW
+    setHostCode, // NEW
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
