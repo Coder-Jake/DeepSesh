@@ -18,8 +18,9 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { Linkedin, Copy } from "lucide-react"; // NEW: Import Linkedin and Copy icons
+import { Linkedin, Clipboard } from "lucide-react"; // Changed Copy to Clipboard
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 // Lists for random host code generation
 const colors = [
@@ -56,6 +57,7 @@ const Profile = () => {
   const [hostCode, setHostCode] = useState(""); // NEW: State for host code
   const [isEditingHostCode, setIsEditingHostCode] = useState(false); // NEW: State for editing host code
   const hostCodeInputRef = useRef<HTMLInputElement>(null); // NEW: Ref for host code input
+  const [isCopied, setIsCopied] = useState(false); // NEW: State for copy feedback
 
   const [hasChanges, setHasChanges] = useState(false);
   const [originalValues, setOriginalValues] = useState({
@@ -323,6 +325,8 @@ const Profile = () => {
   const handleCopyHostCode = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(hostCode);
+      setIsCopied(true); // Set copied state to true
+      setTimeout(() => setIsCopied(false), 3000); // Reset after 3 seconds
       toast({
         title: "Copied to clipboard!",
         description: "Your host code has been copied.",
@@ -511,7 +515,7 @@ const Profile = () => {
                       className="text-muted-foreground hover:text-foreground"
                       aria-label="Copy host code"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Clipboard size={16} className={cn(isCopied ? "text-green-500" : "text-muted-foreground")} /> {/* Conditional class for green color */}
                     </Button>
                   )}
                 </div>
