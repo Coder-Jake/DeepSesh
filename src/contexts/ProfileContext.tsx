@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { Tables, TablesInsert, TablesUpdate, Json } from "@/integrations/supabase/types"; // Import Json type
 import { toast } from 'sonner'; // Using sonner for notifications
 import { Poll, ActiveAskItem } from "@/types/timer"; // Import Poll and ActiveAskItem types
 
@@ -214,7 +214,7 @@ interface ProfileContextType {
     totalSessionSeconds: number,
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
-    activeAsks: ActiveAskItem[] // NEW: Add activeAsks parameter
+    activeAsks?: ActiveAskItem[] // NEW: Add activeAsks parameter and make it optional
   ) => Promise<void>;
 
   // NEW: Blocked users and related functions
@@ -485,13 +485,15 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     totalSessionSeconds: number,
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
-    activeAsks: ActiveAskItem[] // NEW: Add activeAsks parameter
+    activeAsks: ActiveAskItem[] | undefined // Make it explicitly optional here
   ) => {
     setLoading(true);
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
-    const pollsToSave = activeAsks.filter((ask): ask is Poll => 'question' in ask);
+    // Ensure activeAsks is an array, even if undefined was passed
+    const currentActiveAsks = activeAsks ?? [];
+    const pollsToSave = currentActiveAsks.filter((ask): ask is Poll => 'question' in ask);
 
     if (!user) {
       // User not authenticated, save locally
