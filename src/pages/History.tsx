@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Calendar, FileText, Search, X, MessageSquarePlus, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, PlusCircle } from "lucide-react"; // Added PlusCircle
+import { Clock, Users, Calendar, FileText, Search, X, MessageSquarePlus, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo, useCallback, useRef } from "react"; // Added useRef
+import { useState, useMemo, useCallback } from "react"; // Removed useRef
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -17,26 +17,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"; // Import AlertDialog components
-import { useToast } from "@/hooks/use-toast"; // Import useToast
-import { Poll, ExtendSuggestion, ActiveAskItem } from "@/types/timer"; // Import ExtendSuggestion and ActiveAskItem
-import { cn } from "@/lib/utils"; // Import cn for conditional class names
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { Poll, ExtendSuggestion, ActiveAskItem } from "@/types/timer";
+import { cn } from "@/lib/utils";
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession } = useProfile(); // Destructure deleteSession
-  const { toast } = useToast(); // Initialize useToast
+  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession } = useProfile();
+  const { toast } = useToast();
 
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(() => new Set()); // Changed: Use functional initializer and explicit type
-  const [showDeleteIconForSessionId, setShowDeleteIconForSessionId] = useState<string | null>(null); // State to track which session's delete icon is visible
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // State for delete confirmation dialog
-  const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null); // State to hold the ID of the session to be deleted
-
-  // Long press refs for the delete icon
-  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const isLongPress = useRef(false);
-  const LONG_PRESS_DURATION = 500; // milliseconds
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(() => new Set());
+  const [showDeleteIconForSessionId, setShowDeleteIconForSessionId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -89,11 +84,11 @@ const History = () => {
     return sessions.filter(session => 
       session.title.toLowerCase().includes(lowerCaseQuery) ||
       session.notes.toLowerCase().includes(lowerCaseQuery) ||
-      (session.asks && session.asks.some(ask => { // Changed from session.polls
-        if ('question' in ask) { // It's a Poll
+      (session.asks && session.asks.some(ask => {
+        if ('question' in ask) {
           return ask.question.toLowerCase().includes(lowerCaseQuery) ||
                  ask.options.some(option => option.text.toLowerCase().includes(lowerCaseQuery));
-        } else if ('minutes' in ask) { // It's an ExtendSuggestion
+        } else if ('minutes' in ask) {
           return ask.creator.toLowerCase().includes(lowerCaseQuery) ||
                  `extend timer by ${ask.minutes} minutes`.toLowerCase().includes(lowerCaseQuery);
         }
@@ -104,14 +99,13 @@ const History = () => {
 
   // Toggle expanded state for a session AND show/hide delete icon
   const handleCardClick = (sessionId: string) => {
-    handleToggleExpand(sessionId); // Toggle notes visibility
-    setShowDeleteIconForSessionId(prevId => (prevId === sessionId ? null : sessionId)); // Toggle delete icon visibility
+    handleToggleExpand(sessionId);
+    setShowDeleteIconForSessionId(prevId => (prevId === sessionId ? null : sessionId));
   };
 
   // Toggle expanded state for a session
   const handleToggleExpand = (sessionId: string) => {
     setExpandedSessions(prev => {
-      // Defensive check: ensure prev is a Set, or create a new empty Set if it's not
       const currentSet = prev instanceof Set ? prev : new Set<string>();
       const newSet = new Set(currentSet);
       if (newSet.has(sessionId)) {
@@ -123,29 +117,11 @@ const History = () => {
     });
   };
 
-  // Long press handlers for the delete icon
-  const handleDeleteLongPressStart = useCallback((sessionId: string) => {
-    isLongPress.current = false;
-    longPressTimerRef.current = setTimeout(() => {
-      isLongPress.current = true;
-      setSessionToDeleteId(sessionId);
-      setIsDeleteDialogOpen(true); // Open dialog on long press
-    }, LONG_PRESS_DURATION);
-  }, []);
-
-  const handleDeleteLongPressEnd = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-    }
-    isLongPress.current = false;
-  }, []);
-
+  // Direct click handler for delete icon
   const handleDeleteClick = useCallback((e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation(); // Prevent card click from being triggered
-    if (!isLongPress.current) {
-      // If it was a short click, just toggle the delete icon visibility
-      setShowDeleteIconForSessionId(prevId => (prevId === sessionId ? null : sessionId));
-    }
+    setSessionToDeleteId(sessionId);
+    setIsDeleteDialogOpen(true); // Open dialog directly
   }, []);
 
   const confirmDeleteSession = useCallback(async () => {
@@ -301,14 +277,14 @@ const History = () => {
                             </div>
                           )}
 
-                          {session.asks && session.asks.length > 0 && ( // Changed from session.polls
+                          {session.asks && session.asks.length > 0 && (
                             <div className="space-y-3 border-t border-border pt-4">
                               <h4 className="text-base font-semibold flex items-center gap-2">
                                 <MessageSquarePlus size={16} className="text-primary" />
                                 Asks during session:
                               </h4>
-                              {session.asks.map((ask, askIndex) => { // Changed from poll, pollIndex
-                                if ('question' in ask) { // It's a Poll
+                              {session.asks.map((ask, askIndex) => {
+                                if ('question' in ask) {
                                   const poll = ask as Poll;
                                   return (
                                     <div key={askIndex} className="bg-muted/50 p-3 rounded-md space-y-2">
@@ -345,7 +321,7 @@ const History = () => {
                                       )}
                                     </div>
                                   );
-                                } else if ('minutes' in ask) { // It's an ExtendSuggestion
+                                } else if ('minutes' in ask) {
                                   const suggestion = ask as ExtendSuggestion;
                                   const yesVotes = suggestion.votes.filter(v => v.vote === 'yes').length;
                                   const noVotes = suggestion.votes.filter(v => v.vote === 'no').length;
@@ -366,7 +342,6 @@ const History = () => {
                                     maxVotes = neutralVotes;
                                     mostPopularVote = 'neutral';
                                   }
-                                  // If there's a tie, or no votes, no specific icon will be filled.
 
                                   return (
                                     <div key={askIndex} className="bg-muted/50 p-3 rounded-md space-y-2">
@@ -422,11 +397,6 @@ const History = () => {
                           variant="ghost"
                           size="icon"
                           className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive"
-                          onMouseDown={(e) => handleDeleteLongPressStart(session.id.toString())}
-                          onMouseUp={handleDeleteLongPressEnd}
-                          onMouseLeave={handleDeleteLongPressEnd}
-                          onTouchStart={(e) => handleDeleteLongPressStart(session.id.toString())}
-                          onTouchEnd={handleDeleteLongPressEnd}
                           onClick={(e) => handleDeleteClick(e, session.id.toString())}
                           aria-label="Delete session"
                         >
