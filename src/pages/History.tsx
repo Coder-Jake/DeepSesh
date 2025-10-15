@@ -190,6 +190,9 @@ const History = () => {
                             </div>
                           </div>
                         </div>
+                        {session.notes && (
+                          <FileText size={16} className="text-muted-foreground flex-shrink-0 mt-1" />
+                        )}
                       </div>
                     </CardHeader>
                     
