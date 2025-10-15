@@ -3,15 +3,17 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react"; // Added useCallback
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { useProfile } from "@/contexts/ProfileContext";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData } = useProfile(); // Use persistent state from context
-  console.log("History page: sessions received:", sessions); // ADDED LOG
+  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData } = useProfile();
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set()); // State to track expanded sessions
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -28,8 +30,24 @@ const History = () => {
     }
   };
 
-  const [showSearchBar, setShowSearchBar] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  // Helper function to highlight text
+  const highlightText = useCallback((text: string, query: string) => {
+    if (!query || !text) return text;
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return (
+      <>
+        {parts.map((part, index) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <span key={index} className="bg-blue-200 dark:bg-blue-700 rounded px-0.5">
+              {part}
+            </span>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  }, []);
 
   // Get current stats based on selected time period
   const currentStats = statsData[historyTimePeriod];
@@ -45,6 +63,19 @@ const History = () => {
       session.notes.toLowerCase().includes(lowerCaseQuery)
     );
   }, [sessions, searchQuery]);
+
+  // Toggle expanded state for a session
+  const handleToggleExpand = (sessionId: string) => {
+    setExpandedSessions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sessionId)) {
+        newSet.delete(sessionId);
+      } else {
+        newSet.add(sessionId);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
@@ -131,55 +162,64 @@ const History = () => {
             {filteredSessions.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No sessions found matching your search.</p>
             ) : (
-              filteredSessions.map((session) => (
-                <Card key={session.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{session.title}</CardTitle>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-                          <div className="flex items-center gap-1">
-                            <Calendar size={14} />
-                            {formatDate(session.date)}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock size={14} />
-                            {session.duration}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users size={14} />
-                            {session.participants} Coworker{session.participants !== 1 ? 's' : ''}
+              filteredSessions.map((session) => {
+                const isSearchMatch = searchQuery && (
+                  session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  session.notes.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch; // Convert id to string
+
+                return (
+                  <Card key={session.id} onClick={() => handleToggleExpand(session.id.toString())} className="cursor-pointer">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{session.title}</CardTitle>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                            <div className="flex items-center gap-1">
+                              <Calendar size={14} />
+                              {formatDate(session.date)}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock size={14} />
+                              {session.duration}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users size={14} />
+                              {session.participants} Coworker{session.participants !== 1 ? 's' : ''}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      {/* Removed Badge variant="secondary">{session.type}</Badge> */}
-                    </div>
-                  </CardHeader>
-                  
-                  {session.notes && (
-                    <CardContent>
-                      <div className="flex items-start gap-2">
-                        <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-muted-foreground">{session.notes}</p>
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              ))
+                    </CardHeader>
+                    
+                    {session.notes && isExpanded && ( // Conditionally render CardContent
+                      <CardContent>
+                        <div className="flex items-start gap-2">
+                          <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-muted-foreground">
+                            {highlightText(session.notes, searchQuery)}
+                          </p>
+                        </div>
+                      </CardContent>
+                    )}
+                  </Card>
+                );
+              })
             )}
           </div>
         </div>
         {/* Export link at the bottom */}
         <div className="mt-8 text-center">
-          <TooltipProvider delayDuration={0}> {/* Added delayDuration={0} for instant tooltip */}
+          <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <p className="text-sm text-muted-foreground hover:underline cursor-default"> {/* Removed Link, added cursor-default */}
+                <p className="text-sm text-muted-foreground hover:underline cursor-default">
                   Export
                 </p>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Activates after <Link to="/chip-in" className="text-blue-500 hover:underline">donation</Link></p> {/* Hyperlinked 'donation' */}
+                <p>Activates after <Link to="/chip-in" className="text-blue-500 hover:underline">donation</Link></p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
