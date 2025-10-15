@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate, Json } from "@/integrations/supabase/types"; // Import Json type
 import { toast } from 'sonner'; // Using sonner for notifications
-import { Poll, ActiveAskItem } from "@/types/timer"; // Import Poll and ActiveAskItem types
+import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer"; // Import Poll, ActiveAskItem, ExtendSuggestion types
 
 type Profile = Tables<'public', 'profiles'>;
 type ProfileInsert = TablesInsert<'public', 'profiles'>;
@@ -19,7 +19,7 @@ export interface SessionHistory {
   participants: number;
   type: 'focus' | 'break';
   notes: string;
-  polls?: Poll[]; // NEW: Added polls property
+  asks?: ActiveAskItem[]; // Changed from polls?: Poll[] to asks?: ActiveAskItem[]
   session_start_time: string; // NEW: Added session_start_time
   session_end_time: string;   // NEW: Added session_end_time
 }
@@ -87,7 +87,7 @@ const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
 };
 
 
-// Initial data for sessions (now includes polls property for consistency)
+// Initial data for sessions (now includes asks property for consistency)
 const initialSessions: SessionHistory[] = [
   {
     id: crypto.randomUUID(),
@@ -97,7 +97,7 @@ const initialSessions: SessionHistory[] = [
     participants: 3,
     type: "focus",
     notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
-    polls: [],
+    asks: [], // Changed from polls: []
     session_start_time: new Date("2225-09-15T09:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-15T09:45:00Z").toISOString(),
   },
@@ -109,7 +109,7 @@ const initialSessions: SessionHistory[] = [
     participants: 5,
     type: "focus",
     notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive.",
-    polls: [],
+    asks: [], // Changed from polls: []
     session_start_time: new Date("2225-09-14T10:30:00Z").toISOString(),
     session_end_time: new Date("2225-09-14T12:00:00Z").toISOString(),
   },
@@ -121,7 +121,7 @@ const initialSessions: SessionHistory[] = [
     participants: 1,
     type: "focus",
     notes: "Quick focused session to review quarterly goals and plan next steps.",
-    polls: [],
+    asks: [], // Changed from polls: []
     session_start_time: new Date("2225-09-13T14:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-13T14:30:00Z").toISOString(),
   },
@@ -133,7 +133,7 @@ const initialSessions: SessionHistory[] = [
     participants: 2,
     type: "focus",
     notes: "Pair programming session working on the new user interface components. Fixed several bugs.",
-    polls: [],
+    asks: [], // Changed from polls: []
     session_start_time: new Date("2225-09-12T11:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-12T13:00:00Z").toISOString(),
   },
@@ -145,7 +145,7 @@ const initialSessions: SessionHistory[] = [
     participants: 4,
     type: "focus",
     notes: "Market research session for the new product launch. Gathered valuable competitive intelligence.",
-    polls: [],
+    asks: [], // Changed from polls: []
     session_start_time: new Date("2225-09-11T16:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-11T17:00:00Z").toISOString(),
   }
@@ -461,7 +461,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     // NEW: Fetch sessions from Supabase for authenticated users, including notes and active_asks
     const { data: fetchedSupabaseSessions, error: sessionsError } = await supabase
       .from('sessions')
-      .select('id, title, break_duration_seconds, coworker_count, created_at, focus_duration_seconds, session_end_time, session_start_time, total_session_seconds, user_id') // Explicitly select columns
+      .select('id, title, break_duration_seconds, coworker_count, created_at, focus_duration_seconds, session_end_time, session_start_time, total_session_seconds, user_id, active_asks, notes') // Added active_asks and notes
       .eq('user_id', user.id)
       .order('session_start_time', { ascending: false });
 
@@ -483,7 +483,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       localSessions.forEach(localSesh => {
         const supabaseSesh = supabaseSessionsMap.get(localSesh.id);
         if (supabaseSesh) {
-          // Merge: use Supabase core data, but local notes/polls
+          // Merge: use Supabase core data, but local notes/asks
           mergedSessions.push({
             id: supabaseSesh.id,
             title: supabaseSesh.title,
@@ -492,9 +492,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             participants: supabaseSesh.coworker_count,
             type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
             notes: localSesh.notes, // Use local notes
-            polls: localSesh.polls, // Use local polls
-            session_start_time: supabaseSesh.session_start_time, // Populate new field
-            session_end_time: supabaseSesh.session_end_time,     // Populate new field
+            asks: localSesh.asks, // Use local asks (was polls)
+            session_start_time: supabaseSesh.session_start_time,
+            session_end_time: supabaseSesh.session_end_time,
           });
           processedSupabaseIds.add(supabaseSesh.id);
         } else {
@@ -513,10 +513,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             duration: formatSecondsToDurationString(supabaseSesh.total_session_seconds),
             participants: supabaseSesh.coworker_count,
             type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
-            notes: '', // No notes from Supabase
-            polls: undefined, // No polls from Supabase
-            session_start_time: supabaseSesh.session_start_time, // Populate new field
-            session_end_time: supabaseSesh.session_end_time,     // Populate new field
+            notes: supabaseSesh.notes || '', // Use Supabase notes
+            asks: supabaseSesh.active_asks as ActiveAskItem[] | undefined, // Use Supabase active_asks
+            session_start_time: supabaseSesh.session_start_time,
+            session_end_time: supabaseSesh.session_end_time,
           });
         }
       });
@@ -587,10 +587,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const { data: { user } } = await supabase.auth.getUser();
 
     const currentActiveAsks = activeAsks ?? [];
-    const pollsToSave = currentActiveAsks.filter((ask): ask is Poll => 'question' in ask);
-
-    const newSessionDate = new Date(sessionStartTime);
-    const sessionEndTime = new Date(); // Capture end time when saving
+    // Removed pollsToSave filtering, now saving all asks
 
     const newSession: SessionHistory = {
       id: crypto.randomUUID(), // Generate a UUID for local session ID
@@ -600,12 +597,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       participants: activeJoinedSessionCoworkerCount,
       type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break',
       notes: notes,
-      polls: pollsToSave.length > 0 ? pollsToSave : undefined,
+      asks: currentActiveAsks.length > 0 ? currentActiveAsks : undefined, // Save all activeAsks
       session_start_time: newSessionDate.toISOString(), // Populate new field
       session_end_time: sessionEndTime.toISOString(),   // Populate new field
     };
 
-    // Always update local storage first with the full session data (including notes/polls)
+    // Always update local storage first with the full session data (including notes/asks)
     setSessions(prevSessions => {
       const updatedSessions = [newSession, ...prevSessions];
       localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions));
@@ -656,7 +653,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       return;
     }
 
-    // If user is authenticated, save core session data to Supabase (excluding notes and active_asks)
+    // If user is authenticated, save core session data to Supabase (including notes and active_asks)
     const sessionData: TablesInsert<'public', 'sessions'> = {
       id: newSession.id, // Use the generated UUID as Supabase ID
       user_id: user.id,
@@ -667,6 +664,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       coworker_count: activeJoinedSessionCoworkerCount,
       session_start_time: newSessionDate.toISOString(),
       session_end_time: sessionEndTime.toISOString(),
+      active_asks: currentActiveAsks as unknown as Json, // Save active_asks to Supabase
+      notes: notes, // Save notes to Supabase
     };
 
     const { data, error: insertError } = await supabase
@@ -679,7 +678,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       console.error("Error saving session to Supabase:", insertError);
       setError(insertError.message);
       toast.error("Error saving session", {
-        description: `Failed to save core session data to cloud. Notes and polls are saved locally. ${insertError.message}`,
+        description: `Failed to save core session data to cloud. Notes and asks are saved locally. ${insertError.message}`,
       });
     } else if (data) {
       console.log("Core session data saved to Supabase:", data);
