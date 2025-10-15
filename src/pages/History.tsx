@@ -350,6 +350,24 @@ const History = () => {
                                   const yesVotes = suggestion.votes.filter(v => v.vote === 'yes').length;
                                   const noVotes = suggestion.votes.filter(v => v.vote === 'no').length;
                                   const neutralVotes = suggestion.votes.filter(v => v.vote === 'neutral').length;
+
+                                  let mostPopularVote: 'yes' | 'no' | 'neutral' | null = null;
+                                  let maxVotes = 0;
+
+                                  if (yesVotes > maxVotes) {
+                                    maxVotes = yesVotes;
+                                    mostPopularVote = 'yes';
+                                  }
+                                  if (noVotes > maxVotes) {
+                                    maxVotes = noVotes;
+                                    mostPopularVote = 'no';
+                                  }
+                                  if (neutralVotes > maxVotes) {
+                                    maxVotes = neutralVotes;
+                                    mostPopularVote = 'neutral';
+                                  }
+                                  // If there's a tie, or no votes, no specific icon will be filled.
+
                                   return (
                                     <div key={askIndex} className="bg-muted/50 p-3 rounded-md space-y-2">
                                       <p className="font-medium text-sm flex items-center gap-2">
@@ -358,15 +376,16 @@ const History = () => {
                                       </p>
                                       <p className="text-xs text-muted-foreground">Suggested by {highlightText(suggestion.creator, searchQuery)}</p>
                                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                        <span><ThumbsUp size={14} className="inline-block mr-1" /> {yesVotes}</span>
-                                        <span><Minus size={14} className="inline-block mr-1" /> {neutralVotes}</span>
-                                        <span><ThumbsDown size={14} className="inline-block mr-1" /> {noVotes}</span>
+                                        <span className={cn("flex items-center gap-1", mostPopularVote === 'yes' && "text-green-600 font-medium")}>
+                                          <ThumbsUp size={14} className="inline-block mr-1" fill={mostPopularVote === 'yes' ? "currentColor" : "none"} /> {yesVotes}
+                                        </span>
+                                        <span className={cn("flex items-center gap-1", mostPopularVote === 'neutral' && "text-blue-500 font-medium")}>
+                                          <Minus size={14} className="inline-block mr-1" fill={mostPopularVote === 'neutral' ? "currentColor" : "none"} /> {neutralVotes}
+                                        </span>
+                                        <span className={cn("flex items-center gap-1", mostPopularVote === 'no' && "text-red-600 font-medium")}>
+                                          <ThumbsDown size={14} className="inline-block mr-1" fill={mostPopularVote === 'no' ? "currentColor" : "none"} /> {noVotes}
+                                        </span>
                                       </div>
-                                      <p className={cn(
-                                        "text-xs font-medium mt-2",
-                                        suggestion.status === 'accepted' ? 'text-green-600' :
-                                        suggestion.status === 'rejected' ? 'text-red-600' : 'text-muted-foreground'
-                                      )}>Status: {suggestion.status.charAt(0).toUpperCase() + suggestion.status.slice(1)}</p>
                                     </div>
                                   );
                                 }
