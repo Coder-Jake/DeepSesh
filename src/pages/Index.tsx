@@ -848,7 +848,7 @@ const Index = () => {
   // NEW: Sort prepared schedules chronologically
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
-    return [...preparedSchedules].sort((a, b) => {
+    return [...preparedPchedules].sort((a, b) => {
       const timeA = getEffectiveStartTime(a, now);
       const timeB = getEffectiveStartTime(b, now);
 
@@ -858,7 +858,7 @@ const Index = () => {
       }
       return timeA - timeB;
     });
-  }, [preparedSchedules, getEffectiveStartTime]);
+  }, [preparedPchedules, getEffectiveStartTime]);
 
   // Handlers for toggling Nearby/Friends sections
   const toggleNearbySessions = () => {
@@ -1200,8 +1200,8 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Coworkers Section - Show when running or paused */}
-          {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && (currentSessionRole !== null) && ( // Show if pending or prepared and a role is assigned
+          {/* Coworkers Section - Show only if there are more than just the current user */}
+          {allParticipantsToDisplay.length > 1 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Coworkers</CardTitle>
