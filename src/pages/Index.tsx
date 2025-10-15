@@ -337,7 +337,7 @@ const Index = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
       setSeshTitle("Notes"); // Revert to default if empty
-    }
+      }
   };
 
   const handleTitleLongPress = () => {
@@ -444,6 +444,7 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setNotes("");
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      console.log("Index: Calling setActiveAsks. Current value of setActiveAsks:", setActiveAsks); // DEBUG
       setActiveAsks([]); // NEW: Clear active asks after saving
 
       // NEW: Reset role states

@@ -940,5 +940,6 @@ export const useTimer = () => {
   if (context === undefined) {
     throw new Error('useTimer must be used within a TimerProvider');
   }
+  console.log("TimerContext: Value provided by useTimer hook:", context); // Add this
   return context;
 };
