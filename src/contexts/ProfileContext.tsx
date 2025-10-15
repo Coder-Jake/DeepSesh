@@ -586,6 +586,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Define newSessionDate and sessionEndTime
+    const newSessionDate = new Date(sessionStartTime);
+    const sessionEndTime = new Date(sessionStartTime + totalSessionSeconds * 1000);
+
     const currentActiveAsks = activeAsks ?? [];
     // Removed pollsToSave filtering, now saving all asks
 
