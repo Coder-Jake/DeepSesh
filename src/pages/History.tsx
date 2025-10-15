@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const History = () => {
   const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData } = useProfile(); // Use persistent state from context
+  console.log("History page: sessions received:", sessions); // ADDED LOG
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

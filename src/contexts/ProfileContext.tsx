@@ -5,7 +5,7 @@ import { toast } from 'sonner'; // Using sonner for notifications
 
 type Profile = Tables<'public', 'profiles'>;
 type ProfileInsert = TablesInsert<'public', 'profiles'>;
-type ProfileUpdate = TablesUpdate<'public', 'profiles'>;
+type ProfileUpdate = TablesInsert<'public', 'profiles'>;
 
 export type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
 
@@ -61,14 +61,26 @@ const parseDurationStringToSeconds = (durationString: string): number => {
 
 // Helper to check if a session date falls within the current week
 const isDateInCurrentWeek = (sessionDate: Date, today: Date): boolean => {
-  const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay())); // Sunday
-  const lastDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6)); // Saturday
-  return sessionDate >= firstDayOfWeek && sessionDate <= lastDayOfWeek;
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay()); // Set to Sunday of current week
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6); // Set to Saturday of current week
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  return sessionDate >= startOfWeek && sessionDate <= endOfWeek;
 };
 
 // Helper to check if a session date falls within the current month
 const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
-  return sessionDate.getMonth() === today.getMonth() && sessionDate.getFullYear() === today.getFullYear();
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
+  endOfMonth.setHours(23, 59, 59, 999);
+
+  return sessionDate >= startOfMonth && sessionDate <= endOfMonth;
 };
 
 
@@ -488,7 +500,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         notes: notes,
       };
 
-      setSessions(prevSessions => [newSession, ...prevSessions]);
+      setSessions(prevSessions => {
+        const updatedSessions = [newSession, ...prevSessions];
+        console.log("ProfileContext: Sessions updated locally:", updatedSessions); // ADDED LOG
+        return updatedSessions;
+      });
 
       // Update local stats data for 'week', 'month', and 'all' time
       setStatsData(prevStats => {
@@ -513,12 +529,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         updatePeriodStats('all');
 
         // Update 'week' stats if session is in current week
-        if (isDateInCurrentWeek(newSessionDate, new Date(today))) { // Pass a new Date object for comparison
+        if (isDateInCurrentWeek(newSessionDate, new Date())) { // Pass a new Date object for comparison
           updatePeriodStats('week');
         }
 
         // Update 'month' stats if session is in current month
-        if (isDateInCurrentMonth(newSessionDate, new Date(today))) { // Pass a new Date object for comparison
+        if (isDateInCurrentMonth(newSessionDate, new Date())) { // Pass a new Date object for comparison
           updatePeriodStats('month');
         }
 
