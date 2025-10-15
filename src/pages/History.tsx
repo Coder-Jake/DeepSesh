@@ -143,7 +143,7 @@ const History = () => {
   }, [sessionToDeleteId, deleteSession, toast]);
 
   return (
-    <> {/* Added React.Fragment here */}
+    <>
       <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
