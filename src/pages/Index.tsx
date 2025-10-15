@@ -445,23 +445,16 @@ const Index = () => {
     };
 
     const handleSaveAndStop = async () => {
-      if (totalSessionSeconds < 30) {
-        toast({
-          title: "Session Too Short",
-          description: "Sessions shorter than 30 seconds are not saved to history.",
-          variant: "destructive",
-        });
-      } else {
-        await saveSession(
-          seshTitle,
-          notes,
-          finalAccumulatedFocus,
-          finalAccumulatedBreak,
-          totalSessionSeconds,
-          activeJoinedSessionCoworkerCount,
-          sessionStartTime || Date.now() // Use sessionStartTime or current time if null
-        );
-      }
+      // Removed the totalSessionSeconds < 30 check
+      await saveSession(
+        seshTitle,
+        notes,
+        finalAccumulatedFocus,
+        finalAccumulatedBreak,
+        totalSessionSeconds,
+        activeJoinedSessionCoworkerCount,
+        sessionStartTime || Date.now() // Use sessionStartTime or current time if null
+      );
       await performStopActions();
     };
 
@@ -808,7 +801,7 @@ const Index = () => {
       description: "Your scheduled session has now begun.",
     });
 
-    // NEW: Set role to host when schedule starts
+    // NEW: Set role to host
     setCurrentSessionRole('host');
     setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
