@@ -27,7 +27,7 @@ const History = () => {
 
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedSessions, setExpandedSessions] = new Set();
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(() => new Set()); // Changed: Use functional initializer and explicit type
   const [showDeleteIconForSessionId, setShowDeleteIconForSessionId] = useState<string | null>(null); // State to track which session's delete icon is visible
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // State for delete confirmation dialog
   const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null); // State to hold the ID of the session to be deleted
@@ -99,7 +99,9 @@ const History = () => {
   // Toggle expanded state for a session
   const handleToggleExpand = (sessionId: string) => {
     setExpandedSessions(prev => {
-      const newSet = new Set(prev);
+      // Defensive check: ensure prev is a Set, or create a new empty Set if it's not
+      const currentSet = prev instanceof Set ? prev : new Set<string>();
+      const newSet = new Set(currentSet);
       if (newSet.has(sessionId)) {
         newSet.delete(sessionId);
       } else {
@@ -238,7 +240,7 @@ const History = () => {
                     session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     session.notes.toLowerCase().includes(searchQuery.toLowerCase())
                   );
-                  const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch; // Convert id to string
+                  const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch; // Line 241
 
                   return (
                     <Card key={session.id} onClick={() => handleCardClick(session.id.toString())} className="cursor-pointer relative"> {/* Added relative positioning */}
