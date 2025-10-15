@@ -562,6 +562,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const finalBreakSeconds = accumulatedBreakSeconds;
           const totalSession = finalFocusSeconds + finalBreakSeconds;
 
+          console.log("TimerContext: activeAsks before saving (schedule completion):", activeAsks); // DEBUG
           saveSession(
             _seshTitle, // Use internal seshTitle for saving
             notes,

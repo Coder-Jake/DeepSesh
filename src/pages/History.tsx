@@ -254,6 +254,8 @@ const History = () => {
                   );
                   const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch;
 
+                  console.log("History: Session ID:", session.id, "has asks:", session.asks); // DEBUG
+
                   return (
                     <Card key={session.id} onClick={() => handleCardClick(session.id.toString())} className="cursor-pointer relative">
                       <CardHeader>

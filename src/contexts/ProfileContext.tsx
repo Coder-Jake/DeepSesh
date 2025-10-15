@@ -524,7 +524,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       // Sort the merged sessions by date (most recent first)
       mergedSessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setSessions(mergedSessions);
-      console.log("Sessions fetched and merged:", mergedSessions);
+      console.log("ProfileContext: Sessions fetched and merged:", mergedSessions); // DEBUG
     }
     setLoading(false);
   };
@@ -591,7 +591,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const sessionEndTime = new Date(sessionStartTime + totalSessionSeconds * 1000);
 
     const currentActiveAsks = activeAsks ?? [];
-    // Removed pollsToSave filtering, now saving all asks
+    console.log("ProfileContext: saveSession received activeAsks:", currentActiveAsks); // DEBUG
 
     const newSession: SessionHistory = {
       id: crypto.randomUUID(), // Generate a UUID for local session ID
@@ -605,6 +605,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       session_start_time: newSessionDate.toISOString(), // Populate new field
       session_end_time: sessionEndTime.toISOString(),   // Populate new field
     };
+    console.log("ProfileContext: newSession.asks will be:", newSession.asks); // DEBUG
 
     // Always update local storage first with the full session data (including notes/asks)
     setSessions(prevSessions => {
