@@ -868,6 +868,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     activeAsks,
     addAsk,
     updateAsk,
+    setActiveAsks, // <--- THIS WAS MISSING!
 
     // NEW: Host/Coworker role states
     currentSessionRole,
