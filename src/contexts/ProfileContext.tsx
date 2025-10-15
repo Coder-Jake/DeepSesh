@@ -20,6 +20,8 @@ export interface SessionHistory {
   type: 'focus' | 'break';
   notes: string;
   polls?: Poll[]; // NEW: Added polls property
+  session_start_time: string; // NEW: Added session_start_time
+  session_end_time: string;   // NEW: Added session_end_time
 }
 
 export interface StatsPeriodData {
@@ -95,7 +97,9 @@ const initialSessions: SessionHistory[] = [
     participants: 3,
     type: "focus",
     notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
-    polls: []
+    polls: [],
+    session_start_time: new Date("2225-09-15T09:00:00Z").toISOString(),
+    session_end_time: new Date("2225-09-15T09:45:00Z").toISOString(),
   },
   {
     id: crypto.randomUUID(),
@@ -105,7 +109,9 @@ const initialSessions: SessionHistory[] = [
     participants: 5,
     type: "focus",
     notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive.",
-    polls: []
+    polls: [],
+    session_start_time: new Date("2225-09-14T10:30:00Z").toISOString(),
+    session_end_time: new Date("2225-09-14T12:00:00Z").toISOString(),
   },
   {
     id: crypto.randomUUID(),
@@ -115,7 +121,9 @@ const initialSessions: SessionHistory[] = [
     participants: 1,
     type: "focus",
     notes: "Quick focused session to review quarterly goals and plan next steps.",
-    polls: []
+    polls: [],
+    session_start_time: new Date("2225-09-13T14:00:00Z").toISOString(),
+    session_end_time: new Date("2225-09-13T14:30:00Z").toISOString(),
   },
   {
     id: crypto.randomUUID(),
@@ -125,7 +133,9 @@ const initialSessions: SessionHistory[] = [
     participants: 2,
     type: "focus",
     notes: "Pair programming session working on the new user interface components. Fixed several bugs.",
-    polls: []
+    polls: [],
+    session_start_time: new Date("2225-09-12T11:00:00Z").toISOString(),
+    session_end_time: new Date("2225-09-12T13:00:00Z").toISOString(),
   },
   {
     id: crypto.randomUUID(),
@@ -135,7 +145,9 @@ const initialSessions: SessionHistory[] = [
     participants: 4,
     type: "focus",
     notes: "Market research session for the new product launch. Gathered valuable competitive intelligence.",
-    polls: []
+    polls: [],
+    session_start_time: new Date("2225-09-11T16:00:00Z").toISOString(),
+    session_end_time: new Date("2225-09-11T17:00:00Z").toISOString(),
   }
 ];
 
@@ -446,7 +458,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       }
     }
 
-    // NEW: Fetch sessions from Supabase for authenticated users, excluding notes and active_asks
+    // NEW: Fetch sessions from Supabase for authenticated users, including notes and active_asks
     const { data: fetchedSupabaseSessions, error: sessionsError } = await supabase
       .from('sessions')
       .select('id, title, break_duration_seconds, coworker_count, created_at, focus_duration_seconds, session_end_time, session_start_time, total_session_seconds, user_id') // Explicitly select columns
@@ -481,6 +493,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
             notes: localSesh.notes, // Use local notes
             polls: localSesh.polls, // Use local polls
+            session_start_time: supabaseSesh.session_start_time, // Populate new field
+            session_end_time: supabaseSesh.session_end_time,     // Populate new field
           });
           processedSupabaseIds.add(supabaseSesh.id);
         } else {
@@ -501,6 +515,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
             notes: '', // No notes from Supabase
             polls: undefined, // No polls from Supabase
+            session_start_time: supabaseSesh.session_start_time, // Populate new field
+            session_end_time: supabaseSesh.session_end_time,     // Populate new field
           });
         }
       });
@@ -574,6 +590,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const pollsToSave = currentActiveAsks.filter((ask): ask is Poll => 'question' in ask);
 
     const newSessionDate = new Date(sessionStartTime);
+    const sessionEndTime = new Date(); // Capture end time when saving
+
     const newSession: SessionHistory = {
       id: crypto.randomUUID(), // Generate a UUID for local session ID
       title: seshTitle,
@@ -583,6 +601,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break',
       notes: notes,
       polls: pollsToSave.length > 0 ? pollsToSave : undefined,
+      session_start_time: newSessionDate.toISOString(), // Populate new field
+      session_end_time: sessionEndTime.toISOString(),   // Populate new field
     };
 
     // Always update local storage first with the full session data (including notes/polls)
@@ -646,7 +666,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       total_session_seconds: Math.round(totalSessionSeconds),
       coworker_count: activeJoinedSessionCoworkerCount,
       session_start_time: newSessionDate.toISOString(),
-      session_end_time: new Date().toISOString(),
+      session_end_time: sessionEndTime.toISOString(),
     };
 
     const { data, error: insertError } = await supabase
