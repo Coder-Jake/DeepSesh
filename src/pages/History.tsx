@@ -3,17 +3,38 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo, useCallback } from "react"; // Added useCallback
+import { useState, useMemo, useCallback, useRef } from "react"; // Added useRef
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"; // Import AlertDialog components
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData } = useProfile();
+  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession } = useProfile(); // Destructure deleteSession
+  const { toast } = useToast(); // Initialize useToast
+
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set()); // State to track expanded sessions
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
+  const [showDeleteIconForSessionId, setShowDeleteIconForSessionId] = useState<string | null>(null); // State to track which session's delete icon is visible
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // State for delete confirmation dialog
+  const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null); // State to hold the ID of the session to be deleted
+
+  // Long press refs for the delete icon
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPress = useRef(false);
+  const LONG_PRESS_DURATION = 500; // milliseconds
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -64,6 +85,12 @@ const History = () => {
     );
   }, [sessions, searchQuery]);
 
+  // Toggle expanded state for a session AND show/hide delete icon
+  const handleCardClick = (sessionId: string) => {
+    handleToggleExpand(sessionId); // Toggle notes visibility
+    setShowDeleteIconForSessionId(prevId => (prevId === sessionId ? null : sessionId)); // Toggle delete icon visibility
+  };
+
   // Toggle expanded state for a session
   const handleToggleExpand = (sessionId: string) => {
     setExpandedSessions(prev => {
@@ -76,6 +103,44 @@ const History = () => {
       return newSet;
     });
   };
+
+  // Long press handlers for the delete icon
+  const handleDeleteLongPressStart = useCallback((sessionId: string) => {
+    isLongPress.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPress.current = true;
+      setSessionToDeleteId(sessionId);
+      setIsDeleteDialogOpen(true); // Open dialog on long press
+    }, LONG_PRESS_DURATION);
+  }, []);
+
+  const handleDeleteLongPressEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+    isLongPress.current = false;
+  }, []);
+
+  const handleDeleteClick = useCallback((e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation(); // Prevent card click from being triggered
+    if (!isLongPress.current) {
+      // If it was a short click, just toggle the delete icon visibility
+      setShowDeleteIconForSessionId(prevId => (prevId === sessionId ? null : sessionId));
+    }
+  }, []);
+
+  const confirmDeleteSession = useCallback(async () => {
+    if (sessionToDeleteId) {
+      await deleteSession(sessionToDeleteId);
+      toast({
+        title: "Session Deleted",
+        description: "The session has been removed from your history.",
+      });
+      setSessionToDeleteId(null);
+      setIsDeleteDialogOpen(false);
+      setShowDeleteIconForSessionId(null); // Hide the delete icon after deletion
+    }
+  }, [sessionToDeleteId, deleteSession, toast]);
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
@@ -170,7 +235,7 @@ const History = () => {
                 const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch; // Convert id to string
 
                 return (
-                  <Card key={session.id} onClick={() => handleToggleExpand(session.id.toString())} className="cursor-pointer">
+                  <Card key={session.id} onClick={() => handleCardClick(session.id.toString())} className="cursor-pointer relative"> {/* Added relative positioning */}
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div>
@@ -206,6 +271,24 @@ const History = () => {
                         </div>
                       </CardContent>
                     )}
+
+                    {/* Delete Icon (X) */}
+                    {showDeleteIconForSessionId === session.id.toString() && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive"
+                        onMouseDown={(e) => handleDeleteLongPressStart(session.id.toString())}
+                        onMouseUp={handleDeleteLongPressEnd}
+                        onMouseLeave={handleDeleteLongPressEnd}
+                        onTouchStart={(e) => handleDeleteLongPressStart(session.id.toString())}
+                        onTouchEnd={handleDeleteLongPressEnd}
+                        onClick={(e) => handleDeleteClick(e, session.id.toString())}
+                        aria-label="Delete session"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </Card>
                 );
               })
@@ -228,6 +311,23 @@ const History = () => {
           </TooltipProvider>
         </div>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your session from your history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteSession}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </main>
   );
 };
 

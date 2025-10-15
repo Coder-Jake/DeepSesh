@@ -48,15 +48,14 @@ const formatSecondsToDurationString = (totalSeconds: number): string => {
 // Helper function to parse "XXh YYm" to total seconds
 const parseDurationStringToSeconds = (durationString: string): number => {
   const matchHours = durationString.match(/(\d+)h/);
-  const matchMinutes = durationString.match(/(\d+)m/);
-  let totalSeconds = 0;
   if (matchHours) {
-    totalSeconds += parseInt(matchHours[1], 10) * 3600;
+    return parseInt(matchHours[1], 10) * 3600;
   }
+  const matchMinutes = durationString.match(/(\d+)m/);
   if (matchMinutes) {
-    totalSeconds += parseInt(matchMinutes[1], 10) * 60;
+    return parseInt(matchMinutes[1], 10) * 60;
   }
-  return totalSeconds;
+  return 0; // Default to 0 if format is unexpected
 };
 
 // Helper to check if a session date falls within the current week
@@ -224,6 +223,9 @@ interface ProfileContextType {
   // NEW: Host code and its setter
   hostCode: string;
   setHostCode: React.Dispatch<React.SetStateAction<string>>;
+
+  // NEW: Function to delete a session
+  deleteSession: (sessionId: string) => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -272,24 +274,24 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     // For demo, we'll use mock data from Index.tsx for recent coworkers
     // In a real app, this would come from actual session participants in the database
     const mockNearbyParticipants = [
-      { id: 1, name: "Alex", sociability: 90, intention: "Reviewing differential equations." },
-      { id: 2, name: "Sam", sociability: 80, intention: "Working on problem set 3." },
-      { id: 3, name: "Taylor", sociability: 90, intention: "Preparing for the midterm exam." },
-      { id: 4, name: "Morgan", sociability: 20, intention: "Debugging a Python script." },
-      { id: 5, name: "Jordan", sociability: 10, intention: "Writing documentation for API." },
-      { id: 6, name: "Casey", sociability: 20, intention: "Learning new framework." },
-      { id: 7, name: "Riley", sociability: 20, intention: "Code refactoring." },
-      { id: 8, name: "Avery", sociability: 30, intention: "Designing database schema." },
+      { id: "1", name: "Alex", sociability: 90, intention: "Reviewing differential equations." },
+      { id: "2", name: "Sam", sociability: 80, intention: "Working on problem set 3." },
+      { id: "3", name: "Taylor", sociability: 90, intention: "Preparing for the midterm exam." },
+      { id: "4", name: "Morgan", sociability: 20, intention: "Debugging a Python script." },
+      { id: "5", name: "Jordan", sociability: 10, intention: "Writing documentation for API." },
+      { id: "6", name: "Casey", sociability: 20, intention: "Learning new framework." },
+      { id: "7", name: "Riley", sociability: 20, intention: "Code refactoring." },
+      { id: "8", name: "Avery", sociability: 30, intention: "Designing database schema." },
     ];
     const mockFriendsParticipants = [
-      { id: 9, name: "Jamie", sociability: 60, intention: "Reviewing cognitive psychology." },
-      { id: 10, name: "Quinn", sociability: 60, intention: "Memorizing key terms." },
-      { id: 11, name: "Blake", sociability: 70, intention: "Practicing essay questions." },
-      { id: 12, name: "Drew", sociability: 60, intention: "Summarizing research papers." },
-      { id: 13, name: "Chris", sociability: 50, intention: "Creating flashcards." },
-      { id: 14, name: "Pat", sociability: 55, intention: "Discussing theories." },
-      { id: 15, name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
-      { id: 16, name: "Jess", sociability: 70, intention: "Peer teaching." },
+      { id: "9", name: "Jamie", sociability: 60, intention: "Reviewing cognitive psychology." },
+      { id: "10", name: "Quinn", sociability: 60, intention: "Memorizing key terms." },
+      { id: "11", name: "Blake", sociability: 70, intention: "Practicing essay questions." },
+      { id: "12", name: "Drew", sociability: 60, intention: "Summarizing research papers." },
+      { id: "13", name: "Chris", sociability: 50, intention: "Creating flashcards." },
+      { id: "14", name: "Pat", sociability: 55, intention: "Discussing theories." },
+      { id: "15", name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
+      { id: "16", name: "Jess", sociability: 70, intention: "Peer teaching." },
     ];
 
     [...mockNearbyParticipants, ...mockFriendsParticipants].forEach(p => uniqueNames.add(p.name));
@@ -584,6 +586,45 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
+  // NEW: Function to delete a session
+  const deleteSession = useCallback(async (sessionId: string) => {
+    setLoading(true);
+    setError(null);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      // User not authenticated, delete locally
+      setSessions(prevSessions => prevSessions.filter(session => session.id.toString() !== sessionId));
+      // Recalculate stats for local deletion (simplified for demo)
+      // This would be more complex in a real app to accurately subtract deleted session's impact
+      setStatsData(initialStatsData); // Reset to initial for simplicity in demo
+      setLoading(false);
+      return;
+    }
+
+    // If user is authenticated, delete from Supabase
+    const { error: deleteError } = await supabase
+      .from('sessions')
+      .delete()
+      .eq('id', sessionId); // Assuming session.id is the primary key in Supabase
+
+    if (deleteError) {
+      console.error("Error deleting session:", deleteError);
+      setError(deleteError.message);
+      toast.error("Error deleting session", {
+        description: deleteError.message,
+      });
+    } else {
+      // If successful, update local state
+      setSessions(prevSessions => prevSessions.filter(session => session.id.toString() !== sessionId));
+      // Recalculate stats after deletion (simplified for demo)
+      setStatsData(initialStatsData); // Reset to initial for simplicity in demo
+      console.log("Session deleted from Supabase:", sessionId);
+    }
+    setLoading(false);
+  }, [toast]);
+
+
   // Initial load effect
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -695,6 +736,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     recentCoworkers, // NEW
     hostCode, // NEW
     setHostCode, // NEW
+    deleteSession, // NEW
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
