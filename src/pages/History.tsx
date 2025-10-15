@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Calendar, FileText, Search, X } from "lucide-react";
+import { Clock, Users, Calendar, FileText, Search, X, MessageSquarePlus, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare } from "lucide-react"; // Added poll icons
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
 import { useState, useMemo, useCallback, useRef } from "react"; // Added useRef
@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"; // Import AlertDialog components
 import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Poll } from "@/types/timer"; // Import Poll type
 
 const History = () => {
   const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession } = useProfile(); // Destructure deleteSession
@@ -81,7 +82,11 @@ const History = () => {
     const lowerCaseQuery = searchQuery.toLowerCase();
     return sessions.filter(session => 
       session.title.toLowerCase().includes(lowerCaseQuery) ||
-      session.notes.toLowerCase().includes(lowerCaseQuery)
+      session.notes.toLowerCase().includes(lowerCaseQuery) ||
+      (session.polls && session.polls.some(poll => 
+        poll.question.toLowerCase().includes(lowerCaseQuery) ||
+        poll.options.some(option => option.text.toLowerCase().includes(lowerCaseQuery))
+      ))
     );
   }, [sessions, searchQuery]);
 
@@ -259,14 +264,60 @@ const History = () => {
                         </div>
                       </CardHeader>
                       
-                      {session.notes && isExpanded && ( // Conditionally render CardContent
-                        <CardContent>
-                          <div className="flex items-start gap-2">
-                            <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-muted-foreground">
-                              {highlightText(session.notes, searchQuery)}
-                            </p>
-                          </div>
+                      {isExpanded && ( // Conditionally render CardContent
+                        <CardContent className="space-y-4"> {/* Added space-y-4 for spacing between notes and polls */}
+                          {session.notes && (
+                            <div className="flex items-start gap-2">
+                              <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-muted-foreground">
+                                {highlightText(session.notes, searchQuery)}
+                              </p>
+                            </div>
+                          )}
+
+                          {session.polls && session.polls.length > 0 && (
+                            <div className="space-y-3 border-t border-border pt-4">
+                              <h4 className="text-base font-semibold flex items-center gap-2">
+                                <MessageSquarePlus size={16} className="text-primary" />
+                                Polls during session:
+                              </h4>
+                              {session.polls.map((poll, pollIndex) => (
+                                <div key={pollIndex} className="bg-muted/50 p-3 rounded-md space-y-2">
+                                  <p className="font-medium text-sm">{highlightText(poll.question, searchQuery)}</p>
+                                  <div className="space-y-1 text-sm text-muted-foreground">
+                                    {poll.options.map((option, optionIndex) => {
+                                      const totalVotes = option.votes.length;
+                                      let IconComponent;
+                                      if (poll.type === 'closed') {
+                                        if (option.id === 'closed-yes') IconComponent = ThumbsUp;
+                                        else if (option.id === 'closed-no') IconComponent = ThumbsDown;
+                                        else if (option.id === 'closed-dont-mind') IconComponent = Minus;
+                                      } else if (poll.type === 'choice') {
+                                        IconComponent = Circle;
+                                      } else if (poll.type === 'selection') {
+                                        IconComponent = CheckSquare;
+                                      }
+
+                                      return (
+                                        <div key={optionIndex} className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            {IconComponent && <IconComponent size={14} className="text-muted-foreground" />}
+                                            <span>{highlightText(option.text, searchQuery)}</span>
+                                          </div>
+                                          <Badge variant="secondary">{totalVotes} votes</Badge>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                  {poll.allowCustomResponses && (
+                                    <p className="text-xs text-muted-foreground italic mt-2">
+                                      (Custom responses were allowed)
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </CardContent>
                       )}
 

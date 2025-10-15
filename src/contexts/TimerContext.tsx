@@ -237,6 +237,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setActiveTimerColors({}); // NEW: Clear active timer colors
     setActiveScheduleDisplayTitleInternal("My Focus Sesh"); // NEW: Reset timeline title
     setPreparedSchedules([]); // NEW: Clear all prepared schedules
+    setActiveAsks([]); // NEW: Clear active asks
 
     // NEW: Reset role states
     setCurrentSessionRole(null);
@@ -310,6 +311,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setNotes("");
             _setSeshTitle("Notes");
             setIsSeshTitleCustomized(false);
+            setActiveAsks([]); // NEW: Clear active asks for manual timer
         }
     }
 
@@ -347,7 +349,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName
+    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -388,6 +390,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setActiveTimerColors({});
             setActiveScheduleDisplayTitleInternal("My Focus Sesh");
             setIsSchedulePending(false);
+            setActiveAsks([]); // NEW: Clear active asks for existing schedule
         }
         if (shouldResetManualTimer) {
             // Reset manual timer states
@@ -398,6 +401,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setNotes("");
             _setSeshTitle("Notes");
             setIsSeshTitleCustomized(false);
+            setActiveAsks([]); // NEW: Clear active asks for manual timer
         }
     }
 
@@ -434,7 +438,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionHostName(localFirstName); // Use localFirstName as the host name
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -565,7 +569,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             finalBreakSeconds,
             totalSession,
             activeJoinedSessionCoworkerCount,
-            sessionStartTime || Date.now()
+            sessionStartTime || Date.now(),
+            activeAsks // NEW: Pass activeAsks to saveSession
           );
 
           resetSchedule();
@@ -605,7 +610,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {

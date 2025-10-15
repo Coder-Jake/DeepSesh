@@ -22,11 +22,11 @@ export type Database = {
           id: string
           intention: string | null
           last_name: string | null
-          linkedin_url: string | null // NEW: Added linkedin_url
+          linkedin_url: string | null
           organization: string | null
           sociability: number | null
           updated_at: string | null
-          host_code: string | null // NEW: Added host_code
+          host_code: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -35,11 +35,11 @@ export type Database = {
           id: string
           intention?: string | null
           last_name?: string | null
-          linkedin_url?: string | null // NEW: Added linkedin_url
+          linkedin_url?: string | null
           organization?: string | null
           sociability?: number | null
           updated_at?: string | null
-          host_code?: string | null // NEW: Added host_code
+          host_code?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -48,11 +48,11 @@ export type Database = {
           id?: string
           intention?: string | null
           last_name?: string | null
-          linkedin_url?: string | null // NEW: Added linkedin_url
+          linkedin_url?: string | null
           organization?: string | null
           sociability?: number | null
           updated_at?: string | null
-          host_code?: string | null // NEW: Added host_code
+          host_code?: string | null
         }
         Relationships: [
           {
@@ -66,6 +66,7 @@ export type Database = {
       }
       sessions: {
         Row: {
+          active_asks: Json | null // NEW: Added active_asks column
           break_duration_seconds: number
           coworker_count: number
           created_at: string | null
@@ -79,6 +80,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          active_asks?: Json | null // NEW: Added active_asks column
           break_duration_seconds?: number
           coworker_count?: number
           created_at?: string | null
@@ -92,6 +94,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          active_asks?: Json | null // NEW: Added active_asks column
           break_duration_seconds?: number
           coworker_count?: number
           created_at?: string | null

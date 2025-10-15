@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from 'sonner'; // Using sonner for notifications
+import { Poll, ActiveAskItem } from "@/types/timer"; // Import Poll and ActiveAskItem types
 
 type Profile = Tables<'public', 'profiles'>;
 type ProfileInsert = TablesInsert<'public', 'profiles'>;
@@ -18,6 +19,7 @@ export interface SessionHistory {
   participants: number;
   type: 'focus' | 'break';
   notes: string;
+  polls?: Poll[]; // NEW: Added polls property
 }
 
 export interface StatsPeriodData {
@@ -212,6 +214,7 @@ interface ProfileContextType {
     totalSessionSeconds: number,
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
+    activeAsks: ActiveAskItem[] // NEW: Add activeAsks parameter
   ) => Promise<void>;
 
   // NEW: Blocked users and related functions
@@ -482,10 +485,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     totalSessionSeconds: number,
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
+    activeAsks: ActiveAskItem[] // NEW: Add activeAsks parameter
   ) => {
     setLoading(true);
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
+
+    const pollsToSave = activeAsks.filter((ask): ask is Poll => 'question' in ask);
 
     if (!user) {
       // User not authenticated, save locally
@@ -500,6 +506,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         participants: activeJoinedSessionCoworkerCount,
         type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break', // Determine type based on focus time
         notes: notes,
+        polls: pollsToSave.length > 0 ? pollsToSave : undefined, // Store polls
       };
 
       setSessions(prevSessions => {
@@ -561,6 +568,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       coworker_count: activeJoinedSessionCoworkerCount,
       session_start_time: new Date(sessionStartTime).toISOString(),
       session_end_time: new Date().toISOString(),
+      active_asks: pollsToSave.length > 0 ? pollsToSave as unknown as Json : null, // Store polls as JSONB
     };
 
     const { data, error: insertError } = await supabase
