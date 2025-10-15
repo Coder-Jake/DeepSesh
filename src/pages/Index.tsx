@@ -202,7 +202,7 @@ const Index = () => {
     accumulatedBreakSeconds,
     setAccumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount,
-    setActiveJoinedSessionCoworkerCount,
+    setActiveJoinedSessionCoworkerCount, // NEW: Destructure setter
 
     // Active Asks from TimerContext
     activeAsks,
@@ -371,6 +371,7 @@ const Index = () => {
     setCurrentSessionRole('host');
     setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
+    setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
   };
 
   const resumeTimer = () => {

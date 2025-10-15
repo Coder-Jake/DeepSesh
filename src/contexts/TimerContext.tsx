@@ -242,6 +242,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionRole(null);
     setCurrentSessionHostName(null);
     setCurrentSessionOtherParticipants([]);
+    setActiveJoinedSessionCoworkerCount(0); // Reset coworker count
   }, [_defaultFocusMinutes, _defaultBreakMinutes]);
 
   const startSchedule = useCallback(() => {
@@ -341,6 +342,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionRole('host');
     setCurrentSessionHostName(localFirstName); // Use localFirstName as the host name
     setCurrentSessionOtherParticipants([]);
+    setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
@@ -431,6 +433,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionRole('host');
     setCurrentSessionHostName(localFirstName); // Use localFirstName as the host name
     setCurrentSessionOtherParticipants([]);
+    setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
   }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
@@ -849,7 +852,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setAccumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
-    // saveSessionToHistory, // REMOVED
 
     activeAsks,
     addAsk,
