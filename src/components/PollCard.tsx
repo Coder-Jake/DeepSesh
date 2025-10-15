@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus, X } from "lucide-react"; // Import X icon
+import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, X } from "lucide-react"; // Import X icon
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,29 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
     return [];
   });
   const [customResponse, setCustomResponse] = useState("");
+
+  // Effect to synchronize selectedOption with poll prop changes
+  useEffect(() => {
+    if (poll.type === 'closed' || poll.type === 'choice') {
+      const votedOption = poll.options.find(option => option.votes.some(vote => vote.userId === currentUserId));
+      setSelectedOption(votedOption ? votedOption.id : null);
+    } else {
+      setSelectedOption(null); // Ensure it's null for selection type
+    }
+  }, [poll, currentUserId]);
+
+  // Effect to synchronize selectedOptions with poll prop changes
+  useEffect(() => {
+    if (poll.type === 'selection') {
+      setSelectedOptions(
+        poll.options
+          .filter(option => option.votes.some(vote => vote.userId === currentUserId))
+          .map(option => option.id)
+      );
+    } else {
+      setSelectedOptions([]); // Ensure it's empty for closed/choice type
+    }
+  }, [poll, currentUserId]);
 
   // Helper to submit the current state of votes
   const submitVote = (
