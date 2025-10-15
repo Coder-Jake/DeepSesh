@@ -238,6 +238,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setActiveScheduleDisplayTitleInternal("My Focus Sesh"); // NEW: Reset timeline title
     setPreparedSchedules([]); // NEW: Clear all prepared schedules
     setActiveAsks([]); // NEW: Clear active asks
+    console.log("TimerContext: resetSchedule called. activeAsks cleared."); // DEBUG
 
     // NEW: Reset role states
     setCurrentSessionRole(null);
@@ -312,6 +313,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             _setSeshTitle("Notes");
             setIsSeshTitleCustomized(false);
             setActiveAsks([]); // NEW: Clear active asks for manual timer
+            console.log("TimerContext: Manual timer reset during schedule start. activeAsks cleared."); // DEBUG
         }
     }
 
@@ -391,6 +393,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setActiveScheduleDisplayTitleInternal("My Focus Sesh");
             setIsSchedulePending(false);
             setActiveAsks([]); // NEW: Clear active asks for existing schedule
+            console.log("TimerContext: Existing schedule reset during prepared schedule start. activeAsks cleared."); // DEBUG
         }
         if (shouldResetManualTimer) {
             // Reset manual timer states
@@ -402,6 +405,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             _setSeshTitle("Notes");
             setIsSeshTitleCustomized(false);
             setActiveAsks([]); // NEW: Clear active asks for manual timer
+            console.log("TimerContext: Manual timer reset during prepared schedule start. activeAsks cleared."); // DEBUG
         }
     }
 
@@ -676,6 +680,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setAccumulatedBreakSeconds(data.accumulatedBreakSeconds ?? 0);
       setActiveJoinedSessionCoworkerCount(data.activeJoinedSessionCoworkerCount ?? 0);
       setActiveAsks(data.activeAsks ?? []);
+      console.log("TimerContext: Loading activeAsks from local storage:", data.activeAsks); // DEBUG
       setIsSchedulePending(data.isSchedulePending ?? false);
       setScheduleStartOption(data.scheduleStartOption ?? 'now');
       setShouldPlayEndSound(data.shouldPlayEndSound ?? false); // Changed default to false
@@ -747,6 +752,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
+    console.log("TimerContext: Saving activeAsks to local storage:", activeAsks); // DEBUG
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, // Dependencies for default minutes
     focusMinutes, breakMinutes, // Dependencies for current homepage minutes

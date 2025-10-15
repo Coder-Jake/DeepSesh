@@ -586,12 +586,14 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
+    console.log("ProfileContext: saveSession received activeAsks:", activeAsks); // DEBUG
+
     // Define newSessionDate and sessionEndTime
     const newSessionDate = new Date(sessionStartTime);
     const sessionEndTime = new Date(sessionStartTime + totalSessionSeconds * 1000);
 
     const currentActiveAsks = activeAsks ?? [];
-    console.log("ProfileContext: saveSession received activeAsks:", currentActiveAsks); // DEBUG
+    // Removed pollsToSave filtering, now saving all asks
 
     const newSession: SessionHistory = {
       id: crypto.randomUUID(), // Generate a UUID for local session ID
@@ -611,6 +613,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setSessions(prevSessions => {
       const updatedSessions = [newSession, ...prevSessions];
       localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions));
+      console.log("ProfileContext: Sessions saved to local storage:", updatedSessions); // DEBUG
       return updatedSessions;
     });
 
