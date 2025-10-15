@@ -1211,7 +1211,7 @@ const Index = () => {
                     <TooltipTrigger asChild>
                       <div className={cn(
                         "flex items-center justify-between p-2 rounded-md select-none",
-                        person.id === currentUserId ? "bg-primary text-primary-foreground font-medium" : // Highlight current user
+                        person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" : // Changed bg-primary to bg-[hsl(var(--focus-background))] and text-primary-foreground to text-foreground
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
                         "hover:bg-muted cursor-default" // Other participants
                       )} data-name={`Coworker: ${person.name}`}>
