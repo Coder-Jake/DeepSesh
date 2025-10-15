@@ -445,7 +445,6 @@ const Index = () => {
     };
 
     const handleSaveAndStop = async () => {
-      // Removed the totalSessionSeconds < 30 check
       await saveSession(
         seshTitle,
         notes,
@@ -911,7 +910,7 @@ const Index = () => {
                         </> : <>
                           <Lock size={16} />
                           <span className="text-sm font-medium">Private</span>
-                        }</>}
+                        </>}
                     </button>
                     
                     {isActiveTimer ? ( // Conditionally render Share Dropdown
