@@ -514,7 +514,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             participants: supabaseSesh.coworker_count,
             type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
             notes: supabaseSesh.notes || '', // Use Supabase notes
-            asks: supabaseSesh.active_asks as ActiveAskItem[] | undefined, // Use Supabase active_asks
+            asks: (supabaseSesh.active_asks || []) as ActiveAskItem[], // Ensure it's an array, even if null from DB
             session_start_time: supabaseSesh.session_start_time,
             session_end_time: supabaseSesh.session_end_time,
           });
@@ -584,7 +584,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   ) => {
     setLoading(true);
     setError(null);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } = {} } = await supabase.auth.getUser(); // Destructure user with default empty object
 
     console.log("ProfileContext: saveSession received activeAsks:", activeAsks); // DEBUG
 
@@ -593,7 +593,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const sessionEndTime = new Date(sessionStartTime + totalSessionSeconds * 1000);
 
     const currentActiveAsks = activeAsks ?? [];
-    // Removed pollsToSave filtering, now saving all asks
+    console.log("ProfileContext: currentActiveAsks for new session:", currentActiveAsks); // DEBUG
 
     const newSession: SessionHistory = {
       id: crypto.randomUUID(), // Generate a UUID for local session ID
@@ -700,7 +700,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const deleteSession = useCallback(async (sessionId: string) => {
     setLoading(true);
     setError(null);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } = {} } = await supabase.auth.getUser(); // Destructure user with default empty object
 
     // Always update local storage first
     setSessions(prevSessions => {

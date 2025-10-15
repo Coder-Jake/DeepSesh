@@ -208,6 +208,7 @@ const Index = () => {
     activeAsks,
     addAsk,
     updateAsk,
+    setActiveAsks, // NEW: Added setter for activeAsks
 
     // New: Schedule pending state (for the *active* schedule)
     isSchedulePending,
@@ -264,6 +265,11 @@ const Index = () => {
       titleInputRef.current.select(); // Select the text when focused
     }
   }, [isEditingSeshTitle]);
+
+  // NEW: Log activeAsks on homepage
+  useEffect(() => {
+    console.log("Index: Current activeAsks on homepage:", activeAsks);
+  }, [activeAsks]);
 
   const playStartSound = () => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -354,6 +360,7 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setNotes("");
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks when starting a new manual timer
     }
 
     playStartSound();
@@ -437,6 +444,7 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setNotes("");
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks after saving
 
       // NEW: Reset role states
       setCurrentSessionRole(null);
@@ -445,6 +453,7 @@ const Index = () => {
     };
 
     const handleSaveAndStop = async () => {
+      console.log("Index: Calling saveSession with activeAsks:", activeAsks); // DEBUG
       await saveSession(
         seshTitle,
         notes,
@@ -452,7 +461,8 @@ const Index = () => {
         finalAccumulatedBreak,
         totalSessionSeconds,
         activeJoinedSessionCoworkerCount,
-        sessionStartTime || Date.now() // Use sessionStartTime or current time if null
+        sessionStartTime || Date.now(), // Use sessionStartTime or current time if null
+        activeAsks // NEW: Pass activeAsks to saveSession
       );
       await performStopActions();
     };
@@ -484,6 +494,7 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setNotes("");
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks on reset
 
       // NEW: Reset role states
       setCurrentSessionRole(null);
@@ -505,6 +516,7 @@ const Index = () => {
         setAccumulatedBreakSeconds(0);
       setNotes("");
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks on reset
 
       // NEW: Reset role states
       setCurrentSessionRole(null);
@@ -575,6 +587,7 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setNotes("");
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks when joining a session
     }
 
     setActiveJoinedSession(session);
