@@ -1212,7 +1212,7 @@ const Index = () => {
                       <div className={cn(
                         "flex items-center justify-between p-2 rounded-md select-none",
                         person.id === currentUserId ? "bg-primary text-primary-foreground font-medium" : // Highlight current user
-                        person.role === 'host' ? "bg-muted text-blue-400 font-medium" : // Host (if not current user)
+                        person.role === 'host' ? "bg-muted text-blue-100 font-medium" : // Host (if not current user)
                         "hover:bg-muted cursor-default" // Other participants
                       )} data-name={`Coworker: ${person.name}`}>
                         <span className="font-medium text-foreground">
