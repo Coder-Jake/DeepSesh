@@ -52,6 +52,11 @@ const History = () => {
     }
   };
 
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+
   // Helper function to highlight text
   const highlightText = useCallback((text: string, query: string) => {
     if (!query || !text) return text;
@@ -240,10 +245,10 @@ const History = () => {
                     session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     session.notes.toLowerCase().includes(searchQuery.toLowerCase())
                   );
-                  const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch; // Line 241
+                  const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch;
 
                   return (
-                    <Card key={session.id} onClick={() => handleCardClick(session.id.toString())} className="cursor-pointer relative"> {/* Added relative positioning */}
+                    <Card key={session.id} onClick={() => handleCardClick(session.id.toString())} className="cursor-pointer relative">
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
@@ -253,22 +258,31 @@ const History = () => {
                                 <Calendar size={14} />
                                 {formatDate(session.date)}
                               </div>
-                              {/* Swapped order and removed 'Coworker(s)' text */}
                               <div className="flex items-center gap-1">
                                 <Users size={14} />
                                 {session.participants}
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Clock size={14} />
-                                {session.duration}
-                              </div>
+                              <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1">
+                                      <Clock size={14} />
+                                      {session.duration}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Start: {formatTime(session.session_start_time)}</p>
+                                    <p>End: {formatTime(session.session_end_time)}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </div>
                         </div>
                       </CardHeader>
                       
-                      {isExpanded && ( // Conditionally render CardContent
-                        <CardContent className="space-y-4"> {/* Added space-y-4 for spacing between notes and polls */}
+                      {isExpanded && (
+                        <CardContent className="space-y-4">
                           {session.notes && (
                             <div className="flex items-start gap-2">
                               <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
