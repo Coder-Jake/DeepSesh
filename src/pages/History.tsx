@@ -143,191 +143,192 @@ const History = () => {
   }, [sessionToDeleteId, deleteSession, toast]);
 
   return (
-    <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">History</h1>
-          <p className="text-muted-foreground mt-2">Review stats from past Sessions</p>
-        </div>
-        <TimeFilterToggle onValueChange={setHistoryTimePeriod} defaultValue={historyTimePeriod} />
-      </div>
-        <div className="space-y-6">
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Link to="/leaderboard#focus-hours-leaderboard" className="block hover:opacity-80 transition-opacity">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-8 w-8 text-primary" />
-                    <div>
-                      <p className="text-2xl font-bold">{currentStats.totalFocusTime}</p>
-                      <p className="text-sm text-muted-foreground">Total Focus Time</p>
-                      <p className="text-xs text-muted-foreground">Rank: {currentStats.focusRank}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-2xl font-bold">{currentStats.sessionsCompleted}</p>
-                    <p className="text-sm text-muted-foreground">Sessions Completed</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Link to="/leaderboard#collaborated-users-leaderboard" className="block hover:opacity-80 transition-opacity">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Users className="h-8 w-8 text-primary" />
-                    <div>
-                      <p className="text-2xl font-bold">{currentStats.uniqueCoworkers}</p>
-                      <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
-                      <p className="text-xs text-muted-foreground">Rank: {currentStats.coworkerRank}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+    <> {/* Added React.Fragment here */}
+      <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">History</h1>
+            <p className="text-muted-foreground mt-2">Review stats from past Sessions</p>
           </div>
-
-          {/* Session List */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-xl font-semibold text-foreground">Sessions</h2>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowSearchBar(!showSearchBar)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                {showSearchBar ? <X size={20} /> : <Search size={20} />}
-              </Button>
+          <TimeFilterToggle onValueChange={setHistoryTimePeriod} defaultValue={historyTimePeriod} />
+        </div>
+          <div className="space-y-6">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <Link to="/leaderboard#focus-hours-leaderboard" className="block hover:opacity-80 transition-opacity">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-8 w-8 text-primary" />
+                      <div>
+                        <p className="text-2xl font-bold">{currentStats.totalFocusTime}</p>
+                        <p className="text-sm text-muted-foreground">Total Focus Time</p>
+                        <p className="text-xs text-muted-foreground">Rank: {currentStats.focusRank}</p>
+                      </div>
+                    </div >
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-8 w-8 text-primary" />
+                    <div>
+                      <p className="text-2xl font-bold">{currentStats.sessionsCompleted}</p>
+                      <p className="text-sm text-muted-foreground">Sessions Completed</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Link to="/leaderboard#collaborated-users-leaderboard" className="block hover:opacity-80 transition-opacity">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <Users className="h-8 w-8 text-primary" />
+                      <div>
+                        <p className="text-2xl font-bold">{currentStats.uniqueCoworkers}</p>
+                        <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
+                        <p className="text-xs text-muted-foreground">Rank: {currentStats.coworkerRank}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
 
-            {showSearchBar && (
-              <div className="mb-4">
-                <Input
-                  type="text"
-                  placeholder="Search session notes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full"
-                  onFocus={(e) => e.target.select()}
-                />
+            {/* Session List */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-xl font-semibold text-foreground">Sessions</h2>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setShowSearchBar(!showSearchBar)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  {showSearchBar ? <X size={20} /> : <Search size={20} />}
+                </Button>
               </div>
-            )}
-            
-            {filteredSessions.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No sessions found matching your search.</p>
-            ) : (
-              filteredSessions.map((session) => {
-                const isSearchMatch = searchQuery && (
-                  session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  session.notes.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-                const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch; // Convert id to string
 
-                return (
-                  <Card key={session.id} onClick={() => handleCardClick(session.id.toString())} className="cursor-pointer relative"> {/* Added relative positioning */}
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">{session.title}</CardTitle>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-                            <div className="flex items-center gap-1">
-                              <Calendar size={14} />
-                              {formatDate(session.date)}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock size={14} />
-                              {session.duration}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Users size={14} />
-                              {session.participants} Coworker{session.participants !== 1 ? 's' : ''}
+              {showSearchBar && (
+                <div className="mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Search session notes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full"
+                    onFocus={(e) => e.target.select()}
+                  />
+                </div>
+              )}
+              
+              {filteredSessions.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No sessions found matching your search.</p>
+              ) : (
+                filteredSessions.map((session) => {
+                  const isSearchMatch = searchQuery && (
+                    session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    session.notes.toLowerCase().includes(searchQuery.toLowerCase())
+                  );
+                  const isExpanded = expandedSessions.has(session.id.toString()) || isSearchMatch; // Convert id to string
+
+                  return (
+                    <Card key={session.id} onClick={() => handleCardClick(session.id.toString())} className="cursor-pointer relative"> {/* Added relative positioning */}
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg">{session.title}</CardTitle>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                              <div className="flex items-center gap-1">
+                                <Calendar size={14} />
+                                {formatDate(session.date)}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock size={14} />
+                                {session.duration}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Users size={14} />
+                                {session.participants} Coworker{session.participants !== 1 ? 's' : ''}
+                              </div>
                             </div>
                           </div>
+                          {session.notes && (
+                            <FileText size={16} className="text-muted-foreground flex-shrink-0 mt-1" />
+                          )}
                         </div>
-                        {session.notes && (
-                          <FileText size={16} className="text-muted-foreground flex-shrink-0 mt-1" />
-                        )}
-                      </div>
-                    </CardHeader>
-                    
-                    {session.notes && isExpanded && ( // Conditionally render CardContent
-                      <CardContent>
-                        <div className="flex items-start gap-2">
-                          <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-muted-foreground">
-                            {highlightText(session.notes, searchQuery)}
-                          </p>
-                        </div>
-                      </CardContent>
-                    )}
+                      </CardHeader>
+                      
+                      {session.notes && isExpanded && ( // Conditionally render CardContent
+                        <CardContent>
+                          <div className="flex items-start gap-2">
+                            <FileText size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-muted-foreground">
+                              {highlightText(session.notes, searchQuery)}
+                            </p>
+                          </div>
+                        </CardContent>
+                      )}
 
-                    {/* Delete Icon (X) */}
-                    {showDeleteIconForSessionId === session.id.toString() && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive"
-                        onMouseDown={(e) => handleDeleteLongPressStart(session.id.toString())}
-                        onMouseUp={handleDeleteLongPressEnd}
-                        onMouseLeave={handleDeleteLongPressEnd}
-                        onTouchStart={(e) => handleDeleteLongPressStart(session.id.toString())}
-                        onTouchEnd={handleDeleteLongPressEnd}
-                        onClick={(e) => handleDeleteClick(e, session.id.toString())}
-                        aria-label="Delete session"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </Card>
-                );
-              })
-            )}
+                      {/* Delete Icon (X) */}
+                      {showDeleteIconForSessionId === session.id.toString() && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive"
+                          onMouseDown={(e) => handleDeleteLongPressStart(session.id.toString())}
+                          onMouseUp={handleDeleteLongPressEnd}
+                          onMouseLeave={handleDeleteLongPressEnd}
+                          onTouchStart={(e) => handleDeleteLongPressStart(session.id.toString())}
+                          onTouchEnd={handleDeleteLongPressEnd}
+                          onClick={(e) => handleDeleteClick(e, session.id.toString())}
+                          aria-label="Delete session"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </Card>
+                  );
+                })
+              )}
+            </div>
           </div>
-        </div>
-        {/* Export link at the bottom */}
-        <div className="mt-8 text-center">
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <p className="text-sm text-muted-foreground hover:underline cursor-default">
-                  Export
-                </p>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Activates after <Link to="/chip-in" className="text-blue-500 hover:underline">donation</Link></p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </main>
+          {/* Export link at the bottom */}
+          <div className="mt-8 text-center">
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-sm text-muted-foreground hover:underline cursor-default">
+                    Export
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Activates after <Link to="/chip-in" className="text-blue-500 hover:underline">donation</Link></p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </main>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your session from your history.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteSession}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </main>
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your session from your history.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteSession}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+    </> // Closed React.Fragment here
   );
 };
 
