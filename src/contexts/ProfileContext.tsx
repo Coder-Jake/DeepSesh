@@ -85,7 +85,7 @@ const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
 };
 
 
-// Initial data for sessions
+// Initial data for sessions (now includes polls property for consistency)
 const initialSessions: SessionHistory[] = [
   {
     id: 1,
@@ -94,7 +94,8 @@ const initialSessions: SessionHistory[] = [
     duration: "45 mins",
     participants: 3,
     type: "focus",
-    notes: "Great session focusing on project documentation. Made significant progress on the API specs."
+    notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
+    polls: []
   },
   {
     id: 2,
@@ -103,7 +104,8 @@ const initialSessions: SessionHistory[] = [
     duration: "90 mins",
     participants: 5,
     type: "focus",
-    notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive."
+    notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive.",
+    polls: []
   },
   {
     id: 3,
@@ -112,7 +114,8 @@ const initialSessions: SessionHistory[] = [
     duration: "30 mins",
     participants: 1,
     type: "focus",
-    notes: "Quick focused session to review quarterly goals and plan next steps."
+    notes: "Quick focused session to review quarterly goals and plan next steps.",
+    polls: []
   },
   {
     id: 4,
@@ -121,7 +124,8 @@ const initialSessions: SessionHistory[] = [
     duration: "120 mins",
     participants: 2,
     type: "focus",
-    notes: "Pair programming session working on the new user interface components. Fixed several bugs."
+    notes: "Pair programming session working on the new user interface components. Fixed several bugs.",
+    polls: []
   },
   {
     id: 5,
@@ -130,7 +134,8 @@ const initialSessions: SessionHistory[] = [
     duration: "60 mins",
     participants: 4,
     type: "focus",
-    notes: "Market research session for the new product launch. Gathered valuable competitive intelligence."
+    notes: "Market research session for the new product launch. Gathered valuable competitive intelligence.",
+    polls: []
   }
 ];
 
@@ -353,6 +358,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       }
+      // Also load local sessions if no user
+      const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
+      if (storedSessions) {
+        setSessions(JSON.parse(storedSessions));
+      } else {
+        setSessions(initialSessions);
+      }
       return;
     }
 
@@ -381,6 +393,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         const newHostCode = generateRandomHostCode();
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+      }
+      // Also load local sessions if Supabase fetch fails
+      const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
+      if (storedSessions) {
+        setSessions(JSON.parse(storedSessions));
+      } else {
+        setSessions(initialSessions);
       }
       return;
     }
@@ -430,6 +449,35 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newProfile.host_code || newHostCode);
         console.log("New profile created in Supabase:", { ...newProfile, first_name: newProfile.first_name || "" });
       }
+    }
+
+    // NEW: Fetch sessions from Supabase for authenticated users
+    const { data: fetchedSessions, error: sessionsError } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('session_start_time', { ascending: false }); // Order by most recent
+
+    if (sessionsError) {
+      console.error("Error fetching sessions:", sessionsError);
+      setError(sessionsError.message);
+      toast.error("Error fetching sessions", {
+        description: sessionsError.message,
+      });
+      setSessions(initialSessions); // Fallback to initial sessions on error
+    } else if (fetchedSessions) {
+      const mappedSessions: SessionHistory[] = fetchedSessions.map(s => ({
+        id: parseInt(s.id), // Assuming ID can be parsed to number for SessionHistory
+        title: s.title,
+        date: s.session_start_time,
+        duration: formatSecondsToDurationString(s.total_session_seconds),
+        participants: s.coworker_count,
+        type: s.focus_duration_seconds > s.break_duration_seconds ? 'focus' : 'break',
+        notes: s.notes || '',
+        polls: s.active_asks ? (s.active_asks as Poll[]) : undefined, // Cast JSONB to Poll[]
+      }));
+      setSessions(mappedSessions);
+      console.log("Sessions fetched from Supabase:", mappedSessions);
     }
     setLoading(false);
   };
@@ -513,6 +561,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
       setSessions(prevSessions => {
         const updatedSessions = [newSession, ...prevSessions];
+        localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions)); // Save to local storage
         console.log("ProfileContext: Sessions updated locally:", updatedSessions); // ADDED LOG
         return updatedSessions;
       });
@@ -590,8 +639,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       toast.success("Session saved!", {
         description: "Your session has been successfully recorded.",
       });
-      // Optionally, update local sessions state if needed for immediate display
-      // For now, we'll just log and toast.
+      // After saving to Supabase, refetch sessions to update the history list
+      await fetchProfile(); 
     }
     setLoading(false);
   };
@@ -604,7 +653,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
     if (!user) {
       // User not authenticated, delete locally
-      setSessions(prevSessions => prevSessions.filter(session => session.id.toString() !== sessionId));
+      setSessions(prevSessions => {
+        const updatedSessions = prevSessions.filter(session => session.id.toString() !== sessionId);
+        localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions)); // Save to local storage
+        return updatedSessions;
+      });
       // Recalculate stats for local deletion (simplified for demo)
       // This would be more complex in a real app to accurately subtract deleted session's impact
       setStatsData(initialStatsData); // Reset to initial for simplicity in demo
@@ -625,11 +678,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         description: deleteError.message,
       });
     } else {
-      // If successful, update local state
+      // If successful, update local state and refetch
       setSessions(prevSessions => prevSessions.filter(session => session.id.toString() !== sessionId));
       // Recalculate stats after deletion (simplified for demo)
       setStatsData(initialStatsData); // Reset to initial for simplicity in demo
       console.log("Session deleted from Supabase:", sessionId);
+      await fetchProfile(); // Refetch to ensure history is up-to-date
     }
     setLoading(false);
   }, [toast]);
@@ -642,7 +696,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       const data = JSON.parse(storedData);
       setProfile(data.profile ?? null);
       console.log("Profile loaded from local storage:", data.profile?.first_name);
-      setSessions(data.sessions ?? initialSessions);
+      // Sessions are now fetched by fetchProfile, so remove from here
       setStatsData(data.statsData ?? initialStatsData);
       setHistoryTimePeriod(data.historyTimePeriod ?? 'week');
       setLeaderboardFocusTimePeriod(data.leaderboardFocusTimePeriod ?? 'week');
@@ -660,11 +714,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setBlockedUsers(JSON.parse(storedBlockedUsers));
     }
     
-    fetchProfile(); // Always try to fetch the latest profile from Supabase
+    fetchProfile(); // Always try to fetch the latest profile and sessions from Supabase
     
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        fetchProfile();
+        fetchProfile(); // Refetch profile and sessions on login
       } else {
         setProfile(null);
         // When logging out, ensure hostCode is loaded from local storage or generated
@@ -675,6 +729,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           const newHostCode = generateRandomHostCode();
           setHostCode(newHostCode);
           localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+        }
+        // Also load local sessions when logging out
+        const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
+        if (storedSessions) {
+          setSessions(JSON.parse(storedSessions));
+        } else {
+          setSessions(initialSessions);
         }
       }
     });
@@ -688,7 +749,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   useEffect(() => {
     const dataToSave = {
       profile,
-      sessions,
+      // Sessions are now managed separately in local storage
       statsData,
       historyTimePeriod,
       leaderboardFocusTimePeriod,
@@ -697,7 +758,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
     console.log("Profile saved to local storage:", profile?.first_name);
   }, [
-    profile, sessions, statsData,
+    profile, statsData,
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
   ]);
 
@@ -751,3 +812,5 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 };
+
+const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions'; // NEW: Local storage key for sessions
