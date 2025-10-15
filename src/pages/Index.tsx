@@ -763,6 +763,7 @@ const Index = () => {
 
     let currentPoll = currentAsk as Poll;
 
+    // Handle custom response logic first, potentially adding a new option
     if (customOptionText && customOptionText.trim()) {
       const existingCustomOption = currentPoll.options.find(
         opt => opt.text.toLowerCase() === customOptionText.toLowerCase() && opt.id.startsWith('custom-')
@@ -775,30 +776,30 @@ const Index = () => {
           votes: [],
         };
         currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
+        // Add the new custom option's ID to optionIds to ensure it's voted for
         optionIds = [...optionIds, newCustomOption.id];
       } else {
-        optionIds = [...optionIds, existingCustomOption.id];
+        // If custom option already exists, ensure its ID is in optionIds
+        if (!optionIds.includes(existingCustomOption.id)) {
+          optionIds = [...optionIds, existingCustomOption.id];
+        }
       }
     }
 
     const updatedOptions = currentPoll.options.map(option => {
-      if (currentPoll.type === 'choice' || currentPoll.type === 'closed') {
-        option.votes = option.votes.filter(v => v.userId === currentUserId); // Filter out current user's previous vote
-      }
+      let newVotes = option.votes.filter(v => v.userId !== currentUserId); // Always remove current user's existing vote first
 
       if (optionIds.includes(option.id)) {
-        if (!option.votes.some(v => v.userId === currentUserId)) {
-          return { ...option, votes: [...option.votes, { userId: currentUserId }] };
-        }
-      } else {
-        if (currentPoll.type === 'selection') {
-          return { ...option, votes: option.votes.filter(v => v.userId !== currentUserId) };
-        }
+        // If this option is among the newly selected ones, add the vote back
+        newVotes.push({ userId: currentUserId });
       }
-      return option;
+      // For single-choice polls (closed/choice), if optionIds is empty, this effectively unvotes all.
+      // For multi-choice (selection), if optionIds doesn't include this option, it remains unvoted.
+
+      return { ...option, votes: newVotes };
     });
     
-    updateAsk({ ...currentPoll, options: updatedOptions }); // Use context function
+    updateAsk({ ...currentPoll, options: updatedOptions });
   };
 
   // Callback for when the schedule countdown ends in Timeline
