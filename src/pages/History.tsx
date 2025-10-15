@@ -152,7 +152,7 @@ const History = () => {
                           </div>
                         </div>
                       </div>
-                      <Badge variant="secondary">{session.type}</Badge>
+                      {/* Removed Badge variant="secondary">{session.type}</Badge> */}
                     </div>
                   </CardHeader>
                   
