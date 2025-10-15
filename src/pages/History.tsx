@@ -104,7 +104,7 @@ const History = () => {
           {/* Session List */}
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-xl font-semibold text-foreground">Recent Sessions</h2>
+              <h2 className="text-xl font-semibold text-foreground">Sessions</h2>
               <Button 
                 variant="ghost" 
                 size="icon" 
