@@ -266,7 +266,8 @@ const History = () => {
                             <p className="text-sm text-muted-foreground">
                               {highlightText(session.notes, searchQuery)}
                             </p>
-                          </CardContent>
+                          </div>
+                        </CardContent>
                       )}
 
                       {/* FileText Icon (bottom right) */}
