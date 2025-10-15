@@ -377,13 +377,24 @@ const History = () => {
                         </CardContent>
                       )}
 
-                      {/* FileText Icon (bottom right) */}
-                      {session.notes && !isExpanded && (
-                        <FileText 
-                          size={16} 
-                          className="absolute bottom-2 right-2 text-muted-foreground" 
-                          aria-label="Session has notes"
-                        />
+                      {/* Icons (bottom right) */}
+                      {!isExpanded && (session.notes || (session.asks && session.asks.length > 0)) && (
+                        <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                          {session.notes && (
+                            <FileText 
+                              size={16} 
+                              className="text-muted-foreground" 
+                              aria-label="Session has notes"
+                            />
+                          )}
+                          {session.asks && session.asks.length > 0 && (
+                            <MessageSquarePlus 
+                              size={16} 
+                              className="text-muted-foreground" 
+                              aria-label="Session has asks"
+                            />
+                          )}
+                        </div>
                       )}
 
                       {/* Delete Icon (X) */}
