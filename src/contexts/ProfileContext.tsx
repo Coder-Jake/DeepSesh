@@ -12,7 +12,7 @@ export type TimePeriod = 'week' | 'month' | 'all'; // Define TimePeriod type
 
 // New types for session history and stats data
 export interface SessionHistory {
-  id: number;
+  id: string; // Changed from number to string
   title: string;
   date: string;
   duration: string;
@@ -88,9 +88,9 @@ const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
 // Initial data for sessions (now includes polls property for consistency)
 const initialSessions: SessionHistory[] = [
   {
-    id: 1,
+    id: crypto.randomUUID(),
     title: "Deep Work Sprint",
-    date: "2025-09-15",
+    date: new Date("2225-09-15T09:00:00Z").toISOString(),
     duration: "45 mins",
     participants: 3,
     type: "focus",
@@ -98,9 +98,9 @@ const initialSessions: SessionHistory[] = [
     polls: []
   },
   {
-    id: 2,
+    id: crypto.randomUUID(),
     title: "Study Group Alpha",
-    date: "2025-09-14",
+    date: new Date("2225-09-14T10:30:00Z").toISOString(),
     duration: "90 mins",
     participants: 5,
     type: "focus",
@@ -108,9 +108,9 @@ const initialSessions: SessionHistory[] = [
     polls: []
   },
   {
-    id: 3,
+    id: crypto.randomUUID(),
     title: "Solo Focus",
-    date: "2025-09-13",
+    date: new Date("2225-09-13T14:00:00Z").toISOString(),
     duration: "30 mins",
     participants: 1,
     type: "focus",
@@ -118,9 +118,9 @@ const initialSessions: SessionHistory[] = [
     polls: []
   },
   {
-    id: 4,
+    id: crypto.randomUUID(),
     title: "Coding Session",
-    date: "2025-09-12",
+    date: new Date("2225-09-12T11:00:00Z").toISOString(),
     duration: "120 mins",
     participants: 2,
     type: "focus",
@@ -128,9 +128,9 @@ const initialSessions: SessionHistory[] = [
     polls: []
   },
   {
-    id: 5,
+    id: crypto.randomUUID(),
     title: "Research Deep Dive",
-    date: "2025-09-11",
+    date: new Date("2225-09-11T16:00:00Z").toISOString(),
     duration: "60 mins",
     participants: 4,
     type: "focus",
@@ -254,6 +254,7 @@ const LOCAL_STORAGE_KEY = 'deepsesh_profile_data'; // New local storage key for 
 const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name'; // New local storage key for local first name
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users'; // NEW: Local storage key for blocked users
 const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code'; // NEW: Local storage key for host code
+const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions'; // NEW: Local storage key for sessions
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -346,6 +347,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
+    let localSessions: SessionHistory[] = [];
+    const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
+    if (storedSessions) {
+      localSessions = JSON.parse(storedSessions);
+    }
+
     if (!user) {
       setProfile(null);
       setLoading(false);
@@ -358,13 +365,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       }
-      // Also load local sessions if no user
-      const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
-      if (storedSessions) {
-        setSessions(JSON.parse(storedSessions));
-      } else {
-        setSessions(initialSessions);
-      }
+      setSessions(localSessions.length > 0 ? localSessions : initialSessions); // Use local or initial
       return;
     }
 
@@ -394,13 +395,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       }
-      // Also load local sessions if Supabase fetch fails
-      const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
-      if (storedSessions) {
-        setSessions(JSON.parse(storedSessions));
-      } else {
-        setSessions(initialSessions);
-      }
+      setSessions(localSessions.length > 0 ? localSessions : initialSessions); // Fallback to local or initial
       return;
     }
 
@@ -451,12 +446,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       }
     }
 
-    // NEW: Fetch sessions from Supabase for authenticated users
-    const { data: fetchedSessions, error: sessionsError } = await supabase
+    // NEW: Fetch sessions from Supabase for authenticated users, excluding notes and active_asks
+    const { data: fetchedSupabaseSessions, error: sessionsError } = await supabase
       .from('sessions')
-      .select('*')
+      .select('id, title, break_duration_seconds, coworker_count, created_at, focus_duration_seconds, session_end_time, session_start_time, total_session_seconds, user_id') // Explicitly select columns
       .eq('user_id', user.id)
-      .order('session_start_time', { ascending: false }); // Order by most recent
+      .order('session_start_time', { ascending: false });
 
     if (sessionsError) {
       console.error("Error fetching sessions:", sessionsError);
@@ -464,20 +459,56 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       toast.error("Error fetching sessions", {
         description: sessionsError.message,
       });
-      setSessions(initialSessions); // Fallback to initial sessions on error
-    } else if (fetchedSessions) {
-      const mappedSessions: SessionHistory[] = fetchedSessions.map(s => ({
-        id: parseInt(s.id), // Assuming ID can be parsed to number for SessionHistory
-        title: s.title,
-        date: s.session_start_time,
-        duration: formatSecondsToDurationString(s.total_session_seconds),
-        participants: s.coworker_count,
-        type: s.focus_duration_seconds > s.break_duration_seconds ? 'focus' : 'break',
-        notes: s.notes || '',
-        polls: s.active_asks ? (s.active_asks as Poll[]) : undefined, // Cast JSONB to Poll[]
-      }));
-      setSessions(mappedSessions);
-      console.log("Sessions fetched from Supabase:", mappedSessions);
+      setSessions(localSessions.length > 0 ? localSessions : initialSessions); // Fallback to local or initial
+    } else if (fetchedSupabaseSessions) {
+      const supabaseSessionsMap = new Map<string, Tables<'public', 'sessions'>>();
+      fetchedSupabaseSessions.forEach(s => supabaseSessionsMap.set(s.id, s));
+
+      const mergedSessions: SessionHistory[] = [];
+      const processedSupabaseIds = new Set<string>();
+
+      // 1. Add local sessions, merging with Supabase data if available
+      localSessions.forEach(localSesh => {
+        const supabaseSesh = supabaseSessionsMap.get(localSesh.id);
+        if (supabaseSesh) {
+          // Merge: use Supabase core data, but local notes/polls
+          mergedSessions.push({
+            id: supabaseSesh.id,
+            title: supabaseSesh.title,
+            date: supabaseSesh.session_start_time,
+            duration: formatSecondsToDurationString(supabaseSesh.total_session_seconds),
+            participants: supabaseSesh.coworker_count,
+            type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
+            notes: localSesh.notes, // Use local notes
+            polls: localSesh.polls, // Use local polls
+          });
+          processedSupabaseIds.add(supabaseSesh.id);
+        } else {
+          // Purely local session (not in Supabase)
+          mergedSessions.push(localSesh);
+        }
+      });
+
+      // 2. Add Supabase sessions that were not in local storage
+      fetchedSupabaseSessions.forEach(supabaseSesh => {
+        if (!processedSupabaseIds.has(supabaseSesh.id)) {
+          mergedSessions.push({
+            id: supabaseSesh.id,
+            title: supabaseSesh.title,
+            date: supabaseSesh.session_start_time,
+            duration: formatSecondsToDurationString(supabaseSesh.total_session_seconds),
+            participants: supabaseSesh.coworker_count,
+            type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
+            notes: '', // No notes from Supabase
+            polls: undefined, // No polls from Supabase
+          });
+        }
+      });
+
+      // Sort the merged sessions by date (most recent first)
+      mergedSessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setSessions(mergedSessions);
+      console.log("Sessions fetched and merged:", mergedSessions);
     }
     setLoading(false);
   };
@@ -539,151 +570,139 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Ensure activeAsks is an array, even if undefined was passed
     const currentActiveAsks = activeAsks ?? [];
     const pollsToSave = currentActiveAsks.filter((ask): ask is Poll => 'question' in ask);
 
-    if (!user) {
-      // User not authenticated, save locally
-      const newSessionDate = new Date(sessionStartTime);
-      const today = new Date(); // Get current date for comparison
+    const newSessionDate = new Date(sessionStartTime);
+    const newSession: SessionHistory = {
+      id: crypto.randomUUID(), // Generate a UUID for local session ID
+      title: seshTitle,
+      date: newSessionDate.toISOString(), // Store full ISO string for better date handling
+      duration: formatSecondsToDurationString(totalSessionSeconds),
+      participants: activeJoinedSessionCoworkerCount,
+      type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break',
+      notes: notes,
+      polls: pollsToSave.length > 0 ? pollsToSave : undefined,
+    };
 
-      const newSession: SessionHistory = {
-        id: Date.now(), // Unique ID for local session
-        title: seshTitle,
-        date: newSessionDate.toISOString().split('T')[0], // YYYY-MM-DD format
-        duration: formatSecondsToDurationString(totalSessionSeconds),
-        participants: activeJoinedSessionCoworkerCount,
-        type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break', // Determine type based on focus time
-        notes: notes,
-        polls: pollsToSave.length > 0 ? pollsToSave : undefined, // Store polls
+    // Always update local storage first with the full session data (including notes/polls)
+    setSessions(prevSessions => {
+      const updatedSessions = [newSession, ...prevSessions];
+      localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions));
+      return updatedSessions;
+    });
+
+    // Update local stats data for 'week', 'month', and 'all' time
+    setStatsData(prevStats => {
+      const updatedStats = { ...prevStats };
+
+      // Helper to update a specific period's stats
+      const updatePeriodStats = (period: TimePeriod) => {
+        const currentPeriodStats = updatedStats[period];
+        const updatedTotalFocusSeconds = parseDurationStringToSeconds(currentPeriodStats.totalFocusTime) + finalAccumulatedFocusSeconds;
+        const updatedUniqueCoworkers = currentPeriodStats.uniqueCoworkers + activeJoinedSessionCoworkerCount; // Simple addition for demo
+
+        updatedStats[period] = {
+          ...currentPeriodStats,
+          totalFocusTime: formatSecondsToDurationString(updatedTotalFocusSeconds),
+          sessionsCompleted: currentPeriodStats.sessionsCompleted + 1,
+          uniqueCoworkers: updatedUniqueCoworkers,
+          // Ranks are static in demo, so they are not updated here
+        };
       };
 
-      setSessions(prevSessions => {
-        const updatedSessions = [newSession, ...prevSessions];
-        localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions)); // Save to local storage
-        console.log("ProfileContext: Sessions updated locally:", updatedSessions); // ADDED LOG
-        return updatedSessions;
-      });
+      // Update 'all' time stats
+      updatePeriodStats('all');
 
-      // Update local stats data for 'week', 'month', and 'all' time
-      setStatsData(prevStats => {
-        const updatedStats = { ...prevStats };
+      // Update 'week' stats if session is in current week
+      if (isDateInCurrentWeek(newSessionDate, new Date())) { // Pass a new Date object for comparison
+        updatePeriodStats('week');
+      }
 
-        // Helper to update a specific period's stats
-        const updatePeriodStats = (period: TimePeriod) => {
-          const currentPeriodStats = updatedStats[period];
-          const updatedTotalFocusSeconds = parseDurationStringToSeconds(currentPeriodStats.totalFocusTime) + finalAccumulatedFocusSeconds;
-          const updatedUniqueCoworkers = currentPeriodStats.uniqueCoworkers + activeJoinedSessionCoworkerCount; // Simple addition for demo
+      // Update 'month' stats if session is in current month
+      if (isDateInCurrentMonth(newSessionDate, new Date())) { // Pass a new Date object for comparison
+        updatePeriodStats('month');
+      }
 
-          updatedStats[period] = {
-            ...currentPeriodStats,
-            totalFocusTime: formatSecondsToDurationString(updatedTotalFocusSeconds),
-            sessionsCompleted: currentPeriodStats.sessionsCompleted + 1,
-            uniqueCoworkers: updatedUniqueCoworkers,
-            // Ranks are static in demo, so they are not updated here
-          };
-        };
+      return updatedStats;
+    });
 
-        // Update 'all' time stats
-        updatePeriodStats('all');
-
-        // Update 'week' stats if session is in current week
-        if (isDateInCurrentWeek(newSessionDate, new Date())) { // Pass a new Date object for comparison
-          updatePeriodStats('week');
-        }
-
-        // Update 'month' stats if session is in current month
-        if (isDateInCurrentMonth(newSessionDate, new Date())) { // Pass a new Date object for comparison
-          updatePeriodStats('month');
-        }
-
-        return updatedStats;
-      });
-
+    if (!user) {
+      // User not authenticated, local save is complete
       toast.success("Session saved locally!", {
         description: "Your session has been recorded in this browser.",
       });
       setLoading(false);
-      return; // Exit function after local save
+      return;
     }
 
-    // If user is authenticated, save to Supabase
+    // If user is authenticated, save core session data to Supabase (excluding notes and active_asks)
     const sessionData: TablesInsert<'public', 'sessions'> = {
+      id: newSession.id, // Use the generated UUID as Supabase ID
       user_id: user.id,
       title: seshTitle,
-      notes: notes,
       focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
       break_duration_seconds: Math.round(finalAccumulatedBreakSeconds),
       total_session_seconds: Math.round(totalSessionSeconds),
       coworker_count: activeJoinedSessionCoworkerCount,
-      session_start_time: new Date(sessionStartTime).toISOString(),
+      session_start_time: newSessionDate.toISOString(),
       session_end_time: new Date().toISOString(),
-      active_asks: pollsToSave.length > 0 ? pollsToSave as unknown as Json : null, // Store polls as JSONB
     };
 
     const { data, error: insertError } = await supabase
       .from('sessions')
       .insert(sessionData)
-      .select()
+      .select('id') // Only need the ID back to confirm insertion
       .single();
 
     if (insertError) {
-      console.error("Error saving session:", insertError);
+      console.error("Error saving session to Supabase:", insertError);
       setError(insertError.message);
       toast.error("Error saving session", {
-        description: insertError.message,
+        description: `Failed to save core session data to cloud. Notes and polls are saved locally. ${insertError.message}`,
       });
     } else if (data) {
-      console.log("Session saved to Supabase:", data);
+      console.log("Core session data saved to Supabase:", data);
       toast.success("Session saved!", {
         description: "Your session has been successfully recorded.",
       });
-      // After saving to Supabase, refetch sessions to update the history list
-      await fetchProfile(); 
     }
     setLoading(false);
   };
 
-  // NEW: Function to delete a session
   const deleteSession = useCallback(async (sessionId: string) => {
     setLoading(true);
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Always update local storage first
+    setSessions(prevSessions => {
+      const updatedSessions = prevSessions.filter(session => session.id !== sessionId);
+      localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions));
+      return updatedSessions;
+    });
+    // Recalculate stats for local deletion (simplified for demo)
+    setStatsData(initialStatsData); // Reset to initial for simplicity in demo
+
     if (!user) {
-      // User not authenticated, delete locally
-      setSessions(prevSessions => {
-        const updatedSessions = prevSessions.filter(session => session.id.toString() !== sessionId);
-        localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions)); // Save to local storage
-        return updatedSessions;
-      });
-      // Recalculate stats for local deletion (simplified for demo)
-      // This would be more complex in a real app to accurately subtract deleted session's impact
-      setStatsData(initialStatsData); // Reset to initial for simplicity in demo
       setLoading(false);
-      return;
+      return; // Exit if not authenticated, local delete is done
     }
 
     // If user is authenticated, delete from Supabase
     const { error: deleteError } = await supabase
       .from('sessions')
       .delete()
-      .eq('id', sessionId); // Assuming session.id is the primary key in Supabase
+      .eq('id', sessionId);
 
     if (deleteError) {
-      console.error("Error deleting session:", deleteError);
+      console.error("Error deleting session from Supabase:", deleteError);
       setError(deleteError.message);
       toast.error("Error deleting session", {
-        description: deleteError.message,
+        description: `Failed to delete core session data from cloud. Local data removed. ${deleteError.message}`,
       });
     } else {
-      // If successful, update local state and refetch
-      setSessions(prevSessions => prevSessions.filter(session => session.id.toString() !== sessionId));
-      // Recalculate stats after deletion (simplified for demo)
-      setStatsData(initialStatsData); // Reset to initial for simplicity in demo
-      console.log("Session deleted from Supabase:", sessionId);
-      await fetchProfile(); // Refetch to ensure history is up-to-date
+      console.log("Core session data deleted from Supabase:", sessionId);
     }
     setLoading(false);
   }, [toast]);
@@ -812,5 +831,3 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 };
-
-const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions'; // NEW: Local storage key for sessions
