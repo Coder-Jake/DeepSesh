@@ -27,7 +27,7 @@ const History = () => {
 
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
+  const [expandedSessions, setExpandedSessions] = new Set();
   const [showDeleteIconForSessionId, setShowDeleteIconForSessionId] = useState<string | null>(null); // State to track which session's delete icon is visible
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // State for delete confirmation dialog
   const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null); // State to hold the ID of the session to be deleted
@@ -251,13 +251,14 @@ const History = () => {
                                 <Calendar size={14} />
                                 {formatDate(session.date)}
                               </div>
+                              {/* Swapped order and removed 'Coworker(s)' text */}
+                              <div className="flex items-center gap-1">
+                                <Users size={14} />
+                                {session.participants}
+                              </div>
                               <div className="flex items-center gap-1">
                                 <Clock size={14} />
                                 {session.duration}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Users size={14} />
-                                {session.participants} Coworker{session.participants !== 1 ? 's' : ''}
                               </div>
                             </div>
                           </div>
