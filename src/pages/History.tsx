@@ -256,9 +256,6 @@ const History = () => {
                               </div>
                             </div>
                           </div>
-                          {session.notes && (
-                            <FileText size={16} className="text-muted-foreground flex-shrink-0 mt-1" />
-                          )}
                         </div>
                       </CardHeader>
                       
@@ -269,8 +266,16 @@ const History = () => {
                             <p className="text-sm text-muted-foreground">
                               {highlightText(session.notes, searchQuery)}
                             </p>
-                          </div>
-                        </CardContent>
+                          </CardContent>
+                      )}
+
+                      {/* FileText Icon (bottom right) */}
+                      {session.notes && !isExpanded && (
+                        <FileText 
+                          size={16} 
+                          className="absolute bottom-2 right-2 text-muted-foreground" 
+                          aria-label="Session has notes"
+                        />
                       )}
 
                       {/* Delete Icon (X) */}
@@ -328,7 +333,7 @@ const History = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-    </> // Closed React.Fragment here
+    </>
   );
 };
 
