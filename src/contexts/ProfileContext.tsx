@@ -21,7 +21,7 @@ export interface SessionHistory {
   notes: string;
   asks?: ActiveAskItem[]; // Changed from polls?: Poll[] to asks?: ActiveAskItem[]
   session_start_time: string; // NEW: Added session_start_time
-  session_end_time: string;   // NEW: Added session_end_time
+  session_end_time:   string;   // NEW: Added session_end_time
 }
 
 export interface StatsPeriodData {
@@ -84,6 +84,67 @@ const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
   endOfMonth.setHours(23, 59, 59, 999);
 
   return sessionDate >= startOfMonth && sessionDate <= endOfMonth;
+};
+
+// Function to calculate stats from a list of sessions
+const calculateStats = (allSessions: SessionHistory[]): StatsData => {
+  const today = new Date();
+  const stats: StatsData = {
+    week: { totalFocusTime: "0h 0m", sessionsCompleted: 0, uniqueCoworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+    month: { totalFocusTime: "0h 0m", sessionsCompleted: 0, uniqueCoworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+    all: { totalFocusTime: "0h 0m", sessionsCompleted: 0, uniqueCoworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+  };
+
+  let totalFocusSecondsAll = 0;
+  let totalCoworkersAll = 0;
+  let sessionsCompletedAll = 0;
+
+  let totalFocusSecondsWeek = 0;
+  let totalCoworkersWeek = 0;
+  let sessionsCompletedWeek = 0;
+
+  let totalFocusSecondsMonth = 0;
+  let totalCoworkersMonth = 0;
+  let sessionsCompletedMonth = 0;
+
+  allSessions.forEach(session => {
+    const sessionDate = new Date(session.date);
+    const focusSeconds = session.type === 'focus' ? parseDurationStringToSeconds(session.duration) : 0;
+    const sessionCoworkers = session.participants; // Using the count directly
+
+    // All Time
+    totalFocusSecondsAll += focusSeconds;
+    totalCoworkersAll += sessionCoworkers;
+    sessionsCompletedAll++;
+
+    // Week
+    if (isDateInCurrentWeek(sessionDate, today)) {
+      totalFocusSecondsWeek += focusSeconds;
+      totalCoworkersWeek += sessionCoworkers;
+      sessionsCompletedWeek++;
+    }
+
+    // Month
+    if (isDateInCurrentMonth(sessionDate, today)) {
+      totalFocusSecondsMonth += focusSeconds;
+      totalCoworkersMonth += sessionCoworkers;
+      sessionsCompletedMonth++;
+    }
+  });
+
+  stats.all.totalFocusTime = formatSecondsToDurationString(totalFocusSecondsAll);
+  stats.all.sessionsCompleted = sessionsCompletedAll;
+  stats.all.uniqueCoworkers = totalCoworkersAll;
+
+  stats.week.totalFocusTime = formatSecondsToDurationString(totalFocusSecondsWeek);
+  stats.week.sessionsCompleted = sessionsCompletedWeek;
+  stats.week.uniqueCoworkers = totalCoworkersWeek;
+
+  stats.month.totalFocusTime = formatSecondsToDurationString(totalFocusSecondsMonth);
+  stats.month.sessionsCompleted = sessionsCompletedMonth;
+  stats.month.uniqueCoworkers = totalCoworkersMonth;
+
+  return stats;
 };
 
 
@@ -151,30 +212,6 @@ const initialSessions: SessionHistory[] = [
   }
 ];
 
-// Initial data for stats
-const initialStatsData: StatsData = {
-  week: {
-    totalFocusTime: "22h 0m",
-    sessionsCompleted: 5,
-    uniqueCoworkers: 5,
-    focusRank: "3rd",
-    coworkerRank: "4th",
-  },
-  month: {
-    totalFocusTime: "70h 0m",
-    sessionsCompleted: 22,
-    uniqueCoworkers: 18,
-    focusRank: "5th",
-    coworkerRank: "3rd",
-  },
-  all: {
-    totalFocusTime: "380h 0m",
-    sessionsCompleted: 80,
-    uniqueCoworkers: 65,
-    focusRank: "4th",
-    coworkerRank: "5th",
-  },
-};
 
 // Lists for random host code generation (moved from Profile.tsx)
 const colors = [
@@ -211,8 +248,7 @@ interface ProfileContextType {
   // Session history and stats data
   sessions: SessionHistory[];
   setSessions: React.Dispatch<React.SetStateAction<SessionHistory[]>>;
-  statsData: StatsData;
-  setStatsData: React.Dispatch<React.SetStateAction<StatsData>>;
+  statsData: StatsData; // Now derived from sessions
 
   // Persistent states for History and Leaderboard time filters
   historyTimePeriod: TimePeriod;
@@ -274,9 +310,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [error, setError] = useState<string | null>(null);
   const [localFirstName, setLocalFirstName] = useState("You"); // New state for local first name
 
-  // Session history and stats data states
+  // Session history data states
   const [sessions, setSessions] = useState<SessionHistory[]>(initialSessions);
-  const [statsData, setStatsData] = useState<StatsData>(initialStatsData);
+  
+  // Stats data is now derived from sessions
+  const statsData = useMemo(() => calculateStats(sessions), [sessions]);
 
   // Persistent states for History and Leaderboard time filters
   const [historyTimePeriod, setHistoryTimePeriod] = useState<TimePeriod>('week');
@@ -617,41 +655,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       return updatedSessions;
     });
 
-    // Update local stats data for 'week', 'month', and 'all' time
-    setStatsData(prevStats => {
-      const updatedStats = { ...prevStats };
-
-      // Helper to update a specific period's stats
-      const updatePeriodStats = (period: TimePeriod) => {
-        const currentPeriodStats = updatedStats[period];
-        const updatedTotalFocusSeconds = parseDurationStringToSeconds(currentPeriodStats.totalFocusTime) + finalAccumulatedFocusSeconds;
-        const updatedUniqueCoworkers = currentPeriodStats.uniqueCoworkers + activeJoinedSessionCoworkerCount; // Simple addition for demo
-
-        updatedStats[period] = {
-          ...currentPeriodStats,
-          totalFocusTime: formatSecondsToDurationString(updatedTotalFocusSeconds),
-          sessionsCompleted: currentPeriodStats.sessionsCompleted + 1,
-          uniqueCoworkers: updatedUniqueCoworkers,
-          // Ranks are static in demo, so they are not updated here
-        };
-      };
-
-      // Update 'all' time stats
-      updatePeriodStats('all');
-
-      // Update 'week' stats if session is in current week
-      if (isDateInCurrentWeek(newSessionDate, new Date())) { // Pass a new Date object for comparison
-        updatePeriodStats('week');
-      }
-
-      // Update 'month' stats if session is in current month
-      if (isDateInCurrentMonth(newSessionDate, new Date())) { // Pass a new Date object for comparison
-        updatePeriodStats('month');
-      }
-
-      return updatedStats;
-    });
-
     if (!user) {
       // User not authenticated, local save is complete
       toast.success("Session saved locally!", {
@@ -708,8 +711,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions));
       return updatedSessions;
     });
-    // Recalculate stats for local deletion (simplified for demo)
-    setStatsData(initialStatsData); // Reset to initial for simplicity in demo
 
     if (!user) {
       setLoading(false);
@@ -743,7 +744,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setProfile(data.profile ?? null);
       console.log("Profile loaded from local storage:", data.profile?.first_name);
       // Sessions are now fetched by fetchProfile, so remove from here
-      setStatsData(data.statsData ?? initialStatsData);
+      // setStatsData(data.statsData ?? initialStatsData); // REMOVED: statsData is now derived
       setHistoryTimePeriod(data.historyTimePeriod ?? 'week');
       setLeaderboardFocusTimePeriod(data.leaderboardFocusTimePeriod ?? 'week');
       setLeaderboardCollaborationTimePeriod(data.leaderboardCollaborationTimePeriod ?? 'week');
@@ -796,7 +797,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const dataToSave = {
       profile,
       // Sessions are now managed separately in local storage
-      statsData,
+      // statsData, // REMOVED: statsData is now derived
       historyTimePeriod,
       leaderboardFocusTimePeriod,
       leaderboardCollaborationTimePeriod,
@@ -804,7 +805,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
     console.log("Profile saved to local storage:", profile?.first_name);
   }, [
-    profile, statsData,
+    profile, // statsData, // REMOVED
     historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
   ]);
 
@@ -838,8 +839,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLocalFirstName,
     sessions,
     setSessions,
-    statsData,
-    setStatsData,
+    statsData, // Now derived
     historyTimePeriod,
     setHistoryTimePeriod,
     leaderboardFocusTimePeriod,
