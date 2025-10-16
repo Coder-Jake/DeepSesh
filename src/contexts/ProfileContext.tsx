@@ -327,10 +327,8 @@ interface ProfileContextType {
 
   historyTimePeriod: TimePeriod;
   setHistoryTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
-  leaderboardFocusTimePeriod: TimePeriod;
-  setLeaderboardFocusTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
-  leaderboardCollaborationTimePeriod: TimePeriod;
-  setLeaderboardCollaborationTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
+  // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
+  // Leaderboard will now directly use historyTimePeriod
 
   saveSession: (
     seshTitle: string,
@@ -375,7 +373,7 @@ const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
 const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions';
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
-  const { user } = useAuth(); // Get user from AuthContext
+  const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -383,12 +381,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const [sessions, setSessions] = useState<SessionHistory[]>(initialSessions);
   
-  // Pass currentUserId and localFirstName to calculateStats
   const statsData = useMemo(() => calculateStats(sessions, user?.id, localFirstName), [sessions, user?.id, localFirstName]);
 
   const [historyTimePeriod, setHistoryTimePeriod] = useState<TimePeriod>('week');
-  const [leaderboardFocusTimePeriod, setLeaderboardFocusTimePeriod] = useState<TimePeriod>('week');
-  const [leaderboardCollaborationTimePeriod, setLeaderboardCollaborationTimePeriod] = useState<TimePeriod>('week');
+  // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod states
 
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [hostCode, setHostCode] = useState("");
@@ -778,8 +774,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setProfile(data.profile ?? null);
       console.log("Profile loaded from local storage:", data.profile?.first_name);
       setHistoryTimePeriod(data.historyTimePeriod ?? 'week');
-      setLeaderboardFocusTimePeriod(data.leaderboardFocusTimePeriod ?? 'week');
-      setLeaderboardCollaborationTimePeriod(data.leaderboardCollaborationTimePeriod ?? 'week');
+      // Removed loading of leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
     }
 
     const storedLocalFirstName = localStorage.getItem(LOCAL_FIRST_NAME_KEY);
@@ -825,14 +820,14 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const dataToSave = {
       profile,
       historyTimePeriod,
-      leaderboardFocusTimePeriod,
-      leaderboardCollaborationTimePeriod,
+      // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod from dataToSave
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
     console.log("Profile saved to local storage:", profile?.first_name);
   }, [
     profile,
-    historyTimePeriod, leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod,
+    historyTimePeriod,
+    // Removed leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod from dependencies
   ]);
 
   useEffect(() => {
@@ -862,10 +857,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     statsData,
     historyTimePeriod,
     setHistoryTimePeriod,
-    leaderboardFocusTimePeriod,
-    setLeaderboardFocusTimePeriod,
-    leaderboardCollaborationTimePeriod,
-    setLeaderboardCollaborationTimePeriod,
+    // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod from value
     saveSession,
     blockedUsers,
     blockUser,
