@@ -10,10 +10,8 @@ const Leaderboard = () => {
   const { 
     profile, // Get profile from context
     localFirstName, // Get localFirstName from context
-    leaderboardFocusTimePeriod, 
-    setLeaderboardFocusTimePeriod, 
-    leaderboardCollaborationTimePeriod, 
-    setLeaderboardCollaborationTimePeriod,
+    historyTimePeriod, // Use historyTimePeriod from context
+    setHistoryTimePeriod, // Use setHistoryTimePeriod from context
     statsData // Get statsData from ProfileContext
   } = useProfile(); // Use persistent states from context
 
@@ -109,8 +107,8 @@ const Leaderboard = () => {
     return leaderboard.sort((a, b) => b.collaboratedUsers - a.collaboratedUsers);
   };
 
-  const currentFocusHoursLeaderboard = getFocusHoursLeaderboard(leaderboardFocusTimePeriod);
-  const currentCollaboratedUsersLeaderboard = getCollaboratedUsersLeaderboard(leaderboardCollaborationTimePeriod);
+  const currentFocusHoursLeaderboard = getFocusHoursLeaderboard(historyTimePeriod); // Use historyTimePeriod
+  const currentCollaboratedUsersLeaderboard = getCollaboratedUsersLeaderboard(historyTimePeriod); // Use historyTimePeriod
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
@@ -132,7 +130,7 @@ const Leaderboard = () => {
               <Clock className="h-5 w-5" />
               Total Focus Hours
             </CardTitle>
-            <TimeFilterToggle onValueChange={setLeaderboardFocusTimePeriod} defaultValue={leaderboardFocusTimePeriod} />
+            <TimeFilterToggle onValueChange={setHistoryTimePeriod} defaultValue={historyTimePeriod} /> {/* Use historyTimePeriod */}
           </CardHeader>
           <CardContent className="space-y-3">
             {currentFocusHoursLeaderboard.map((user, index) => (
@@ -160,7 +158,7 @@ const Leaderboard = () => {
               <Users className="h-5 w-5" />
               Unique Coworkers
             </CardTitle>
-            <TimeFilterToggle onValueChange={setLeaderboardCollaborationTimePeriod} defaultValue={leaderboardCollaborationTimePeriod} />
+            <TimeFilterToggle onValueChange={setHistoryTimePeriod} defaultValue={historyTimePeriod} /> {/* Use historyTimePeriod */}
           </CardHeader>
           <CardContent className="space-y-3">
             {currentCollaboratedUsersLeaderboard.map((user, index) => (
