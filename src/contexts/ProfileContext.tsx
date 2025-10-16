@@ -49,6 +49,26 @@ const formatSecondsToDurationString = (totalSeconds: number): string => {
   return `${minutes} mins`;
 };
 
+// Helper function to parse "XXh YYm" to total seconds
+const parseDurationStringToSeconds = (durationString: string): number => {
+  const matchHours = durationString.match(/(\d+)h/);
+  const matchMinutes = durationString.match(/(\d+)m/);
+  let totalSeconds = 0;
+
+  if (matchHours) {
+    totalSeconds += parseInt(matchHours[1], 10) * 3600;
+  }
+  if (matchMinutes) {
+    totalSeconds += parseInt(matchMinutes[1], 10) * 60;
+  }
+  // If it's just "X mins" (e.g., "45 mins"), parse it directly
+  const matchMinsOnly = durationString.match(/(\d+)\s*mins/);
+  if (!matchHours && !matchMinutes && matchMinsOnly) {
+    totalSeconds += parseInt(matchMinsOnly[1], 10) * 60;
+  }
+  return totalSeconds;
+};
+
 // Helper function to parse "XXh YYm" to total hours (number) for ranking
 const parseDurationStringToHours = (durationString: string): number => {
   const matchHours = durationString.match(/(\d+)h/);
