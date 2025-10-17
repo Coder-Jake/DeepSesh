@@ -219,7 +219,7 @@ const AppContent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider delayDuration={200}> {/* Adjusted delayDuration */}
+    <TooltipProvider delayDuration={700}> {/* Adjusted delayDuration */}
       <ThemeProvider>
         <AuthProvider>
           <ProfileProvider>
