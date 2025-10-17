@@ -160,7 +160,7 @@ const History = () => {
   }, []);
 
   return (
-    <React.Fragment>
+    <>
       <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
@@ -495,7 +495,7 @@ const History = () => {
           isOpen={isProfileDialogOpen}
           onClose={handleCloseProfileDialog}
         />
-    </React.Fragment>
+    </>
   );
 };
 
