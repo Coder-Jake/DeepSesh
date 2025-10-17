@@ -172,10 +172,11 @@ const ProfilePopUpCard: React.FC = () => {
           <div>
             <h4 
               className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none",
-                labelColors[bioLabelColorIndex]
+                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
+                isCurrentUser && "cursor-pointer select-none", // Only apply cursor and select-none for current user
+                isCurrentUser && labelColors[bioLabelColorIndex] // Only apply dynamic color for current user
               )}
-              onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex)}
+              onClick={isCurrentUser ? () => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex) : undefined} // Only clickable for current user
             >
               <MessageSquare size={16} /> Bio
             </h4>
@@ -187,10 +188,11 @@ const ProfilePopUpCard: React.FC = () => {
           <div>
             <h4 
               className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none",
-                labelColors[intentionLabelColorIndex]
+                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
+                isCurrentUser && "cursor-pointer select-none", // Only apply cursor and select-none for current user
+                isCurrentUser && labelColors[intentionLabelColorIndex] // Only apply dynamic color for current user
               )}
-              onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex)}
+              onClick={isCurrentUser ? () => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex) : undefined} // Only clickable for current user
             >
               <Lightbulb size={16} /> Intention
             </h4>
@@ -226,10 +228,11 @@ const ProfilePopUpCard: React.FC = () => {
           <div>
             <h4 
               className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none",
-                labelColors[linkedinLabelColorIndex]
+                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
+                isCurrentUser && "cursor-pointer select-none", // Only apply cursor and select-none for current user
+                isCurrentUser && labelColors[linkedinLabelColorIndex] // Only apply dynamic color for current user
               )}
-              onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex)}
+              onClick={isCurrentUser ? () => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex) : undefined} // Only clickable for current user
             >
               <Linkedin size={16} /> LinkedIn
             </h4>
