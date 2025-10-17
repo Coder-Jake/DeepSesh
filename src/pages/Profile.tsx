@@ -101,7 +101,7 @@ const Profile = () => {
     const linkedinUsername = fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
                              ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
                              : "";
-    setLinkedinUrl(linkedinUsername); // Initialize LinkedIn URL with just the username
+    setLinkedinUrl(linkedinUsername); // Initialize LinkedIn URL with just the handle
 
     // NEW: Initialize host code from context
     setHostCode(hostCode); // Use the hostCode from context
