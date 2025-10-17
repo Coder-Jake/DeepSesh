@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin } from 'lucide-react';
+import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus } from 'lucide-react'; // NEW: Import UserPlus, UserCheck, UserMinus
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { Profile } from '@/contexts/ProfileContext'; // Import the Profile type
@@ -15,7 +15,8 @@ const ProfilePopUpCard: React.FC = () => {
     profile: currentUserProfile, 
     bioVisibility, setBioVisibility, 
     intentionVisibility, setIntentionVisibility, 
-    linkedinVisibility, setLinkedinVisibility 
+    linkedinVisibility, setLinkedinVisibility,
+    friendStatuses, sendFriendRequest, acceptFriendRequest, removeFriend // NEW: Get friend states and functions
   } = useProfile(); // Get current user's profile and visibility setters
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -183,6 +184,7 @@ const ProfilePopUpCard: React.FC = () => {
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
     const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
+    const currentFriendStatus = friendStatuses[targetProfile.id] || 'none'; // NEW: Get friend status
 
     // Helper to determine if a specific field should be visible
     const isFieldVisible = (fieldVisibility: ('public' | 'friends' | 'organisation' | 'private')[] | null | undefined) => {
@@ -215,6 +217,39 @@ const ProfilePopUpCard: React.FC = () => {
         <div className="flex items-center gap-3">
           <User className="h-6 w-6 text-primary" />
           <h3 className="font-bold text-xl">{displayName}</h3>
+          
+          {/* NEW: Friend Icon */}
+          {!isCurrentUserProfile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "ml-auto h-8 w-8",
+                currentFriendStatus === 'none' && "text-foreground hover:text-primary",
+                currentFriendStatus === 'pending' && "text-gray-500 cursor-default",
+                currentFriendStatus === 'friends' && "text-green-500 hover:text-green-600"
+              )}
+              onClick={() => {
+                if (currentFriendStatus === 'none') {
+                  sendFriendRequest(targetProfile.id);
+                } else if (currentFriendStatus === 'friends') {
+                  removeFriend(targetProfile.id);
+                }
+                // No action for 'pending' state on click
+              }}
+              disabled={currentFriendStatus === 'pending'}
+            >
+              {currentFriendStatus === 'none' && (
+                <UserPlus size={18} />
+              )}
+              {currentFriendStatus === 'pending' && (
+                <UserPlus size={18} className="opacity-50" /> // Greyed out for pending
+              )}
+              {currentFriendStatus === 'friends' && (
+                <UserCheck size={18} />
+              )}
+            </Button>
+          )}
         </div>
 
         {targetProfile.bio && isFieldVisible(targetProfile.bio_visibility) && (

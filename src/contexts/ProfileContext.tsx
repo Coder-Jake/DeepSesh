@@ -531,6 +531,12 @@ interface ProfileContextType {
   setIntentionVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
   linkedinVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
   setLinkedinVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
+
+  // NEW: Friend status states and functions
+  friendStatuses: Record<string, 'none' | 'pending' | 'friends'>;
+  sendFriendRequest: (targetUserId: string) => void;
+  acceptFriendRequest: (targetUserId: string) => void;
+  removeFriend: (targetUserId: string) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -555,6 +561,7 @@ const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions';
 const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility'; // NEW
 const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility'; // NEW
 const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility'; // NEW
+const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses'; // NEW
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user } = useAuth();
@@ -577,6 +584,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
+
+  // NEW: Friend status state
+  const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
 
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
@@ -634,6 +644,28 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
   }, [blockedUsers, toast]);
 
+  // NEW: Mock friend request functions
+  const sendFriendRequest = useCallback((targetUserId: string) => {
+    setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'pending' }));
+    toast.success("Friend request sent!", {
+      description: "They will be notified of your request.",
+    });
+  }, [toast]);
+
+  const acceptFriendRequest = useCallback((targetUserId: string) => {
+    setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'friends' }));
+    toast.success("Friend request accepted!", {
+      description: "You are now friends!",
+    });
+  }, [toast]);
+
+  const removeFriend = useCallback((targetUserId: string) => {
+    setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'none' }));
+    toast.info("Friend removed.", {
+      description: "You are no longer friends.",
+    });
+  }, [toast]);
+
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -653,6 +685,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (storedIntentionVisibility) setIntentionVisibility(JSON.parse(storedIntentionVisibility));
     const storedLinkedinVisibility = localStorage.getItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY);
     if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
+
+    // NEW: Load friend statuses
+    const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
+    if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
 
 
     if (!user) {
@@ -1125,6 +1161,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(linkedinVisibility));
   }, [linkedinVisibility]);
 
+  // NEW: Save friend statuses to local storage
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
+  }, [friendStatuses]);
+
   const value = {
     profile,
     loading,
@@ -1154,6 +1195,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setIntentionVisibility, // NEW
     linkedinVisibility, // NEW
     setLinkedinVisibility, // NEW
+    friendStatuses, // NEW
+    sendFriendRequest, // NEW
+    acceptFriendRequest, // NEW
+    removeFriend, // NEW
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
