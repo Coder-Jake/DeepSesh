@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
-import { useToast } from '@/hooks/use-toast'; // Corrected import
+import { toast } from 'sonner'; // Changed to import toast directly from sonner
 import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
 
 const ChipIn = () => {
-  const { toast } = useToast(); // Corrected usage
+  // Removed: const { toast } = useToast(); // No longer needed as toast is imported directly
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
