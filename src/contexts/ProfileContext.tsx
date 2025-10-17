@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react"; // NEW: Import useRef
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate, Json } from "@/integrations/supabase/types";
 import { toast } from 'sonner';
@@ -587,6 +587,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   // NEW: Friend status state
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
+  const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map()); // NEW: Ref to store timeouts
 
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
@@ -650,6 +651,22 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     toast.success("Friend request sent!", {
       description: "They will be notified of your request.",
     });
+
+    // Automatically accept after 3 seconds for mock profiles
+    const timeoutId = setTimeout(() => {
+      setFriendStatuses(prev => {
+        if (prev[targetUserId] === 'pending') { // Only accept if still pending
+          toast.success(`Friend request from ${targetUserId} accepted!`, { // Assuming targetUserId can be used as a name for mock
+            description: "You are now friends!",
+          });
+          return { ...prev, [targetUserId]: 'friends' };
+        }
+        return prev;
+      });
+      friendRequestTimeouts.current.delete(targetUserId); // Clean up timeout reference
+    }, 3000); // 3 seconds delay
+
+    friendRequestTimeouts.current.set(targetUserId, timeoutId); // Store timeout ID
   }, [toast]);
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
@@ -657,6 +674,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     toast.success("Friend request accepted!", {
       description: "You are now friends!",
     });
+    if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
+      clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
+      friendRequestTimeouts.current.delete(targetUserId);
+    }
   }, [toast]);
 
   const removeFriend = useCallback((targetUserId: string) => {
@@ -664,6 +685,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     toast.info("Friend removed.", {
       description: "You are no longer friends.",
     });
+    if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
+      clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
+      friendRequestTimeouts.current.delete(targetUserId);
+    }
   }, [toast]);
 
 
@@ -1117,6 +1142,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
     return () => {
       authListener.subscription.unsubscribe();
+      // Clean up any pending friend request timeouts on unmount
+      friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
+      friendRequestTimeouts.current.clear();
     };
   }, []);
 
