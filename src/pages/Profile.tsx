@@ -18,17 +18,17 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { Linkedin, Clipboard, Key, Users } from "lucide-react"; // Changed Copy to Clipboard, Added Key, Users
+import { Linkedin, Clipboard, Key, Users, UserMinus } from "lucide-react"; // Changed Copy to Clipboard, Added Key, Users, UserMinus
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from "@/lib/utils"; // Import shared utils
 import { useTimer } from "@/contexts/TimerContext"; // NEW: Import useTimer
-import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
+import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Use ProfilePopUpContext
 
 const Profile = () => {
   const { 
     profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
-    friendStatuses, getPublicProfile // NEW: Get friendStatuses and getPublicProfile
+    friendStatuses, getPublicProfile, removeFriend // NEW: Get friendStatuses, getPublicProfile, and removeFriend
   } = useProfile(); // NEW: Get hostCode and setHostCode from useProfile
   const { user } = useAuth(); // Get user from AuthContext
   const navigate = useNavigate(); // Initialize useNavigate
@@ -78,6 +78,12 @@ const Profile = () => {
   const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
   const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
+
+  // NEW: State and refs for friend long press
+  const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
+  const longPressFriendTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressActiveRef = useRef(false); // To track if a long press was actually registered
+  const LONG_PRESS_FRIEND_DURATION = 700; // milliseconds for friend long press
 
   // Helper to get display name for visibility status
   const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[] | null): string => {
@@ -494,20 +500,65 @@ const Profile = () => {
     setIsEditingHostCode(false);
     setIsCopied(false); // Reset copy status
     setHasChanges(false); // No more unsaved changes
-  }, [originalValues, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
+  }, [originalValues, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setHostCode]);
 
-  // NEW: Handle name click for profile pop-up
-  const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent parent click handlers
-    // Fetch the full profile data for the target user
+  // NEW: Friend long press handlers
+  const handleFriendPressStart = useCallback((friendId: string) => {
+    if (longPressFriendTimerRef.current) {
+      clearTimeout(longPressFriendTimerRef.current);
+    }
+    isLongPressActiveRef.current = false; // Reset for new press
+    longPressFriendTimerRef.current = setTimeout(() => {
+      isLongPressActiveRef.current = true;
+      setLongPressedFriendId(friendId); // Show unfriend icon
+    }, LONG_PRESS_FRIEND_DURATION);
+  }, []);
+
+  const handleFriendPressEnd = useCallback(() => {
+    if (longPressFriendTimerRef.current) {
+      clearTimeout(longPressFriendTimerRef.current);
+      longPressFriendTimerRef.current = null;
+    }
+    // If it was a long press, the icon is visible. It will be hidden by a timeout or unfriend action.
+    // If it was a short press, isLongPressActiveRef.current is false, and nothing happens here.
+  }, []);
+
+  const handleFriendPressLeave = useCallback(() => {
+    if (longPressFriendTimerRef.current) {
+      clearTimeout(longPressFriendTimerRef.current);
+      longPressFriendTimerRef.current = null;
+    }
+    isLongPressActiveRef.current = false; // Reset if interaction leaves
+    // If an icon was shown, it should disappear after a short delay.
+    // This will be handled by a separate timeout or by clicking the icon.
+  }, []);
+
+  // MODIFIED: handleNameClick to prevent pop-up on long press
+  const handleFriendClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
+    if (isLongPressActiveRef.current) {
+      // If a long press was detected, prevent the default click action (profile pop-up)
+      event.stopPropagation();
+      // The long press already set longPressedFriendId, so the icon is visible.
+      // We don't want to open the profile pop-up.
+      return;
+    }
+    // If it was a short press, proceed with opening the profile pop-up
+    event.stopPropagation();
     const targetProfileData = await getPublicProfile(userId, userName);
     if (targetProfileData) {
       openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
     } else {
-      // Fallback if profile data can't be fetched
       openProfilePopUp(userId, userName, event.clientX, event.clientY);
     }
+    setLongPressedFriendId(null); // Hide icon if it was visible from a previous long press
   }, [openProfilePopUp, getPublicProfile]);
+
+  // NEW: handleUnfriendClick
+  const handleUnfriendClick = useCallback(async (friendId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent the parent div's onClick from firing
+    await removeFriend(friendId); // Call the removeFriend function from context
+    setLongPressedFriendId(null); // Hide the icon immediately after unfriend
+  }, [removeFriend]);
 
   // Filter friends from friendStatuses
   const friends = Object.entries(friendStatuses)
@@ -806,9 +857,25 @@ const Profile = () => {
                   <div 
                     key={friendId} 
                     className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80"
-                    onClick={(e) => handleNameClick(friendId, friendId, e)} // Use friendId as both ID and fallback name
+                    onMouseDown={() => handleFriendPressStart(friendId)}
+                    onMouseUp={handleFriendPressEnd}
+                    onMouseLeave={handleFriendPressLeave}
+                    onTouchStart={() => handleFriendPressStart(friendId)}
+                    onTouchEnd={handleFriendPressEnd}
+                    onClick={(e) => handleFriendClick(friendId, friendId, e)} // Use the new handler
                   >
                     <p className="font-medium">{friendId}</p> {/* Display the ID as name for now */}
+                    {longPressedFriendId === friendId && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleUnfriendClick(friendId, e)}
+                        className="text-red-500 hover:text-red-700"
+                        aria-label="Unfriend"
+                      >
+                        <UserMinus size={20} />
+                      </Button>
+                    )}
                   </div>
                 ))
               ) : (
