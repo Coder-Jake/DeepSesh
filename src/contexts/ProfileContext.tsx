@@ -675,23 +675,53 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       description: "They will be notified of your request.",
     });
 
-    const timeoutId = setTimeout(async () => {
-      const targetProfileData = await getPublicProfile(targetUserId, targetUserId);
-      const friendName = targetProfileData?.first_name || targetUserId;
-
-      setFriendStatuses(prev => {
-        if (prev[targetUserId] === 'pending') {
-          toast.success(`Friend request from ${friendName} accepted!`, {
-            description: "You are now friends!",
-          });
-          return { ...prev, [targetUserId]: 'friends' };
-        }
-        return prev;
-      });
+    // Clear any existing timeout for this user before setting a new one
+    if (friendRequestTimeouts.current.has(targetUserId)) {
+      clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
-    }, 3000);
+    }
 
-    friendRequestTimeouts.current.set(targetUserId, timeoutId);
+    const isMockUser = targetUserId.startsWith("mock-user-id-");
+
+    if (isMockUser) {
+      // For mock users, resolve almost synchronously to avoid setTimeout overhead
+      Promise.resolve().then(async () => {
+        const targetProfileData = await getPublicProfile(targetUserId, targetUserId);
+        const friendName = targetProfileData?.first_name || targetUserId;
+
+        setFriendStatuses(prev => {
+          if (prev[targetUserId] === 'pending') {
+            toast.success(`Friend request from ${friendName} accepted!`, {
+              description: "You are now friends!",
+            });
+            return { ...prev, [targetUserId]: 'friends' };
+          }
+          return prev;
+        });
+      });
+    } else {
+      // Original logic for non-mock users
+      const delay = 3000; // Keep original delay for real users
+      console.log(`Sending friend request to ${targetUserId} with delay: ${delay}ms`); // Debug log
+
+      const timeoutId = setTimeout(async () => {
+        const targetProfileData = await getPublicProfile(targetUserId, targetUserId);
+        const friendName = targetProfileData?.first_name || targetUserId;
+
+        setFriendStatuses(prev => {
+          if (prev[targetUserId] === 'pending') {
+            toast.success(`Friend request from ${friendName} accepted!`, {
+              description: "You are now friends!",
+            });
+            return { ...prev, [targetUserId]: 'friends' };
+          }
+          return prev;
+        });
+        friendRequestTimeouts.current.delete(targetUserId);
+      }, delay);
+
+      friendRequestTimeouts.current.set(targetUserId, timeoutId);
+    }
   }, [toast, getPublicProfile]);
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
