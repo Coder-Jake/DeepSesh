@@ -1,6 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { TimerProvider, useTimer } from "@/contexts/TimerContext"; // Import useTimer here
@@ -24,15 +23,30 @@ import Feedback from "./pages/Feedback"; // NEW: Import Feedback page
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile"; // NEW: Import useIsMobile
+import { TooltipProvider } from "@/components/ui/tooltip"; // Keep TooltipProvider for MobileTooltip
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const navigate = useNavigate();
   const { toasts } = useToast();
-  const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
+  const { 
+    setIsShiftPressed, 
+    setTooltip, 
+    hideTooltip, 
+    isShiftPressed,
+    isLongPressActive, // NEW
+    setIsLongPressActive, // NEW
+    longPressTargetRef, // NEW
+    longPressTimerRef, // NEW
+    tooltipContent, // NEW: Needed for updating position on touchMove
+  } = useGlobalTooltip();
   const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
   const lastHoveredElementRef = useRef<HTMLElement | null>(null); // Fixed: Initialized with null
+  const isMobile = useIsMobile(); // NEW: Detect mobile device
+
+  const LONG_PRESS_DURATION = 500; // milliseconds
 
   const getElementName = (element: HTMLElement): string | null => {
     // 1. Prioritize data-name attribute for explicit naming
@@ -180,11 +194,71 @@ const AppContent = () => {
       }
     };
 
+    // NEW: Touch event handlers for long press
+    const handleTouchStart = (event: TouchEvent) => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+      longPressTargetRef.current = event.target as HTMLElement;
+      longPressTimerRef.current = setTimeout(() => {
+        setIsLongPressActive(true);
+        const name = getElementName(longPressTargetRef.current!);
+        if (name) {
+          setTooltip(name, event.touches[0].clientX, event.touches[0].clientY);
+        }
+      }, LONG_PRESS_DURATION);
+    };
+
+    const handleTouchEnd = () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+      if (isLongPressActive) {
+        hideTooltip();
+        setIsLongPressActive(false);
+      }
+      longPressTargetRef.current = null;
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      // If finger moves significantly, cancel long press or hide active tooltip
+      if (longPressTimerRef.current && longPressTargetRef.current) {
+        const touch = event.touches[0];
+        const targetRect = longPressTargetRef.current.getBoundingClientRect();
+        // Define a small tolerance for movement
+        const tolerance = 10; 
+        if (
+          touch.clientX < targetRect.left - tolerance ||
+          touch.clientX > targetRect.right + tolerance ||
+          touch.clientY < targetRect.top - tolerance ||
+          touch.clientY > targetRect.bottom + tolerance
+        ) {
+          clearTimeout(longPressTimerRef.current);
+          longPressTimerRef.current = null;
+          if (isLongPressActive) {
+            hideTooltip();
+            setIsLongPressActive(false);
+          }
+        }
+      } else if (isLongPressActive && tooltipContent) {
+        // If long press is active and tooltip is showing, update its position
+        setTooltip(tooltipContent, event.touches[0].clientX, event.touches[0].clientY);
+      }
+    };
+
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseover', handleMouseOver);
     document.addEventListener('mouseout', handleMouseOut);
+
+    // Conditionally add touch listeners for mobile devices
+    if (isMobile) {
+      document.addEventListener('touchstart', handleTouchStart);
+      document.addEventListener('touchend', handleTouchEnd);
+      document.addEventListener('touchmove', handleTouchMove);
+    }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -192,8 +266,14 @@ const AppContent = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseout', handleMouseOut);
+
+      if (isMobile) {
+        document.removeEventListener('touchstart', handleTouchStart);
+        document.removeEventListener('touchend', handleTouchEnd);
+        document.removeEventListener('touchmove', handleTouchMove);
+      }
     };
-  }, [isShiftPressed, setIsShiftPressed, setTooltip, hideTooltip, navigate]);
+  }, [isShiftPressed, setIsShiftPressed, setTooltip, hideTooltip, navigate, isMobile, isLongPressActive, setIsLongPressActive, longPressTargetRef, longPressTimerRef, tooltipContent]);
 
   return (
     <div className="min-h-screen bg-background">

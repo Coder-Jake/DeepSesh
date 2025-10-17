@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import MobileTooltip from "@/components/MobileTooltip"; // Changed import
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react";
@@ -935,7 +935,7 @@ const Index = () => {
                         </> : <>
                           <Lock size={16} />
                           <span className="text-sm font-medium">Private</span>
-                        </>}
+                        >}
                     </button>
                     
                     {isActiveTimer ? ( // Conditionally render Share Dropdown
@@ -1225,25 +1225,9 @@ const Index = () => {
               </CardHeader>
               <CardContent className="space-y-2">
                 {allParticipantsToDisplayInCard.map(person => (
-                  <Tooltip key={person.id}>
-                    <TooltipTrigger asChild>
-                      <div 
-                        className={cn(
-                          "flex items-center justify-between p-2 rounded-md select-none",
-                          person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" : // Changed bg-primary to bg-[hsl(var(--focus-background))] and text-primary-foreground to text-foreground
-                          person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
-                          "hover:bg-muted cursor-pointer" // Other participants, now clickable
-                        )} 
-                        data-name={`Coworker: ${person.name}`}
-                        onClick={(e) => handleNameClick(person.id, person.name, e)} // NEW: Make clickable
-                      >
-                        <span className="font-medium text-foreground">
-                          {person.id === currentUserId ? "You" : person.name}
-                        </span>
-                        <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none">
+                  <MobileTooltip // Changed to MobileTooltip
+                    key={person.id}
+                    content={ // Content prop
                       <div className="text-center max-w-xs">
                         <p className="font-medium mb-1">
                           {person.id === currentUserId ? "You" : person.name}
@@ -1259,15 +1243,31 @@ const Index = () => {
                           </>
                         )}
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
+                    }
+                  >
+                    <div 
+                      className={cn(
+                        "flex items-center justify-between p-2 rounded-md select-none",
+                        person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" : // Changed bg-primary to bg-[hsl(var(--focus-background))] and text-primary-foreground to text-foreground
+                        person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
+                        "hover:bg-muted cursor-pointer" // Other participants, now clickable
+                      )} 
+                      data-name={`Coworker: ${person.name}`}
+                      onClick={(e) => handleNameClick(person.id, person.name, e)} // NEW: Make clickable
+                    >
+                      <span className="font-medium text-foreground">
+                        {person.id === currentUserId ? "You" : person.name}
+                      </span>
+                      <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
+                    </div>
+                  </MobileTooltip>
                 ))}
               </CardContent>
             </Card>
           )}
 
           {/* Sessions List */}
-          <TooltipProvider>
+          <div data-name="Sessions List">
             {/* Nearby Sessions */}
             {!shouldHideSessionLists && !isPrivate && (
               <div className="mb-6" data-name="Nearby Sessions Section">
@@ -1327,7 +1327,7 @@ const Index = () => {
                 )}
               </div>
             )}
-          </TooltipProvider>
+          </div>
         </div>
       </div>
       {/* Timeline Section (for active schedule) */}
