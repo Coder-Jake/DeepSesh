@@ -226,7 +226,7 @@ const App = () => (
             <TimerProvider>
               <GlobalTooltipProvider>
                 <ProfilePopUpProvider> {/* NEW: Wrap with ProfilePopUpProvider */}
-                  <Sonner />
+                  <Sonner offset={96} /> {/* Added offset to Sonner */}
                   <BrowserRouter>
                     <AppContent />
                   </BrowserRouter>
