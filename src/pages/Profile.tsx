@@ -68,7 +68,7 @@ const Profile = () => {
   const isLongPress = useRef(false);
 
   // NEW: Label color states and handler
-  const labelColors = ["text-green-600", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-600"];
+  const labelColors = ["text-green-600", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
   const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
   const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
