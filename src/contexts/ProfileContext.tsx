@@ -357,6 +357,8 @@ interface ProfileContextType {
   setHostCode: React.Dispatch<React.SetStateAction<string>>;
 
   deleteSession: (sessionId: string) => Promise<void>;
+
+  fetchOtherUserProfile: (userId: string, userName: string) => Promise<any>; // NEW: Added fetchOtherUserProfile
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -378,6 +380,61 @@ const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name';
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users';
 const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
 const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions';
+
+// Mock data for other users (to simulate public profiles) - moved here for access by fetchOtherUserProfile
+const mockOtherProfiles = [
+  {
+    id: "mock-user-id-1",
+    first_name: "Alice",
+    bio: "Passionate about AI and machine learning. Always looking for new challenges.",
+    intention: "Working on a new neural network architecture.",
+    sociability: 75,
+    organization: "Tech Innovators Inc.",
+    linkedin_url: "https://www.linkedin.com/in/alice-smith",
+    avatar_url: "https://api.dicebear.com/7.x/initials/svg?seed=Alice",
+  },
+  {
+    id: "mock-user-id-2",
+    first_name: "Bob",
+    bio: "Frontend developer with a love for clean code and user-friendly interfaces.",
+    intention: "Refactoring legacy JavaScript code to TypeScript.",
+    sociability: 60,
+    organization: "Web Solutions Co.",
+    linkedin_url: "https://www.linkedin.com/in/bob-johnson",
+    avatar_url: "https://api.dicebear.com/7.x/initials/svg?seed=Bob",
+  },
+  {
+    id: "mock-user-id-3",
+    first_name: "Charlie",
+    bio: "Data scientist specializing in predictive analytics and data visualization.",
+    intention: "Analyzing large datasets for market trends.",
+    sociability: 80,
+    organization: "Data Insights LLC",
+    linkedin_url: "https://www.linkedin.com/in/charlie-brown",
+    avatar_url: "https://api.dicebear.com/7.x/initials/svg?seed=Charlie",
+  },
+  {
+    id: "mock-user-id-4",
+    first_name: "Diana",
+    bio: "UX/UI designer focused on creating intuitive and aesthetically pleasing digital experiences.",
+    intention: "Designing wireframes for a new mobile application.",
+    sociability: 90,
+    organization: "Creative Designs Studio",
+    linkedin_url: "https://www.linkedin.com/in/diana-prince",
+    avatar_url: "https://api.dicebear.com/7.x/initials/svg?seed=Diana",
+  },
+  {
+    id: "mock-user-id-5",
+    first_name: "Eve",
+    bio: "Backend engineer passionate about scalable systems and robust APIs.",
+    intention: "Developing new microservices for cloud deployment.",
+    sociability: 50,
+    organization: "Cloud Builders Ltd.",
+    linkedin_url: "https://www.linkedin.com/in/eve-adams",
+    avatar_url: "https://api.dicebear.com/7.x/initials/svg?seed=Eve",
+  },
+];
+
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user } = useAuth();
@@ -451,6 +508,35 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       });
     }
   }, [blockedUsers, toast]);
+
+  // NEW: Mock function to fetch other user profiles
+  const fetchOtherUserProfile = useCallback(async (userId: string, userName: string) => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    if (user && userId === user.id) {
+      // If it's the current user, return their actual profile
+      return profile;
+    } else {
+      // For other users, try to find in mock data or create a generic one
+      const mockProfile = mockOtherProfiles.find(p => p.id === userId || p.first_name === userName);
+      if (mockProfile) {
+        return mockProfile;
+      } else {
+        // Fallback for any other name not in mock data
+        return {
+          id: userId,
+          first_name: userName,
+          bio: `This is a public bio for ${userName}.`,
+          intention: `This is ${userName}'s public intention.`,
+          sociability: Math.floor(Math.random() * 100),
+          organization: "A Public Organization",
+          linkedin_url: `https://www.linkedin.com/in/${userName.toLowerCase().replace(/\s/g, '-')}`,
+          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${userName}`,
+        };
+      }
+    }
+  }, [user, profile]);
 
 
   const fetchProfile = async () => {
@@ -877,6 +963,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     hostCode,
     setHostCode,
     deleteSession,
+    fetchOtherUserProfile, // NEW: Added to context value
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

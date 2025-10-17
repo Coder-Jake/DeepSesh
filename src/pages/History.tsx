@@ -21,9 +21,10 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Poll, ExtendSuggestion, ActiveAskItem } from "@/types/timer";
 import { cn } from "@/lib/utils";
+import UserProfileDialog from "@/components/UserProfileDialog"; // NEW: Import UserProfileDialog
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession } = useProfile();
+  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession, profile: currentUserProfile } = useProfile(); // NEW: Get currentUserProfile
   const { toast } = useToast();
 
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -32,6 +33,11 @@ const History = () => {
   const [showDeleteIconForSessionId, setShowDeleteIconForSessionId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null);
+
+  // NEW: State for UserProfileDialog
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [selectedProfileUserId, setSelectedProfileUserId] = useState<string | null>(null);
+  const [selectedProfileUserName, setSelectedProfileUserName] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -136,6 +142,22 @@ const History = () => {
       setShowDeleteIconForSessionId(null); // Hide the delete icon after deletion
     }
   }, [sessionToDeleteId, deleteSession, toast]);
+
+  // NEW: Handle opening profile dialog
+  const handleOpenProfileDialog = useCallback((e: React.MouseEvent, name: string) => {
+    e.stopPropagation(); // Prevent card click from being triggered
+    // For "You", use the current user's actual ID
+    const userId = name === "You" ? currentUserProfile?.id || "mock-user-id-123" : `mock-user-id-${name.toLowerCase().replace(/\s/g, '-')}`;
+    setSelectedProfileUserId(userId);
+    setSelectedProfileUserName(name);
+    setIsProfileDialogOpen(true);
+  }, [currentUserProfile]);
+
+  const handleCloseProfileDialog = useCallback(() => {
+    setIsProfileDialogOpen(false);
+    setSelectedProfileUserId(null);
+    setSelectedProfileUserName(null);
+  }, []);
 
   return (
     <>
@@ -254,9 +276,16 @@ const History = () => {
                                   <TooltipContent>
                                     {session.participantNames && session.participantNames.length > 0 ? (
                                       <div className="space-y-1">
-                                        <p className="font-medium">Participants:</p>
+                                        <p className="font-medium mb-1">Participants:</p>
                                         {session.participantNames.map((name, index) => (
-                                          <p key={index} className="text-sm text-muted-foreground">{name}</p>
+                                          <Button 
+                                            key={index} 
+                                            variant="ghost" 
+                                            className="h-auto p-0 text-sm text-muted-foreground hover:text-foreground hover:bg-transparent justify-start"
+                                            onClick={(e) => handleOpenProfileDialog(e, name)} // NEW: Make name clickable
+                                          >
+                                            {name}
+                                          </Button>
                                         ))}
                                       </div>
                                     ) : (
@@ -456,9 +485,17 @@ const History = () => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={confirmDeleteSession}>Delete</AlertDialogAction>
-            </AlertDialogFooter>
+            </DialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* NEW: User Profile Dialog */}
+        <UserProfileDialog
+          userId={selectedProfileUserId}
+          userName={selectedProfileUserName}
+          isOpen={isProfileDialogOpen}
+          onClose={handleCloseProfileDialog}
+        />
     </>
   );
 };
