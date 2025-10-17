@@ -81,8 +81,8 @@ const UpcomingScheduleCardContent: React.FC<UpcomingScheduleCardContentProps> = 
         <Button onClick={commencePreparedSchedule} className="flex-1">
           <Play className="mr-2 h-4 w-4" /> Commence
         </Button>
-        <Button variant="outline" onClick={resetSchedule} className="flex-1">
-          <Trash2 className="mr-2 h-4 w-4" /> Discard
+        <Button variant="outline" size="icon" onClick={resetSchedule} aria-label="Discard schedule">
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     </div>
