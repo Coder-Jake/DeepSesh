@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Calendar, FileText, Search, X, MessageSquarePlus, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
+import { useState, useMemo, useCallback } from "react"; // Removed useRef
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -21,10 +21,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Poll, ExtendSuggestion, ActiveAskItem } from "@/types/timer";
 import { cn } from "@/lib/utils";
-import UserProfileDialog from "@/components/UserProfileDialog";
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession, profile: currentUserProfile } = useProfile();
+  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession } = useProfile();
   const { toast } = useToast();
 
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -33,11 +32,6 @@ const History = () => {
   const [showDeleteIconForSessionId, setShowDeleteIconForSessionId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null);
-
-  // NEW: State for UserProfileDialog
-  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
-  const [selectedProfileUserId, setSelectedProfileUserId] = useState<string | null>(null);
-  const [selectedProfileUserName, setSelectedProfileUserName] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -143,24 +137,8 @@ const History = () => {
     }
   }, [sessionToDeleteId, deleteSession, toast]);
 
-  // NEW: Handle opening profile dialog
-  const handleOpenProfileDialog = useCallback((e: React.MouseEvent, name: string) => {
-    e.stopPropagation(); // Prevent card click from being triggered
-    // For "You", use the current user's actual ID
-    const userId = currentUserProfile?.id || "mock-user-id-123";
-    setSelectedProfileUserId(userId);
-    setSelectedProfileUserName(name);
-    setIsProfileDialogOpen(true);
-  }, [currentUserProfile]);
-
-  const handleCloseProfileDialog = useCallback(() => {
-    setIsProfileDialogOpen(false);
-    setSelectedProfileUserId(null);
-    setSelectedProfileUserName(null);
-  }, []);
-
   return (
-    <div>
+    <>
       <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
@@ -209,7 +187,7 @@ const History = () => {
                         <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
                         <p className="text-xs text-muted-foreground">Rank: {currentStats.coworkerRank}</p>
                       </div>
-                    </div >
+                    </div>
                   </CardContent>
                 </Card>
               </Link>
@@ -276,16 +254,9 @@ const History = () => {
                                   <TooltipContent>
                                     {session.participantNames && session.participantNames.length > 0 ? (
                                       <div className="space-y-1">
-                                        <p className="font-medium mb-1">Participants:</p>
+                                        <p className="font-medium">Participants:</p>
                                         {session.participantNames.map((name, index) => (
-                                          <Button 
-                                            key={index} 
-                                            variant="ghost" 
-                                            className="h-auto p-0 text-sm text-muted-foreground hover:text-foreground hover:bg-transparent justify-start"
-                                            onClick={(e) => handleOpenProfileDialog(e, name)}
-                                          >
-                                            {name}
-                                          </Button>
+                                          <p key={index} className="text-sm text-muted-foreground">{name}</p>
                                         ))}
                                       </div>
                                     ) : (
@@ -338,6 +309,7 @@ const History = () => {
                                       <p className="font-medium text-sm">{highlightText(poll.question, searchQuery)}</p>
                                       <div className="space-y-1 text-sm text-muted-foreground">
                                         {poll.options.map((option, optionIndex) => {
+                                          const totalVotes = option.votes.length;
                                           let IconComponent;
                                           if (poll.type === 'closed') {
                                             if (option.id === 'closed-yes') IconComponent = ThumbsUp;
@@ -355,7 +327,7 @@ const History = () => {
                                                 {IconComponent && <IconComponent size={14} className="text-muted-foreground" />}
                                                 <span>{highlightText(option.text, searchQuery)}</span>
                                               </div>
-                                              <Badge variant="secondary">{option.votes.length} votes</Badge>
+                                              <Badge variant="secondary">{totalVotes} votes</Badge>
                                             </div>
                                           );
                                         })}
@@ -484,18 +456,10 @@ const History = () => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={confirmDeleteSession}>Delete</AlertDialogAction>
-            </DialogFooter>
+            </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
-        {/* NEW: User Profile Dialog */}
-        <UserProfileDialog
-          userId={selectedProfileUserId}
-          userName={selectedProfileUserName}
-          isOpen={isProfileDialogOpen}
-          onClose={handleCloseProfileDialog}
-        />
-    </div>
+    </>
   );
 };
 
