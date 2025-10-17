@@ -147,7 +147,7 @@ const History = () => {
   const handleOpenProfileDialog = useCallback((e: React.MouseEvent, name: string) => {
     e.stopPropagation(); // Prevent card click from being triggered
     // For "You", use the current user's actual ID
-    const userId = name === "You" ? currentUserProfile?.id || "mock-user-id-123" : `mock-user-id-${name.toLowerCase().replace(/\s/g, '-')}`;
+    const userId = currentUserProfile?.id || "mock-user-id-123";
     setSelectedProfileUserId(userId);
     setSelectedProfileUserName(name);
     setIsProfileDialogOpen(true);
@@ -160,7 +160,7 @@ const History = () => {
   }, []);
 
   return (
-    <React.Fragment> {/* Wrapped in a single div */}
+    <React.Fragment>
       <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
