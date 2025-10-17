@@ -684,8 +684,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const isMockUser = targetUserId.startsWith("mock-user-id-");
 
     if (isMockUser) {
-      // For mock users, resolve almost synchronously to avoid setTimeout overhead
-      Promise.resolve().then(async () => {
+      // For mock users, resolve almost synchronously using setTimeout(0)
+      const timeoutId = setTimeout(async () => {
         const targetProfileData = await getPublicProfile(targetUserId, targetUserId);
         const friendName = targetProfileData?.first_name || targetUserId;
 
@@ -698,7 +698,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           }
           return prev;
         });
-      });
+        friendRequestTimeouts.current.delete(targetUserId);
+      }, 0); // Use 0ms delay for mock users
+
+      friendRequestTimeouts.current.set(targetUserId, timeoutId);
     } else {
       // Original logic for non-mock users
       const delay = 3000; // Keep original delay for real users
