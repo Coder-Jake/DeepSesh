@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, Fragment } from "react"; // Added Fragment import
+import React, { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Calendar, FileText, Search, X, MessageSquarePlus, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, PlusCircle } from "lucide-react";
@@ -160,7 +160,7 @@ const History = () => {
   }, []);
 
   return (
-    <Fragment>
+    <div> {/* Wrapped in a single div */}
       <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
@@ -171,7 +171,7 @@ const History = () => {
         </div>
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"> {/* Corrected md:grid-2 to md:grid-cols-3 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <Link to="/leaderboard#focus-hours-leaderboard" className="block hover:opacity-80 transition-opacity">
                 <Card>
                   <CardContent className="p-4">
@@ -209,7 +209,7 @@ const History = () => {
                         <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
                         <p className="text-xs text-muted-foreground">Rank: {currentStats.coworkerRank}</p>
                       </div>
-                    </div>
+                    </div >
                   </CardContent>
                 </Card>
               </Link>
@@ -495,7 +495,7 @@ const History = () => {
           isOpen={isProfileDialogOpen}
           onClose={handleCloseProfileDialog}
         />
-    </Fragment>
+    </div>
   );
 };
 
