@@ -895,506 +895,508 @@ const Index = () => {
   }, [openProfilePopUp]);
 
   return (
-    <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
-      <div className="mb-6">
-        <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Timer Section */}
-        <div className="space-y-6">
-          <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${!isPrivate ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
-            {isSchedulingMode ? (
-              <ScheduleForm />
-            ) : (
-              <>
-                <div className="flex justify-between items-start mb-6">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setIsSchedulingMode(true)}
-                    className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                    data-name="Schedule Button"
-                  >
-                    <CalendarPlus size={16} />
-                    <span className="text-sm font-medium">Schedule</span>
-                  </Button>
-                  <div className="flex flex-col items-end gap-2">
-                    <button 
-                      onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
-                      onMouseUp={handleLongPressEnd}
-                      onMouseLeave={handleLongPressEnd}
-                      onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
-                      onTouchEnd={handleLongPressEnd}
-                      onClick={handlePublicPrivateToggle}
-                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
-                      data-name="Public/Private Toggle Button"
-                    >
-                      {!isPrivate ? <>
-                          <Globe size={16} />
-                          <span className="text-sm font-medium">Public</span>
-                        </> : <>
-                          <Lock size={16} />
-                          <span className="text-sm font-medium">Private</span>
-                        }</>
-                    </button>
-                    
-                    {isActiveTimer ? ( // Conditionally render Share Dropdown
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                            data-name="Share Options Button"
-                          >
-                            <Share2 size={16} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="select-none">
-                          <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')} data-name="Share QR Option">QR</DropdownMenuItem>
-                          <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')} data-name="Share Link Option">Link</DropdownMenuItem>
-                          <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : ( // Render Join button and input when no timer is active
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowJoinInput(true)} // Open the dialog
-                        className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                        data-name="Join Session Button"
-                      >
-                        <Users size={16} />
-                        <span className="text-sm font-medium">Join</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex flex-col items-center mb-4">
-                  <CircularProgress
-                    size={280}
-                    strokeWidth={12}
-                    progress={(timeLeft / (currentItemDuration * 60)) * 100}
-                    className={isFlashing ? 'animate-pulse' : ''}
-                    timerType={timerType}
-                    isActiveTimer={isActiveTimer}
-                    data-name="Main Circular Timer Progress"
-                  >
-                    <div 
-                      className={`relative flex flex-col items-center text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}
-                      onMouseEnter={() => setIsHoveringTimer(true)}
-                      onMouseLeave={() => setIsHoveringTimer(false)}
-                    >
-                      <div className="h-10 flex items-center" data-name="Time Left Display"> {/* Fixed height for time display */}
-                        {formatTime(timeLeft)}
-                      </div>
-                      {isHoveringTimer && isActiveTimer && (
-                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap select-none" data-name="Estimated End Time"> {/* Absolute positioning */}
-                          End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
-                        </p>
-                      )}
-                    </div>
-                  </CircularProgress>
-                </div>
-                
-                <div className="flex gap-3 justify-center mb-6">
-                  {isFlashing ? (
+    <>
+      <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
+        <div className="mb-6">
+          <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Timer Section */}
+          <div className="space-y-6">
+            <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${!isPrivate ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
+              {isSchedulingMode ? (
+                <ScheduleForm />
+              ) : (
+                <>
+                  <div className="flex justify-between items-start mb-6">
                     <Button 
-                      size="lg" 
-                      className="px-8" 
-                      onClick={timerType === 'focus' ? switchToBreak : switchToFocus}
-                      data-name={`Start ${timerType === 'focus' ? 'Break' : 'Focus'} Button`}
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setIsSchedulingMode(true)}
+                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                      data-name="Schedule Button"
                     >
-                      Start {timerType === 'focus' ? 'Break' : 'Focus'}
+                      <CalendarPlus size={16} />
+                      <span className="text-sm font-medium">Schedule</span>
                     </Button>
-                  ) : (
-                    <Button 
-                      size="lg" 
-                      className="px-8" 
-                      onClick={() => {
-                        if (isSchedulePrepared) {
-                          // If there are prepared schedules, and one is pending, commence it.
-                          // If multiple, this button should probably not be here or should open a selection.
-                          // For now, we'll assume the user will use the UpcomingScheduleCard's commence button.
-                          // This button will only start a manual timer if no schedule is active/prepared.
-                          startNewManualTimer(); 
-                        } else if (isRunning) {
-                          pauseTimer();
-                        } else if (isPaused) {
-                          resumeTimer();
-                        } else {
-                          startNewManualTimer(); // Call the new explicit function for starting a fresh timer
-                        }
-                      }}
-                      data-name={`${isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')} Timer Button`}
-                    >
-                      {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
-                    </Button>
-                  )}
-                </div>
-
-                {(isPaused || isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending) && ( // Show stop button if pending or prepared
-                  <div className="absolute bottom-4 left-4 flex flex-col gap-1">
-                    <div className="shape-octagon w-10 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onMouseDown={() => handleLongPressStart(stopTimer)}
+                    <div className="flex flex-col items-end gap-2">
+                      <button 
+                        onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
                         onMouseUp={handleLongPressEnd}
                         onMouseLeave={handleLongPressEnd}
-                        onTouchStart={() => handleLongPressStart(stopTimer)}
+                        onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
                         onTouchEnd={handleLongPressEnd}
-                        onClick={stopTimer}
-                        className={cn(
-                          "w-full h-full rounded-none bg-transparent hover:bg-transparent",
-                          isPaused ? "text-red-500" : "text-secondary-foreground" // Conditional red color
-                        )}
-                        data-name="Stop Timer Button"
+                        onClick={handlePublicPrivateToggle}
+                        className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
+                        data-name="Public/Private Toggle Button"
                       >
-                        <Square size={16} fill="currentColor" /> {/* Solid Square icon */}
-                      </Button>
+                        {!isPrivate ? <>
+                            <Globe size={16} />
+                            <span className="text-sm font-medium">Public</span>
+                          </> : <>
+                            <Lock size={16} />
+                            <span className="text-sm font-medium">Private</span>
+                          </>}
+                      </button>
+                      
+                      {isActiveTimer ? ( // Conditionally render Share Dropdown
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                              data-name="Share Options Button"
+                            >
+                              <Share2 size={16} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="select-none">
+                            <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')} data-name="Share QR Option">QR</DropdownMenuItem>
+                            <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')} data-name="Share Link Option">Link</DropdownMenuItem>
+                            <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : ( // Render Join button and input when no timer is active
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowJoinInput(true)} // Open the dialog
+                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                          data-name="Join Session Button"
+                        >
+                          <Users size={16} />
+                          <span className="text-sm font-medium">Join</span>
+                        </Button>
+                      )}
                     </div>
                   </div>
-                )}
-
-                {!isScheduleActive && !isSchedulePrepared && ( // Hide timer settings if schedule is active or prepared
-                  <div className="flex justify-center gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span 
-                        className={cn(
-                          "text-muted-foreground cursor-pointer select-none",
-                          timerType === 'focus' && "font-bold text-foreground"
-                        )}
-                        onClick={() => handleModeToggle('focus')}
-                        data-name="Focus Mode Toggle"
-                      >
-                        Focus:
-                      </span>
-                      <Input 
-                        type="number" 
-                        value={focusMinutes === 0 ? "" : focusMinutes} 
-                        onChange={e => {
-                          const value = e.target.value;
-                          if (value === "") {
-                            setHomepageFocusMinutes(0);
-                          } else {
-                            setHomepageFocusMinutes(parseFloat(value) || 0);
-                          }
-                        }} 
-                        onBlur={() => {
-                          if (focusMinutes === 0) {
-                            setHomepageFocusMinutes(defaultFocusMinutes); // Use defaultFocusMinutes here
-                          }
-                        }}
-                        className="w-16 h-8 text-center" 
-                        min={timerIncrement} 
-                        max="120" 
-                        step={timerIncrement}
-                        onFocus={(e) => e.target.select()}
-                        data-name="Focus Duration Input"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span 
-                        className={cn(
-                          "text-muted-foreground cursor-pointer select-none",
-                          timerType === 'break' && "font-bold text-foreground"
-                        )}
-                        onClick={() => handleModeToggle('break')}
-                        data-name="Break Mode Toggle"
-                      >
-                        Break:
-                      </span>
-                      <Input 
-                        type="number" 
-                        value={breakMinutes === 0 ? "" : breakMinutes} 
-                        onChange={e => {
-                          const value = e.target.value;
-                          if (value === "") {
-                            setHomepageBreakMinutes(0);
-                          } else {
-                            setHomepageBreakMinutes(parseFloat(value) || 0);
-                          }
-                        }} 
-                        onBlur={() => {
-                          if (breakMinutes === 0) {
-                            setHomepageBreakMinutes(defaultBreakMinutes); // Use defaultBreakMinutes here
-                          }
-                        }}
-                        className="w-16 h-8 text-center" 
-                        min={timerIncrement} 
-                        max="60" 
-                        step={timerIncrement}
-                        onFocus={(e) => e.target.select()}
-                        data-name="Break Duration Input"
-                      />
-                    </div>
-                  </div>
-                )}
-                {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
-              </>
-            )}
-          </div>
-
-          {/* Active Asks Section */}
-          <ActiveAskSection 
-            activeAsks={activeAsks} 
-            onVoteExtend={handleVoteExtend} 
-            onVotePoll={handleVotePoll} // Corrected prop here
-            currentUserId={currentUserId} 
-          />
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* User Intention Section */}
-          {profile?.intention && ( // Changed condition to only check for profile.intention
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">My Intention</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p 
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
-                  onMouseDown={() => handleLongPressStart(handleIntentionLongPress)}
-                  onMouseUp={handleLongPressEnd}
-                  onMouseLeave={handleLongPressEnd}
-                  onTouchStart={() => handleLongPressStart(handleIntentionLongPress)}
-                  onTouchEnd={() => handleLongPressEnd()}
-                  onClick={() => {
-                    if (!isLongPress.current) {
-                      // Optional: short press action, e.g., copy to clipboard or show full text
-                    }
-                  }}
-                  data-name="My Intention Text"
-                >
-                  {profile.intention}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notes Section - Always visible */}
-          <Card>
-            <CardHeader className="pb-2"> {/* Reduced bottom padding */}
-              {isEditingSeshTitle ? (
-                <Input
-                  ref={titleInputRef}
-                  value={seshTitle}
-                  onChange={(e) => setSeshTitle(e.target.value)}
-                  onKeyDown={handleTitleInputKeyDown}
-                  onBlur={handleTitleInputBlur}
-                  placeholder="Sesh Title"
-                  className="text-lg font-semibold h-auto py-1 px-2"
-                  onFocus={(e) => e.target.select()}
-                  data-name="Sesh Title Input"
-                />
-              ) : (
-                <CardTitle 
-                  className="text-lg cursor-pointer select-none"
-                  onClick={handleTitleClick}
-                  onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
-                  onMouseUp={handleLongPressEnd}
-                  onMouseLeave={handleLongPressEnd}
-                  onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
-                  onTouchEnd={handleLongPressEnd}
-                  data-name="Sesh Title Display"
-                >
-                  {seshTitle}
-                </CardTitle>
-              )}
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                placeholder="Jot down your thoughts, to-do items, or reflections..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="min-h-[120px] resize-none"
-                onFocus={(e) => e.target.select()}
-                data-name="Notes Textarea"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Coworkers Section - Show only if there are more than just the current user */}
-          {allParticipantsToDisplayInCard.length > 1 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Coworkers</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {allParticipantsToDisplayInCard.map(person => (
-                  <Tooltip key={person.id}>
-                    <TooltipTrigger asChild>
+                  
+                  <div className="flex flex-col items-center mb-4">
+                    <CircularProgress
+                      size={280}
+                      strokeWidth={12}
+                      progress={(timeLeft / (currentItemDuration * 60)) * 100}
+                      className={isFlashing ? 'animate-pulse' : ''}
+                      timerType={timerType}
+                      isActiveTimer={isActiveTimer}
+                      data-name="Main Circular Timer Progress"
+                    >
                       <div 
-                        className={cn(
-                          "flex items-center justify-between p-2 rounded-md select-none",
-                          person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" : // Changed bg-primary to bg-[hsl(var(--focus-background))] and text-primary-foreground to text-foreground
-                          person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
-                          "hover:bg-muted cursor-pointer" // Other participants, now clickable
-                        )} 
-                        data-name={`Coworker: ${person.name}`}
-                        onClick={(e) => handleNameClick(person.id, person.name, e)} // NEW: Make clickable
+                        className={`relative flex flex-col items-center text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}
+                        onMouseEnter={() => setIsHoveringTimer(true)}
+                        onMouseLeave={() => setIsHoveringTimer(false)}
                       >
-                        <span className="font-medium text-foreground">
-                          {person.id === currentUserId ? "You" : person.name}
+                        <div className="h-10 flex items-center" data-name="Time Left Display"> {/* Fixed height for time display */}
+                          {formatTime(timeLeft)}
+                        </div>
+                        {isHoveringTimer && isActiveTimer && (
+                          <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap select-none" data-name="Estimated End Time"> {/* Absolute positioning */}
+                            End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
+                          </p>
+                        )}
+                      </div>
+                    </CircularProgress>
+                  </div>
+                  
+                  <div className="flex gap-3 justify-center mb-6">
+                    {isFlashing ? (
+                      <Button 
+                        size="lg" 
+                        className="px-8" 
+                        onClick={timerType === 'focus' ? switchToBreak : switchToFocus}
+                        data-name={`Start ${timerType === 'focus' ? 'Break' : 'Focus'} Button`}
+                      >
+                        Start {timerType === 'focus' ? 'Break' : 'Focus'}
+                      </Button>
+                    ) : (
+                      <Button 
+                        size="lg" 
+                        className="px-8" 
+                        onClick={() => {
+                          if (isSchedulePrepared) {
+                            // If there are prepared schedules, and one is pending, commence it.
+                            // If multiple, this button should probably not be here or should open a selection.
+                            // For now, we'll assume the user will use the UpcomingScheduleCard's commence button.
+                            // This button will only start a manual timer if no schedule is active/prepared.
+                            startNewManualTimer(); 
+                          } else if (isRunning) {
+                            pauseTimer();
+                          } else if (isPaused) {
+                            resumeTimer();
+                          } else {
+                            startNewManualTimer(); // Call the new explicit function for starting a fresh timer
+                          }
+                        }}
+                        data-name={`${isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')} Timer Button`}
+                      >
+                        {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
+                      </Button>
+                    )}
+                  </div>
+
+                  {(isPaused || isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending) && ( // Show stop button if pending or prepared
+                    <div className="absolute bottom-4 left-4 flex flex-col gap-1">
+                      <div className="shape-octagon w-10 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onMouseDown={() => handleLongPressStart(stopTimer)}
+                          onMouseUp={handleLongPressEnd}
+                          onMouseLeave={handleLongPressEnd}
+                          onTouchStart={() => handleLongPressStart(stopTimer)}
+                          onTouchEnd={handleLongPressEnd}
+                          onClick={stopTimer}
+                          className={cn(
+                            "w-full h-full rounded-none bg-transparent hover:bg-transparent",
+                            isPaused ? "text-red-500" : "text-secondary-foreground" // Conditional red color
+                          )}
+                          data-name="Stop Timer Button"
+                        >
+                          <Square size={16} fill="currentColor" /> {/* Solid Square icon */}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isScheduleActive && !isSchedulePrepared && ( // Hide timer settings if schedule is active or prepared
+                    <div className="flex justify-center gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span 
+                          className={cn(
+                            "text-muted-foreground cursor-pointer select-none",
+                            timerType === 'focus' && "font-bold text-foreground"
+                          )}
+                          onClick={() => handleModeToggle('focus')}
+                          data-name="Focus Mode Toggle"
+                        >
+                          Focus:
                         </span>
-                        <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
+                        <Input 
+                          type="number" 
+                          value={focusMinutes === 0 ? "" : focusMinutes} 
+                          onChange={e => {
+                            const value = e.target.value;
+                            if (value === "") {
+                              setHomepageFocusMinutes(0);
+                            } else {
+                              setHomepageFocusMinutes(parseFloat(value) || 0);
+                            }
+                          }} 
+                          onBlur={() => {
+                            if (focusMinutes === 0) {
+                              setHomepageFocusMinutes(defaultFocusMinutes); // Use defaultFocusMinutes here
+                            }
+                          }}
+                          className="w-16 h-8 text-center" 
+                          min={timerIncrement} 
+                          max="120" 
+                          step={timerIncrement}
+                          onFocus={(e) => e.target.select()}
+                          data-name="Focus Duration Input"
+                        />
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none">
-                      <div className="text-center max-w-xs">
-                        <p className="font-medium mb-1">
-                          {person.id === currentUserId ? "You" : person.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">Sociability: {person.sociability}%</p>
-                        {person.role === 'host' && <p className="text-xs text-muted-foreground mt-1">Host</p>}
-                        {person.intention && (
-                          <p className="text-xs text-muted-foreground mt-1">Intention: {person.intention}</p>
-                        )}
-                        {timerType === 'break' && person.bio && (
-                          <>
-                            <p className="text-xs text-muted-foreground mt-2">Bio: {person.bio}</p>
-                          </>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <span 
+                          className={cn(
+                            "text-muted-foreground cursor-pointer select-none",
+                            timerType === 'break' && "font-bold text-foreground"
+                          )}
+                          onClick={() => handleModeToggle('break')}
+                          data-name="Break Mode Toggle"
+                        >
+                          Break:
+                        </span>
+                        <Input 
+                          type="number" 
+                          value={breakMinutes === 0 ? "" : breakMinutes} 
+                          onChange={e => {
+                            const value = e.target.value;
+                            if (value === "") {
+                              setHomepageBreakMinutes(0);
+                            } else {
+                              setHomepageBreakMinutes(parseFloat(value) || 0);
+                            }
+                          }} 
+                          onBlur={() => {
+                            if (breakMinutes === 0) {
+                              setHomepageBreakMinutes(defaultBreakMinutes); // Use defaultBreakMinutes here
+                            }
+                          }}
+                          className="w-16 h-8 text-center" 
+                          min={timerIncrement} 
+                          max="60" 
+                          step={timerIncrement}
+                          onFocus={(e) => e.target.select()}
+                          data-name="Break Duration Input"
+                        />
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </CardContent>
-            </Card>
-          )}
+                    </div>
+                  )}
+                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
+                </>
+              )}
+            </div>
 
-          {/* Sessions List */}
-          <TooltipProvider>
-            {/* Nearby Sessions */}
-            {!shouldHideSessionLists && !isPrivate && (
-              <div className="mb-6" data-name="Nearby Sessions Section">
-                <button 
-                  onClick={toggleNearbySessions} 
-                  className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
-                >
-                  <h3>Nearby</h3>
-                  <div className="flex items-center gap-2">
-                    {hiddenNearbyCount > 0 && (
-                      <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
-                    )}
-                    {showNearbySessions ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  </div>
-                </button>
-                {showNearbySessions && (
-                  <div className="space-y-3">
-                    {mockNearbySessions.map(session => (
-                      <SessionCard 
-                        key={session.id} 
-                        session={session} 
-                        onJoinSession={handleJoinSession} 
-                        onNameClick={handleNameClick} // NEW: Pass handleNameClick
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Friends Sessions */}
-            {!shouldHideSessionLists && (
-              <div data-name="Friends Sessions Section">
-                <button 
-                  onClick={toggleFriendsSessions} 
-                  className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
-                >
-                  <h3>Friends</h3>
-                  <div className="flex items-center gap-2">
-                    {hiddenFriendsCount > 0 && (
-                      <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
-                    )}
-                    {showFriendsSessions ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  </div>
-                </button>
-                {showFriendsSessions && (
-                  <div className="space-y-3">
-                    {mockFriendsSessions.map(session => (
-                      <SessionCard 
-                        key={session.id} 
-                        session={session} 
-                        onJoinSession={handleJoinSession} 
-                        onNameClick={handleNameClick} // NEW: Pass handleNameClick
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </TooltipProvider>
-        </div>
-      </div>
-      {/* Timeline Section (for active schedule) */}
-      {isScheduleActive && ( // Show only if active
-        <div className="mt-8" data-name="Timeline Section"> {/* Add some top margin for separation */}
-          <Timeline
-            schedule={activeSchedule} // NEW: Pass activeSchedule
-            currentScheduleIndex={currentScheduleIndex}
-            timeLeft={timeLeft}
-            commenceTime={commenceTime} // This will be from the active schedule's original template
-            commenceDay={commenceDay === null ? new Date().getDay() : commenceDay} // This will be from the active schedule's original template
-            isSchedulePending={isSchedulePending} // Keep this prop for Timeline's internal logic
-            onCountdownEnd={handleCountdownEnd}
-            timerColors={activeTimerColors} // NEW: Pass activeTimerColors
-          />
-        </div>
-      )}
-
-      {/* NEW: Upcoming Section (for prepared schedules) */}
-      {sortedPreparedSchedules.length > 0 && (
-        <div className="mt-8" data-name="Upcoming Section">
-          <h3 className="text-xl font-bold text-foreground mb-4">Upcoming Schedules</h3>
-          <Accordion type="multiple" className="w-full space-y-4"> {/* Use Accordion here */}
-            {sortedPreparedSchedules.map((template) => (
-              <UpcomingScheduleAccordionItem
-                key={template.id}
-                template={template}
-                commencePreparedSchedule={() => commenceSpecificPreparedSchedule(template.id)}
-                discardPreparedSchedule={() => discardPreparedSchedule(template.id)}
-                showCommenceButton={!isActiveTimer} // Pass the condition
-              />
-            ))}
-          </Accordion>
-        </div>
-      )}
-
-      {/* Join Session Dialog */}
-      <Dialog open={showJoinInput} onOpenChange={setShowJoinInput}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Join Session</DialogTitle>
-            <DialogDescription>
-              Enter the session code to join an active session.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Input
-              id="session-code"
-              placeholder="Enter code"
-              value={joinSessionCode}
-              onChange={(e) => setJoinSessionCode(e.target.value)}
-              className="col-span-3"
-              onFocus={(e) => e.target.select()}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleJoinCodeSubmit(); }}
+            {/* Active Asks Section */}
+            <ActiveAskSection 
+              activeAsks={activeAsks} 
+              onVoteExtend={handleVoteExtend} 
+              onVotePoll={handleVotePoll} // Corrected prop here
+              currentUserId={currentUserId} 
             />
           </div>
-          <DialogFooter>
-            <Button 
-              onClick={handleJoinCodeSubmit} 
-              disabled={!joinSessionCode.trim()}
-            >
-              Join
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </main>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* User Intention Section */}
+            {profile?.intention && ( // Changed condition to only check for profile.intention
+              <Card>
+                <CardHeader>
+                  <CardTitle className="lg">My Intention</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p 
+                    className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+                    onMouseDown={() => handleLongPressStart(handleIntentionLongPress)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                    onTouchStart={() => handleLongPressStart(handleIntentionLongPress)}
+                    onTouchEnd={() => handleLongPressEnd()}
+                    onClick={() => {
+                      if (!isLongPress.current) {
+                        // Optional: short press action, e.g., copy to clipboard or show full text
+                      }
+                    }}
+                    data-name="My Intention Text"
+                  >
+                    {profile.intention}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Notes Section - Always visible */}
+            <Card>
+              <CardHeader className="pb-2"> {/* Reduced bottom padding */}
+                {isEditingSeshTitle ? (
+                  <Input
+                    ref={titleInputRef}
+                    value={seshTitle}
+                    onChange={(e) => setSeshTitle(e.target.value)}
+                    onKeyDown={handleTitleInputKeyDown}
+                    onBlur={handleTitleInputBlur}
+                    placeholder="Sesh Title"
+                    className="text-lg font-semibold h-auto py-1 px-2"
+                    onFocus={(e) => e.target.select()}
+                    data-name="Sesh Title Input"
+                  />
+                ) : (
+                  <CardTitle 
+                    className="text-lg cursor-pointer select-none"
+                    onClick={handleTitleClick}
+                    onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                    onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
+                    onTouchEnd={handleLongPressEnd}
+                    data-name="Sesh Title Display"
+                  >
+                    {seshTitle}
+                  </CardTitle>
+                )}
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  placeholder="Jot down your thoughts, to-do items, or reflections..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="min-h-[120px] resize-none"
+                  onFocus={(e) => e.target.select()}
+                  data-name="Notes Textarea"
+                />
+              </CardContent>
+            </Card>
+
+            {/* Coworkers Section - Show only if there are more than just the current user */}
+            {allParticipantsToDisplayInCard.length > 1 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Coworkers</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {allParticipantsToDisplayInCard.map(person => (
+                    <Tooltip key={person.id}>
+                      <TooltipTrigger asChild>
+                        <div 
+                          className={cn(
+                            "flex items-center justify-between p-2 rounded-md select-none",
+                            person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" : // Changed bg-primary to bg-[hsl(var(--focus-background))] and text-primary-foreground to text-foreground
+                            person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
+                            "hover:bg-muted cursor-pointer" // Other participants, now clickable
+                          )} 
+                          data-name={`Coworker: ${person.name}`}
+                          onClick={(e) => handleNameClick(person.id, person.name, e)} // NEW: Make clickable
+                        >
+                          <span className="font-medium text-foreground">
+                            {person.id === currentUserId ? "You" : person.name}
+                          </span>
+                          <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <div className="text-center max-w-xs">
+                          <p className="font-medium mb-1">
+                            {person.id === currentUserId ? "You" : person.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">Sociability: {person.sociability}%</p>
+                          {person.role === 'host' && <p className="text-xs text-muted-foreground mt-1">Host</p>}
+                          {person.intention && (
+                            <p className="text-xs text-muted-foreground mt-1">Intention: {person.intention}</p>
+                          )}
+                          {timerType === 'break' && person.bio && (
+                            <>
+                              <p className="text-xs text-muted-foreground mt-2">Bio: {person.bio}</p>
+                            </>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sessions List */}
+            <TooltipProvider>
+              {/* Nearby Sessions */}
+              {!shouldHideSessionLists && !isPrivate && (
+                <div className="mb-6" data-name="Nearby Sessions Section">
+                  <button 
+                    onClick={toggleNearbySessions} 
+                    className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
+                  >
+                    <h3>Nearby</h3>
+                    <div className="flex items-center gap-2">
+                      {hiddenNearbyCount > 0 && (
+                        <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
+                      )}
+                      {showNearbySessions ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </div>
+                  </button>
+                  {showNearbySessions && (
+                    <div className="space-y-3">
+                      {mockNearbySessions.map(session => (
+                        <SessionCard 
+                          key={session.id} 
+                          session={session} 
+                          onJoinSession={handleJoinSession} 
+                          onNameClick={handleNameClick} // NEW: Pass handleNameClick
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Friends Sessions */}
+              {!shouldHideSessionLists && (
+                <div data-name="Friends Sessions Section">
+                  <button 
+                    onClick={toggleFriendsSessions} 
+                    className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
+                  >
+                    <h3>Friends</h3>
+                    <div className="flex items-center gap-2">
+                      {hiddenFriendsCount > 0 && (
+                        <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
+                      )}
+                      {showFriendsSessions ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </div>
+                  </button>
+                  {showFriendsSessions && (
+                    <div className="space-y-3">
+                      {mockFriendsSessions.map(session => (
+                        <SessionCard 
+                          key={session.id} 
+                          session={session} 
+                          onJoinSession={handleJoinSession} 
+                          onNameClick={handleNameClick} // NEW: Pass handleNameClick
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </TooltipProvider>
+          </div>
+        </div>
+        {/* Timeline Section (for active schedule) */}
+        {isScheduleActive && ( // Show only if active
+          <div className="mt-8" data-name="Timeline Section"> {/* Add some top margin for separation */}
+            <Timeline
+              schedule={activeSchedule} // NEW: Pass activeSchedule
+              currentScheduleIndex={currentScheduleIndex}
+              timeLeft={timeLeft}
+              commenceTime={commenceTime} // This will be from the active schedule's original template
+              commenceDay={commenceDay === null ? new Date().getDay() : commenceDay} // This will be from the active schedule's original template
+              isSchedulePending={isSchedulePending} // Keep this prop for Timeline's internal logic
+              onCountdownEnd={handleCountdownEnd}
+              timerColors={activeTimerColors} // NEW: Pass activeTimerColors
+            />
+          </div>
+        )}
+
+        {/* NEW: Upcoming Section (for prepared schedules) */}
+        {sortedPreparedSchedules.length > 0 && (
+          <div className="mt-8" data-name="Upcoming Section">
+            <h3 className="text-xl font-bold text-foreground mb-4">Upcoming Schedules</h3>
+            <Accordion type="multiple" className="w-full space-y-4"> {/* Use Accordion here */}
+              {sortedPreparedSchedules.map((template) => (
+                <UpcomingScheduleAccordionItem
+                  key={template.id}
+                  template={template}
+                  commencePreparedSchedule={() => commenceSpecificPreparedSchedule(template.id)}
+                  discardPreparedSchedule={() => discardPreparedSchedule(template.id)}
+                  showCommenceButton={!isActiveTimer} // Pass the condition
+                />
+              ))}
+            </Accordion>
+          </div>
+        )}
+
+        {/* Join Session Dialog */}
+        <Dialog open={showJoinInput} onOpenChange={setShowJoinInput}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Join Session</DialogTitle>
+              <DialogDescription>
+                Enter the session code to join an active session.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <Input
+                id="session-code"
+                placeholder="Enter code"
+                value={joinSessionCode}
+                onChange={(e) => setJoinSessionCode(e.target.value)}
+                className="col-span-3"
+                onFocus={(e) => e.target.select()}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleJoinCodeSubmit(); }}
+              />
+            </div>
+            <DialogFooter>
+              <Button 
+                onClick={handleJoinCodeSubmit} 
+                disabled={!joinSessionCode.trim()}
+              >
+                Join
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </main>
+    </>
   );
 };
 export default Index;
