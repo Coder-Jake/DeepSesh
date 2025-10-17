@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
+import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin } from 'lucide-react';
@@ -17,6 +17,16 @@ const ProfilePopUpCard: React.FC = () => {
 
   // State for adjusted position
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // NEW: Label color states and handler
+  const labelColors = ["text-green-700", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
+  const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
+  const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
+  const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
+
+  const handleLabelClick = useCallback((currentIndex: number, setter: React.Dispatch<React.SetStateAction<number>>) => {
+    setter((prevIndex) => (prevIndex + 1) % labelColors.length);
+  }, [labelColors.length]);
 
   useEffect(() => {
     const fetchTargetProfile = async () => {
@@ -44,6 +54,10 @@ const ProfilePopUpCard: React.FC = () => {
 
     if (isPopUpOpen) {
       fetchTargetProfile();
+      // Reset label colors when pop-up opens
+      setBioLabelColorIndex(0);
+      setIntentionLabelColorIndex(0);
+      setLinkedinLabelColorIndex(0);
     } else {
       setTargetProfile(null);
       setLoading(true);
@@ -156,7 +170,13 @@ const ProfilePopUpCard: React.FC = () => {
 
         {targetProfile.bio && showFullProfile && (
           <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
+            <h4 
+              className={cn(
+                "font-semibold flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none",
+                labelColors[bioLabelColorIndex]
+              )}
+              onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex)}
+            >
               <MessageSquare size={16} /> Bio
             </h4>
             <p className="text-sm text-foreground mt-1">{targetProfile.bio}</p>
@@ -165,7 +185,13 @@ const ProfilePopUpCard: React.FC = () => {
 
         {targetProfile.intention && showFullProfile && (
           <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
+            <h4 
+              className={cn(
+                "font-semibold flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none",
+                labelColors[intentionLabelColorIndex]
+              )}
+              onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex)}
+            >
               <Lightbulb size={16} /> Intention
             </h4>
             <p className="text-sm text-foreground mt-1">{targetProfile.intention}</p>
@@ -198,7 +224,13 @@ const ProfilePopUpCard: React.FC = () => {
 
         {targetProfile.linkedin_url && showFullProfile && (
           <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
+            <h4 
+              className={cn(
+                "font-semibold flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none",
+                labelColors[linkedinLabelColorIndex]
+              )}
+              onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex)}
+            >
               <Linkedin size={16} /> LinkedIn
             </h4>
             <a
