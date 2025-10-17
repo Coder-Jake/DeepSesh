@@ -67,6 +67,16 @@ const Profile = () => {
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
+  // NEW: Label color states and handler
+  const labelColors = ["text-green-500", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
+  const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
+  const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
+  const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
+
+  const handleLabelClick = (currentIndex: number, setter: React.Dispatch<React.SetStateAction<number>>) => {
+    setter((prevIndex) => (prevIndex + 1) % labelColors.length);
+  };
+
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
     longPressRef.current = setTimeout(() => {
@@ -415,7 +425,13 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="bio">Brief Bio</Label>
+                <Label 
+                  htmlFor="bio" 
+                  onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex)} 
+                  className={cn("cursor-pointer select-none", labelColors[bioLabelColorIndex])}
+                >
+                  Brief Bio
+                </Label>
                 <Textarea
                   id="bio"
                   placeholder="Share a bit about yourself..."
@@ -426,7 +442,13 @@ const Profile = () => {
               </div>
               
               <div>
-                <Label htmlFor="intention">Statement of Intention</Label>
+                <Label 
+                  htmlFor="intention" 
+                  onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex)} 
+                  className={cn("cursor-pointer select-none", labelColors[intentionLabelColorIndex])}
+                >
+                  Statement of Intention
+                </Label>
                 <Textarea
                   id="intention"
                   placeholder="What are you working on? Goals and intentions for upcoming sessions?"
@@ -438,7 +460,13 @@ const Profile = () => {
 
               {/* NEW: LinkedIn URL Input */}
               <div>
-                <Label htmlFor="linkedin-username">LinkedIn Handle</Label>
+                <Label 
+                  htmlFor="linkedin-username" 
+                  onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex)} 
+                  className={cn("cursor-pointer select-none", labelColors[linkedinLabelColorIndex])}
+                >
+                  LinkedIn Handle
+                </Label>
                 <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
                     linkedin.com/in/
