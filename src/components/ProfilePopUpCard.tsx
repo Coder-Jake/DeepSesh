@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin } from 'lucide-react';
@@ -14,6 +14,9 @@ const ProfilePopUpCard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // State for adjusted position
+  const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const fetchTargetProfile = async () => {
@@ -41,6 +44,38 @@ const ProfilePopUpCard: React.FC = () => {
     }
   }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile]);
 
+  // Effect to adjust position based on viewport
+  useLayoutEffect(() => {
+    if (isPopUpOpen && popUpPosition && cardRef.current) {
+      const cardRect = cardRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const margin = 15; // Margin from viewport edges
+
+      let newX = popUpPosition.x + 10; // Initial offset from cursor
+      let newY = popUpPosition.y + 10;
+
+      // Check if card goes off right edge
+      if (newX + cardRect.width + margin > viewportWidth) {
+        newX = viewportWidth - cardRect.width - margin;
+      }
+      // Check if card goes off bottom edge
+      if (newY + cardRect.height + margin > viewportHeight) {
+        newY = viewportHeight - cardRect.height - margin;
+      }
+      // Ensure it doesn't go off left edge
+      if (newX < margin) {
+        newX = margin;
+      }
+      // Ensure it doesn't go off top edge
+      if (newY < margin) {
+        newY = margin;
+      }
+
+      setAdjustedPosition({ x: newX, y: newY });
+    }
+  }, [isPopUpOpen, popUpPosition, targetProfile, loading, error]); // Recalculate if content changes
+
   // Close pop-up if clicked outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,11 +99,11 @@ const ProfilePopUpCard: React.FC = () => {
     return null;
   }
 
-  // Adjust position to ensure it stays within viewport
+  // Use adjustedPosition for styling
   const style: React.CSSProperties = {
     position: 'fixed',
-    left: popUpPosition.x + 10, // Offset from cursor
-    top: popUpPosition.y + 10,
+    left: adjustedPosition?.x,
+    top: adjustedPosition?.y,
     zIndex: 10000, // Higher than other elements
   };
 
