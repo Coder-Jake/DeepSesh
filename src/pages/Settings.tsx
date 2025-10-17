@@ -488,7 +488,7 @@ const Settings = () => {
                       <TooltipTrigger asChild>
                         <Label htmlFor="manual-transition" className="cursor-help">Manual Transitions</Label>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent className="select-none">
                         <p>Require confirmation to move between Focus/Break.</p>
                       </TooltipContent>
                     </Tooltip>
@@ -508,7 +508,7 @@ const Settings = () => {
                       <TooltipTrigger asChild>
                         <Label htmlFor="lock" className="cursor-help text-muted-foreground">Lock in!</Label>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent className="select-none">
                         <p>Disable other apps during Focus.</p>
                       </TooltipContent>
                     </Tooltip>
@@ -523,8 +523,8 @@ const Settings = () => {
                         onCheckedChange={setLock}
                       />
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Requires App development</p>
+                    <TooltipContent className="select-none">
+                        <p>Requires App development</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -539,7 +539,7 @@ const Settings = () => {
                         <TooltipTrigger asChild>
                           <Label htmlFor="batch-notifications-toggle" className="cursor-help text-muted-foreground">Batch Notifications</Label>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="select-none">
                           <p>Notifications will be delayed and delivered as a group at specified times. Exemptions apply.</p>
                         </TooltipContent>
                       </Tooltip>
@@ -554,7 +554,7 @@ const Settings = () => {
                           onCheckedChange={setIsBatchNotificationsEnabled}
                         />
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent className="select-none">
                         <p>Requires App development</p>
                       </TooltipContent>
                     </Tooltip>
@@ -618,7 +618,7 @@ const Settings = () => {
                           onCheckedChange={setExemptionsEnabled}
                         />
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent className="select-none">
                         <p>Requires App development</p>
                       </TooltipContent>
                     </Tooltip>
@@ -733,7 +733,7 @@ const Settings = () => {
                       <TooltipTrigger asChild>
                         <Label htmlFor="timer-increments-toggle" className="cursor-help">Increments</Label>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent className="select-none">
                         <p>Adjust timers by 1 or 5 minutes.</p>
                       </TooltipContent>
                     </Tooltip>
@@ -862,7 +862,7 @@ const Settings = () => {
                             Public
                           </Label>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="select-none">
                           <p>Anyone can see your profile</p>
                         </TooltipContent>
                       </Tooltip>
@@ -891,7 +891,7 @@ const Settings = () => {
                             Organisation
                           </Label>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="select-none">
                           <p>Only members of your organisation can see details</p>
                         </TooltipContent>
                       </Tooltip>
@@ -909,7 +909,7 @@ const Settings = () => {
                             Private
                           </Label>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="select-none">
                           <p>Minimal information shared</p>
                         </TooltipContent>
                       </Tooltip>
@@ -952,7 +952,7 @@ const Settings = () => {
                       <TooltipTrigger asChild>
                         <Label className="block cursor-help">Minimum Verification Status</Label>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent className="select-none">
                         <p>for users to interact with sessions you host</p>
                       </TooltipContent>
                     </Tooltip>
@@ -981,7 +981,7 @@ const Settings = () => {
                     <TooltipTrigger asChild>
                       <h3 className="text-lg font-semibold mb-4 cursor-help">Block Users</h3>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent className="select-none">
                       <p>Blocked users will not be able to see sessions you host or join.</p>
                     </TooltipContent>
                   </Tooltip>
@@ -1089,7 +1089,7 @@ const Settings = () => {
                       <TooltipTrigger asChild>
                         <Label htmlFor="toasts-toggle" className="cursor-help">Toasts</Label>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent className="select-none">
                         <p>Gives context to what the app is doing. Activate if encountering errors.</p>
                       </TooltipContent>
                     </Tooltip>

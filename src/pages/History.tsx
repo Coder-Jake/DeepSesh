@@ -35,7 +35,7 @@ const History = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null);
 
-  const currentUserId = profile?.id || "mock-user-id-123"; // Use a consistent mock ID if not logged in
+  const currentUserId = profile?.id || "mock-user-id-123"; 
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -261,7 +261,7 @@ const History = () => {
                                       {session.participants}
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent>
+                                  <TooltipContent className="select-none">
                                     {session.participantNames && session.participantNames.length > 0 ? (
                                       <div className="space-y-1">
                                         <p className="font-medium">Participants:</p>
@@ -292,7 +292,7 @@ const History = () => {
                                       {session.duration}
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent>
+                                  <TooltipContent className="select-none">
                                     <p>Start: {formatTime(session.session_start_time)}</p>
                                     <p>End: {formatTime(session.session_end_time)}</p>
                                   </TooltipContent>
@@ -328,7 +328,6 @@ const History = () => {
                                       <p className="font-medium text-sm">{highlightText(poll.question, searchQuery)}</p>
                                       <div className="space-y-1 text-sm text-muted-foreground">
                                         {poll.options.map((option, optionIndex) => {
-                                          const totalVotes = option.votes.length;
                                           let IconComponent;
                                           if (poll.type === 'closed') {
                                             if (option.id === 'closed-yes') IconComponent = ThumbsUp;
@@ -346,7 +345,7 @@ const History = () => {
                                                 {IconComponent && <IconComponent size={14} className="text-muted-foreground" />}
                                                 <span>{highlightText(option.text, searchQuery)}</span>
                                               </div>
-                                              <Badge variant="secondary">{totalVotes} votes</Badge>
+                                              <Badge variant="secondary">{option.votes.length} votes</Badge>
                                             </div>
                                           );
                                         })}
@@ -466,7 +465,7 @@ const History = () => {
                     Export
                   </p>
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent className="select-none">
                   <p>Activates after <Link to="/chip-in" className="text-blue-500 hover:underline">donation</Link></p>
                 </TooltipContent>
               </Tooltip>

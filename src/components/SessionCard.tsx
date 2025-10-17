@@ -62,7 +62,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
               <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
                 ~{session.totalDurationMinutes}m
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="select-none">
                 <div className="text-center">
                   <p className="mb-2 font-medium">{session.location}</p>
                   {/* Replaced workspace image with a generic map placeholder. For a dynamic map, integration with a map service API would be needed. */}
@@ -79,7 +79,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
               <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer select-none">
                 {session.participants.length} participants
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="select-none">
                 <div className="space-y-3">
                   {session.participants.map(p => (
                     <div key={p.id} className="flex items-center justify-between gap-4">

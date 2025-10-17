@@ -32,7 +32,7 @@ const AppContent = () => {
   const { toasts } = useToast();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
   const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
-  const lastHoveredElementRef = useRef<HTMLElement | null>(null);
+  const lastHoveredElementRef = useRef<HTMLElement | null>(lastHoveredElementRef);
 
   const getElementName = (element: HTMLElement): string | null => {
     // 1. Prioritize data-name attribute for explicit naming
@@ -219,7 +219,7 @@ const AppContent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider delayDuration={0} skipDelayDuration={100}> {/* Added delayDuration and skipDelayDuration */}
+    <TooltipProvider delayDuration={0} skipDelayDuration={300}> {/* Increased skipDelayDuration */}
       <ThemeProvider>
         <AuthProvider>
           <ProfileProvider>

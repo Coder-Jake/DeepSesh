@@ -428,7 +428,7 @@ const Profile = () => {
                   <TooltipTrigger asChild>
                     <Key className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
-                  <TooltipContent className="p-2">
+                  <TooltipContent className="p-2 select-none">
                     <p className="font-semibold mb-1">Visibility Settings:</p>
                     <div className="space-y-2"> {/* Use a div for spacing instead of ul */}
                       <div className="flex items-center gap-2">
@@ -578,7 +578,7 @@ const Profile = () => {
                       <TooltipTrigger asChild>
                         <span className="cursor-help">Hosting Code</span>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent className="select-none">
                         <p>Others can use this code to join your sessions.</p>
                       </TooltipContent>
                     </Tooltip>

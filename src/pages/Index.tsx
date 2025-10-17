@@ -800,10 +800,7 @@ const Index = () => {
       // For single-choice polls (closed/choice), if optionIds is empty, this effectively unvotes all.
       // For multi-choice (selection), if optionIds doesn't include this option, it remains unvoted.
 
-      return { ...option, votes: newVotes };
-    });
-    
-    updateAsk({ ...currentPoll, options: updatedOptions });
+      return { ...currentPoll, options: updatedOptions });
   };
 
   // Callback for when the schedule countdown ends in Timeline
@@ -950,7 +947,7 @@ const Index = () => {
                             <Share2 size={16} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="select-none">
                           <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')} data-name="Share QR Option">QR</DropdownMenuItem>
                           <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')} data-name="Share Link Option">Link</DropdownMenuItem>
                           <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
@@ -990,7 +987,7 @@ const Index = () => {
                         {formatTime(timeLeft)}
                       </div>
                       {isHoveringTimer && isActiveTimer && (
-                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap" data-name="Estimated End Time"> {/* Absolute positioning */}
+                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap select-none" data-name="Estimated End Time"> {/* Absolute positioning */}
                           End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
                         </p>
                       )}
@@ -1243,7 +1240,7 @@ const Index = () => {
                         <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent className="select-none">
                       <div className="text-center max-w-xs">
                         <p className="font-medium mb-1">
                           {person.id === currentUserId ? "You" : person.name}
