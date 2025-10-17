@@ -79,12 +79,26 @@ const Profile = () => {
   const handleLabelClick = useCallback((
     currentIndex: number, 
     setter: React.Dispatch<React.SetStateAction<number>>,
-    visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>
+    visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
+    currentBioVis: ('public' | 'friends' | 'organisation' | 'private')[], // Pass current visibility states
+    currentIntentionVis: ('public' | 'friends' | 'organisation' | 'private')[],
+    currentLinkedinVis: ('public' | 'friends' | 'organisation' | 'private')[]
   ) => {
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
+    const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
+    
     setter(nextIndex);
-    visibilitySetter(VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[]);
-  }, []);
+    visibilitySetter(newVisibility);
+
+    // Immediately check for changes after updating visibility
+    checkForChanges(
+      firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode,
+      // Pass the *updated* visibility for the field that just changed, and current for others
+      visibilitySetter === setBioVisibility ? newVisibility : currentBioVis,
+      visibilitySetter === setIntentionVisibility ? newVisibility : currentIntentionVis,
+      visibilitySetter === setLinkedinVisibility ? newVisibility : currentLinkedinVis
+    );
+  }, [firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
@@ -169,7 +183,7 @@ const Profile = () => {
     }
   }, [isEditingHostCode]);
 
-  const checkForChanges = (
+  const checkForChanges = useCallback((
     newFirstName: string, 
     newBio: string, 
     newIntention: string, 
@@ -192,7 +206,11 @@ const Profile = () => {
                    JSON.stringify(newIntentionVisibility) !== JSON.stringify(originalValues.intentionVisibility) || // NEW
                    JSON.stringify(newLinkedinVisibility) !== JSON.stringify(originalValues.linkedinVisibility); // NEW
     setHasChanges(changed);
-  };
+  }, [
+    originalValues, 
+    firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, // These are dependencies for the *current* state, not the `new` values
+    bioVisibility, intentionVisibility, linkedinVisibility // These are also dependencies for the *current* state
+  ]);
 
   const handleFirstNameChange = (value: string) => {
     setFirstNameInput(value); // Update local input state
@@ -500,7 +518,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="bio" 
-                  onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex, setBioVisibility)} 
+                  onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex, setBioVisibility, bioVisibility, intentionVisibility, linkedinVisibility)} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(bioLabelColorIndex))}
                 >
                   Brief Bio
@@ -517,7 +535,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="intention" 
-                  onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex, setIntentionVisibility)} 
+                  onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex, setIntentionVisibility, bioVisibility, intentionVisibility, linkedinVisibility)} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(intentionLabelColorIndex))}
                 >
                   Statement of Intention
@@ -535,7 +553,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="linkedin-username" 
-                  onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex, setLinkedinVisibility)} 
+                  onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex, setLinkedinVisibility, bioVisibility, intentionVisibility, linkedinVisibility)} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(linkedinLabelColorIndex))}
                 >
                   LinkedIn Handle
