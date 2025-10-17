@@ -56,24 +56,24 @@ const Leaderboard = () => {
   };
 
   // Base data for Coworkers Leaderboard (excluding current user initially)
-  const baseCollaboratedUsersLeaderboardData = {
+  const baseCoworkersLeaderboardData = {
     week: [
-      { id: "mock-user-id-1", name: "Alice", collaboratedUsers: 8 },
-      { id: "mock-user-id-6", name: "Frank", collaboratedUsers: 7 },
-      { id: "mock-user-id-7", name: "Grace", collaboratedUsers: 6 },
-      { id: "mock-user-id-8", name: "Heidi", collaboratedUsers: 4 }, 
+      { id: "mock-user-id-1", name: "Alice", coworkers: 8 },
+      { id: "mock-user-id-6", name: "Frank", coworkers: 7 },
+      { id: "mock-user-id-7", name: "Grace", coworkers: 6 },
+      { id: "mock-user-id-8", name: "Heidi", coworkers: 4 }, 
     ],
     month: [
-      { id: "mock-user-id-1", name: "Alice", collaboratedUsers: 25 },
-      { id: "mock-user-id-9", name: "Ivan", collaboratedUsers: 22 }, 
-      { id: "mock-user-id-10", name: "Judy", collaboratedUsers: 17 }, 
-      { id: "mock-user-id-2", name: "Bob", collaboratedUsers: 15 }, 
+      { id: "mock-user-id-1", name: "Alice", coworkers: 25 },
+      { id: "mock-user-id-9", name: "Ivan", coworkers: 22 }, 
+      { id: "mock-user-id-10", name: "Judy", coworkers: 17 }, 
+      { id: "mock-user-id-2", name: "Bob", coworkers: 15 }, 
     ],
     all: [
-      { id: "mock-user-id-1", name: "Alice", collaboratedUsers: 100 },
-      { id: "mock-user-id-6", name: "Frank", collaboratedUsers: 90 }, 
-      { id: "mock-user-id-7", name: "Grace", collaboratedUsers: 80 }, 
-      { id: "mock-user-id-8", name: "Heidi", collaboratedUsers: 70 }, 
+      { id: "mock-user-id-1", name: "Alice", coworkers: 100 },
+      { id: "mock-user-id-6", name: "Frank", coworkers: 90 }, 
+      { id: "mock-user-id-7", name: "Grace", coworkers: 80 }, 
+      { id: "mock-user-id-8", name: "Heidi", coworkers: 70 }, 
     ],
   };
 
@@ -93,24 +93,24 @@ const Leaderboard = () => {
     return leaderboard.sort((a, b) => b.focusHours - a.focusHours);
   };
 
-  // Function to generate dynamic leaderboard for collaborated users, including the current user
-  const getCollaboratedUsersLeaderboard = (period: TimePeriod) => {
-    const userCoworkers = statsData[period].uniqueCoworkers;
-    const leaderboard = [...baseCollaboratedUsersLeaderboardData[period]];
+  // Function to generate dynamic leaderboard for coworkers, including the current user
+  const getCoworkersLeaderboard = (period: TimePeriod) => {
+    const userCoworkers = statsData[period].coworkers;
+    const leaderboard = [...baseCoworkersLeaderboardData[period]];
 
     // Add or update current user's entry
     const existingUserIndex = leaderboard.findIndex(user => user.id === currentUserId);
     if (existingUserIndex !== -1) {
-      leaderboard[existingUserIndex] = { id: currentUserId, name: currentUserName, collaboratedUsers: userCoworkers };
+      leaderboard[existingUserIndex] = { id: currentUserId, name: currentUserName, coworkers: userCoworkers };
     } else {
-      leaderboard.push({ id: currentUserId, name: currentUserName, collaboratedUsers: userCoworkers });
+      leaderboard.push({ id: currentUserId, name: currentUserName, coworkers: userCoworkers });
     }
 
-    return leaderboard.sort((a, b) => b.collaboratedUsers - a.collaboratedUsers);
+    return leaderboard.sort((a, b) => b.coworkers - a.coworkers);
   };
 
   const currentFocusHoursLeaderboard = getFocusHoursLeaderboard(historyTimePeriod); // Use historyTimePeriod
-  const currentCollaboratedUsersLeaderboard = getCollaboratedUsersLeaderboard(historyTimePeriod); // Use historyTimePeriod
+  const currentCoworkersLeaderboard = getCoworkersLeaderboard(historyTimePeriod); // Use historyTimePeriod
 
   // NEW: Handle name click for profile pop-up
   const handleNameClick = useCallback((userId: string, userName: string, event: React.MouseEvent) => {
@@ -161,17 +161,17 @@ const Leaderboard = () => {
           </CardContent>
         </Card>
 
-        {/* Collaborated Users Leaderboard */}
+        {/* Coworkers Leaderboard */}
         <Card id="collaborated-users-leaderboard">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Unique Coworkers
+              Coworkers
             </CardTitle>
             <TimeFilterToggle onValueChange={setHistoryTimePeriod} defaultValue={historyTimePeriod} /> {/* Use historyTimePeriod */}
           </CardHeader>
           <CardContent className="space-y-3">
-            {currentCollaboratedUsersLeaderboard.map((user, index) => (
+            {currentCoworkersLeaderboard.map((user, index) => (
               <div 
                 key={user.id} 
                 className={cn(
@@ -185,7 +185,7 @@ const Leaderboard = () => {
                   <span className="font-bold text-lg">{index + 1}.</span>
                   <p className="font-medium">{user.name}</p>
                 </div>
-                <p className={user.id === currentUserId ? "text-primary-foreground" : "text-muted-foreground"}>{user.collaboratedUsers} users</p>
+                <p className={user.id === currentUserId ? "text-primary-foreground" : "text-muted-foreground"}>{user.coworkers} coworkers</p>
               </div>
             ))}
           </CardContent>

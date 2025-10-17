@@ -28,7 +28,7 @@ export interface SessionHistory {
 export interface StatsPeriodData {
   totalFocusTime: string;
   sessionsCompleted: number;
-  uniqueCoworkers: number;
+  coworkers: number; // Changed from uniqueCoworkers
   focusRank: string;
   coworkerRank: string;
 }
@@ -134,24 +134,24 @@ const dummyLeaderboardFocusHours = {
   ],
 };
 
-const dummyLeaderboardCollaboratedUsers = {
+const dummyLeaderboardCoworkers = {
   week: [
-    { id: "angie-id-4", name: "Angie", collaboratedUsers: 8 },
-    { id: "frank-id-4", name: "Frank", collaboratedUsers: 7 },
-    { id: "grace-id-4", name: "Grace", collaboratedUsers: 6 },
-    { id: "heidi-id-4", name: "Heidi", collaboratedUsers: 4 }, 
+    { id: "angie-id-4", name: "Angie", coworkers: 8 },
+    { id: "frank-id-4", name: "Frank", coworkers: 7 },
+    { id: "grace-id-4", name: "Grace", coworkers: 6 },
+    { id: "heidi-id-4", name: "Heidi", coworkers: 4 }, 
   ],
   month: [
-    { id: "angie-id-5", name: "Angie", collaboratedUsers: 25 },
-    { id: "liam-id-5", name: "Liam", collaboratedUsers: 22 }, 
-    { id: "mia-id-5", name: "Mia", collaboratedUsers: 17 }, 
-    { id: "noah-id-5", name: "Noah", collaboratedUsers: 15 }, 
+    { id: "angie-id-5", name: "Angie", coworkers: 25 },
+    { id: "liam-id-5", name: "Liam", coworkers: 22 }, 
+    { id: "mia-id-5", name: "Mia", coworkers: 17 }, 
+    { id: "noah-id-5", name: "Noah", coworkers: 15 }, 
   ],
   all: [
-    { id: "angie-id-6", name: "Angie", collaboratedUsers: 100 },
-    { id: "peter-id-6", name: "Peter", collaboratedUsers: 90 }, 
-    { id: "quinn-id-6", name: "Quinn", collaboratedUsers: 80 }, 
-    { id: "rachel-id-6", name: "Rachel", collaboratedUsers: 70 }, 
+    { id: "angie-id-6", name: "Angie", coworkers: 100 },
+    { id: "peter-id-6", name: "Peter", coworkers: 90 }, 
+    { id: "quinn-id-6", name: "Quinn", coworkers: 80 }, 
+    { id: "rachel-id-6", name: "Rachel", coworkers: 70 }, 
   ],
 };
 
@@ -159,22 +159,22 @@ const dummyLeaderboardCollaboratedUsers = {
 const calculateStats = (allSessions: SessionHistory[], currentUserId: string | undefined, currentUserName: string): StatsData => {
   const today = new Date();
   const stats: StatsData = {
-    week: { totalFocusTime: "0h 0m", sessionsCompleted: 0, uniqueCoworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
-    month: { totalFocusTime: "0h 0m", sessionsCompleted: 0, uniqueCoworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
-    all: { totalFocusTime: "0h 0m", sessionsCompleted: 0, uniqueCoworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+    week: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+    month: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+    all: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
   };
 
   const periods: TimePeriod[] = ['week', 'month', 'all'];
 
   periods.forEach(period => {
     let totalFocusSeconds = 0;
-    let totalCoworkers = 0;
+    let totalCoworkerCount = 0;
     let sessionsCompleted = 0;
 
     allSessions.forEach(session => {
       const sessionDate = new Date(session.date);
       const focusSeconds = session.type === 'focus' ? parseDurationStringToSeconds(session.duration) : 0;
-      const sessionCoworkers = session.participants;
+      const sessionCoworkerCount = session.participants;
 
       let includeSession = false;
       if (period === 'all') {
@@ -187,13 +187,13 @@ const calculateStats = (allSessions: SessionHistory[], currentUserId: string | u
 
       if (includeSession) {
         totalFocusSeconds += focusSeconds;
-        totalCoworkers += sessionCoworkers;
+        totalCoworkerCount += sessionCoworkerCount;
         sessionsCompleted++;
       }
     });
 
     const userFocusHours = parseDurationStringToHours(formatSecondsToDurationString(totalFocusSeconds));
-    const userCoworkers = totalCoworkers;
+    const userCoworkerCount = totalCoworkerCount;
 
     // Calculate Focus Rank
     const focusLeaderboard = [...dummyLeaderboardFocusHours[period]];
@@ -207,19 +207,19 @@ const calculateStats = (allSessions: SessionHistory[], currentUserId: string | u
     const userFocusRank = focusLeaderboard.findIndex(user => user.id === currentUserId) + 1;
 
     // Calculate Coworker Rank
-    const collaborationLeaderboard = [...dummyLeaderboardCollaboratedUsers[period]];
+    const collaborationLeaderboard = [...dummyLeaderboardCoworkers[period]];
     const existingUserCollaborationIndex = collaborationLeaderboard.findIndex(user => user.id === currentUserId);
     if (existingUserCollaborationIndex !== -1) {
-      collaborationLeaderboard[existingUserCollaborationIndex] = { id: currentUserId || "mock-user", name: currentUserName, collaboratedUsers: userCoworkers };
+      collaborationLeaderboard[existingUserCollaborationIndex] = { id: currentUserId || "mock-user", name: currentUserName, coworkers: userCoworkerCount };
     } else {
-      collaborationLeaderboard.push({ id: currentUserId || "mock-user", name: currentUserName, collaboratedUsers: userCoworkers });
+      collaborationLeaderboard.push({ id: currentUserId || "mock-user", name: currentUserName, coworkers: userCoworkerCount });
     }
-    collaborationLeaderboard.sort((a, b) => b.collaboratedUsers - a.collaboratedUsers);
+    collaborationLeaderboard.sort((a, b) => b.coworkers - a.coworkers);
     const userCoworkerRank = collaborationLeaderboard.findIndex(user => user.id === currentUserId) + 1;
 
     stats[period].totalFocusTime = formatSecondsToDurationString(totalFocusSeconds);
     stats[period].sessionsCompleted = sessionsCompleted;
-    stats[period].uniqueCoworkers = totalCoworkers;
+    stats[period].coworkers = totalCoworkerCount;
     stats[period].focusRank = userFocusRank > 0 ? `#${userFocusRank}` : "N/A";
     stats[period].coworkerRank = userCoworkerRank > 0 ? `#${userCoworkerRank}` : "N/A";
   });
