@@ -23,14 +23,21 @@ const ProfilePopUpCard: React.FC = () => {
       if (targetUserId) {
         setLoading(true);
         setError(null);
-        try {
-          const fetchedProfile = await getPublicProfile(targetUserId, targetUserName || "Unknown User");
-          setTargetProfile(fetchedProfile);
-        } catch (err: any) {
-          setError(err.message || "Failed to load profile.");
-          setTargetProfile(null);
-        } finally {
+        
+        // Check if the target user is the current user
+        if (currentUserProfile && targetUserId === currentUserProfile.id) {
+          setTargetProfile(currentUserProfile);
           setLoading(false);
+        } else {
+          try {
+            const fetchedProfile = await getPublicProfile(targetUserId, targetUserName || "Unknown User");
+            setTargetProfile(fetchedProfile);
+          } catch (err: any) {
+            setError(err.message || "Failed to load profile.");
+            setTargetProfile(null);
+          } finally {
+            setLoading(false);
+          }
         }
       }
     };
@@ -42,7 +49,7 @@ const ProfilePopUpCard: React.FC = () => {
       setLoading(true);
       setError(null);
     }
-  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile]);
+  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile]);
 
   // Effect to adjust position based on viewport
   useLayoutEffect(() => {
@@ -108,12 +115,14 @@ const ProfilePopUpCard: React.FC = () => {
   };
 
   // Determine visibility based on target user's profileVisibility settings
+  // If it's the current user's profile, always show full details
+  const isCurrentUser = currentUserProfile && targetProfile?.id === currentUserProfile.id;
   const isPublic = targetProfile?.profileVisibility?.includes('public');
   const isFriends = targetProfile?.profileVisibility?.includes('friends'); // Placeholder for future friend logic
   const isOrganization = targetProfile?.profileVisibility?.includes('organisation'); // Placeholder for future org logic
   const isPrivate = targetProfile?.profileVisibility?.includes('private');
 
-  const showFullProfile = isPublic || (isFriends && false) || (isOrganization && false); // Simplified for now
+  const showFullProfile = isCurrentUser || isPublic || (isFriends && false) || (isOrganization && false); // Simplified for now
 
   const renderContent = () => {
     if (loading) {
@@ -128,7 +137,7 @@ const ProfilePopUpCard: React.FC = () => {
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
 
-    if (isPrivate && targetProfile.profileVisibility?.length === 1) {
+    if (!isCurrentUser && isPrivate && targetProfile.profileVisibility?.length === 1) {
       return (
         <div className="text-center space-y-2">
           <User className="h-8 w-8 text-muted-foreground mx-auto" />
