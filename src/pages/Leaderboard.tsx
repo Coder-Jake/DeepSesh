@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users, Clock, Award, Gift } from "lucide-react";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState } from "react";
+import { useState, useCallback } from "react"; // Added useCallback
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { TimePeriod } from "@/contexts/ProfileContext"; // Import TimePeriod type
