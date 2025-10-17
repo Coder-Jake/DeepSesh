@@ -438,7 +438,7 @@ const Profile = () => {
 
               {/* NEW: LinkedIn URL Input */}
               <div>
-                <Label htmlFor="linkedin-username">LinkedIn Username</Label>
+                <Label htmlFor="linkedin-username">LinkedIn Handle</Label>
                 <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
                     linkedin.com/in/
