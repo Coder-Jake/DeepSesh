@@ -55,7 +55,7 @@ const Leaderboard = () => {
     ],
   };
 
-  // Base data for Collaborated Users Leaderboard (excluding current user initially)
+  // Base data for Coworkers Leaderboard (excluding current user initially)
   const baseCollaboratedUsersLeaderboardData = {
     week: [
       { id: "mock-user-id-1", name: "Alice", collaboratedUsers: 8 },
