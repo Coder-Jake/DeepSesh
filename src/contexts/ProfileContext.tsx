@@ -499,7 +499,6 @@ interface ProfileContextType {
   historyTimePeriod: TimePeriod;
   setHistoryTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
   // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
-  // Leaderboard will now directly use historyTimePeriod
 
   saveSession: (
     seshTitle: string,
@@ -648,17 +647,17 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   // NEW: Mock friend request functions
   const sendFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'pending' }));
-    toast.success("Friend request sent!", {
-      description: "They will be notified of your request.",
-    });
+    // toast.success("Friend request sent!", {
+    //   description: "They will be notified of your request.",
+    // });
 
     // Automatically accept after 3 seconds for mock profiles
     const timeoutId = setTimeout(() => {
       setFriendStatuses(prev => {
         if (prev[targetUserId] === 'pending') { // Only accept if still pending
-          toast.success(`Friend request from ${targetUserId} accepted!`, { // Assuming targetUserId can be used as a name for mock
-            description: "You are now friends!",
-          });
+          // toast.success(`Friend request from ${targetUserId} accepted!`, { // Assuming targetUserId can be used as a name for mock
+          //   description: "You are now friends!",
+          // });
           return { ...prev, [targetUserId]: 'friends' };
         }
         return prev;
@@ -667,29 +666,29 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }, 3000); // 3 seconds delay
 
     friendRequestTimeouts.current.set(targetUserId, timeoutId); // Store timeout ID
-  }, [toast]);
+  }, []);
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'friends' }));
-    toast.success("Friend request accepted!", {
-      description: "You are now friends!",
-    });
+    // toast.success("Friend request accepted!", {
+    //   description: "You are now friends!",
+    // });
     if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
     }
-  }, [toast]);
+  }, []);
 
   const removeFriend = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'none' }));
-    toast.info("Friend removed.", {
-      description: "You are no longer friends.",
-    });
+    // toast.info("Friend removed.", {
+    //   description: "You are no longer friends.",
+    // });
     if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
     }
-  }, [toast]);
+  }, []);
 
 
   const fetchProfile = async () => {
