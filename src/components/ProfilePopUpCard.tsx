@@ -178,7 +178,23 @@ const ProfilePopUpCard: React.FC = () => {
     if (error) {
       return <p className="text-center text-destructive">{error}</p>;
     }
+    
+    // Handle cases where no Supabase profile is found for the targetUserId
     if (!targetProfile) {
+      // If targetUserName is available, display a generic card for it
+      if (targetUserName) {
+        return (
+          <div className="text-center space-y-2">
+            <User className="h-8 w-8 text-muted-foreground mx-auto" />
+            <p className="font-bold text-lg">{targetUserName}</p>
+            <p className="text-sm text-muted-foreground">Details for this user are not available.</p>
+            {targetUserId?.startsWith('mock-user-id-') && (
+              <p className="text-xs text-muted-foreground">(This is a mock profile)</p>
+            )}
+          </div>
+        );
+      }
+      // Fallback if neither profile nor username is available (should ideally not happen)
       return <p className="text-center text-muted-foreground">Profile not found.</p>;
     }
 
@@ -260,7 +276,7 @@ const ProfilePopUpCard: React.FC = () => {
                 isCurrentUserProfile && "cursor-pointer select-none",
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(currentBioVisibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentBioVisibility, setBioVisibility, 'bio_visibility') : undefined}
+              onClick={isCurrentUserProfile ? () => handleLabelClick(currentBioVisibility, setBioVisibility, 'bio_visibility', bioVisibility, intentionVisibility, linkedinVisibility) : undefined}
             >
               <MessageSquare size={16} /> Bio
             </h4>
@@ -276,7 +292,7 @@ const ProfilePopUpCard: React.FC = () => {
                 isCurrentUserProfile && "cursor-pointer select-none",
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(currentIntentionVisibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentIntentionVisibility, setIntentionVisibility, 'intention_visibility') : undefined}
+              onClick={isCurrentUserProfile ? () => handleLabelClick(currentIntentionVisibility, setIntentionVisibility, 'intention_visibility', bioVisibility, intentionVisibility, linkedinVisibility) : undefined}
             >
               <Lightbulb size={16} /> Intention
             </h4>
@@ -320,7 +336,7 @@ const ProfilePopUpCard: React.FC = () => {
                 isCurrentUserProfile && "cursor-pointer select-none",
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(currentLinkedinVisibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentLinkedinVisibility, setLinkedinVisibility, 'linkedin_visibility') : undefined}
+              onClick={isCurrentUserProfile ? () => handleLabelClick(currentLinkedinVisibility, setLinkedinVisibility, 'linkedin_visibility', bioVisibility, intentionVisibility, linkedinVisibility) : undefined}
             >
               <Linkedin size={16} /> LinkedIn
             </h4>
