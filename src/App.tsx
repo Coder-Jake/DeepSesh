@@ -32,7 +32,7 @@ const AppContent = () => {
   const { toasts } = useToast();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
   const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
-  const lastHoveredElementRef = useRef<HTMLElement | null>(lastHoveredElementRef);
+  const lastHoveredElementRef = useRef<HTMLElement | null>(null); // Fixed: Initialized with null
 
   const getElementName = (element: HTMLElement): string | null => {
     // 1. Prioritize data-name attribute for explicit naming
