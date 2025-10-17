@@ -1,9 +1,9 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate, Json } from "@/integrations/supabase/types";
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./AuthContext"; // Import useAuth to get current user ID
 
 export type Profile = Tables<'public', 'profiles'>;
 type ProfileInsert = TablesInsert<'public', 'profiles'>;
@@ -22,13 +22,13 @@ export interface SessionHistory {
   asks?: ActiveAskItem[];
   session_start_time: string;
   session_end_time:   string;
-  participantNames?: string[];
+  participantNames?: string[]; // NEW: Added participantNames
 }
 
 export interface StatsPeriodData {
   totalFocusTime: string;
   sessionsCompleted: number;
-  coworkers: number;
+  coworkers: number; // Changed from uniqueCoworkers
   focusRank: string;
   coworkerRank: string;
 }
@@ -39,6 +39,7 @@ export interface StatsData {
   all: StatsPeriodData;
 }
 
+// Helper function to format seconds into a duration string (e.g., "1h 30m" or "45 mins")
 const formatSecondsToDurationString = (totalSeconds: number): string => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.round((totalSeconds % 3600) / 60);
@@ -49,6 +50,7 @@ const formatSecondsToDurationString = (totalSeconds: number): string => {
   return `${minutes} mins`;
 };
 
+// Helper function to parse "XXh YYm" to total seconds
 const parseDurationStringToSeconds = (durationString: string): number => {
   const matchHours = durationString.match(/(\d+)h/);
   const matchMinutes = durationString.match(/(\d+)m/);
@@ -60,6 +62,7 @@ const parseDurationStringToSeconds = (durationString: string): number => {
   if (matchMinutes) {
     totalSeconds += parseInt(matchMinutes[1], 10) * 60;
   }
+  // If it's just "X mins" (e.g., "45 mins"), parse it directly
   const matchMinsOnly = durationString.match(/(\d+)\s*mins/);
   if (!matchHours && !matchMinutes && matchMinsOnly) {
     totalSeconds += parseInt(matchMinsOnly[1], 10) * 60;
@@ -67,6 +70,7 @@ const parseDurationStringToSeconds = (durationString: string): number => {
   return totalSeconds;
 };
 
+// Helper function to parse "XXh YYm" to total hours (number) for ranking
 const parseDurationStringToHours = (durationString: string): number => {
   const matchHours = durationString.match(/(\d+)h/);
   const matchMinutes = durationString.match(/(\d+)m/);
@@ -82,30 +86,33 @@ const parseDurationStringToHours = (durationString: string): number => {
   return hours + (minutes / 60);
 };
 
+// Helper to check if a session date falls within the current week (starting Monday)
 const isDateInCurrentWeek = (sessionDate: Date, today: Date): boolean => {
   const startOfWeek = new Date(today);
-  const day = today.getDay();
-  const diff = day === 0 ? 6 : day - 1;
+  const day = today.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
+  const diff = day === 0 ? 6 : day - 1; // Days to subtract to get to Monday
   startOfWeek.setDate(today.getDate() - diff);
   startOfWeek.setHours(0, 0, 0, 0);
 
   const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setDate(startOfWeek.getDate() + 6); // Set to Sunday of current week
   endOfWeek.setHours(23, 59, 59, 999);
 
   return sessionDate >= startOfWeek && sessionDate <= endOfWeek;
 };
 
+// Helper to check if a session date falls within the current month (starting 1st)
 const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
   endOfMonth.setHours(23, 59, 59, 999);
 
   return sessionDate >= startOfMonth && sessionDate <= endOfMonth;
 };
 
+// Dummy Leaderboard Data (consistent with Leaderboard.tsx)
 const dummyLeaderboardFocusHours = {
   week: [
     { id: "angie-id-1", name: "Angie", focusHours: 30 },
@@ -148,6 +155,7 @@ const dummyLeaderboardCoworkers = {
   ],
 };
 
+// Function to calculate stats from a list of sessions
 const calculateStats = (allSessions: SessionHistory[], currentUserId: string | undefined, currentUserName: string): StatsData => {
   const today = new Date();
   const stats: StatsData = {
@@ -187,6 +195,7 @@ const calculateStats = (allSessions: SessionHistory[], currentUserId: string | u
     const userFocusHours = parseDurationStringToHours(formatSecondsToDurationString(totalFocusSeconds));
     const userCoworkerCount = totalCoworkerCount;
 
+    // Calculate Focus Rank
     const focusLeaderboard = [...dummyLeaderboardFocusHours[period]];
     const existingUserFocusIndex = focusLeaderboard.findIndex(user => user.id === currentUserId);
     if (existingUserFocusIndex !== -1) {
@@ -197,6 +206,7 @@ const calculateStats = (allSessions: SessionHistory[], currentUserId: string | u
     focusLeaderboard.sort((a, b) => b.focusHours - a.focusHours);
     const userFocusRank = focusLeaderboard.findIndex(user => user.id === currentUserId) + 1;
 
+    // Calculate Coworker Rank
     const collaborationLeaderboard = [...dummyLeaderboardCoworkers[period]];
     const existingUserCollaborationIndex = collaborationLeaderboard.findIndex(user => user.id === currentUserId);
     if (existingUserCollaborationIndex !== -1) {
@@ -230,7 +240,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-15T09:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-15T09:45:00Z").toISOString(),
-    participantNames: ["You", "Alice", "Bob"],
+    participantNames: ["You", "Alice", "Bob"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
@@ -243,7 +253,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-14T10:30:00Z").toISOString(),
     session_end_time: new Date("2225-09-14T12:00:00Z").toISOString(),
-    participantNames: ["You", "Charlie", "Diana", "Eve", "Frank"],
+    participantNames: ["You", "Charlie", "Diana", "Eve", "Frank"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
@@ -256,7 +266,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-13T14:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-13T14:30:00Z").toISOString(),
-    participantNames: ["You"],
+    participantNames: ["You"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
@@ -269,7 +279,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-12T11:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-12T13:00:00Z").toISOString(),
-    participantNames: ["You", "Grace"],
+    participantNames: ["You", "Grace"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
@@ -282,7 +292,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-11T16:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-11T17:00:00Z").toISOString(),
-    participantNames: ["You", "Heidi", "Ivan", "Judy"],
+    participantNames: ["You", "Heidi", "Ivan", "Judy"], // Added mock participant names
   }
 ];
 
@@ -307,6 +317,7 @@ const generateRandomHostCode = () => {
   return `${randomColor}${randomAnimal}`;
 };
 
+// NEW: Mock profiles for demonstration
 const mockProfiles: Profile[] = [
   {
     id: "mock-user-id-1",
@@ -320,9 +331,9 @@ const mockProfiles: Profile[] = [
     organization: "Tech Innovators Inc.",
     linkedin_url: "https://www.linkedin.com/in/alicesmith",
     host_code: "redfox",
-    bio_visibility: ['public'],
-    intention_visibility: ['public'],
-    linkedin_visibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-2",
@@ -336,9 +347,9 @@ const mockProfiles: Profile[] = [
     organization: "Web Solutions Co.",
     linkedin_url: "https://www.linkedin.com/in/bobjohnson",
     host_code: "bluebear",
-    bio_visibility: ['public'],
-    intention_visibility: ['public'],
-    linkedin_visibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-3",
@@ -352,9 +363,9 @@ const mockProfiles: Profile[] = [
     organization: "Cloud Builders LLC",
     linkedin_url: "https://www.linkedin.com/in/charliebrown",
     host_code: "greencat",
-    bio_visibility: ['friends', 'organisation'],
-    intention_visibility: ['friends', 'organisation'],
-    linkedin_visibility: ['friends', 'organisation'],
+    bio_visibility: ['friends', 'organisation'], // NEW
+    intention_visibility: ['friends', 'organisation'], // NEW
+    linkedin_visibility: ['friends', 'organisation'], // NEW
   },
   {
     id: "mock-user-id-4",
@@ -368,9 +379,9 @@ const mockProfiles: Profile[] = [
     organization: "Global Enterprises",
     linkedin_url: "https://www.linkedin.com/in/dianaprince",
     host_code: "yellowdog",
-    bio_visibility: ['public', 'organisation'],
-    intention_visibility: ['public', 'organisation'],
-    linkedin_visibility: ['public', 'organisation'],
+    bio_visibility: ['public', 'organisation'], // NEW
+    intention_visibility: ['public', 'organisation'], // NEW
+    linkedin_visibility: ['public', 'organisation'], // NEW
   },
   {
     id: "mock-user-id-5",
@@ -384,9 +395,9 @@ const mockProfiles: Profile[] = [
     organization: "Design Innovations",
     linkedin_url: "https://www.linkedin.com/in/eveadams",
     host_code: "purplelion",
-    bio_visibility: ['private'],
-    intention_visibility: ['private'],
-    linkedin_visibility: ['private'],
+    bio_visibility: ['private'], // NEW
+    intention_visibility: ['private'], // NEW
+    linkedin_visibility: ['private'], // NEW
   },
   {
     id: "mock-user-id-6",
@@ -400,9 +411,9 @@ const mockProfiles: Profile[] = [
     organization: "Data Insights Co.",
     linkedin_url: "https://www.linkedin.com/in/frankwhite",
     host_code: "orangetiger",
-    bio_visibility: ['public'],
-    intention_visibility: ['public'],
-    linkedin_visibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-7",
@@ -416,9 +427,9 @@ const mockProfiles: Profile[] = [
     organization: "Creative Minds Agency",
     linkedin_url: "https://www.linkedin.com/in/gracetaylor",
     host_code: "pinkwolf",
-    bio_visibility: ['public'],
-    intention_visibility: ['public'],
-    linkedin_visibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-8",
@@ -432,9 +443,9 @@ const mockProfiles: Profile[] = [
     organization: "Secure Solutions Ltd.",
     linkedin_url: "https://www.linkedin.com/in/heidiclark",
     host_code: "browndeer",
-    bio_visibility: ['public'],
-    intention_visibility: ['public'],
-    linkedin_visibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-9",
@@ -448,9 +459,9 @@ const mockProfiles: Profile[] = [
     organization: "Automate Everything Inc.",
     linkedin_url: "https://www.linkedin.com/in/ivanking",
     host_code: "greyzebra",
-    bio_visibility: ['public'],
-    intention_visibility: ['public'],
-    linkedin_visibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-10",
@@ -464,9 +475,9 @@ const mockProfiles: Profile[] = [
     organization: "Innovate UX",
     linkedin_url: "https://www.linkedin.com/in/judylee",
     host_code: "blackpanda",
-    bio_visibility: ['public'],
-    intention_visibility: ['public'],
-    linkedin_visibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
 ];
 
@@ -475,7 +486,7 @@ interface ProfileContextType {
   profile: Profile | null;
   loading: boolean;
   error: string | null;
-  updateProfile: (data: ProfileUpdate, successMessage?: string) => Promise<void>;
+  updateProfile: (data: ProfileUpdate, successMessage?: string) => Promise<void>; // MODIFIED: Added successMessage
   fetchProfile: () => Promise<void>;
   
   localFirstName: string;
@@ -487,6 +498,8 @@ interface ProfileContextType {
 
   historyTimePeriod: TimePeriod;
   setHistoryTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
+  // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
+  // Leaderboard will now directly use historyTimePeriod
 
   saveSession: (
     seshTitle: string,
@@ -497,7 +510,7 @@ interface ProfileContextType {
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
     activeAsks: ActiveAskItem[] | undefined,
-    allParticipantNames: string[] | undefined
+    allParticipantNames: string[] | undefined // NEW: Added allParticipantNames
   ) => Promise<void>;
 
   blockedUsers: string[];
@@ -509,8 +522,9 @@ interface ProfileContextType {
   setHostCode: React.Dispatch<React.SetStateAction<string>>;
 
   deleteSession: (sessionId: string) => Promise<void>;
-  getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>;
+  getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>; // NEW: Added getPublicProfile
 
+  // NEW: Per-field visibility states
   bioVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
   setBioVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
   intentionVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
@@ -518,6 +532,7 @@ interface ProfileContextType {
   linkedinVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
   setLinkedinVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
 
+  // NEW: Friend status states and functions
   friendStatuses: Record<string, 'none' | 'pending' | 'friends'>;
   sendFriendRequest: (targetUserId: string) => void;
   acceptFriendRequest: (targetUserId: string) => void;
@@ -543,10 +558,10 @@ const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name';
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users';
 const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
 const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions';
-const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility';
-const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility';
-const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility';
-const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses';
+const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility'; // NEW
+const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility'; // NEW
+const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility'; // NEW
+const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses'; // NEW
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user } = useAuth();
@@ -560,16 +575,18 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const statsData = useMemo(() => calculateStats(sessions, user?.id, localFirstName), [sessions, user?.id, localFirstName]);
 
   const [historyTimePeriod, setHistoryTimePeriod] = useState<TimePeriod>('week');
+  // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod states
 
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [hostCode, setHostCode] = useState("");
 
+  // NEW: Per-field visibility states
   const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
 
+  // NEW: Friend status state
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
-  const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
@@ -627,130 +644,27 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
   }, [blockedUsers, toast]);
 
-  // NEW: Function to get a public profile by ID or name
-  const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
-    const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
-    if (mockProfile) {
-      return mockProfile;
-    }
-
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (currentUser) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error("Error fetching public profile from Supabase:", error);
-        throw new Error("Failed to fetch profile.");
-      }
-      if (data) {
-        return { ...data, first_name: data.first_name || "" };
-      }
-    }
-    
-    return {
-      id: userId,
-      first_name: userName,
-      last_name: null,
-      avatar_url: null,
-      bio: null,
-      intention: null,
-      sociability: 50,
-      updated_at: new Date().toISOString(),
-      organization: null,
-      linkedin_url: null,
-      host_code: null,
-      bio_visibility: ['public'],
-      intention_visibility: ['public'],
-      linkedin_visibility: ['public'],
-    };
-  }, []);
-
+  // NEW: Mock friend request functions
   const sendFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'pending' }));
     toast.success("Friend request sent!", {
       description: "They will be notified of your request.",
     });
-
-    // Clear any existing timeout for this user before setting a new one
-    if (friendRequestTimeouts.current.has(targetUserId)) {
-      clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
-      friendRequestTimeouts.current.delete(targetUserId);
-    }
-
-    const isMockUser = targetUserId.startsWith("mock-user-id-");
-
-    if (isMockUser) {
-      // For mock users, resolve almost synchronously using setTimeout(0)
-      const timeoutId = setTimeout(async () => {
-        const targetProfileData = await getPublicProfile(targetUserId, targetUserId);
-        const friendName = targetProfileData?.first_name || targetUserId;
-
-        setFriendStatuses(prev => {
-          if (prev[targetUserId] === 'pending') {
-            toast.success(`Friend request from ${friendName} accepted!`, {
-              description: "You are now friends!",
-            });
-            return { ...prev, [targetUserId]: 'friends' };
-          }
-          return prev;
-        });
-        friendRequestTimeouts.current.delete(targetUserId);
-      }, 0); // Use 0ms delay for mock users
-
-      friendRequestTimeouts.current.set(targetUserId, timeoutId);
-    } else {
-      // Original logic for non-mock users
-      const delay = 3000; // Keep original delay for real users
-      console.log(`Sending friend request to ${targetUserId} with delay: ${delay}ms`); // Debug log
-
-      const timeoutId = setTimeout(async () => {
-        const targetProfileData = await getPublicProfile(targetUserId, targetUserId);
-        const friendName = targetProfileData?.first_name || targetUserId;
-
-        setFriendStatuses(prev => {
-          if (prev[targetUserId] === 'pending') {
-            toast.success(`Friend request from ${friendName} accepted!`, {
-              description: "You are now friends!",
-            });
-            return { ...prev, [targetUserId]: 'friends' };
-          }
-          return prev;
-        });
-        friendRequestTimeouts.current.delete(targetUserId);
-      }, delay);
-
-      friendRequestTimeouts.current.set(targetUserId, timeoutId);
-    }
-  }, [toast, getPublicProfile]);
+  }, [toast]);
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'friends' }));
     toast.success("Friend request accepted!", {
       description: "You are now friends!",
     });
-    if (friendRequestTimeouts.current.has(targetUserId)) {
-      clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
-      friendRequestTimeouts.current.delete(targetUserId);
-    }
   }, [toast]);
 
-  const removeFriend = useCallback(async (targetUserId: string) => {
-    const targetProfileData = await getPublicProfile(targetUserId, targetUserId);
-    const friendName = targetProfileData?.first_name || targetUserId;
-
+  const removeFriend = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'none' }));
-    toast.info(`'${friendName}' removed.`, {
+    toast.info("Friend removed.", {
       description: "You are no longer friends.",
     });
-    if (friendRequestTimeouts.current.has(targetUserId)) {
-      clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
-      friendRequestTimeouts.current.delete(targetUserId);
-    }
-  }, [toast, getPublicProfile]);
+  }, [toast]);
 
 
   const fetchProfile = async () => {
@@ -764,6 +678,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       localSessions = JSON.parse(storedSessions);
     }
 
+    // NEW: Load per-field visibility from local storage for unauthenticated users
     const storedBioVisibility = localStorage.getItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY);
     if (storedBioVisibility) setBioVisibility(JSON.parse(storedBioVisibility));
     const storedIntentionVisibility = localStorage.getItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY);
@@ -771,6 +686,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const storedLinkedinVisibility = localStorage.getItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY);
     if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
 
+    // NEW: Load friend statuses
     const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
     if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
 
@@ -827,6 +743,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
         await updateProfile({ host_code: newHostCode });
       }
+      // NEW: Set per-field visibility from fetched profile
       setBioVisibility((existingProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
       setIntentionVisibility((existingProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
       setLinkedinVisibility((existingProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
@@ -842,9 +759,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           first_name: user.user_metadata.first_name, 
           last_name: user.user_metadata.last_name,
           host_code: newHostCode,
-          bio_visibility: ['public'],
-          intention_visibility: ['public'],
-          linkedin_visibility: ['public'],
+          bio_visibility: ['public'], // NEW: Default visibility on creation
+          intention_visibility: ['public'], // NEW
+          linkedin_visibility: ['public'], // NEW
         })
         .select()
         .single();
@@ -862,6 +779,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setProfile({ ...newProfile, first_name: newProfile.first_name || "" });
         setHostCode(newProfile.host_code || newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newProfile.host_code || newHostCode);
+        // NEW: Set per-field visibility from new profile
         setBioVisibility((newProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
         setIntentionVisibility((newProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
         setLinkedinVisibility((newProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
@@ -903,7 +821,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             asks: localSesh.asks,
             session_start_time: supabaseSesh.session_start_time,
             session_end_time: supabaseSesh.session_end_time,
-            participantNames: localSesh.participantNames,
+            participantNames: localSesh.participantNames, // NEW: Preserve local participant names
           });
           processedSupabaseIds.add(supabaseSesh.id);
         } else {
@@ -924,7 +842,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             asks: (supabaseSesh.active_asks || []) as ActiveAskItem[],
             session_start_time: supabaseSesh.session_start_time,
             session_end_time: supabaseSesh.session_end_time,
-            participantNames: undefined,
+            participantNames: undefined, // Supabase doesn't store this, so it's undefined
           });
         }
       });
@@ -936,7 +854,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
-  const updateProfile = async (data: ProfileUpdate, successMessage?: string) => {
+  const updateProfile = async (data: ProfileUpdate, successMessage?: string) => { // MODIFIED: Added successMessage
     setLoading(true);
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
@@ -969,12 +887,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(updatedData.host_code);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, updatedData.host_code);
       }
+      // NEW: Update per-field visibility states after successful update
       setBioVisibility((updatedData.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
       setIntentionVisibility((updatedData.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
       setLinkedinVisibility((updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
 
       console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
-      toast.success(successMessage || "Profile updated!", {
+      toast.success(successMessage || "Profile updated!", { // MODIFIED: Use successMessage or fallback
         description: "Your profile has been successfully saved.",
       });
     }
@@ -990,7 +909,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
     activeAsks: ActiveAskItem[] | undefined,
-    allParticipantNames: string[] | undefined
+    allParticipantNames: string[] | undefined // NEW: Added allParticipantNames
   ) => {
     setLoading(true);
     setError(null);
@@ -1015,7 +934,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       asks: currentActiveAsks.length > 0 ? currentActiveAsks : undefined,
       session_start_time: newSessionDate.toISOString(),
       session_end_time: sessionEndTime.toISOString(),
-      participantNames: allParticipantNames,
+      participantNames: allParticipantNames, // NEW: Store participant names
     };
     console.log("ProfileContext: newSession.asks will be:", newSession.asks);
 
@@ -1102,6 +1021,52 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   }, [toast]);
 
+  // NEW: Function to get a public profile by ID or name
+  const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
+    // First, try to find in mock profiles
+    const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
+    if (mockProfile) {
+      return mockProfile;
+    }
+
+    // If not in mock profiles, try to fetch from Supabase (if user is authenticated)
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error("Error fetching public profile from Supabase:", error);
+        throw new Error("Failed to fetch profile.");
+      }
+      if (data) {
+        return { ...data, first_name: data.first_name || "" };
+      }
+    }
+    
+    // Fallback for unknown users (e.g., if only name is available and not in mocks/DB)
+    return {
+      id: userId,
+      first_name: userName,
+      last_name: null,
+      avatar_url: null,
+      bio: null,
+      intention: null,
+      sociability: 50, // Default sociability
+      updated_at: new Date().toISOString(),
+      organization: null,
+      linkedin_url: null,
+      host_code: null,
+      bio_visibility: ['public'], // NEW: Default visibility for unknown users
+      intention_visibility: ['public'], // NEW
+      linkedin_visibility: ['public'], // NEW
+    };
+  }, []);
+
+
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedData) {
@@ -1109,6 +1074,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setProfile(data.profile ?? null);
       console.log("Profile loaded from local storage:", data.profile?.first_name);
       setHistoryTimePeriod(data.historyTimePeriod ?? 'week');
+      // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
     }
 
     const storedLocalFirstName = localStorage.getItem(LOCAL_FIRST_NAME_KEY);
@@ -1142,6 +1108,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         } else {
           setSessions(initialSessions);
         }
+        // NEW: Reset per-field visibility to default for unauthenticated users
         setBioVisibility(['public']);
         setIntentionVisibility(['public']);
         setLinkedinVisibility(['public']);
@@ -1150,8 +1117,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
     return () => {
       authListener.subscription.unsubscribe();
-      friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
-      friendRequestTimeouts.current.clear();
     };
   }, []);
 
@@ -1159,12 +1124,14 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const dataToSave = {
       profile,
       historyTimePeriod,
+      // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod from dataToSave
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
     console.log("Profile saved to local storage:", profile?.first_name);
   }, [
     profile,
     historyTimePeriod,
+    // Removed leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod from dependencies
   ]);
 
   useEffect(() => {
@@ -1181,6 +1148,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
   }, [hostCode]);
 
+  // NEW: Save per-field visibility to local storage
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY, JSON.stringify(bioVisibility));
   }, [bioVisibility]);
@@ -1193,6 +1161,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(linkedinVisibility));
   }, [linkedinVisibility]);
 
+  // NEW: Save friend statuses to local storage
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
   }, [friendStatuses]);
@@ -1210,6 +1179,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     statsData,
     historyTimePeriod,
     setHistoryTimePeriod,
+    // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod from value
     saveSession,
     blockedUsers,
     blockUser,
@@ -1218,17 +1188,17 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     hostCode,
     setHostCode,
     deleteSession,
-    getPublicProfile,
-    bioVisibility,
-    setBioVisibility,
-    intentionVisibility,
-    setIntentionVisibility,
-    linkedinVisibility,
-    setLinkedinVisibility,
-    friendStatuses,
-    sendFriendRequest,
-    acceptFriendRequest,
-    removeFriend,
+    getPublicProfile, // NEW: Expose getPublicProfile
+    bioVisibility, // NEW
+    setBioVisibility, // NEW
+    intentionVisibility, // NEW
+    setIntentionVisibility, // NEW
+    linkedinVisibility, // NEW
+    setLinkedinVisibility, // NEW
+    friendStatuses, // NEW
+    sendFriendRequest, // NEW
+    acceptFriendRequest, // NEW
+    removeFriend, // NEW
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
