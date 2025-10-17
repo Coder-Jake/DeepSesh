@@ -8,7 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GlobalTooltipProvider, useGlobalTooltip } from "@/contexts/GlobalTooltipContext";
 import { ProfilePopUpProvider } from "@/contexts/ProfilePopUpContext";
-import { ToastSettingsProvider } from "@/contexts/ToastSettingsContext"; // NEW: Import ToastSettingsProvider
+import { ToastSettingsProvider } from "@/contexts/ToastSettingsContext";
 import GlobalTooltip from "@/components/GlobalTooltip";
 import ProfilePopUpCard from "@/components/ProfilePopUpCard";
 import Header from "@/components/Header";
@@ -23,14 +23,14 @@ import Login from "./pages/Login";
 import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef } from "react";
-// Removed: import { useToast } from "@/hooks/use-toast"; // No longer needed here
 
 const queryClient = new QueryClient();
 
-const AppRoutesAndToasts = () => {
-  const { areToastsEnabled } = useTimer(); // Now safe, as it's within TimerProvider
+// This component now contains the routes and other elements that need toast settings
+const AppContent = () => {
   const navigate = useNavigate();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
+  const { areToastsEnabled } = useTimer(); // Get areToastsEnabled from TimerContext
   const lastHoveredElementRef = useRef<HTMLElement | null>(null);
 
   const getElementName = (element: HTMLElement): string | null => {
@@ -223,11 +223,11 @@ const App = () => (
       <ThemeProvider>
         <AuthProvider>
           <ProfileProvider>
-            <TimerProvider>
+            <TimerProvider> {/* TimerProvider is here, so useTimer() can be called in AppContent */}
               <GlobalTooltipProvider>
                 <ProfilePopUpProvider>
                   <BrowserRouter>
-                    <AppRoutesAndToasts />
+                    <AppContent /> {/* AppContent now uses useTimer() and wraps its content with ToastSettingsProvider */}
                   </BrowserRouter>
                 </ProfilePopUpProvider>
               </GlobalTooltipProvider>
