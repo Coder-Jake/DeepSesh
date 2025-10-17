@@ -140,7 +140,7 @@ const Profile = () => {
     newIntention: string, 
     newSociability: number[], 
     newOrganization: string,
-    newLinkedinUsername: string, // Now represents only the username
+    newLinkedinUsername: string, // Now represents only the handle
     newHostCode: string // NEW: Added newHostCode
   ) => {
     const changed = newFirstName !== originalValues.firstName ||
