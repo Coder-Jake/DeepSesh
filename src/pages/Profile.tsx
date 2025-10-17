@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { Linkedin, Clipboard, Key, Users } from "lucide-react"; // Changed Copy to Clipboard, Added Key, Users
+import { Linkedin, Clipboard, Key, Users, UserMinus } from "lucide-react"; // Changed Copy to Clipboard, Added Key, Users, UserMinus
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from "@/lib/utils"; // Import shared utils
 import { useTimer } from "@/contexts/TimerContext"; // NEW: Import useTimer
@@ -78,6 +78,10 @@ const Profile = () => {
   const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
   const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
+
+  // NEW: State for long-pressed friend ID
+  const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
+  const friendLongPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Helper to get display name for visibility status
   const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[] | null): string => {
@@ -152,6 +156,39 @@ const Profile = () => {
       navigate('/profile#social-preferences');
     }
   };
+
+  // NEW: Friend long press handlers
+  const handleFriendLongPressStart = useCallback((friendId: string) => {
+    friendLongPressTimerRef.current = setTimeout(() => {
+      setLongPressedFriendId(friendId);
+    }, 500); // 500ms for long press
+  }, []);
+
+  const handleFriendLongPressEnd = useCallback(() => {
+    if (friendLongPressTimerRef.current) {
+      clearTimeout(friendLongPressTimerRef.current);
+    }
+    // Do not clear longPressedFriendId here, it should persist until another click or action
+  }, []);
+
+  const handleFriendClick = useCallback((friendId: string, userName: string, event: React.MouseEvent) => {
+    if (longPressedFriendId === friendId) {
+      // If it was long-pressed, clear the state and don't open pop-up
+      setLongPressedFriendId(null);
+    } else {
+      // If not long-pressed, open the pop-up
+      handleNameClick(friendId, userName, event);
+    }
+  }, [longPressedFriendId, handleNameClick]);
+
+  const handleUnfriend = useCallback((friendId: string) => {
+    // TODO: Implement actual unfriend logic here
+    toast({
+      title: "Unfriend Action",
+      description: `Unfriending user with ID: ${friendId}`,
+    });
+    setLongPressedFriendId(null); // Clear long-pressed state after action
+  }, [toast]);
 
   useEffect(() => {
     // Initialize local states from profile or defaults
@@ -494,7 +531,8 @@ const Profile = () => {
     setIsEditingHostCode(false);
     setIsCopied(false); // Reset copy status
     setHasChanges(false); // No more unsaved changes
-  }, [originalValues, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
+    setLongPressedFriendId(null); // Clear any active long-press on cancel
+  }, [originalValues, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setHostCode]);
 
   // NEW: Handle name click for profile pop-up
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -805,10 +843,29 @@ const Profile = () => {
                 friends.map((friendId) => (
                   <div 
                     key={friendId} 
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80"
-                    onClick={(e) => handleNameClick(friendId, friendId, e)} // Use friendId as both ID and fallback name
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80 relative" // Added relative for absolute positioning of icon
+                    onClick={(e) => handleFriendClick(friendId, friendId, e)} // Use new click handler
+                    onMouseDown={() => handleFriendLongPressStart(friendId)}
+                    onMouseUp={handleFriendLongPressEnd}
+                    onMouseLeave={handleFriendLongPressEnd}
+                    onTouchStart={() => handleFriendLongPressStart(friendId)}
+                    onTouchEnd={handleFriendLongPressEnd}
                   >
                     <p className="font-medium">{friendId}</p> {/* Display the ID as name for now */}
+                    {longPressedFriendId === friendId && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:bg-red-100"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent parent div's click handler
+                          handleUnfriend(friendId);
+                        }}
+                        aria-label={`Unfriend ${friendId}`}
+                      >
+                        <UserMinus size={20} />
+                      </Button>
+                    )}
                   </div>
                 ))
               ) : (
