@@ -800,7 +800,10 @@ const Index = () => {
       // For single-choice polls (closed/choice), if optionIds is empty, this effectively unvotes all.
       // For multi-choice (selection), if optionIds doesn't include this option, it remains unvoted.
 
-      return { ...currentPoll, options: updatedOptions });
+      return { ...option, votes: newVotes };
+    });
+
+    updateAsk({ ...currentPoll, options: updatedOptions });
   };
 
   // Callback for when the schedule countdown ends in Timeline
