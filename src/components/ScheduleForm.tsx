@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
 import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext"; // Import DAYS_OF_WEEK
 import { ScheduledTimer } from "@/types/timer";
-import { useToast } from "@/hooks/use-toast"; // Corrected import
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
@@ -42,7 +42,7 @@ const ScheduleForm: React.FC = () => {
     timerColors, // NEW: Get from context
     setTimerColors, // NEW: Get from context
   } = useTimer();
-  const { toast } = useToast(); // Corrected usage
+  const { toast } = useToast();
 
   // Initialize schedule if it's empty (e.g., first time opening schedule form)
   useEffect(() => {

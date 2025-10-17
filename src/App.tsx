@@ -1,16 +1,16 @@
+import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { TimerProvider, useTimer } from "@/contexts/TimerContext";
+import { TimerProvider, useTimer } from "@/contexts/TimerContext"; // Import useTimer here
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GlobalTooltipProvider, useGlobalTooltip } from "@/contexts/GlobalTooltipContext";
-import { ProfilePopUpProvider } from "@/contexts/ProfilePopUpContext";
-import { ToastSettingsProvider } from "@/contexts/ToastSettingsContext";
+import { ProfilePopUpProvider } from "@/contexts/ProfilePopUpContext"; // NEW: Import ProfilePopUpProvider
 import GlobalTooltip from "@/components/GlobalTooltip";
-import ProfilePopUpCard from "@/components/ProfilePopUpCard";
+import ProfilePopUpCard from "@/components/ProfilePopUpCard"; // NEW: Import ProfilePopUpCard
 import Header from "@/components/Header";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -20,18 +20,19 @@ import ChipIn from "./pages/ChipIn";
 import Leaderboard from "./pages/Leaderboard";
 import Credits from "./pages/Credits";
 import Login from "./pages/Login";
-import Feedback from "./pages/Feedback";
+import Feedback from "./pages/Feedback"; // NEW: Import Feedback page
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
 
-// New component to wrap BrowserRouter and consume areToastsEnabled
-const AppWithProvidersAndRouter = () => {
-  const { areToastsEnabled } = useTimer(); // Safe to call here, as it's inside TimerProvider
+const AppContent = () => {
   const navigate = useNavigate();
+  const { toasts } = useToast();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
-  const lastHoveredElementRef = useRef<HTMLElement | null>(null);
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
+  const lastHoveredElementRef = useRef<HTMLElement | null>(null); // Fixed: Initialized with null
 
   const getElementName = (element: HTMLElement): string | null => {
     // 1. Prioritize data-name attribute for explicit naming
@@ -101,6 +102,7 @@ const AppWithProvidersAndRouter = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Shift' && !isShiftPressed) {
         setIsShiftPressed(true);
+        // Removed setTooltip call here, it will be handled by mousemove/mouseover
       }
 
       const targetTagName = (event.target as HTMLElement).tagName;
@@ -194,41 +196,40 @@ const AppWithProvidersAndRouter = () => {
   }, [isShiftPressed, setIsShiftPressed, setTooltip, hideTooltip, navigate]);
 
   return (
-    <ToastSettingsProvider areToastsEnabled={areToastsEnabled}>
-      <BrowserRouter>
-        <div className="min-h-screen bg-background">
-          <Header />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/chip-in" element={<ChipIn />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/credits" element={<Credits />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          {areToastsEnabled && <Sonner />}
-          <GlobalTooltip />
-          <ProfilePopUpCard />
-        </div>
-      </BrowserRouter>
-    </ToastSettingsProvider>
+    <div className="min-h-screen bg-background">
+      <Header />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/chip-in" element={<ChipIn />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/credits" element={<Credits />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/feedback" element={<Feedback />} /> {/* NEW: Add Feedback route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      {areToastsEnabled && <Toaster toasts={toasts} />} {/* NEW: Conditionally render Toaster */}
+      <GlobalTooltip />
+      <ProfilePopUpCard /> {/* NEW: Render the ProfilePopUpCard */}
+    </div>
   );
 };
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider delayDuration={0} skipDelayDuration={300}>
+    <TooltipProvider delayDuration={0} skipDelayDuration={300}> {/* Increased skipDelayDuration */}
       <ThemeProvider>
         <AuthProvider>
           <ProfileProvider>
             <TimerProvider>
               <GlobalTooltipProvider>
-                <ProfilePopUpProvider>
-                  <AppWithProvidersAndRouter /> {/* This is the new entry point */}
+                <ProfilePopUpProvider> {/* NEW: Wrap with ProfilePopUpProvider */}
+                  <Sonner offset={96} /> {/* Added offset to Sonner */}
+                  <BrowserRouter>
+                    <AppContent />
+                  </BrowserRouter>
                 </ProfilePopUpProvider>
               </GlobalTooltipProvider>
             </TimerProvider>

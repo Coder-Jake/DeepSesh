@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { useToast } from "@/hooks/use-toast"; // Corrected import
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 import { useProfile } from "@/contexts/ProfileContext"; // NEW: Import useProfile
 
@@ -82,7 +82,7 @@ const Settings = () => {
 
   const { user } = useAuth(); // Get user from AuthContext
   const navigate = useNavigate(); // Initialize useNavigate
-  const { toast } = useToast(); // Corrected usage
+  const { toast } = useToast(); // Use shadcn toast for UI feedback
   const { isDarkMode, toggleDarkMode } = useTheme(); // Use theme context
   const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile(); // NEW: Get from ProfileContext
 
@@ -182,7 +182,7 @@ const Settings = () => {
 
     const changed = Object.keys(currentUiSettings).some(key => {
       const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
-      const savedVal = savedSettingsRef.current[key as keyof typeof savedUiSettings];
+      const savedVal = savedSettingsRef.current[key as keyof typeof savedSettingsRef.current];
 
       // Deep comparison for objects/arrays (like NotificationSettings, profileVisibility, and blockedUsers)
       if (typeof currentVal === 'object' && currentVal !== null) {
@@ -1113,7 +1113,7 @@ const Settings = () => {
       )}>
         <Button 
           onClick={handleSave}
-          disabled={loading}
+          disabled={!hasChanges}
           className="shadow-lg"
         >
           Save Settings

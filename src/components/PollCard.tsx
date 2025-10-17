@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, X } from "lucide-react"; // Import X icon
-import { useToast } from "@/hooks/use-toast"; // Corrected import
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ interface PollCardProps {
 }
 
 const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide }) => {
-  const { toast } = useToast(); // Corrected usage
+  const { toast } = useToast();
   const [selectedOption, setSelectedOption] = useState<string | null>(() => {
     if (poll.type === 'closed' || poll.type === 'choice') {
       const votedOption = poll.options.find(option => option.votes.some(vote => vote.userId === currentUserId));
@@ -55,7 +55,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
   useEffect(() => {
     if (poll.type === 'closed' || poll.type === 'choice') {
       const votedOption = poll.options.find(option => option.votes.some(vote => vote.userId === currentUserId));
-      setSelectedOption(votedOption ? votedotedOption.id : null);
+      setSelectedOption(votedOption ? votedOption.id : null);
     } else {
       setSelectedOption(null); // Ensure it's null for selection type
     }

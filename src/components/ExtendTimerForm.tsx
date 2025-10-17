@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogFooter } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast"; // Corrected import
+import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 
@@ -15,7 +15,7 @@ interface ExtendTimerFormProps {
 const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) => {
   const { timerIncrement } = useTimer(); // Get timerIncrement from context
   const [minutes, setMinutes] = useState(timerIncrement); // Default to timerIncrement
-  const { toast } = useToast(); // Corrected usage
+  const { toast } = useToast();
 
   const handleSubmit = () => {
     if (minutes <= 0) { // Changed condition to be greater than 0

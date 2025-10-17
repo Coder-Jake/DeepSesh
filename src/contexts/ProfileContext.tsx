@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react"; // NEW: Import useRef
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate, Json } from "@/integrations/supabase/types";
-import { useToast } from '@/hooks/use-toast'; // Corrected import
+import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext"; // Import useAuth to get current user ID
 
@@ -588,7 +588,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   // NEW: Friend status state
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
   const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map()); // NEW: Ref to store timeouts
-  const { toast } = useToast(); // Corrected usage
 
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
@@ -622,13 +621,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const trimmedName = userName.trim();
     if (trimmedName && !blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => [...prev, trimmedName]);
-      toast({
-        title: `'${trimmedName}' has been blocked.`,
+      toast.success(`'${trimmedName}' has been blocked.`, {
         description: "They will no longer see your sessions.",
       });
     } else if (trimmedName && blockedUsers.includes(trimmedName)) {
-      toast({
-        title: `'${trimmedName}' is already blocked.`,
+      toast.info(`'${trimmedName}' is already blocked.`, {
         description: "No changes made.",
       });
     }
@@ -638,13 +635,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const trimmedName = userName.trim();
     if (trimmedName && blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => prev.filter(name => name !== trimmedName));
-      toast({
-        title: `'${trimmedName}' has been unblocked.`,
+      toast.success(`'${trimmedName}' has been unblocked.`, {
         description: "They can now see your sessions again.",
       });
     } else if (trimmedName && !blockedUsers.includes(trimmedName)) {
-      toast({
-        title: `'${trimmedName}' is not in your blocked list.`,
+      toast.info(`'${trimmedName}' is not in your blocked list.`, {
         description: "No changes made.",
       });
     }
@@ -653,8 +648,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   // NEW: Mock friend request functions
   const sendFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'pending' }));
-    toast({
-      title: "Friend request sent!",
+    toast.success("Friend request sent!", {
       description: "They will be notified of your request.",
     });
 
@@ -662,8 +656,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const timeoutId = setTimeout(() => {
       setFriendStatuses(prev => {
         if (prev[targetUserId] === 'pending') { // Only accept if still pending
-          toast({
-            title: `Friend request from ${targetUserId} accepted!`, // Assuming targetUserId can be used as a name for mock
+          toast.success(`Friend request from ${targetUserId} accepted!`, { // Assuming targetUserId can be used as a name for mock
             description: "You are now friends!",
           });
           return { ...prev, [targetUserId]: 'friends' };
@@ -678,8 +671,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'friends' }));
-    toast({
-      title: "Friend request accepted!",
+    toast.success("Friend request accepted!", {
       description: "You are now friends!",
     });
     if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
@@ -690,8 +682,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const removeFriend = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'none' }));
-    toast({
-      title: "Friend removed.",
+    toast.info("Friend removed.", {
       description: "You are no longer friends.",
     });
     if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
@@ -749,10 +740,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error("Error fetching profile:", fetchError);
       setError(fetchError.message);
-      toast({
-        title: "Error fetching profile",
+      toast.error("Error fetching profile", {
         description: fetchError.message,
-        variant: "destructive",
       });
       setProfile(null);
       setLoading(false);
@@ -805,10 +794,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       if (insertError) {
         console.error("Error creating profile:", insertError);
         setError(insertError.message);
-        toast({
-          title: "Error creating profile",
+        toast.error("Error creating profile", {
           description: insertError.message,
-          variant: "destructive",
         });
         setProfile(null);
         setHostCode(newHostCode);
@@ -834,10 +821,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (sessionsError) {
       console.error("Error fetching sessions:", sessionsError);
       setError(sessionsError.message);
-      toast({
-        title: "Error fetching sessions",
+      toast.error("Error fetching sessions", {
         description: sessionsError.message,
-        variant: "destructive",
       });
       setSessions(localSessions.length > 0 ? localSessions : initialSessions);
     } else if (fetchedSupabaseSessions) {
@@ -902,10 +887,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (!user) {
       setError("User not authenticated.");
       setLoading(false);
-      toast({
-        title: "Authentication required",
+      toast.error("Authentication required", {
         description: "Please log in to update your profile.",
-        variant: "destructive",
       });
       return;
     }
@@ -920,10 +903,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (error) {
       console.error("Error updating profile:", error);
       setError(error.message);
-      toast({
-        title: "Error updating profile",
+      toast.error("Error updating profile", {
         description: error.message,
-        variant: "destructive",
       });
     } else if (updatedData) {
       setProfile({ ...updatedData, first_name: updatedData.first_name || "" });
@@ -937,8 +918,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setLinkedinVisibility((updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
 
       console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
-      toast({
-        title: successMessage || "Profile updated!", // MODIFIED: Use successMessage or fallback
+      toast.success(successMessage || "Profile updated!", { // MODIFIED: Use successMessage or fallback
         description: "Your profile has been successfully saved.",
       });
     }
@@ -991,8 +971,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     });
 
     if (!user) {
-      toast({
-        title: "Session saved locally!",
+      toast.success("Session saved locally!", {
         description: "Your session has been recorded in this browser.",
       });
       setLoading(false);
@@ -1022,15 +1001,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (insertError) {
       console.error("Error saving session to Supabase:", insertError);
       setError(insertError.message);
-      toast({
-        title: "Error saving session",
+      toast.error("Error saving session", {
         description: `Failed to save core session data to cloud. Notes and asks are saved locally. ${insertError.message}`,
-        variant: "destructive",
       });
     } else if (data) {
       console.log("Core session data saved to Supabase:", data);
-      toast({
-        title: "Session saved!",
+      toast.success("Session saved!", {
         description: "Your session has been successfully recorded.",
       });
     }
@@ -1061,10 +1037,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (deleteError) {
       console.error("Error deleting session from Supabase:", deleteError);
       setError(deleteError.message);
-      toast({
-        title: "Error deleting session",
+      toast.error("Error deleting session", {
         description: `Failed to delete core session data from cloud. Local data removed. ${deleteError.message}`,
-        variant: "destructive",
       });
     } else {
       console.log("Core session data deleted from Supabase:", sessionId);
@@ -1172,7 +1146,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
       friendRequestTimeouts.current.clear();
     };
-  }, [fetchProfile, toast]);
+  }, []);
 
   useEffect(() => {
     const dataToSave = {
