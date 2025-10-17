@@ -38,7 +38,7 @@ const Profile = () => {
   const [intention, setIntention] = useState("");
   const [sociability, setSociability] = useState([30]);
   const [organization, setOrganization] = useState(""); // New state for organization
-  const [linkedinUrl, setLinkedinUrl] = useState(""); // State for LinkedIn username (only)
+  const [linkedinUrl, setLinkedinUrl] = useState(""); // State for LinkedIn (only)
   // Removed local hostCode state, now using context's hostCode
   const [isEditingHostCode, setIsEditingHostCode] = useState(false); // NEW: State for editing host code
   const hostCodeInputRef = useRef<HTMLInputElement>(null); // NEW: Ref for host code input
