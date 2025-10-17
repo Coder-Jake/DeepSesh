@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { useToast } from "@/hooks/use-toast"; // Corrected import
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,7 @@ const Profile = () => {
   } = useProfile(); // NEW: Get hostCode and setHostCode from useProfile
   const { user } = useAuth(); // Get user from AuthContext
   const navigate = useNavigate(); // Initialize useNavigate
-  const { toast } = useToast();
+  const { toast } = useToast(); // Corrected usage
   // NEW: Get timer states from TimerContext (global profileVisibility is still here for Settings.tsx)
   const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending } = useTimer(); 
   const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext

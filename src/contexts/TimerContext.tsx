@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings } from '@/types/timer'; // Import all types
-import { toast } from '@/hooks/use-toast'; // Using shadcn toast for UI feedback
+import { useToast } from '@/hooks/use-toast'; // Corrected import
 import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
 import { supabase } from '@/integrations/supabase/client'; // Import supabase client
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules'; // Import default templates
@@ -15,6 +15,7 @@ const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context'; // New local storage k
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth(); // Get user from AuthContext
   const { saveSession, localFirstName } = useProfile(); // Get saveSession and localFirstName from useProfile
+  const { toast } = useToast(); // Corrected usage: call useToast inside the component
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5); // Default increment for focus/break minutes
 
@@ -270,7 +271,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionHostName(null);
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0); // Reset coworker count
-  }, [_defaultFocusMinutes, _defaultBreakMinutes]);
+  }, [_defaultFocusMinutes, _defaultBreakMinutes, setActiveAsks]);
 
   const startSchedule = useCallback(() => {
     if (schedule.length === 0) {
@@ -376,7 +377,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks
+    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks, preparedSchedules
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -641,7 +642,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, toast]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
@@ -752,7 +753,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // If no data in local storage, initialize with default templates
       setSavedSchedules(DEFAULT_SCHEDULE_TEMPLATES);
     }
-  }, []);
+  }, [timerIncrement, setActiveAsks]);
 
   // Save TimerContext states to local storage whenever they change
   useEffect(() => {

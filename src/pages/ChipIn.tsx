@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
-import { toast } from 'sonner'; // Import toast from sonner directly
+import { useToast } from '@/hooks/use-toast'; // Corrected import
 import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
 
 const ChipIn = () => {
+  const { toast } = useToast(); // Corrected usage
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
@@ -30,19 +31,23 @@ const ChipIn = () => {
     const donationAmount = parseFloat(amount);
 
     if (!amount || donationAmount <= 0) {
-      toast.error("Invalid amount", {
+      toast({
+        title: "Invalid amount",
         description: "Please enter a valid donation amount.",
+        variant: "destructive",
       });
       return;
     }
 
     // In a real app, this would integrate with a payment processor
     if (donationAmount > 50) {
-      toast.success("Congratulations! 🎉", {
+      toast({
+        title: "Congratulations! 🎉",
         description: "Please speak to the dev to collect your prize!",
       });
     } else {
-      toast.info("Is that really all you've got? 💜", {
+      toast({
+        title: "Is that really all you've got? 💜",
         description: `Please donate a larger amount!`,
       });
     }

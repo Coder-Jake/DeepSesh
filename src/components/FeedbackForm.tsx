@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast'; // Corrected import
 import { supabase } from '@/integrations/supabase/client'; // Corrected import
 
 const formSchema = z.object({
@@ -20,7 +20,7 @@ const formSchema = z.object({
 type FeedbackFormValues = z.infer<typeof formSchema>;
 
 const FeedbackForm = () => {
-  // Removed createClient call as supabase is already initialized and imported
+  const { toast } = useToast(); // Corrected usage
   const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<FeedbackFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,14 +45,17 @@ const FeedbackForm = () => {
         throw error;
       }
 
-      toast.success('Feedback sent!', {
+      toast({
+        title: 'Feedback sent!',
         description: 'Thank you for your valuable input.',
       });
       reset();
     } catch (error: any) {
       console.error('Error sending feedback:', error);
-      toast.error('Failed to send feedback.', {
+      toast({
+        title: 'Failed to send feedback.',
         description: error.message || 'Please try again later.',
+        variant: "destructive",
       });
     }
   };

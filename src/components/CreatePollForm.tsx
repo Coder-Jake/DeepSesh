@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DialogFooter } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"; // Corrected import
 import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react";
 import { Switch } from "@/components/ui/switch"; // Still needed for the type, but not rendered
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const [pollType, setPollType] = useState<PollType>('closed');
   const [options, setOptions] = useState("");
   const [allowCustomResponses, setAllowCustomResponses] = useState(false);
-  const { toast } = useToast();
+  const { toast } = useToast(); // Corrected usage
 
   const getOptionsPlaceholderText = (type: PollType) => {
     switch (type) {

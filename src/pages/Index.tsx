@@ -29,7 +29,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
+import { useToast } from "@/hooks/use-toast"; // Corrected import
 import { format } from 'date-fns'; // Import date-fns for time formatting
 import { ScheduledTimerTemplate } from "@/types/timer"; // Corrected import path for ScheduledTimerTemplate
 import { DAYS_OF_WEEK } from "@/contexts/TimerContext"; // DAYS_OF_WEEK is still exported from TimerContext
@@ -232,6 +232,7 @@ const Index = () => {
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
   const navigate = useNavigate();
   const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
+  const { toast } = useToast(); // Corrected usage
 
   const [isPrivate, setIsPrivate] = useState(isGlobalPrivate);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);

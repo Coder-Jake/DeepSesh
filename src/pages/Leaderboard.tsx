@@ -6,6 +6,7 @@ import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { TimePeriod } from "@/contexts/ProfileContext"; // Import TimePeriod type
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
+import { useToast } from "@/hooks/use-toast"; // Corrected import
 
 const Leaderboard = () => {
   const { 
@@ -16,6 +17,7 @@ const Leaderboard = () => {
     statsData // Get statsData from ProfileContext
   } = useProfile(); // Use persistent states from context
   const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
+  const { toast } = useToast(); // Corrected usage
 
   const currentUserName = profile?.first_name || localFirstName || "You"; // Prioritize Supabase, then local, then default
   const currentUserId = profile?.id || "mock-user-id-999"; // Use a consistent mock ID if not logged in

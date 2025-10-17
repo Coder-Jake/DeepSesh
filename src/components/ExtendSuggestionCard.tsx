@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, ThumbsUp, ThumbsDown, Minus, X } from "lucide-react"; // Import X icon
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"; // Corrected import
 import { cn } from "@/lib/utils";
 
 interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
-  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
+  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[]; // Added 'neutral'
   status: 'pending' | 'accepted' | 'rejected';
 }
 
@@ -21,7 +21,7 @@ interface ExtendSuggestionCardProps {
 }
 
 const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion, onVote, currentUserId, onHide }) => {
-  const { toast } = useToast();
+  const { toast } = useToast(); // Corrected usage
   const userVote = suggestion.votes.find(v => v.userId === currentUserId)?.vote;
 
   const yesVotes = suggestion.votes.filter(v => v.vote === 'yes').length;

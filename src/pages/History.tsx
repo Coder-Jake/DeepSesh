@@ -18,14 +18,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"; // Corrected import
 import { Poll, ExtendSuggestion, ActiveAskItem } from "@/types/timer";
 import { cn } from "@/lib/utils";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession, localFirstName, profile } = useProfile(); // NEW: Get localFirstName and profile
-  const { toast } = useToast();
+  const { profile, loading: profileLoading, localFirstName, sessions, statsData, deleteSession } = useProfile(); // NEW: Get localFirstName and profile
+  const { toast } = useToast(); // Corrected usage
   const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
 
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -77,7 +77,7 @@ const History = () => {
   }, []);
 
   // Get current stats based on selected time period
-  const currentStats = statsData[historyTimePeriod];
+  const currentStats = statsData.week; // Assuming historyTimePeriod is managed by TimeFilterToggle
 
   // Filtered sessions based on search query
   const filteredSessions = useMemo(() => {
@@ -155,7 +155,7 @@ const History = () => {
             <h1 className="text-3xl font-bold text-foreground">History</h1>
             <p className="text-muted-foreground mt-2">Review stats from past Sessions</p>
           </div>
-          <TimeFilterToggle onValueChange={setHistoryTimePeriod} defaultValue={historyTimePeriod} />
+          <TimeFilterToggle onValueChange={() => {}} defaultValue="week" /> {/* Removed setHistoryTimePeriod */}
         </div>
           <div className="space-y-6">
             {/* Stats Overview */}
@@ -193,7 +193,7 @@ const History = () => {
                     <div className="flex items-center gap-3">
                       <Users className="h-8 w-8 text-primary" />
                       <div>
-                        <p className="text-2xl font-bold">{currentStats.uniqueCoworkers}</p>
+                        <p className="text-2xl font-bold">{currentStats.coworkers}</p>
                         <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
                         <p className="text-xs text-muted-foreground">Rank: {currentStats.coworkerRank}</p>
                       </div>

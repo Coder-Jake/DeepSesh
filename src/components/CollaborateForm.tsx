@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast'; // Corrected import
 import { supabase } from '@/integrations/supabase/client'; // Corrected import
 
 const formSchema = z.object({
@@ -20,7 +20,7 @@ const formSchema = z.object({
 type CollaborateFormValues = z.infer<typeof formSchema>;
 
 const CollaborateForm = () => {
-  // Removed createClient call as supabase is already initialized and imported
+  const { toast } = useToast(); // Corrected usage
   const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<CollaborateFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,14 +45,17 @@ const CollaborateForm = () => {
         throw error;
       }
 
-      toast.success('Collaboration offer sent!', {
+      toast({
+        title: 'Collaboration offer sent!',
         description: 'We will get back to you soon.',
       });
       reset();
     } catch (error: any) {
       console.error('Error sending collaboration offer:', error);
-      toast.error('Failed to send collaboration offer.', {
+      toast({
+        title: 'Failed to send collaboration offer.',
         description: error.message || 'Please try again later.',
+        variant: "destructive",
       });
     }
   };

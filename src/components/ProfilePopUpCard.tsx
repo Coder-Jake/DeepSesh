@@ -6,7 +6,7 @@ import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { Profile } from '@/contexts/ProfileContext'; // Import the Profile type
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils'; // Import shared utils
-import { useToast } from '@/hooks/use-toast'; // NEW: Import useToast
+import { useToast } from '@/hooks/use-toast'; // Corrected import
 
 const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
@@ -22,7 +22,7 @@ const ProfilePopUpCard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast(); // NEW: Initialize useToast
+  const { toast } = useToast(); // Corrected usage
 
   // State for adjusted position
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);

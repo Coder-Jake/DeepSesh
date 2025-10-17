@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -23,13 +22,12 @@ import Login from "./pages/Login";
 import Feedback from "./pages/Feedback"; // NEW: Import Feedback page
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const navigate = useNavigate();
-  const { toasts } = useToast();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
   const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
   const lastHoveredElementRef = useRef<HTMLElement | null>(null); // Fixed: Initialized with null
@@ -210,7 +208,7 @@ const AppContent = () => {
         <Route path="/feedback" element={<Feedback />} /> {/* NEW: Add Feedback route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {areToastsEnabled && <Toaster toasts={toasts} />} {/* NEW: Conditionally render Toaster */}
+      {areToastsEnabled && <Sonner />} {/* NEW: Conditionally render Sonner */}
       <GlobalTooltip />
       <ProfilePopUpCard /> {/* NEW: Render the ProfilePopUpCard */}
     </div>
@@ -226,7 +224,6 @@ const App = () => (
             <TimerProvider>
               <GlobalTooltipProvider>
                 <ProfilePopUpProvider> {/* NEW: Wrap with ProfilePopUpProvider */}
-                  <Sonner offset={96} /> {/* Added offset to Sonner */}
                   <BrowserRouter>
                     <AppContent />
                   </BrowserRouter>
