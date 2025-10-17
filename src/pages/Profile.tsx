@@ -113,7 +113,7 @@ const Profile = () => {
       intention: profile?.intention || "",
       sociability: [profile?.sociability || 50],
       organization: profile?.organization || "", // Set original organization
-      linkedinUrl: linkedinUsername, // Set original LinkedIn username
+      linkedinUrl: linkedinUsername, // Set original LinkedIn handle
       hostCode: hostCode, // Use the hostCode from context
     });
     setHasChanges(false);
