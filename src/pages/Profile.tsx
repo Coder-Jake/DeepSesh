@@ -76,11 +76,32 @@ const Profile = () => {
   const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
 
-  const handleLabelClick = useCallback((
+  // Helper to get display name for visibility status
+  const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[]): string => {
+    if (visibility.includes('private')) return 'private';
+    if (visibility.includes('public')) return 'public';
+    if (visibility.includes('friends') && visibility.includes('organisation')) return 'friends & organisation only';
+    if (visibility.includes('friends')) return 'friends only';
+    if (visibility.includes('organisation')) return 'organisation only';
+    return 'public'; // Fallback
+  }, []);
+
+  // Helper to get display name for field
+  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility'): string => {
+    switch (fieldName) {
+      case 'bio_visibility': return 'Bio';
+      case 'intention_visibility': return 'Intention';
+      case 'linkedin_visibility': return 'LinkedIn';
+      default: return '';
+    }
+  }, []);
+
+  const handleLabelClick = useCallback(async ( // MODIFIED: Added async
     currentIndex: number, 
     setter: React.Dispatch<React.SetStateAction<number>>,
     visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
-    currentBioVis: ('public' | 'friends' | 'organisation' | 'private')[], // Pass current visibility states
+    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility', // MODIFIED: Added fieldName
+    currentBioVis: ('public' | 'friends' | 'organisation' | 'private')[], 
     currentIntentionVis: ('public' | 'friends' | 'organisation' | 'private')[],
     currentLinkedinVis: ('public' | 'friends' | 'organisation' | 'private')[]
   ) => {
@@ -90,6 +111,21 @@ const Profile = () => {
     setter(nextIndex);
     visibilitySetter(newVisibility);
 
+    // Construct specific success message
+    const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
+
+    // Also update Supabase
+    if (user) { // MODIFIED: Check if user is logged in
+      await updateProfile({ [fieldName]: newVisibility }, successMessage); // MODIFIED: Pass successMessage
+    } else {
+      // For unauthenticated users, save to local storage and show local toast
+      localStorage.setItem(`deepsesh_${fieldName}`, JSON.stringify(newVisibility));
+      toast({
+        title: "Privacy Setting Saved Locally",
+        description: successMessage,
+      });
+    }
+
     // Immediately check for changes after updating visibility
     checkForChanges(
       firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode,
@@ -98,7 +134,7 @@ const Profile = () => {
       visibilitySetter === setIntentionVisibility ? newVisibility : currentIntentionVis,
       visibilitySetter === setLinkedinVisibility ? newVisibility : currentLinkedinVis
     );
-  }, [firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
+  }, [firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, user, updateProfile, toast, getDisplayFieldName, getDisplayVisibilityStatus]); // MODIFIED: Added user, updateProfile, toast, getDisplayFieldName, getDisplayVisibilityStatus as dependencies
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
@@ -518,7 +554,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="bio" 
-                  onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex, setBioVisibility, bioVisibility, intentionVisibility, linkedinVisibility)} 
+                  onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex, setBioVisibility, 'bio_visibility', bioVisibility, intentionVisibility, linkedinVisibility)} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(bioLabelColorIndex))}
                 >
                   Brief Bio
@@ -535,7 +571,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="intention" 
-                  onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex, setIntentionVisibility, bioVisibility, intentionVisibility, linkedinVisibility)} 
+                  onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex, setIntentionVisibility, 'intention_visibility', bioVisibility, intentionVisibility, linkedinVisibility)} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(intentionLabelColorIndex))}
                 >
                   Statement of Intention
@@ -553,7 +589,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="linkedin-username" 
-                  onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex, setLinkedinVisibility, bioVisibility, intentionVisibility, linkedinVisibility)} 
+                  onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex, setLinkedinVisibility, 'linkedin_visibility', bioVisibility, intentionVisibility, linkedinVisibility)} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(linkedinLabelColorIndex))}
                 >
                   LinkedIn Handle

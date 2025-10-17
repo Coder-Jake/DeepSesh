@@ -486,7 +486,7 @@ interface ProfileContextType {
   profile: Profile | null;
   loading: boolean;
   error: string | null;
-  updateProfile: (data: ProfileUpdate) => Promise<void>;
+  updateProfile: (data: ProfileUpdate, successMessage?: string) => Promise<void>; // MODIFIED: Added successMessage
   fetchProfile: () => Promise<void>;
   
   localFirstName: string;
@@ -818,7 +818,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
-  const updateProfile = async (data: ProfileUpdate) => {
+  const updateProfile = async (data: ProfileUpdate, successMessage?: string) => { // MODIFIED: Added successMessage
     setLoading(true);
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
@@ -857,7 +857,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setLinkedinVisibility((updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
 
       console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
-      toast.success("Profile updated!", {
+      toast.success(successMessage || "Profile updated!", { // MODIFIED: Use successMessage or fallback
         description: "Your profile has been successfully saved.",
       });
     }
