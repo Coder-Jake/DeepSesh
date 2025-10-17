@@ -331,7 +331,9 @@ const mockProfiles: Profile[] = [
     organization: "Tech Innovators Inc.",
     linkedin_url: "https://www.linkedin.com/in/alicesmith",
     host_code: "redfox",
-    profileVisibility: ['public', 'friends'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-2",
@@ -345,7 +347,9 @@ const mockProfiles: Profile[] = [
     organization: "Web Solutions Co.",
     linkedin_url: "https://www.linkedin.com/in/bobjohnson",
     host_code: "bluebear",
-    profileVisibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-3",
@@ -359,7 +363,9 @@ const mockProfiles: Profile[] = [
     organization: "Cloud Builders LLC",
     linkedin_url: "https://www.linkedin.com/in/charliebrown",
     host_code: "greencat",
-    profileVisibility: ['friends', 'organisation'],
+    bio_visibility: ['friends', 'organisation'], // NEW
+    intention_visibility: ['friends', 'organisation'], // NEW
+    linkedin_visibility: ['friends', 'organisation'], // NEW
   },
   {
     id: "mock-user-id-4",
@@ -373,7 +379,9 @@ const mockProfiles: Profile[] = [
     organization: "Global Enterprises",
     linkedin_url: "https://www.linkedin.com/in/dianaprince",
     host_code: "yellowdog",
-    profileVisibility: ['public', 'organisation'],
+    bio_visibility: ['public', 'organisation'], // NEW
+    intention_visibility: ['public', 'organisation'], // NEW
+    linkedin_visibility: ['public', 'organisation'], // NEW
   },
   {
     id: "mock-user-id-5",
@@ -387,7 +395,9 @@ const mockProfiles: Profile[] = [
     organization: "Design Innovations",
     linkedin_url: "https://www.linkedin.com/in/eveadams",
     host_code: "purplelion",
-    profileVisibility: ['private'], // This profile is private
+    bio_visibility: ['private'], // NEW
+    intention_visibility: ['private'], // NEW
+    linkedin_visibility: ['private'], // NEW
   },
   {
     id: "mock-user-id-6",
@@ -401,7 +411,9 @@ const mockProfiles: Profile[] = [
     organization: "Data Insights Co.",
     linkedin_url: "https://www.linkedin.com/in/frankwhite",
     host_code: "orangetiger",
-    profileVisibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-7",
@@ -415,7 +427,9 @@ const mockProfiles: Profile[] = [
     organization: "Creative Minds Agency",
     linkedin_url: "https://www.linkedin.com/in/gracetaylor",
     host_code: "pinkwolf",
-    profileVisibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-8",
@@ -429,7 +443,9 @@ const mockProfiles: Profile[] = [
     organization: "Secure Solutions Ltd.",
     linkedin_url: "https://www.linkedin.com/in/heidiclark",
     host_code: "browndeer",
-    profileVisibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-9",
@@ -443,7 +459,9 @@ const mockProfiles: Profile[] = [
     organization: "Automate Everything Inc.",
     linkedin_url: "https://www.linkedin.com/in/ivanking",
     host_code: "greyzebra",
-    profileVisibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
   {
     id: "mock-user-id-10",
@@ -457,7 +475,9 @@ const mockProfiles: Profile[] = [
     organization: "Innovate UX",
     linkedin_url: "https://www.linkedin.com/in/judylee",
     host_code: "blackpanda",
-    profileVisibility: ['public'],
+    bio_visibility: ['public'], // NEW
+    intention_visibility: ['public'], // NEW
+    linkedin_visibility: ['public'], // NEW
   },
 ];
 
@@ -503,6 +523,14 @@ interface ProfileContextType {
 
   deleteSession: (sessionId: string) => Promise<void>;
   getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>; // NEW: Added getPublicProfile
+
+  // NEW: Per-field visibility states
+  bioVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  setBioVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
+  intentionVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  setIntentionVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
+  linkedinVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  setLinkedinVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -524,6 +552,9 @@ const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name';
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users';
 const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
 const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions';
+const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility'; // NEW
+const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility'; // NEW
+const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility'; // NEW
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user } = useAuth();
@@ -541,6 +572,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [hostCode, setHostCode] = useState("");
+
+  // NEW: Per-field visibility states
+  const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
+  const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
+  const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
 
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
@@ -610,6 +646,15 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       localSessions = JSON.parse(storedSessions);
     }
 
+    // NEW: Load per-field visibility from local storage for unauthenticated users
+    const storedBioVisibility = localStorage.getItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY);
+    if (storedBioVisibility) setBioVisibility(JSON.parse(storedBioVisibility));
+    const storedIntentionVisibility = localStorage.getItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY);
+    if (storedIntentionVisibility) setIntentionVisibility(JSON.parse(storedIntentionVisibility));
+    const storedLinkedinVisibility = localStorage.getItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY);
+    if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
+
+
     if (!user) {
       setProfile(null);
       setLoading(false);
@@ -662,6 +707,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
         await updateProfile({ host_code: newHostCode });
       }
+      // NEW: Set per-field visibility from fetched profile
+      setBioVisibility((existingProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+      setIntentionVisibility((existingProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+      setLinkedinVisibility((existingProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+
       console.log("Profile fetched from Supabase:", { ...existingProfile, first_name: existingProfile.first_name || "" });
     } else {
       console.log("No existing profile found for user, attempting to create one.");
@@ -672,7 +722,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           id: user.id, 
           first_name: user.user_metadata.first_name, 
           last_name: user.user_metadata.last_name,
-          host_code: newHostCode
+          host_code: newHostCode,
+          bio_visibility: ['public'], // NEW: Default visibility on creation
+          intention_visibility: ['public'], // NEW
+          linkedin_visibility: ['public'], // NEW
         })
         .select()
         .single();
@@ -690,6 +743,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setProfile({ ...newProfile, first_name: newProfile.first_name || "" });
         setHostCode(newProfile.host_code || newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newProfile.host_code || newHostCode);
+        // NEW: Set per-field visibility from new profile
+        setBioVisibility((newProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+        setIntentionVisibility((newProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+        setLinkedinVisibility((newProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
         console.log("New profile created in Supabase:", { ...newProfile, first_name: newProfile.first_name || "" });
       }
     }
@@ -794,6 +851,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(updatedData.host_code);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, updatedData.host_code);
       }
+      // NEW: Update per-field visibility states after successful update
+      setBioVisibility((updatedData.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+      setIntentionVisibility((updatedData.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+      setLinkedinVisibility((updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+
       console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
       toast.success("Profile updated!", {
         description: "Your profile has been successfully saved.",
@@ -962,7 +1024,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       organization: null,
       linkedin_url: null,
       host_code: null,
-      profileVisibility: ['public'], // Default to public for unknown users
+      bio_visibility: ['public'], // NEW: Default visibility for unknown users
+      intention_visibility: ['public'], // NEW
+      linkedin_visibility: ['public'], // NEW
     };
   }, []);
 
@@ -1008,6 +1072,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         } else {
           setSessions(initialSessions);
         }
+        // NEW: Reset per-field visibility to default for unauthenticated users
+        setBioVisibility(['public']);
+        setIntentionVisibility(['public']);
+        setLinkedinVisibility(['public']);
       }
     });
 
@@ -1044,6 +1112,19 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
   }, [hostCode]);
 
+  // NEW: Save per-field visibility to local storage
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY, JSON.stringify(bioVisibility));
+  }, [bioVisibility]);
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, JSON.stringify(intentionVisibility));
+  }, [intentionVisibility]);
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(linkedinVisibility));
+  }, [linkedinVisibility]);
+
   const value = {
     profile,
     loading,
@@ -1067,6 +1148,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setHostCode,
     deleteSession,
     getPublicProfile, // NEW: Expose getPublicProfile
+    bioVisibility, // NEW
+    setBioVisibility, // NEW
+    intentionVisibility, // NEW
+    setIntentionVisibility, // NEW
+    linkedinVisibility, // NEW
+    setLinkedinVisibility, // NEW
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
