@@ -178,7 +178,7 @@ const Profile = () => {
     checkForChanges(firstNameInput, bio, intention, sociability, value, linkedinUrl, hostCode); // Pass hostCode
   };
 
-  const handleLinkedinUrlChange = (value: string) => { // This value is now just the username
+  const handleLinkedinUrlChange = (value: string) => { // This value is now just the handle
     setLinkedinUrl(value);
     checkForChanges(firstNameInput, bio, intention, sociability, organization, value, hostCode);
   };
