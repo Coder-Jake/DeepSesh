@@ -65,6 +65,10 @@ export default {
 				olive: {
 					DEFAULT: 'hsl(80 60% 40%)', // A shade of olive green
 					foreground: 'hsl(0 0% 100%)', // White text for contrast
+				},
+				cancel: { // NEW: Added cancel color
+					DEFAULT: 'hsl(var(--cancel))',
+					foreground: 'hsl(var(--cancel-foreground))'
 				}
 			},
 			borderRadius: {

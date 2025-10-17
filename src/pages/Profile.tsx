@@ -465,6 +465,34 @@ const Profile = () => {
     }
   }, [hostCode, toast]);
 
+  // NEW: handleCancel function to revert all changes
+  const handleCancel = useCallback(() => {
+    setFirstNameInput(originalValues.firstName);
+    setLocalFirstName(originalValues.firstName); // Also update context
+    setBio(originalValues.bio);
+    setIntention(originalValues.intention);
+    setSociability(originalValues.sociability);
+    setOrganization(originalValues.organization);
+    setLinkedinUrl(originalValues.linkedinUrl);
+    setHostCode(originalValues.hostCode);
+
+    // Revert visibility states
+    setBioVisibility(originalValues.bioVisibility);
+    setIntentionVisibility(originalValues.intentionVisibility);
+    setLinkedinVisibility(originalValues.linkedinVisibility);
+
+    // Revert label color indices
+    setBioLabelColorIndex(getIndexFromVisibility(originalValues.bioVisibility));
+    setIntentionLabelColorIndex(getIndexFromVisibility(originalValues.intentionVisibility));
+    setLinkedinLabelColorIndex(getIndexFromVisibility(originalValues.linkedinVisibility));
+
+    setIsEditingFirstName(false);
+    setIsEditingHostCode(false);
+    setIsCopied(false); // Reset copy status
+    setHasChanges(false); // No more unsaved changes
+  }, [originalValues, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
+
+
   if (loading) {
     return (
       <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6 text-center text-muted-foreground">
@@ -475,12 +503,24 @@ const Profile = () => {
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex justify-between items-center relative"> {/* Added relative */}
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-        {!user && (
-          <Button variant="outline" onClick={() => navigate('/login')}>
-            Login
-          </Button>
+        {hasChanges ? (
+          <div className="absolute right-0"> {/* Position Save button absolutely */}
+            <Button 
+              onClick={handleSave}
+              disabled={!hasChanges || loading}
+              className="shadow-lg"
+            >
+              {loading ? "Saving..." : "Save Profile"}
+            </Button>
+          </div>
+        ) : (
+          !user && (
+            <Button variant="outline" onClick={() => navigate('/login')}>
+              Login
+            </Button>
+          )
         )}
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -733,19 +773,30 @@ const Profile = () => {
         </div>
 
         {/* Save Button */}
-        <div className={cn(
-          "fixed bottom-4 right-4 z-50 transition-opacity duration-300",
-          hasChanges ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        )}>
+        {hasChanges && (
+          <div className="fixed bottom-4 right-4 z-50 transition-opacity duration-300 opacity-100 pointer-events-auto">
+            <Button 
+              onClick={handleSave}
+              disabled={loading} // Disable save if loading
+              className="shadow-lg"
+            >
+              {loading ? "Saving..." : "Save Profile"}
+            </Button>
+          </div>
+        )}
+      
+      {/* Cancel Button */}
+      {hasChanges && (
+        <div className="fixed bottom-4 left-4 z-50 transition-opacity duration-300 opacity-100 pointer-events-auto">
           <Button 
-            onClick={handleSave}
-            disabled={!hasChanges || loading} // Disable save if timer is active
-            className="shadow-lg"
+            onClick={handleCancel}
+            className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel/80"
           >
-            {loading ? "Saving..." : "Save Profile"}
+            Cancel
           </Button>
         </div>
-      
+      )}
+
       {/* Organization Dialog */}
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
@@ -754,6 +805,7 @@ const Profile = () => {
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
+          </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
