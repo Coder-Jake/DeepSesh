@@ -509,7 +509,7 @@ const Profile = () => {
           <div className="absolute right-0"> {/* Position Save button absolutely */}
             <Button 
               onClick={handleSave}
-              disabled={!hasChanges || loading}
+              disabled={loading}
               className="shadow-lg"
             >
               {loading ? "Saving..." : "Save Profile"}
@@ -777,7 +777,7 @@ const Profile = () => {
           <div className="fixed bottom-4 right-4 z-50 transition-opacity duration-300 opacity-100 pointer-events-auto">
             <Button 
               onClick={handleSave}
-              disabled={loading} // Disable save if loading
+              disabled={loading}
               className="shadow-lg"
             >
               {loading ? "Saving..." : "Save Profile"}
@@ -805,7 +805,6 @@ const Profile = () => {
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
-          </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
