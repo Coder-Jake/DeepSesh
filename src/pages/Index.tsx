@@ -935,7 +935,7 @@ const Index = () => {
                         </> : <>
                           <Lock size={16} />
                           <span className="text-sm font-medium">Private</span>
-                        </>}
+                        }</>
                     </button>
                     
                     {isActiveTimer ? ( // Conditionally render Share Dropdown
@@ -1149,7 +1149,7 @@ const Index = () => {
         {/* Right Column */}
         <div className="space-y-6">
           {/* User Intention Section */}
-          {!profileLoading && profile?.intention && (
+          {profile?.intention && ( // Changed condition to only check for profile.intention
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">My Intention</CardTitle>
