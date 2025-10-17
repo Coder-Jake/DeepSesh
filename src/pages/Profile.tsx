@@ -18,21 +18,24 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { Linkedin, Clipboard, Key } from "lucide-react"; // Changed Copy to Clipboard, Added Key
+import { Linkedin, Clipboard, Key, Users } from "lucide-react"; // Changed Copy to Clipboard, Added Key, Users
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from "@/lib/utils"; // Import shared utils
 import { useTimer } from "@/contexts/TimerContext"; // NEW: Import useTimer
+import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
 
 const Profile = () => {
   const { 
     profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
-    bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility // NEW: Get per-field visibility
+    bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
+    friendStatuses, getPublicProfile // NEW: Get friendStatuses and getPublicProfile
   } = useProfile(); // NEW: Get hostCode and setHostCode from useProfile
   const { user } = useAuth(); // Get user from AuthContext
   const navigate = useNavigate(); // Initialize useNavigate
   const { toast } = useToast();
   // NEW: Get timer states from TimerContext (global profileVisibility is still here for Settings.tsx)
   const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending } = useTimer(); 
+  const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
 
   const [firstNameInput, setFirstNameInput] = useState(""); // Local state for first name input
   const [bio, setBio] = useState("");
@@ -77,7 +80,8 @@ const Profile = () => {
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
 
   // Helper to get display name for visibility status
-  const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[]): string => {
+  const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[] | null): string => {
+    if (!visibility || visibility.length === 0) return 'public'; // Default to public if not set
     if (visibility.includes('private')) return 'private';
     if (visibility.includes('public')) return 'public';
     if (visibility.includes('friends') && visibility.includes('organisation')) return 'friends & organisation only';
@@ -492,6 +496,23 @@ const Profile = () => {
     setHasChanges(false); // No more unsaved changes
   }, [originalValues, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
 
+  // NEW: Handle name click for profile pop-up
+  const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent parent click handlers
+    // Fetch the full profile data for the target user
+    const targetProfileData = await getPublicProfile(userId, userName);
+    if (targetProfileData) {
+      openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
+    } else {
+      // Fallback if profile data can't be fetched
+      openProfilePopUp(userId, userName, event.clientX, event.clientY);
+    }
+  }, [openProfilePopUp, getPublicProfile]);
+
+  // Filter friends from friendStatuses
+  const friends = Object.entries(friendStatuses)
+    .filter(([, status]) => status === 'friends')
+    .map(([userId]) => userId); // Get just the user IDs of friends
 
   if (loading) {
     return (
@@ -768,6 +789,31 @@ const Profile = () => {
               <Button onClick={() => setIsOrganizationDialogOpen(true)}>
                 {profile?.organization ? "Edit Organisation" : "Add Organisation"}
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* NEW: Friends Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Friends
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {friends.length > 0 ? (
+                friends.map((friendId) => (
+                  <div 
+                    key={friendId} 
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80"
+                    onClick={(e) => handleNameClick(friendId, friendId, e)} // Use friendId as both ID and fallback name
+                  >
+                    <p className="font-medium">{friendId}</p> {/* Display the ID as name for now */}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No friends yet. Send some requests!</p>
+              )}
             </CardContent>
           </Card>
         </div>
