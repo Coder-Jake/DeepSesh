@@ -1,3 +1,4 @@
+/** @jsxImportSource react */
 import React, { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -160,7 +161,7 @@ const History = () => {
   }, []);
 
   return (
-    <>
+    <div>
       <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
@@ -193,7 +194,7 @@ const History = () => {
                     <Calendar className="h-8 w-8 text-primary" />
                     <div>
                       <p className="text-2xl font-bold">{currentStats.sessionsCompleted}</p>
-                      <p className="text-sm text-muted-foreground">Sessions Completed</p>
+                        <p className="text-sm text-muted-foreground">Sessions Completed</p>
                     </div>
                   </div>
                 </CardContent>
@@ -495,7 +496,7 @@ const History = () => {
           isOpen={isProfileDialogOpen}
           onClose={handleCloseProfileDialog}
         />
-    </>
+    </div>
   );
 };
 
