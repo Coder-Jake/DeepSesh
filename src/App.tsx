@@ -26,11 +26,11 @@ import { useEffect, useRef } from "react";
 
 const queryClient = new QueryClient();
 
-// This component now contains the routes and other elements that need toast settings
-const AppContent = () => {
+// New component to wrap BrowserRouter and consume areToastsEnabled
+const AppWithProvidersAndRouter = () => {
+  const { areToastsEnabled } = useTimer(); // Safe to call here, as it's inside TimerProvider
   const navigate = useNavigate();
   const { setIsShiftPressed, setTooltip, hideTooltip, isShiftPressed } = useGlobalTooltip();
-  const { areToastsEnabled } = useTimer(); // Get areToastsEnabled from TimerContext
   const lastHoveredElementRef = useRef<HTMLElement | null>(null);
 
   const getElementName = (element: HTMLElement): string | null => {
@@ -195,24 +195,26 @@ const AppContent = () => {
 
   return (
     <ToastSettingsProvider areToastsEnabled={areToastsEnabled}>
-      <div className="min-h-screen bg-background">
-        <Header />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/chip-in" element={<ChipIn />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/credits" element={<Credits />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/feedback" element={<Feedback />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        {areToastsEnabled && <Sonner />}
-        <GlobalTooltip />
-        <ProfilePopUpCard />
-      </div>
+      <BrowserRouter>
+        <div className="min-h-screen bg-background">
+          <Header />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/chip-in" element={<ChipIn />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/credits" element={<Credits />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          {areToastsEnabled && <Sonner />}
+          <GlobalTooltip />
+          <ProfilePopUpCard />
+        </div>
+      </BrowserRouter>
     </ToastSettingsProvider>
   );
 };
@@ -223,12 +225,10 @@ const App = () => (
       <ThemeProvider>
         <AuthProvider>
           <ProfileProvider>
-            <TimerProvider> {/* TimerProvider is here, so useTimer() can be called in AppContent */}
+            <TimerProvider>
               <GlobalTooltipProvider>
                 <ProfilePopUpProvider>
-                  <BrowserRouter>
-                    <AppContent /> {/* AppContent now uses useTimer() and wraps its content with ToastSettingsProvider */}
-                  </BrowserRouter>
+                  <AppWithProvidersAndRouter /> {/* This is the new entry point */}
                 </ProfilePopUpProvider>
               </GlobalTooltipProvider>
             </TimerProvider>
