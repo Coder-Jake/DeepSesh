@@ -30,7 +30,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { format, formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow
+import { format, formatDistanceToNow } from 'date-fns';
 import { ScheduledTimerTemplate } from "@/types/timer";
 import { DAYS_OF_WEEK } from "@/contexts/TimerContext";
 import { Accordion } from "@/components/ui/accordion";
@@ -1277,33 +1277,35 @@ const Index = () => {
                           onNameClick={handleNameClick}
                         />
                       ))}
-                    </div>
-                  )}
-                </div>
-              )}
 
-              {/* NEW: Inactive Friends Section */}
-              {!shouldHideSessionLists && (
-                <div className="mt-6" data-name="Inactive Friends Section">
-                  <button
-                    onClick={toggleInactiveFriends}
-                    className="flex items-center justify-between w-full text-lg font-semibold text-muted-foreground hover:opacity-80 transition-opacity"
-                  >
-                    <h3>Inactive</h3>
-                    {showInactiveFriends ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  </button>
-                  {showInactiveFriends && (
-                    <div className="space-y-3 mt-3">
-                      {sortedInactiveFriends.map(friend => (
-                        <div
-                          key={friend.id}
-                          className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80"
-                          onClick={(e) => handleNameClick(friend.id, friend.name, e)}
+                      {/* NEW: Inactive Friends Section - Nested */}
+                      <div className="mt-6" data-name="Inactive Friends Section">
+                        <button
+                          onClick={toggleInactiveFriends}
+                          className="relative flex items-center justify-center w-full text-muted-foreground hover:opacity-80 transition-opacity"
                         >
-                          <p className="font-medium">{friend.name}</p>
-                          <p className="text-sm text-muted-foreground">Last Active: {formatDistanceToNow(new Date(friend.lastActive), { addSuffix: true })}</p>
-                        </div>
-                      ))}
+                          <h3 className="text-sm font-semibold">Inactive</h3>
+                          {showInactiveFriends ? (
+                            <ChevronUp size={16} className="absolute right-2 top-1/2 -translate-y-1/2" />
+                          ) : (
+                            <ChevronDown size={16} className="absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </button>
+                        {showInactiveFriends && (
+                          <div className="space-y-3 mt-3">
+                            {sortedInactiveFriends.map(friend => (
+                              <div
+                                key={friend.id}
+                                className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80"
+                                onClick={(e) => handleNameClick(friend.id, friend.name, e)}
+                              >
+                                <p className="font-medium">{friend.name}</p>
+                                <p className="text-sm text-muted-foreground">Last Active: {formatDistanceToNow(new Date(friend.lastActive), { addSuffix: true })}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
