@@ -25,13 +25,17 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full data-[state=closed]:slide-out-to-right-full data-[state=closed]:sm:slide-out-to-right-full",
+  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full data-[state=closed]:slide-out-to-right-full data-[swipe=end]:slide-out-to-right-full data-[state=open]:sm:slide-in-from-bottom-full",
   {
     variants: {
       variant: {
         default: "border bg-background text-foreground",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
+        success:
+          "success group border-green-500 bg-green-500 text-white",
+        warning:
+          "warning group border-orange-500 bg-orange-500 text-white",
       },
     },
     defaultVariants: {
@@ -40,90 +44,94 @@ const toastVariants = cva(
   }
 )
 
-interface ToastProps extends React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root>,
-  VariantProps<typeof toastVariants> {}
+interface ToastPropsWithDismiss extends React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> {
+  onDismiss?: () => void; // Add onDismiss to props
+}
 
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
-  ToastProps
->(({ className, variant, ...props }, ref) => {
+  ToastPropsWithDismiss & VariantProps<typeof toastVariants>
+>(({ className, variant, onDismiss, ...props }, ref) => {
+  const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isLongPressDetectedRef = React.useRef(false);
+  const LONG_PRESS_DURATION = 500; // milliseconds
+
+  const handleInteractionStart = React.useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+    isLongPressDetectedRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressDetectedRef.current = true;
+    }, LONG_PRESS_DURATION);
+  }, []);
+
+  const handleInteractionEnd = React.useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    if (!isLongPressDetectedRef.current && onDismiss) {
+      onDismiss(); // Short press dismisses
+    }
+    // Long press does nothing (holds it)
+  }, [onDismiss]);
+
+  const handleMouseLeave = React.useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    isLongPressDetectedRef.current = false; // Reset if mouse leaves during a potential long press
+  }, []);
+
   return (
     <ToastPrimitives.Root
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
+      onMouseDown={handleInteractionStart}
+      onMouseUp={handleInteractionEnd}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleInteractionStart}
+      onTouchEnd={handleInteractionEnd}
       {...props}
     />
-  )
-})
+  );
+});
 Toast.displayName = ToastPrimitives.Root.displayName
 
 const ToastAction = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Action>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action> & {
-    onLongPress?: () => void;
-    longPressDelay?: number;
-  }
->(({ className, onLongPress, longPressDelay = 500, onClick, ...props }, ref) => {
-  const longPressTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-  const isLongPressTriggered = React.useRef(false);
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
-    isLongPressTriggered.current = false;
-    longPressTimeoutRef.current = setTimeout(() => {
-      isLongPressTriggered.current = true;
-      onLongPress?.();
-    }, longPressDelay);
-  };
-
-  const handleMouseUp = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (longPressTimeoutRef.current) {
-      clearTimeout(longPressTimeoutRef.current);
-    }
-    if (!isLongPressTriggered.current && onClick) {
-      onClick(e); // Only call original onClick if it wasn't a long press
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (longPressTimeoutRef.current) {
-      clearTimeout(longPressTimeoutRef.current);
-    }
-  };
-
-  return (
-    <ToastPrimitives.Action
-      ref={ref}
-      className={cn(
-        "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
-        className
-      )}
-      onClick={onClick} // Keep original onClick for normal clicks
-      onMouseDown={onLongPress ? handleMouseDown : undefined}
-      onMouseUp={onLongPress ? handleMouseUp : undefined}
-      onMouseLeave={onLongPress ? handleMouseLeave : undefined}
-      {...props}
-    />
-  )
-})
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
+>(({ className, ...props }, ref) => (
+  <ToastPrimitives.Action
+    ref={ref}
+    className={cn(
+      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
+      className
+    )}
+    {...props}
+  />
+))
 ToastAction.displayName = ToastPrimitives.Action.displayName
 
 const ToastClose = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Close>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
+  React.ElementRef<typeof ToastPrimitives.CloseButton>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.CloseButton>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitives.Close
+  <ToastPrimitives.CloseButton
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100",
+      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
       className
     )}
     toast-close=""
     {...props}
   >
     <X className="h-4 w-4" />
-  </ToastPrimitives.Close>
+  </ToastPrimitives.CloseButton>
 ))
-ToastClose.displayName = ToastPrimitives.Close.displayName
+ToastClose.displayName = ToastPrimitives.CloseButton.displayName
 
 const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Title>,
@@ -149,16 +157,17 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-type ToastPropsType = React.ComponentPropsWithoutRef<typeof Toast>
+type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
+type ToastActionProps = React.ComponentPropsWithoutRef<typeof ToastAction>
 
 export {
-  type ToastPropsType as ToastProps, // Export ToastPropsType as ToastProps
-  Toast,
+  type ToastProps,
+  type ToastActionProps,
   ToastProvider,
   ToastViewport,
-  ToastAction,
-  ToastClose,
+  Toast,
   ToastTitle,
   ToastDescription,
-  toastVariants,
+  ToastClose,
+  ToastAction,
 }

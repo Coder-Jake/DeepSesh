@@ -6,13 +6,14 @@ import { ToastAction as ToastActionPrimitive, Toast, ToastProps as ShadcnToastPr
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 5000 // Changed to 5 seconds for more interactive control
 
 export type ToasterToast = ToastProps & { // Exporting ToasterToast
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  onDismiss?: () => void; // Added onDismiss prop
 }
 
 // Update ToastActionElement to include long press props
@@ -117,7 +118,7 @@ function dispatch(action: Action) {
 }
 
 type ToastFunction = {
-  (props: Omit<ToasterToast, 'id' | 'open' | 'onOpenChange'>): {
+  (props: Omit<ToasterToast, 'id' | 'open' | 'onOpenChange' | 'onDismiss'>): { // Exclude onDismiss from input props
     id: string
     dismiss: () => void
     update: (props: Partial<ToasterToast>) => void
@@ -126,7 +127,7 @@ type ToastFunction = {
 }
 
 function createToastFunction(): ToastFunction {
-  const toast = function (props: Omit<ToasterToast, 'id' | 'open' | 'onOpenChange'>) {
+  const toast = function (props: Omit<ToasterToast, 'id' | 'open' | 'onOpenChange' | 'onDismiss'>) {
     const id = genId()
 
     const update = (newProps: Partial<ToasterToast>) =>
@@ -145,6 +146,7 @@ function createToastFunction(): ToastFunction {
         onOpenChange: (open) => {
           if (!open) dismiss()
         },
+        onDismiss: dismiss, // Pass the dismiss function as onDismiss
       },
     })
 
@@ -159,8 +161,6 @@ function createToastFunction(): ToastFunction {
 
   return toast
 }
-
-const toast = createToastFunction()
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
