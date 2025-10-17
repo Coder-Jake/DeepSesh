@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 import { Input } from "@/components/ui/input"; // Import Input
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { NotificationSettings } from "@/types/timer"; // Import NotificationSettings type
-import MobileTooltip from "@/components/MobileTooltip"; // Changed import
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
@@ -483,13 +483,16 @@ const Settings = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>Require confirmation to move between Focus/Break.</p>
-                    }
-                  >
-                    <Label htmlFor="manual-transition" className="cursor-help">Manual Transitions</Label>
-                  </MobileTooltip>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="manual-transition" className="cursor-help">Manual Transitions</Label>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Require confirmation to move between Focus/Break.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div >
                 <Switch
                   id="manual-transition"
@@ -500,50 +503,62 @@ const Settings = () => {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>Disable other apps during Focus.</p>
-                    }
-                  >
-                    <Label htmlFor="lock" className="cursor-help text-muted-foreground">Lock in!</Label>
-                  </MobileTooltip>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="lock" className="cursor-help text-muted-foreground">Lock in!</Label>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Disable other apps during Focus.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div >
-                <MobileTooltip // Changed to MobileTooltip
-                  content={ // Content prop
-                    <p>Requires App development</p>
-                  }
-                >
-                  <Switch
-                    id="lock"
-                    checked={lock}
-                    onCheckedChange={setLock}
-                  />
-                </MobileTooltip>
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Switch
+                        id="lock"
+                        checked={lock}
+                        onCheckedChange={setLock}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                        <p>Requires App development</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               {/* Updated Batch Notifications Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>Notifications will be delayed and delivered as a group at specified times. Exemptions apply.</p>
-                    }
-                  >
-                    <Label htmlFor="batch-notifications-toggle" className="cursor-help text-muted-foreground">Batch Notifications</Label>
-                  </MobileTooltip>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label htmlFor="batch-notifications-toggle" className="cursor-help text-muted-foreground">Batch Notifications</Label>
+                        </TooltipTrigger>
+                        <TooltipContent className="select-none">
+                          <p>Notifications will be delayed and delivered as a group at specified times. Exemptions apply.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
-                  <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>Requires App development</p>
-                    }
-                  >
-                    <Switch
-                      id="batch-notifications-toggle"
-                      checked={isBatchNotificationsEnabled}
-                      onCheckedChange={setIsBatchNotificationsEnabled}
-                    />
-                  </MobileTooltip>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Switch
+                          id="batch-notifications-toggle"
+                          checked={isBatchNotificationsEnabled}
+                          onCheckedChange={setIsBatchNotificationsEnabled}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Requires App development</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
 
                 {isBatchNotificationsEnabled && (
@@ -594,17 +609,20 @@ const Settings = () => {
                   <div className="space-y-0.5">
                     <Label htmlFor="exemptions" className="text-muted-foreground">Exemptions</Label>
                   </div>
-                  <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>Requires App development</p>
-                    }
-                  >
-                    <Switch
-                      id="exemptions"
-                      checked={exemptionsEnabled}
-                      onCheckedChange={setExemptionsEnabled}
-                    />
-                  </MobileTooltip>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Switch
+                          id="exemptions"
+                          checked={exemptionsEnabled}
+                          onCheckedChange={setExemptionsEnabled}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Requires App development</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
 
                 {/* Checkboxes for Exemptions (conditionally rendered) */}
@@ -710,13 +728,16 @@ const Settings = () => {
               {/* New Increments Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>Adjust timers by 1 or 5 minutes.</p>
-                    }
-                  >
-                    <Label htmlFor="timer-increments-toggle" className="cursor-help">Increments</Label>
-                  </MobileTooltip>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="timer-increments-toggle" className="cursor-help">Increments</Label>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Adjust timers by 1 or 5 minutes.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <Button
                   id="timer-increments-toggle"
@@ -828,67 +849,72 @@ const Settings = () => {
               <div className="space-y-2">
                 <Label>Profile Visibility</Label>
                 <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="profile-public"
-                      checked={profileVisibility.includes('public')}
-                      onCheckedChange={(checked) => handleProfileVisibilityChange('public', !!checked)}
-                    />
-                    <MobileTooltip // Changed to MobileTooltip
-                      content={ // Content prop
-                        <p>Anyone can see your profile</p>
-                      }
-                    >
-                      <Label htmlFor="profile-public" className="text-sm font-normal cursor-help">
-                        Public
-                      </Label>
-                    </MobileTooltip>
-                  </div>
+                  <TooltipProvider delayDuration={0}>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="profile-public"
+                        checked={profileVisibility.includes('public')}
+                        onCheckedChange={(checked) => handleProfileVisibilityChange('public', !!checked)}
+                      />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label htmlFor="profile-public" className="text-sm font-normal cursor-help">
+                            Public
+                          </Label>
+                        </TooltipTrigger>
+                        <TooltipContent className="select-none">
+                          <p>Anyone can see your profile</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="profile-friends"
-                      checked={profileVisibility.includes('friends')}
-                      onCheckedChange={(checked) => handleProfileVisibilityChange('friends', !!checked)}
-                    />
-                    <Label htmlFor="profile-friends" className="text-sm font-normal">
-                      Friends Only
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="profile-organisation"
-                      checked={profileVisibility.includes('organisation')}
-                      onCheckedChange={(checked) => handleProfileVisibilityChange('organisation', !!checked)}
-                    />
-                    <MobileTooltip // Changed to MobileTooltip
-                      content={ // Content prop
-                        <p>Only members of your organisation can see details</p>
-                      }
-                    >
-                      <Label htmlFor="profile-organisation" className="text-sm font-normal cursor-help">
-                        Organisation
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="profile-friends"
+                        checked={profileVisibility.includes('friends')}
+                        onCheckedChange={(checked) => handleProfileVisibilityChange('friends', !!checked)}
+                      />
+                      <Label htmlFor="profile-friends" className="text-sm font-normal">
+                        Friends Only
                       </Label>
-                    </MobileTooltip>
-                  </div>
+                    </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="profile-private"
-                      checked={profileVisibility.includes('private')}
-                      onCheckedChange={(checked) => handleProfileVisibilityChange('private', !!checked)}
-                    />
-                    <MobileTooltip // Changed to MobileTooltip
-                      content={ // Content prop
-                        <p>Minimal information shared</p>
-                      }
-                    >
-                      <Label htmlFor="profile-private" className="text-sm font-normal cursor-help">
-                        Private
-                      </Label>
-                    </MobileTooltip>
-                  </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="profile-organisation"
+                        checked={profileVisibility.includes('organisation')}
+                        onCheckedChange={(checked) => handleProfileVisibilityChange('organisation', !!checked)}
+                      />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label htmlFor="profile-organisation" className="text-sm font-normal cursor-help">
+                            Organisation
+                          </Label>
+                        </TooltipTrigger>
+                        <TooltipContent className="select-none">
+                          <p>Only members of your organisation can see details</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="profile-private"
+                        checked={profileVisibility.includes('private')}
+                        onCheckedChange={(checked) => handleProfileVisibilityChange('private', !!checked)}
+                      />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label htmlFor="profile-private" className="text-sm font-normal cursor-help">
+                            Private
+                          </Label>
+                        </TooltipTrigger>
+                        <TooltipContent className="select-none">
+                          <p>Minimal information shared</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
                 </div>
               </div>
 
@@ -921,13 +947,16 @@ const Settings = () => {
                 
 
                 <div className="space-y-2 mt-6">
-                  <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>for users to interact with sessions you host</p>
-                    }
-                  >
-                    <Label className="block cursor-help">Minimum Verification Status</Label>
-                  </MobileTooltip>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label className="block cursor-help">Minimum Verification Status</Label>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>for users to interact with sessions you host</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <Select 
                     value={verificationStandard} 
                     onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
@@ -947,13 +976,16 @@ const Settings = () => {
 
               {/* NEW: Block Section */}
               <div className="border-t border-border pt-6 mt-6">
-                <MobileTooltip // Changed to MobileTooltip
-                  content={ // Content prop
-                    <p>Blocked users will not be able to see sessions you host or join.</p>
-                  }
-                >
-                  <h3 className="text-lg font-semibold mb-4 cursor-help">Block Users</h3>
-                </MobileTooltip>
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <h3 className="text-lg font-semibold mb-4 cursor-help">Block Users</h3>
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                      <p>Blocked users will not be able to see sessions you host or join.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input
@@ -1052,13 +1084,16 @@ const Settings = () => {
               {/* NEW: Toasts Switch */}
               <div className="flex items-center justify-between border-t border-border pt-6 mt-6">
                 <div className="space-y-0.5">
-                  <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>Gives context to what the app is doing. Activate if encountering errors.</p>
-                    }
-                  >
-                    <Label htmlFor="toasts-toggle" className="cursor-help">Toasts</Label>
-                  </MobileTooltip>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="toasts-toggle" className="cursor-help">Toasts</Label>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Gives context to what the app is doing. Activate if encountering errors.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <Switch
                   id="toasts-toggle"

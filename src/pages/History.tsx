@@ -7,7 +7,7 @@ import { useState, useMemo, useCallback } from "react"; // Removed useRef
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext";
-import MobileTooltip from "@/components/MobileTooltip"; // Changed import
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -253,47 +253,51 @@ const History = () => {
                                 <Calendar size={14} />
                                 {formatDate(session.date)}
                               </div>
-                              <MobileTooltip // Changed to MobileTooltip
-                                content={ // Content prop
-                                  session.participantNames && session.participantNames.length > 0 ? (
-                                    <div className="space-y-1">
-                                      <p className="font-medium">Participants:</p>
-                                      {session.participantNames.map((name, index) => (
-                                        <p 
-                                          key={index} 
-                                          className={cn(
-                                            "text-sm text-muted-foreground",
-                                            name !== localFirstName && "cursor-pointer hover:text-primary" // Make clickable if not current user
-                                          )}
-                                          onClick={(e) => handleNameClick(name === localFirstName ? currentUserId : `mock-user-id-${name.toLowerCase()}`, name, e)} // NEW: Make clickable
-                                        >
-                                          {name}
-                                        </p>
-                                      ))}
+                              <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 cursor-pointer">
+                                      <Users size={14} />
+                                      {session.participants}
                                     </div>
-                                  ) : (
-                                    <p>No participant names available</p>
-                                  )
-                                }
-                              >
-                                <div className="flex items-center gap-1 cursor-pointer">
-                                  <Users size={14} />
-                                  {session.participants}
-                                </div>
-                              </MobileTooltip>
-                              <MobileTooltip // Changed to MobileTooltip
-                                content={ // Content prop
-                                  <>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="select-none">
+                                    {session.participantNames && session.participantNames.length > 0 ? (
+                                      <div className="space-y-1">
+                                        <p className="font-medium">Participants:</p>
+                                        {session.participantNames.map((name, index) => (
+                                          <p 
+                                            key={index} 
+                                            className={cn(
+                                              "text-sm text-muted-foreground",
+                                              name !== localFirstName && "cursor-pointer hover:text-primary" // Make clickable if not current user
+                                            )}
+                                            onClick={(e) => handleNameClick(name === localFirstName ? currentUserId : `mock-user-id-${name.toLowerCase()}`, name, e)} // NEW: Make clickable
+                                          >
+                                            {name}
+                                          </p>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p>No participant names available</p>
+                                    )}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1">
+                                      <Clock size={14} />
+                                      {session.duration}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="select-none">
                                     <p>Start: {formatTime(session.session_start_time)}</p>
                                     <p>End: {formatTime(session.session_end_time)}</p>
-                                  </>
-                                }
-                              >
-                                <div className="flex items-center gap-1">
-                                  <Clock size={14} />
-                                  {session.duration}
-                                </div>
-                              </MobileTooltip>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </div>
                         </div>
@@ -454,15 +458,18 @@ const History = () => {
           </div>
           {/* Export link at the bottom */}
           <div className="mt-8 text-center">
-            <MobileTooltip // Changed to MobileTooltip
-              content={ // Content prop
-                <p>Activates after <Link to="/chip-in" className="text-blue-500 hover:underline">donation</Link></p>
-              }
-            >
-              <p className="text-sm text-muted-foreground hover:underline cursor-default">
-                Export
-              </p>
-            </MobileTooltip>
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-sm text-muted-foreground hover:underline cursor-default">
+                    Export
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent className="select-none">
+                  <p>Activates after <Link to="/chip-in" className="text-blue-500 hover:underline">donation</Link></p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </main>
 

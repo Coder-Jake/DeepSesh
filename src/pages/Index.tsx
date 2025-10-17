@@ -2,12 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import MobileTooltip from "@/components/MobileTooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
-import { useProfile } from "@/contexts/ProfileContext";
+import { useProfile } from "@/contexts/ProfileContext"; // Ensure useProfile is imported
 import { useNavigate } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn } from "@/lib/utils";
@@ -22,21 +22,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
+  Dialog, // Import Dialog components
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast";
-import { format } from 'date-fns';
-import { ScheduledTimerTemplate } from "@/types/timer";
-import { DAYS_OF_WEEK } from "@/contexts/TimerContext";
-import { Accordion } from "@/components/ui/accordion";
-import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
-import UpcomingScheduleCardContent from "@/components/UpcomingScheduleCard";
-import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
+import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
+import { format } from 'date-fns'; // Import date-fns for time formatting
+import { ScheduledTimerTemplate } from "@/types/timer"; // Corrected import path for ScheduledTimerTemplate
+import { DAYS_OF_WEEK } from "@/contexts/TimerContext"; // DAYS_OF_WEEK is still exported from TimerContext
+import { Accordion } from "@/components/ui/accordion"; // NEW
+import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem"; // NEW
+import UpcomingScheduleCardContent from "@/components/UpcomingScheduleCard"; // Renamed import
+import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
 
 // Define types for Ask items (copied from TimerContext to ensure consistency)
 interface ExtendSuggestion {
@@ -67,17 +67,17 @@ type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
 
 interface DemoSession {
-  id: string;
+  id: string; // Changed to string
   title: string;
   type: 'focus' | 'break';
   totalDurationMinutes: number;
   currentPhase: 'focus' | 'break';
-  currentPhaseDurationMinutes: number;
+  currentPhaseDurationMinutes: number; // Added missing property
   startTime: number;
   location: string;
   workspaceImage: "/api/placeholder/200/120";
   workspaceDescription: string;
-  participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
+  participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[]; // Changed to string
 }
 
 const mockNearbySessions: DemoSession[] = [
@@ -161,37 +161,37 @@ const Index = () => {
     setIsPaused,
     timeLeft,
     setTimeLeft,
-    timerType,
+    timerType, // Get timerType from context
     setTimerType,
     isFlashing,
     setIsFlashing,
     notes,
     setNotes,
-    seshTitle,
-    setSeshTitle,
-    isSeshTitleCustomized,
+    seshTitle, // Get seshTitle from context
+    setSeshTitle, // Get setSeshTitle from context
+    isSeshTitleCustomized, // NEW: Get customization flag
     formatTime,
     showSessionsWhileActive,
     timerIncrement,
     
-    schedule,
-    activeSchedule,
-    activeTimerColors,
+    schedule, // Keep schedule for editing in ScheduleForm
+    activeSchedule, // NEW: Use activeSchedule for Timeline
+    activeTimerColors, // NEW: Use activeTimerColors for Timeline
     currentScheduleIndex,
     isSchedulingMode,
     setIsSchedulingMode,
     isScheduleActive,
-    setIsScheduleActive,
-    isSchedulePrepared,
+    setIsScheduleActive, // Destructure setIsScheduleActive
+    isSchedulePrepared, // NEW: Derived state from preparedSchedules.length > 0
     startSchedule,
-    commenceSpecificPreparedSchedule,
-    discardPreparedSchedule,
+    commenceSpecificPreparedSchedule, // NEW: Function to commence a specific prepared schedule
+    discardPreparedSchedule, // NEW: Function to discard a specific prepared schedule
     resetSchedule,
-    scheduleTitle,
-    commenceTime,
-    commenceDay,
+    scheduleTitle, // This is the title for the schedule being *edited*
+    commenceTime, // This is the commenceTime for the schedule being *edited*
+    commenceDay, // This is the commenceDay for the schedule being *edited*
     isGlobalPrivate,
-    activeScheduleDisplayTitle,
+    activeScheduleDisplayTitle, // NEW: Get activeScheduleDisplayTitle
 
     // New session tracking states and functions
     sessionStartTime,
@@ -203,21 +203,21 @@ const Index = () => {
     accumulatedBreakSeconds,
     setAccumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount,
-    setActiveJoinedSessionCoworkerCount,
+    setActiveJoinedSessionCoworkerCount, // NEW: Destructure setter
 
     // Active Asks from TimerContext
     activeAsks,
     addAsk,
     updateAsk,
-    setActiveAsks,
+    setActiveAsks, // NEW: Added setter for activeAsks
 
     // New: Schedule pending state (for the *active* schedule)
     isSchedulePending,
     setIsSchedulePending,
-    scheduleStartOption,
-    is24HourFormat,
+    scheduleStartOption, // Get scheduleStartOption from context
+    is24HourFormat, // NEW: Get is24HourFormat from context
 
-    preparedSchedules,
+    preparedSchedules, // NEW: Get the array of prepared schedules
 
     // NEW: Host/Coworker role states
     currentSessionRole,
@@ -226,21 +226,21 @@ const Index = () => {
     setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
-    allParticipantsToDisplay,
+    allParticipantsToDisplay, // NEW: Get allParticipantsToDisplay
   } = useTimer();
   
-  const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
   const navigate = useNavigate();
-  const { openProfilePopUp } = useProfilePopUp();
+  const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
 
   const [isPrivate, setIsPrivate] = useState(isGlobalPrivate);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
-  const [isHoveringTimer, setIsHoveringTimer] = useState(false);
+  const [isHoveringTimer, setIsHoveringTimer] = useState(false); // NEW: State for timer hover
 
   const currentUserId = profile?.id || "mock-user-id-123"; 
-  const currentUserName = profile?.first_name || localFirstName || "You";
+  const currentUserName = profile?.first_name || localFirstName || "You"; // Use localFirstName as fallback
 
   // State for editable Sesh Title
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
@@ -265,7 +265,7 @@ const Index = () => {
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
       titleInputRef.current.focus();
-      titleInputRef.current.select();
+      titleInputRef.current.select(); // Select the text when focused
     }
   }, [isEditingSeshTitle]);
 
@@ -300,13 +300,15 @@ const Index = () => {
     if (longPressRef.current) {
       clearTimeout(longPressRef.current);
     }
-    isLongPress.current = false;
+    isLongPress.current = false; // Reset long press flag
+    // Removed setIsHoveringTimer(false) from here, now handled by onMouseLeave on the specific div
   };
   
   const handlePublicPrivateToggle = () => {
     if (isLongPress.current) {
       setIsPrivate(!isPrivate);
     } else {
+      // Removed the confirm dialog here
       setIsPrivate(!isPrivate);
     }
   };
@@ -329,7 +331,7 @@ const Index = () => {
       setIsEditingSeshTitle(false);
       e.currentTarget.blur();
       if (seshTitle.trim() === "") {
-        setSeshTitle("Notes");
+        setSeshTitle("Notes"); // Revert to default if empty
       }
     }
   };
@@ -337,7 +339,7 @@ const Index = () => {
   const handleTitleInputBlur = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
-      setSeshTitle("Notes");
+      setSeshTitle("Notes"); // Revert to default if empty
       }
   };
 
@@ -347,50 +349,55 @@ const Index = () => {
     }
   };
   
-  const startNewManualTimer = () => {
-    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
+  const startNewManualTimer = () => { // Renamed to be explicit
+    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) { // Only check for actively running/paused manual timer or immediate schedule
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
       }
-      if (isScheduleActive || isSchedulePrepared) resetSchedule();
+      // If confirmed, reset existing schedule/timer before starting new one
+      if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
-      setActiveAsks([]);
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks when starting a new manual timer
     }
 
     playStartSound();
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
-    setSessionStartTime(Date.now());
-    setCurrentPhaseStartTime(Date.now());
+    setSessionStartTime(Date.now()); // Record overall session start time
+    setCurrentPhaseStartTime(Date.now()); // Record current phase start time
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    setTimeLeft(focusMinutes * 60);
+    // Use current homepage timer values
+    setTimeLeft(focusMinutes * 60); // Use current focusMinutes
 
+    // NEW: Set role to host
     setCurrentSessionRole('host');
     setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
-    setActiveJoinedSessionCoworkerCount(0);
+    setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
   };
 
   const resumeTimer = () => {
-    playStartSound();
+    playStartSound(); // Optional, but good for consistency
     setIsRunning(true);
     setIsPaused(false);
+    // If a schedule was pending and now resuming, ensure currentPhaseStartTime is set
     if (isScheduleActive && isSchedulePending) {
-      setIsSchedulePending(false);
+      setIsSchedulePending(false); // No longer pending, now running
       setCurrentPhaseStartTime(Date.now());
       toast({
         title: "Schedule Resumed!",
         description: `"${activeScheduleDisplayTitle}" has resumed.`,
       });
     } else if (currentPhaseStartTime === null) {
+      // If it was a manual timer paused, restart phase tracking
       setCurrentPhaseStartTime(Date.now());
     }
   };
@@ -403,13 +410,14 @@ const Index = () => {
       } else {
         setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
       }
-      setCurrentPhaseStartTime(null);
+      setCurrentPhaseStartTime(null); // Reset phase start time
     }
     setIsPaused(true);
     setIsRunning(false);
   };
   
   const stopTimer = async () => {
+    // Calculate final accumulated times before saving
     let finalAccumulatedFocus = accumulatedFocusSeconds;
     let finalAccumulatedBreak = accumulatedBreakSeconds;
 
@@ -424,27 +432,32 @@ const Index = () => {
     const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
 
     const performStopActions = async () => {
+      // Reset timer states after saving
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      setTimerType('focus');
-      setTimeLeft(focusMinutes * 60);
+      setTimerType('focus'); // Reset to default focus type
+      // Use current homepage timer values
+      setTimeLeft(focusMinutes * 60); // Reset to current focus time
       setActiveJoinedSession(null);
-      if (isScheduleActive || isSchedulePrepared) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setSessionStartTime(null);
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
-      setActiveAsks([]);
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      console.log("Index: Calling setActiveAsks. Current value of setActiveAsks:", setActiveAsks); // DEBUG
+      setActiveAsks([]); // NEW: Clear active asks after saving
 
+      // NEW: Reset role states
       setCurrentSessionRole(null);
       setCurrentSessionHostName(null);
       setCurrentSessionOtherParticipants([]);
     };
 
     const handleSaveAndStop = async () => {
+      console.log("Index: Calling saveSession with activeAsks:", activeAsks); // DEBUG
       await saveSession(
         seshTitle,
         notes,
@@ -452,16 +465,18 @@ const Index = () => {
         finalAccumulatedBreak,
         totalSessionSeconds,
         activeJoinedSessionCoworkerCount,
-        sessionStartTime || Date.now(),
-        activeAsks,
-        allParticipantsToDisplay
+        sessionStartTime || Date.now(), // Use sessionStartTime or current time if null
+        activeAsks, // NEW: Pass activeAsks to saveSession
+        allParticipantsToDisplay // NEW: Pass allParticipantsToDisplay
       );
       await performStopActions();
     };
 
     if (longPressRef.current) {
+      // Long press: save without confirmation
       await handleSaveAndStop();
     } else {
+      // Regular click: ask for confirmation
       if (confirm('Are you sure you want to stop the timer?')) {
         await handleSaveAndStop();
       }
@@ -473,18 +488,20 @@ const Index = () => {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+      // Use current homepage timer values
+      const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60; // Use current homepage values
       setTimeLeft(initialTime);
       setActiveJoinedSession(null);
-      if (isScheduleActive || isSchedulePrepared) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setSessionStartTime(null);
-      setCurrentPhaseStartTime(null);
+      setCurrentPhaseStartTime(null); // Reset current phase start time
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
-      setActiveAsks([]);
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks on reset
 
+      // NEW: Reset role states
       setCurrentSessionRole(null);
       setCurrentSessionHostName(null);
       setCurrentSessionOtherParticipants([]);
@@ -493,18 +510,20 @@ const Index = () => {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
-        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+        // Use current homepage timer values
+        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60; // Use current homepage values
         setTimeLeft(initialTime);
         setActiveJoinedSession(null);
-        if (isScheduleActive || isSchedulePrepared) resetSchedule();
+        if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
         setSessionStartTime(null);
-        setCurrentPhaseStartTime(null);
+        setCurrentPhaseStartTime(null); // Reset current phase start time
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
-      setActiveAsks([]);
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks on reset
 
+      // NEW: Reset role states
       setCurrentSessionRole(null);
       setCurrentSessionHostName(null);
       setCurrentSessionOtherParticipants([]);
@@ -513,6 +532,7 @@ const Index = () => {
   };
 
   const switchToBreak = () => {
+    // Accumulate time for the phase just ended
     if (currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
       setAccumulatedFocusSeconds((prev: number) => prev + elapsed);
@@ -522,10 +542,11 @@ const Index = () => {
     setIsFlashing(false);
     setIsRunning(true);
     playStartSound();
-    setCurrentPhaseStartTime(Date.now());
+    setCurrentPhaseStartTime(Date.now()); // Start new phase timer
   };
 
   const switchToFocus = () => {
+    // Accumulate time for the phase just ended
     if (currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
       setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
@@ -535,15 +556,18 @@ const Index = () => {
     setIsFlashing(false);
     setIsRunning(true);
     playStartSound();
-    setCurrentPhaseStartTime(Date.now());
+    setCurrentPhaseStartTime(Date.now()); // Start new phase timer
   };
 
   const handleCircularProgressChange = (progress: number) => {
+    // This function is no longer needed as the CircularProgress is not interactive.
+    // However, to avoid breaking existing logic that might call it, we can keep it
+    // as a no-op or remove it if it's truly unused. For now, I'll keep it as a no-op.
     console.log("CircularProgress is not interactive. Progress change ignored:", progress);
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
-    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) return;
+    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) return; // Prevent interaction if schedule is active or prepared
 
     if (mode === 'focus') {
       setTimerType('focus');
@@ -555,43 +579,48 @@ const Index = () => {
   };
 
   const handleJoinSession = (session: DemoSession) => {
-    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
+    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) { // Check for prepared schedule too
       if (!confirm("A timer or schedule is already active. Do you want to override it and join this session?")) {
         return;
       }
-      if (isScheduleActive || isSchedulePrepared) resetSchedule();
+      // If confirmed, reset existing schedule/timer before joining new one
+      if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setNotes("");
-      setSeshTitle("Notes");
-      setActiveAsks([]);
+      setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
+      setActiveAsks([]); // NEW: Clear active asks when joining a session
     }
 
     setActiveJoinedSession(session);
-    setActiveJoinedSessionCoworkerCount(session.participants.length);
+    setActiveJoinedSessionCoworkerCount(session.participants.length); // Set coworker count
     setTimerType(session.currentPhase);
     
+    // Calculate remaining time based on session's start time and current phase duration
     const elapsedSecondsInJoinedPhase = Math.floor((Date.now() - session.startTime) / 1000);
     const remainingSecondsInJoinedPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSecondsInJoinedPhase);
-    setTimeLeft(remainingSecondsInJoinedPhase);
+    setTimeLeft(remainingSecondsInJoinedPhase); // Set timer to continue from where the session was
     
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
-    setSessionStartTime(Date.now());
-    setCurrentPhaseStartTime(Date.now());
-    setAccumulatedFocusSeconds(0);
-    setAccumulatedBreakSeconds(0);
+    setSessionStartTime(Date.now()); // Record overall session start time for *this user*
+    setCurrentPhaseStartTime(Date.now()); // Record current phase start time for *this user*
+    setAccumulatedFocusSeconds(0); // Reset personal accumulated focus time
+    setAccumulatedBreakSeconds(0); // Reset personal accumulated break time
     toast({
       title: "Session Joined!",
       description: `You've joined "${session.title}".`,
     });
 
+    // NEW: Set role to coworker
     setCurrentSessionRole('coworker');
+    // Assuming the first participant in the demo session is the host
     setCurrentSessionHostName(session.participants[0]?.name || session.title);
+    // Filter out the current user from the participants list to get other coworkers
     setCurrentSessionOtherParticipants(session.participants.filter(p => p.id !== currentUserId));
   };
 
@@ -601,49 +630,60 @@ const Index = () => {
         title: "Joining Session",
         description: `Attempting to join session with code: ${joinSessionCode.trim()}`,
       });
-      setJoinSessionCode("");
-      setShowJoinInput(false);
+      // In a real application, you would send this code to your backend
+      // to validate and join the user to the corresponding session.
+      setJoinSessionCode(""); // Clear input after attempt
+      setShowJoinInput(false); // Hide input after attempt
     }
   };
 
-  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePrepared || isSchedulePending);
+  const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending); // Check for prepared schedule too
 
+  // NEW: Unified list of all participants to display in the Coworkers card
   const allParticipantsToDisplayInCard = useMemo(() => {
     const participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }> = [];
 
+    // Add the current user first
     participants.push({
       id: currentUserId,
       name: currentUserName,
       sociability: profile?.sociability || 50,
-      role: currentSessionRole === 'host' ? 'host' : 'coworker',
+      role: currentSessionRole === 'host' ? 'host' : 'coworker', // Determine role based on currentSessionRole
       intention: profile?.intention || undefined,
       bio: profile?.bio || undefined,
     });
 
+    // Add the host if they are not the current user
     if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName) {
       const hostSociability = mockNearbySessions.concat(mockFriendsSessions)
         .flatMap(s => s.participants)
         .find(p => p.name === currentSessionHostName)?.sociability || 50;
 
       participants.push({
-        id: "host-id",
+        id: "host-id", // Placeholder ID for the host if not current user
         name: currentSessionHostName,
         sociability: hostSociability,
         role: 'host',
+        // intention and bio would come from actual host profile in a real app
       });
     }
 
+    // Add other participants, ensuring no duplicates with current user or host
     currentSessionOtherParticipants.forEach(p => {
-      if (p.id !== currentUserId && p.name !== currentSessionHostName) {
+      if (p.id !== currentUserId && p.name !== currentSessionHostName) { // Check both ID and name for uniqueness
         participants.push({ ...p, role: 'coworker' });
       }
     });
 
+    // Sort alphabetically by name for participants after the current user and host
     return participants.sort((a, b) => {
+      // Keep current user at the top
       if (a.id === currentUserId) return -1;
       if (b.id === currentUserId) return 1;
+      // Keep host (if not current user) second
       if (a.role === 'host' && b.role !== 'host') return -1;
       if (a.role !== 'host' && b.role === 'host') return 1;
+      // Sort others alphabetically
       return a.name.localeCompare(b.name);
     });
   }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, currentUserId, currentUserName, profile?.sociability, profile?.intention, profile?.bio]);
@@ -657,7 +697,7 @@ const Index = () => {
       votes: [],
       status: 'pending',
     };
-    addAsk(newSuggestion);
+    addAsk(newSuggestion); // Use context function
   };
 
   const handlePollSubmit = (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => {
@@ -684,7 +724,7 @@ const Index = () => {
       status: 'active',
       allowCustomResponses,
     };
-    addAsk(newPoll);
+    addAsk(newPoll); // Use context function
   };
 
   const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => {
@@ -700,7 +740,7 @@ const Index = () => {
     const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
     const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
     
-    const totalParticipants = (activeJoinedSessionCoworkerCount || 0) + (currentSessionRole === 'host' ? 1 : 0);
+    const totalParticipants = (activeJoinedSessionCoworkerCount || 0) + (currentSessionRole === 'host' ? 1 : 0); // If hosting, count self. If joined, activeJoinedSessionCoworkerCount already includes host.
     const threshold = Math.ceil(totalParticipants / 2);
 
     let newStatus = currentAsk.status;
@@ -714,7 +754,7 @@ const Index = () => {
       }
     }
 
-    updateAsk({
+    updateAsk({ // Use context function
       ...currentAsk,
       votes: updatedVotes,
       status: newStatus,
@@ -727,6 +767,7 @@ const Index = () => {
 
     let currentPoll = currentAsk as Poll;
 
+    // Handle custom response logic first, potentially adding a new option
     if (customOptionText && customOptionText.trim()) {
       const existingCustomOption = currentPoll.options.find(
         opt => opt.text.toLowerCase() === customOptionText.toLowerCase() && opt.id.startsWith('custom-')
@@ -739,8 +780,10 @@ const Index = () => {
           votes: [],
         };
         currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
+        // Add the new custom option's ID to optionIds to ensure it's voted for
         optionIds = [...optionIds, newCustomOption.id];
       } else {
+        // If custom option already exists, ensure its ID is in optionIds
         if (!optionIds.includes(existingCustomOption.id)) {
           optionIds = [...optionIds, existingCustomOption.id];
         }
@@ -748,11 +791,14 @@ const Index = () => {
     }
 
     const updatedOptions = currentPoll.options.map(option => {
-      let newVotes = option.votes.filter(v => v.userId !== currentUserId);
+      let newVotes = option.votes.filter(v => v.userId !== currentUserId); // Always remove current user's existing vote first
 
       if (optionIds.includes(option.id)) {
+        // If this option is among the newly selected ones, add the vote back
         newVotes.push({ userId: currentUserId });
       }
+      // For single-choice polls (closed/choice), if optionIds is empty, this effectively unvotes all.
+      // For multi-choice (selection), if optionIds doesn't include this option, it remains unvoted.
 
       return { ...option, votes: newVotes };
     });
@@ -760,30 +806,37 @@ const Index = () => {
     updateAsk({ ...currentPoll, options: updatedOptions });
   };
 
+  // Callback for when the schedule countdown ends in Timeline
   const handleCountdownEnd = useCallback(() => {
     setIsSchedulePending(false);
-    setIsScheduleActive(true);
+    setIsScheduleActive(true); // Now it's actively running
     setIsRunning(true);
     setIsPaused(false);
-    setCurrentPhaseStartTime(Date.now());
+    // playStartSound(); // Play sound when schedule actually starts
+    setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
     toast({
       title: "Schedule Commenced!",
       description: "Your scheduled session has now begun.",
     });
 
+    // NEW: Set role to host
     setCurrentSessionRole('host');
     setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
   }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, toast, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, currentUserName]);
 
-  const currentItemDuration = isScheduleActive && activeSchedule[currentScheduleIndex]
-    ? activeSchedule[currentScheduleIndex].durationMinutes
+  // Determine the total duration of the current timer phase for CircularProgress
+  const currentItemDuration = isScheduleActive && activeSchedule[currentScheduleIndex] // Use activeSchedule here
+    ? activeSchedule[currentScheduleIndex].durationMinutes // Use activeSchedule here
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
-  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
+  // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
+  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending; // Check for prepared schedule too
 
+  // Helper function to get the effective start timestamp for sorting
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
+      // Manual schedules are ready to start immediately, place them at the very beginning
       return -Infinity; 
     } else if (template.scheduleStartOption === 'custom_time') {
       const [hours, minutes] = template.commenceTime.split(':').map(Number);
@@ -794,14 +847,16 @@ const Index = () => {
       const daysToAdd = (templateDay - currentDay + 7) % 7;
       targetDate.setDate(now.getDate() + daysToAdd);
 
+      // If the target time is in the past for today, set it for next week
       if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
         targetDate.setDate(targetDate.getDate() + 7);
       }
       return targetDate.getTime();
     }
-    return Infinity;
-  }, [DAYS_OF_WEEK]); // Added DAYS_OF_WEEK to dependencies
+    return Infinity; // Should not happen for prepared schedules
+  }, []);
 
+  // NEW: Sort prepared schedules chronologically
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
     return [...preparedSchedules].sort((a, b) => {
@@ -809,12 +864,14 @@ const Index = () => {
       const timeB = getEffectiveStartTime(b, now);
 
       if (timeA === timeB) {
+        // If times are identical (e.g., both manual), sort by title for stable order
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
     });
   }, [preparedSchedules, getEffectiveStartTime]);
 
+  // Handlers for toggling Nearby/Friends sections
   const toggleNearbySessions = () => {
     setShowNearbySessions(prev => {
       const newState = !prev;
@@ -831,8 +888,9 @@ const Index = () => {
     });
   };
 
+  // NEW: Handle name click for profile pop-up
   const handleNameClick = useCallback((userId: string, userName: string, event: React.MouseEvent) => {
-    event.stopPropagation();
+    event.stopPropagation(); // Prevent parent click handlers
     openProfilePopUp(userId, userName, event.clientX, event.clientY);
   }, [openProfilePopUp]);
 
@@ -880,7 +938,7 @@ const Index = () => {
                         </>}
                     </button>
                     
-                    {isActiveTimer ? (
+                    {isActiveTimer ? ( // Conditionally render Share Dropdown
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button 
@@ -898,11 +956,11 @@ const Index = () => {
                           <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    ) : (
+                    ) : ( // Render Join button and input when no timer is active
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setShowJoinInput(true)}
+                        onClick={() => setShowJoinInput(true)} // Open the dialog
                         className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
                         data-name="Join Session Button"
                       >
@@ -928,11 +986,11 @@ const Index = () => {
                       onMouseEnter={() => setIsHoveringTimer(true)}
                       onMouseLeave={() => setIsHoveringTimer(false)}
                     >
-                      <div className="h-10 flex items-center" data-name="Time Left Display">
+                      <div className="h-10 flex items-center" data-name="Time Left Display"> {/* Fixed height for time display */}
                         {formatTime(timeLeft)}
                       </div>
                       {isHoveringTimer && isActiveTimer && (
-                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap select-none" data-name="Estimated End Time">
+                        <p className="absolute top-full mt-1 text-xs text-muted-foreground whitespace-nowrap select-none" data-name="Estimated End Time"> {/* Absolute positioning */}
                           End: {format(new Date(Date.now() + timeLeft * 1000), is24HourFormat ? 'HH:mm' : 'hh:mm a')}
                         </p>
                       )}
@@ -956,13 +1014,17 @@ const Index = () => {
                       className="px-8" 
                       onClick={() => {
                         if (isSchedulePrepared) {
+                          // If there are prepared schedules, and one is pending, commence it.
+                          // If multiple, this button should probably not be here or should open a selection.
+                          // For now, we'll assume the user will use the UpcomingScheduleCard's commence button.
+                          // This button will only start a manual timer if no schedule is active/prepared.
                           startNewManualTimer(); 
                         } else if (isRunning) {
                           pauseTimer();
                         } else if (isPaused) {
                           resumeTimer();
                         } else {
-                          startNewManualTimer();
+                          startNewManualTimer(); // Call the new explicit function for starting a fresh timer
                         }
                       }}
                       data-name={`${isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')} Timer Button`}
@@ -972,7 +1034,7 @@ const Index = () => {
                   )}
                 </div>
 
-                {(isPaused || isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending) && (
+                {(isPaused || isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending) && ( // Show stop button if pending or prepared
                   <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                     <div className="shape-octagon w-10 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
                       <Button 
@@ -986,17 +1048,17 @@ const Index = () => {
                         onClick={stopTimer}
                         className={cn(
                           "w-full h-full rounded-none bg-transparent hover:bg-transparent",
-                          isPaused ? "text-red-500" : "text-secondary-foreground"
+                          isPaused ? "text-red-500" : "text-secondary-foreground" // Conditional red color
                         )}
                         data-name="Stop Timer Button"
                       >
-                        <Square size={16} fill="currentColor" />
+                        <Square size={16} fill="currentColor" /> {/* Solid Square icon */}
                       </Button>
                     </div>
                   </div>
                 )}
 
-                {!isScheduleActive && !isSchedulePrepared && (
+                {!isScheduleActive && !isSchedulePrepared && ( // Hide timer settings if schedule is active or prepared
                   <div className="flex justify-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span 
@@ -1022,7 +1084,7 @@ const Index = () => {
                         }} 
                         onBlur={() => {
                           if (focusMinutes === 0) {
-                            setHomepageFocusMinutes(defaultFocusMinutes);
+                            setHomepageFocusMinutes(defaultFocusMinutes); // Use defaultFocusMinutes here
                           }
                         }}
                         className="w-16 h-8 text-center" 
@@ -1057,7 +1119,7 @@ const Index = () => {
                         }} 
                         onBlur={() => {
                           if (breakMinutes === 0) {
-                            setHomepageBreakMinutes(defaultBreakMinutes);
+                            setHomepageBreakMinutes(defaultBreakMinutes); // Use defaultBreakMinutes here
                           }
                         }}
                         className="w-16 h-8 text-center" 
@@ -1079,7 +1141,7 @@ const Index = () => {
           <ActiveAskSection 
             activeAsks={activeAsks} 
             onVoteExtend={handleVoteExtend} 
-            onVotePoll={handleVotePoll}
+            onVotePoll={handleVotePoll} // Corrected prop here
             currentUserId={currentUserId} 
           />
         </div>
@@ -1115,7 +1177,7 @@ const Index = () => {
 
           {/* Notes Section - Always visible */}
           <Card>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2"> {/* Reduced bottom padding */}
               {isEditingSeshTitle ? (
                 <Input
                   ref={titleInputRef}
@@ -1163,9 +1225,25 @@ const Index = () => {
               </CardHeader>
               <CardContent className="space-y-2">
                 {allParticipantsToDisplayInCard.map(person => (
-                  <MobileTooltip
-                    key={person.id}
-                    content={
+                  <Tooltip key={person.id}>
+                    <TooltipTrigger asChild>
+                      <div 
+                        className={cn(
+                          "flex items-center justify-between p-2 rounded-md select-none",
+                          person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" : // Changed bg-primary to bg-[hsl(var(--focus-background))] and text-primary-foreground to text-foreground
+                          person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
+                          "hover:bg-muted cursor-pointer" // Other participants, now clickable
+                        )} 
+                        data-name={`Coworker: ${person.name}`}
+                        onClick={(e) => handleNameClick(person.id, person.name, e)} // NEW: Make clickable
+                      >
+                        <span className="font-medium text-foreground">
+                          {person.id === currentUserId ? "You" : person.name}
+                        </span>
+                        <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
                       <div className="text-center max-w-xs">
                         <p className="font-medium mb-1">
                           {person.id === currentUserId ? "You" : person.name}
@@ -1181,31 +1259,15 @@ const Index = () => {
                           </>
                         )}
                       </div>
-                    }
-                  >
-                    <div 
-                      className={cn(
-                        "flex items-center justify-between p-2 rounded-md select-none",
-                        person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
-                        person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
-                        "hover:bg-muted cursor-pointer"
-                      )} 
-                      data-name={`Coworker: ${person.name}`}
-                      onClick={(e) => handleNameClick(person.id, person.name, e)}
-                    >
-                      <span className="font-medium text-foreground">
-                        {person.id === currentUserId ? "You" : person.name}
-                      </span>
-                      <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
-                    </div>
-                  </MobileTooltip>
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </CardContent>
             </Card>
           )}
 
           {/* Sessions List */}
-          <div data-name="Sessions List">
+          <TooltipProvider>
             {/* Nearby Sessions */}
             {!shouldHideSessionLists && !isPrivate && (
               <div className="mb-6" data-name="Nearby Sessions Section">
@@ -1228,7 +1290,7 @@ const Index = () => {
                         key={session.id} 
                         session={session} 
                         onJoinSession={handleJoinSession} 
-                        onNameClick={handleNameClick}
+                        onNameClick={handleNameClick} // NEW: Pass handleNameClick
                       />
                     ))}
                   </div>
@@ -1258,28 +1320,28 @@ const Index = () => {
                         key={session.id} 
                         session={session} 
                         onJoinSession={handleJoinSession} 
-                        onNameClick={handleNameClick}
+                        onNameClick={handleNameClick} // NEW: Pass handleNameClick
                       />
                     ))}
                   </div>
                 )}
               </div>
             )}
-          </div>
+          </TooltipProvider>
         </div>
       </div>
       {/* Timeline Section (for active schedule) */}
-      {isScheduleActive && (
-        <div className="mt-8" data-name="Timeline Section">
+      {isScheduleActive && ( // Show only if active
+        <div className="mt-8" data-name="Timeline Section"> {/* Add some top margin for separation */}
           <Timeline
-            schedule={activeSchedule}
+            schedule={activeSchedule} // NEW: Pass activeSchedule
             currentScheduleIndex={currentScheduleIndex}
             timeLeft={timeLeft}
-            commenceTime={commenceTime}
-            commenceDay={commenceDay === null ? new Date().getDay() : commenceDay}
-            isSchedulePending={isSchedulePending}
+            commenceTime={commenceTime} // This will be from the active schedule's original template
+            commenceDay={commenceDay === null ? new Date().getDay() : commenceDay} // This will be from the active schedule's original template
+            isSchedulePending={isSchedulePending} // Keep this prop for Timeline's internal logic
             onCountdownEnd={handleCountdownEnd}
-            timerColors={activeTimerColors}
+            timerColors={activeTimerColors} // NEW: Pass activeTimerColors
           />
         </div>
       )}
@@ -1288,14 +1350,14 @@ const Index = () => {
       {sortedPreparedSchedules.length > 0 && (
         <div className="mt-8" data-name="Upcoming Section">
           <h3 className="text-xl font-bold text-foreground mb-4">Upcoming Schedules</h3>
-          <Accordion type="multiple" className="w-full space-y-4">
+          <Accordion type="multiple" className="w-full space-y-4"> {/* Use Accordion here */}
             {sortedPreparedSchedules.map((template) => (
               <UpcomingScheduleAccordionItem
                 key={template.id}
                 template={template}
                 commencePreparedSchedule={() => commenceSpecificPreparedSchedule(template.id)}
                 discardPreparedSchedule={() => discardPreparedSchedule(template.id)}
-                showCommenceButton={!isActiveTimer}
+                showCommenceButton={!isActiveTimer} // Pass the condition
               />
             ))}
           </Accordion>

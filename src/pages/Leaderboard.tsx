@@ -6,7 +6,6 @@ import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { TimePeriod } from "@/contexts/ProfileContext"; // Import TimePeriod type
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
-import MobileTooltip from "@/components/MobileTooltip"; // Changed import
 
 const Leaderboard = () => {
   const { 

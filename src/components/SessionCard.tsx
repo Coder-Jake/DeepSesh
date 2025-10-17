@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import MobileTooltip from "@/components/MobileTooltip"; // Changed import
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { useTimer } from "@/contexts/TimerContext"; // Import useTimer to use formatTime
 import { cn } from '@/lib/utils'; // Import cn
@@ -58,8 +58,11 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
       <CardContent className="p-4 pt-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <MobileTooltip // Changed to MobileTooltip
-              content={ // Content prop
+            <Tooltip>
+              <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
+                ~{session.totalDurationMinutes}m
+              </TooltipTrigger>
+              <TooltipContent className="select-none">
                 <div className="text-center">
                   <p className="mb-2 font-medium">{session.location}</p>
                   {/* Replaced workspace image with a generic map placeholder. For a dynamic map, integration with a map service API would be needed. */}
@@ -70,14 +73,13 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
                   />
                   <p className="text-xs text-muted-foreground mt-1">{session.workspaceDescription}</p>
                 </div>
-              }
-            >
-              <div className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
-                ~{session.totalDurationMinutes}m
-              </div>
-            </MobileTooltip>
-            <MobileTooltip // Changed to MobileTooltip
-              content={ // Content prop
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer select-none">
+                {session.participants.length} participants
+              </TooltipTrigger>
+              <TooltipContent className="select-none">
                 <div className="space-y-3">
                   {session.participants.map(p => (
                     <div key={p.id} className="flex items-center justify-between gap-4">
@@ -98,12 +100,8 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
                     </div>
                   ))}
                 </div>
-              }
-            >
-              <div className="text-sm text-muted-foreground cursor-pointer select-none">
-                {session.participants.length} participants
-              </div>
-            </MobileTooltip>
+              </TooltipContent>
+            </Tooltip>
             <div className="flex items-center gap-2">
               <div className="w-12 h-2 bg-secondary rounded-full overflow-hidden">
                 <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div> {/* Placeholder for average sociability */}

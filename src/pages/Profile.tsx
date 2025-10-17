@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { Linkedin, Clipboard, Key } from "lucide-react"; // Changed Copy to Clipboard, Added Key
-import MobileTooltip from "@/components/MobileTooltip"; // Changed import
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { useTimer } from "@/contexts/TimerContext"; // NEW: Import useTimer
 
@@ -423,9 +423,12 @@ const Profile = () => {
                 )}
               </CardTitle>
               {/* NEW: Key icon with tooltip */}
-              <MobileTooltip // Changed to MobileTooltip
-                content={ // Content prop
-                  <div className="p-2 select-none">
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Key className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="p-2 select-none">
                     <p className="font-semibold mb-1">Visibility Settings:</p>
                     <div className="space-y-2"> {/* Use a div for spacing instead of ul */}
                       <div className="flex items-center gap-2">
@@ -449,11 +452,9 @@ const Profile = () => {
                         <span className="font-bold text-foreground">Private</span>
                       </div>
                     </div>
-                  </div>
-                }
-              >
-                <Key className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" />
-              </MobileTooltip>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -572,13 +573,16 @@ const Profile = () => {
               {/* NEW: Hosting Code Section */}
               <div className="border-t border-border pt-6 mt-6">
                 <h3 className="text-lg font-semibold mb-2">
-                  <MobileTooltip // Changed to MobileTooltip
-                    content={ // Content prop
-                      <p>Others can use this code to join your sessions.</p>
-                    }
-                  >
-                    <span className="cursor-help">Hosting Code</span>
-                  </MobileTooltip>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help">Hosting Code</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Others can use this code to join your sessions.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </h3>
                 <div className="flex items-center gap-2"> {/* Flex container for code and icon */}
                   {isEditingHostCode ? (
