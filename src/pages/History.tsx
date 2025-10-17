@@ -194,7 +194,7 @@ const History = () => {
                     <Calendar className="h-8 w-8 text-primary" />
                     <div>
                       <p className="text-2xl font-bold">{currentStats.sessionsCompleted}</p>
-                        <p className="text-sm text-muted-foreground">Sessions Completed</p>
+                      <p className="text-sm text-muted-foreground">Sessions Completed</p>
                     </div>
                   </div>
                 </CardContent>
