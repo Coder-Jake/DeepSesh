@@ -6,6 +6,7 @@ import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { Profile } from '@/contexts/ProfileContext'; // Import the Profile type
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils'; // Import shared utils
+import { useToast } from '@/hooks/use-toast'; // NEW: Import useToast
 
 const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
@@ -21,12 +22,30 @@ const ProfilePopUpCard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast(); // NEW: Initialize useToast
 
   // State for adjusted position
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
 
-  // NEW: Label color states are now derived from ProfileContext for the current user
-  // For other users, they will be derived from targetProfile's visibility settings.
+  // NEW: Helper to get display name for visibility status (copied from Profile.tsx for consistency)
+  const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[]): string => {
+    if (visibility.includes('private')) return 'private';
+    if (visibility.includes('public')) return 'public';
+    if (visibility.includes('friends') && visibility.includes('organisation')) return 'friends & organisation only';
+    if (visibility.includes('friends')) return 'friends only';
+    if (visibility.includes('organisation')) return 'organisation only';
+    return 'public'; // Fallback
+  }, []);
+
+  // NEW: Helper to get display name for field (copied from Profile.tsx for consistency)
+  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility'): string => {
+    switch (fieldName) {
+      case 'bio_visibility': return 'Bio';
+      case 'intention_visibility': return 'Intention';
+      case 'linkedin_visibility': return 'LinkedIn';
+      default: return '';
+    }
+  }, []);
 
   const handleLabelClick = useCallback(async (
     currentVisibility: ('public' | 'friends' | 'organisation' | 'private')[], 
@@ -39,11 +58,16 @@ const ProfilePopUpCard: React.FC = () => {
     
     visibilitySetter(newVisibility); // Update context state immediately
     
-    // Also update Supabase
-    if (currentUserProfile) {
-      await updateProfile({ [fieldName]: newVisibility });
-    }
-  }, [currentUserProfile, updateProfile]);
+    // Construct specific success message for immediate toast feedback
+    const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
+    toast({
+      title: "Privacy Setting Changed",
+      description: successMessage,
+    });
+
+    // The actual saving to Supabase is now handled by the main Profile page's Save button.
+    // This function only updates the local context state and provides immediate UI feedback.
+  }, [toast, getDisplayFieldName, getDisplayVisibilityStatus]); // NEW: Added toast, getDisplayFieldName, getDisplayVisibilityStatus to dependencies
 
   useEffect(() => {
     const fetchTargetProfile = async () => {

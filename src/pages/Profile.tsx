@@ -96,7 +96,7 @@ const Profile = () => {
     }
   }, []);
 
-  const handleLabelClick = useCallback(async ( // MODIFIED: Added async
+  const handleLabelClick = useCallback(async ( // MODIFIED: Removed async, as it no longer saves directly
     currentIndex: number, 
     setter: React.Dispatch<React.SetStateAction<number>>,
     visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
@@ -108,23 +108,15 @@ const Profile = () => {
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
     const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
     
-    setter(nextIndex);
-    visibilitySetter(newVisibility);
+    setter(nextIndex); // Update local color index state
+    visibilitySetter(newVisibility); // Update local visibility array state
 
-    // Construct specific success message
+    // Construct specific success message for immediate toast feedback
     const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
-
-    // Also update Supabase
-    if (user) { // MODIFIED: Check if user is logged in
-      await updateProfile({ [fieldName]: newVisibility }, successMessage); // MODIFIED: Pass successMessage
-    } else {
-      // For unauthenticated users, save to local storage and show local toast
-      localStorage.setItem(`deepsesh_${fieldName}`, JSON.stringify(newVisibility));
-      toast({
-        title: "Privacy Setting Saved Locally",
-        description: successMessage,
-      });
-    }
+    toast({
+      title: "Privacy Setting Changed",
+      description: successMessage,
+    });
 
     // Immediately check for changes after updating visibility
     checkForChanges(
@@ -134,7 +126,7 @@ const Profile = () => {
       visibilitySetter === setIntentionVisibility ? newVisibility : currentIntentionVis,
       visibilitySetter === setLinkedinVisibility ? newVisibility : currentLinkedinVis
     );
-  }, [firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, user, updateProfile, toast, getDisplayFieldName, getDisplayVisibilityStatus]); // MODIFIED: Added user, updateProfile, toast, getDisplayFieldName, getDisplayVisibilityStatus as dependencies
+  }, [firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, toast, getDisplayFieldName, getDisplayVisibilityStatus]); // MODIFIED: Removed user, updateProfile as dependencies
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
