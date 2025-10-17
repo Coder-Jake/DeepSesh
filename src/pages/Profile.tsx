@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { Linkedin, Clipboard } from "lucide-react"; // Changed Copy to Clipboard
+import { Linkedin, Clipboard, Key } from "lucide-react"; // Changed Copy to Clipboard, Added Key
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { useTimer } from "@/contexts/TimerContext"; // NEW: Import useTimer
@@ -68,7 +68,7 @@ const Profile = () => {
   const isLongPress = useRef(false);
 
   // NEW: Label color states and handler
-  const labelColors = ["text-green-600", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
+  const labelColors = ["text-green-700", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
   const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
   const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
@@ -400,7 +400,7 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Bio Section */}
           <Card>
-            <CardHeader>
+            <CardHeader className="relative"> {/* Added relative positioning */}
               <CardTitle className="flex items-center gap-1">
                 <span>About</span>
                 {isEditingFirstName ? (
@@ -422,6 +422,24 @@ const Profile = () => {
                   </span>
                 )}
               </CardTitle>
+              {/* NEW: Key icon with tooltip */}
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Key className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="p-2">
+                    <p className="font-semibold mb-1">Visibility Settings:</p>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li className="text-green-600">Public</li>
+                      <li className="text-blue-500">Friends Only</li>
+                      <li className="text-red-500">Organisation Only</li>
+                      <li className="text-purple-500">Friends & Organisation</li>
+                      <li className="text-gray-500">Private</li>
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
