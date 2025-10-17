@@ -51,7 +51,7 @@ const Profile = () => {
     intention: "",
     sociability: [30],
     organization: "", // Added organization to original values
-    linkedinUrl: "", // Stores original LinkedIn username (only)
+    linkedinUrl: "", // Stores original LinkedIn (only)
     hostCode: "", // Will be initialized from context
   });
 
