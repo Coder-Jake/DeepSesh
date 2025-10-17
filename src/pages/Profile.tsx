@@ -157,6 +157,19 @@ const Profile = () => {
     }
   };
 
+  // NEW: Handle name click for profile pop-up
+  const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent parent click handlers
+    // Fetch the full profile data for the target user
+    const targetProfileData = await getPublicProfile(userId, userName);
+    if (targetProfileData) {
+      openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
+    } else {
+      // Fallback if profile data can't be fetched
+      openProfilePopUp(userId, userName, event.clientX, event.clientY);
+    }
+  }, [openProfilePopUp, getPublicProfile]);
+
   // NEW: Friend long press handlers
   const handleFriendLongPressStart = useCallback((friendId: string) => {
     friendLongPressTimerRef.current = setTimeout(() => {
@@ -533,19 +546,6 @@ const Profile = () => {
     setHasChanges(false); // No more unsaved changes
     setLongPressedFriendId(null); // Clear any active long-press on cancel
   }, [originalValues, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setHostCode]);
-
-  // NEW: Handle name click for profile pop-up
-  const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent parent click handlers
-    // Fetch the full profile data for the target user
-    const targetProfileData = await getPublicProfile(userId, userName);
-    if (targetProfileData) {
-      openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
-    } else {
-      // Fallback if profile data can't be fetched
-      openProfilePopUp(userId, userName, event.clientX, event.clientY);
-    }
-  }, [openProfilePopUp, getPublicProfile]);
 
   // Filter friends from friendStatuses
   const friends = Object.entries(friendStatuses)
