@@ -1,5 +1,5 @@
 import { toast as sonnerToast } from "sonner";
-import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
+import { useToastSettings } from "@/contexts/ToastSettingsContext"; // Import useToastSettings
 
 // This type definition is typically found in a shadcn/ui toast setup.
 // Assuming a basic structure for now.
@@ -14,7 +14,7 @@ type ToastProps = {
 };
 
 export function useToast() {
-  const { areToastsEnabled } = useTimer(); // Get the state from TimerContext
+  const { areToastsEnabled } = useToastSettings(); // Get the state from ToastSettingsContext
 
   const toast = (props: ToastProps) => {
     if (areToastsEnabled) { // Only show toast if enabled
