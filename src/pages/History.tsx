@@ -1,9 +1,9 @@
+import React, { useState, useMemo, useCallback } from "react"; // Added React import
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Calendar, FileText, Search, X, MessageSquarePlus, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -171,7 +171,7 @@ const History = () => {
         </div>
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-2 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <Link to="/leaderboard#focus-hours-leaderboard" className="block hover:opacity-80 transition-opacity">
                 <Card>
                   <CardContent className="p-4">
