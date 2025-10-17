@@ -36,6 +36,7 @@ import { DAYS_OF_WEEK } from "@/contexts/TimerContext"; // DAYS_OF_WEEK is still
 import { Accordion } from "@/components/ui/accordion"; // NEW
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem"; // NEW
 import UpcomingScheduleCardContent from "@/components/UpcomingScheduleCard"; // Renamed import
+import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
 
 // Define types for Ask items (copied from TimerContext to ensure consistency)
 interface ExtendSuggestion {
@@ -92,9 +93,9 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Quiet study space with whiteboards",
     participants: [
-      { id: "1", name: "Alex", sociability: 90, intention: "Reviewing differential equations." },
-      { id: "2", name: "Sam", sociability: 80, intention: "Working on problem set 3." },
-      { id: "3", name: "Taylor", sociability: 90, intention: "Preparing for the midterm exam." },
+      { id: "mock-user-id-1", name: "Alice", sociability: 90, intention: "Reviewing differential equations." },
+      { id: "mock-user-id-2", name: "Bob", sociability: 80, intention: "Working on problem set 3." },
+      { id: "mock-user-id-3", name: "Charlie", sociability: 90, intention: "Preparing for the midterm exam." },
     ],
   },
   {
@@ -109,9 +110,9 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "4", name: "Morgan", sociability: 20, intention: "Debugging a Python script." },
-      { id: "5", name: "Jordan", sociability: 10, intention: "Writing documentation for API." },
-      { id: "6", name: "Casey", sociability: 20, intention: "Learning new framework." },
+      { id: "mock-user-id-4", name: "Diana", sociability: 20, intention: "Debugging a Python script." },
+      { id: "mock-user-id-5", name: "Eve", sociability: 10, intention: "Writing documentation for API." },
+      { id: "mock-user-id-6", name: "Frank", sociability: 20, intention: "Learning new framework." },
       { id: "7", name: "Riley", sociability: 20, intention: "Code refactoring." },
       { id: "8", name: "Avery", sociability: 30, intention: "Designing database schema." },
     ],
@@ -131,9 +132,9 @@ const mockFriendsSessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
     participants: [
-      { id: "9", name: "Jamie", sociability: 60, intention: "Reviewing cognitive psychology." },
-      { id: "10", name: "Quinn", sociability: 60, intention: "Memorizing key terms." },
-      { id: "11", name: "Blake", sociability: 70, intention: "Practicing essay questions." },
+      { id: "mock-user-id-7", name: "Grace", sociability: 60, intention: "Reviewing cognitive psychology." },
+      { id: "mock-user-id-8", name: "Heidi", sociability: 60, intention: "Memorizing key terms." },
+      { id: "mock-user-id-9", name: "Ivan", sociability: 70, intention: "Practicing essay questions." },
       { id: "12", name: "Drew", sociability: 60, intention: "Summarizing research papers." },
       { id: "13", name: "Chris", sociability: 50, intention: "Creating flashcards." },
       { id: "14", name: "Pat", sociability: 55, intention: "Discussing theories." },
@@ -230,6 +231,7 @@ const Index = () => {
   
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
   const navigate = useNavigate();
+  const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
 
   const [isPrivate, setIsPrivate] = useState(isGlobalPrivate);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
@@ -886,6 +888,12 @@ const Index = () => {
     });
   };
 
+  // NEW: Handle name click for profile pop-up
+  const handleNameClick = useCallback((userId: string, userName: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent parent click handlers
+    openProfilePopUp(userId, userName, event.clientX, event.clientY);
+  }, [openProfilePopUp]);
+
   return (
     <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
       <div className="mb-6">
@@ -1219,12 +1227,16 @@ const Index = () => {
                 {allParticipantsToDisplayInCard.map(person => (
                   <Tooltip key={person.id}>
                     <TooltipTrigger asChild>
-                      <div className={cn(
-                        "flex items-center justify-between p-2 rounded-md select-none",
-                        person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" : // Changed bg-primary to bg-[hsl(var(--focus-background))] and text-primary-foreground to text-foreground
-                        person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
-                        "hover:bg-muted cursor-default" // Other participants
-                      )} data-name={`Coworker: ${person.name}`}>
+                      <div 
+                        className={cn(
+                          "flex items-center justify-between p-2 rounded-md select-none",
+                          person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" : // Changed bg-primary to bg-[hsl(var(--focus-background))] and text-primary-foreground to text-foreground
+                          person.role === 'host' ? "bg-muted text-blue-700 font-medium" : // Host (if not current user)
+                          "hover:bg-muted cursor-pointer" // Other participants, now clickable
+                        )} 
+                        data-name={`Coworker: ${person.name}`}
+                        onClick={(e) => handleNameClick(person.id, person.name, e)} // NEW: Make clickable
+                      >
                         <span className="font-medium text-foreground">
                           {person.id === currentUserId ? "You" : person.name}
                         </span>
@@ -1278,6 +1290,7 @@ const Index = () => {
                         key={session.id} 
                         session={session} 
                         onJoinSession={handleJoinSession} 
+                        onNameClick={handleNameClick} // NEW: Pass handleNameClick
                       />
                     ))}
                   </div>
@@ -1307,6 +1320,7 @@ const Index = () => {
                         key={session.id} 
                         session={session} 
                         onJoinSession={handleJoinSession} 
+                        onNameClick={handleNameClick} // NEW: Pass handleNameClick
                       />
                     ))}
                   </div>

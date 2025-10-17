@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext"; // Import useAuth to get current user ID
 
-type Profile = Tables<'public', 'profiles'>;
+export type Profile = Tables<'public', 'profiles'>;
 type ProfileInsert = TablesInsert<'public', 'profiles'>;
 type ProfileUpdate = TablesInsert<'public', 'profiles'>;
 
@@ -139,7 +139,7 @@ const dummyLeaderboardCollaboratedUsers = {
     { id: "angie-id-4", name: "Angie", collaboratedUsers: 8 },
     { id: "frank-id-4", name: "Frank", collaboratedUsers: 7 },
     { id: "grace-id-4", name: "Grace", collaboratedUsers: 6 },
-    { id: "heidi-id-4", name: "Heidi", collaboratedUsers: 4 },
+    { id: "heidi-id-4", name: "Heidi", collaboratedUsers: 4 }, 
   ],
   month: [
     { id: "angie-id-5", name: "Angie", collaboratedUsers: 25 },
@@ -317,6 +317,151 @@ const generateRandomHostCode = () => {
   return `${randomColor}${randomAnimal}`;
 };
 
+// NEW: Mock profiles for demonstration
+const mockProfiles: Profile[] = [
+  {
+    id: "mock-user-id-1",
+    first_name: "Alice",
+    last_name: "Smith",
+    avatar_url: null,
+    bio: "Passionate about AI and machine learning. Always looking for new challenges.",
+    intention: "Working on a new neural network architecture for image recognition.",
+    sociability: 80,
+    updated_at: new Date().toISOString(),
+    organization: "Tech Innovators Inc.",
+    linkedin_url: "https://www.linkedin.com/in/alicesmith",
+    host_code: "redfox",
+    profileVisibility: ['public', 'friends'],
+  },
+  {
+    id: "mock-user-id-2",
+    first_name: "Bob",
+    last_name: "Johnson",
+    avatar_url: null,
+    bio: "Frontend developer with a love for clean UI/UX. React enthusiast.",
+    intention: "Refactoring legacy code and implementing new design system components.",
+    sociability: 60,
+    updated_at: new Date().toISOString(),
+    organization: "Web Solutions Co.",
+    linkedin_url: "https://www.linkedin.com/in/bobjohnson",
+    host_code: "bluebear",
+    profileVisibility: ['public'],
+  },
+  {
+    id: "mock-user-id-3",
+    first_name: "Charlie",
+    last_name: "Brown",
+    avatar_url: null,
+    bio: "Backend engineer specializing in scalable microservices and cloud infrastructure.",
+    intention: "Optimizing database queries and deploying new serverless functions.",
+    sociability: 40,
+    updated_at: new Date().toISOString(),
+    organization: "Cloud Builders LLC",
+    linkedin_url: "https://www.linkedin.com/in/charliebrown",
+    host_code: "greencat",
+    profileVisibility: ['friends', 'organisation'],
+  },
+  {
+    id: "mock-user-id-4",
+    first_name: "Diana",
+    last_name: "Prince",
+    avatar_url: null,
+    bio: "Project manager focused on agile methodologies and team leadership.",
+    intention: "Coordinating cross-functional teams for the upcoming product launch.",
+    sociability: 90,
+    updated_at: new Date().toISOString(),
+    organization: "Global Enterprises",
+    linkedin_url: "https://www.linkedin.com/in/dianaprince",
+    host_code: "yellowdog",
+    profileVisibility: ['public', 'organisation'],
+  },
+  {
+    id: "mock-user-id-5",
+    first_name: "Eve",
+    last_name: "Adams",
+    avatar_url: null,
+    bio: "UX Researcher passionate about user-centered design and usability testing.",
+    intention: "Conducting user interviews and analyzing feedback for product improvements.",
+    sociability: 70,
+    updated_at: new Date().toISOString(),
+    organization: "Design Innovations",
+    linkedin_url: "https://www.linkedin.com/in/eveadams",
+    host_code: "purplelion",
+    profileVisibility: ['private'], // This profile is private
+  },
+  {
+    id: "mock-user-id-6",
+    first_name: "Frank",
+    last_name: "White",
+    avatar_url: null,
+    bio: "Data Scientist building predictive models and analyzing large datasets.",
+    intention: "Developing a new recommendation engine for the e-commerce platform.",
+    sociability: 30,
+    updated_at: new Date().toISOString(),
+    organization: "Data Insights Co.",
+    linkedin_url: "https://www.linkedin.com/in/frankwhite",
+    host_code: "orangetiger",
+    profileVisibility: ['public'],
+  },
+  {
+    id: "mock-user-id-7",
+    first_name: "Grace",
+    last_name: "Taylor",
+    avatar_url: null,
+    bio: "Content creator and digital marketer. Specializing in SEO and social media strategy.",
+    intention: "Planning content calendar for Q4 and optimizing website for search engines.",
+    sociability: 85,
+    updated_at: new Date().toISOString(),
+    organization: "Creative Minds Agency",
+    linkedin_url: "https://www.linkedin.com/in/gracetaylor",
+    host_code: "pinkwolf",
+    profileVisibility: ['public'],
+  },
+  {
+    id: "mock-user-id-8",
+    first_name: "Heidi",
+    last_name: "Clark",
+    avatar_url: null,
+    bio: "Cybersecurity analyst protecting digital assets and ensuring data privacy.",
+    intention: "Performing penetration testing and implementing new security protocols.",
+    sociability: 55,
+    updated_at: new Date().toISOString(),
+    organization: "Secure Solutions Ltd.",
+    linkedin_url: "https://www.linkedin.com/in/heidiclark",
+    host_code: "browndeer",
+    profileVisibility: ['public'],
+  },
+  {
+    id: "mock-user-id-9",
+    first_name: "Ivan",
+    last_name: "King",
+    avatar_url: null,
+    bio: "DevOps engineer automating deployment pipelines and managing cloud infrastructure.",
+    intention: "Setting up CI/CD for a new microservice and monitoring system performance.",
+    sociability: 45,
+    updated_at: new Date().toISOString(),
+    organization: "Automate Everything Inc.",
+    linkedin_url: "https://www.linkedin.com/in/ivanking",
+    host_code: "greyzebra",
+    profileVisibility: ['public'],
+  },
+  {
+    id: "mock-user-id-10",
+    first_name: "Judy",
+    last_name: "Lee",
+    avatar_url: null,
+    bio: "Product designer crafting intuitive and engaging user experiences.",
+    intention: "Designing wireframes and prototypes for the next product iteration.",
+    sociability: 75,
+    updated_at: new Date().toISOString(),
+    organization: "Innovate UX",
+    linkedin_url: "https://www.linkedin.com/in/judylee",
+    host_code: "blackpanda",
+    profileVisibility: ['public'],
+  },
+];
+
+
 interface ProfileContextType {
   profile: Profile | null;
   loading: boolean;
@@ -357,6 +502,7 @@ interface ProfileContextType {
   setHostCode: React.Dispatch<React.SetStateAction<string>>;
 
   deleteSession: (sessionId: string) => Promise<void>;
+  getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>; // NEW: Added getPublicProfile
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -777,6 +923,49 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   }, [toast]);
 
+  // NEW: Function to get a public profile by ID or name
+  const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
+    // First, try to find in mock profiles
+    const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
+    if (mockProfile) {
+      return mockProfile;
+    }
+
+    // If not in mock profiles, try to fetch from Supabase (if user is authenticated)
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error("Error fetching public profile from Supabase:", error);
+        throw new Error("Failed to fetch profile.");
+      }
+      if (data) {
+        return { ...data, first_name: data.first_name || "" };
+      }
+    }
+    
+    // Fallback for unknown users (e.g., if only name is available and not in mocks/DB)
+    return {
+      id: userId,
+      first_name: userName,
+      last_name: null,
+      avatar_url: null,
+      bio: null,
+      intention: null,
+      sociability: 50, // Default sociability
+      updated_at: new Date().toISOString(),
+      organization: null,
+      linkedin_url: null,
+      host_code: null,
+      profileVisibility: ['public'], // Default to public for unknown users
+    };
+  }, []);
+
 
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -877,6 +1066,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     hostCode,
     setHostCode,
     deleteSession,
+    getPublicProfile, // NEW: Expose getPublicProfile
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

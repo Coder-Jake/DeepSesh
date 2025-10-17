@@ -21,10 +21,12 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Poll, ExtendSuggestion, ActiveAskItem } from "@/types/timer";
 import { cn } from "@/lib/utils";
+import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession } = useProfile();
+  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession, localFirstName, profile } = useProfile(); // NEW: Get localFirstName and profile
   const { toast } = useToast();
+  const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
 
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,6 +34,8 @@ const History = () => {
   const [showDeleteIconForSessionId, setShowDeleteIconForSessionId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null);
+
+  const currentUserId = profile?.id || "mock-user-id-123"; // Use a consistent mock ID if not logged in
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -136,6 +140,12 @@ const History = () => {
       setShowDeleteIconForSessionId(null); // Hide the delete icon after deletion
     }
   }, [sessionToDeleteId, deleteSession, toast]);
+
+  // NEW: Handle name click for profile pop-up
+  const handleNameClick = useCallback((userId: string, userName: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent parent click handlers
+    openProfilePopUp(userId, userName, event.clientX, event.clientY);
+  }, [openProfilePopUp]);
 
   return (
     <>
@@ -256,7 +266,16 @@ const History = () => {
                                       <div className="space-y-1">
                                         <p className="font-medium">Participants:</p>
                                         {session.participantNames.map((name, index) => (
-                                          <p key={index} className="text-sm text-muted-foreground">{name}</p>
+                                          <p 
+                                            key={index} 
+                                            className={cn(
+                                              "text-sm text-muted-foreground",
+                                              name !== localFirstName && "cursor-pointer hover:text-primary" // Make clickable if not current user
+                                            )}
+                                            onClick={(e) => handleNameClick(name === localFirstName ? currentUserId : `mock-user-id-${name.toLowerCase()}`, name, e)} // NEW: Make clickable
+                                          >
+                                            {name}
+                                          </p>
                                         ))}
                                       </div>
                                     ) : (
@@ -367,7 +386,18 @@ const History = () => {
                                         <PlusCircle size={16} className="text-primary" />
                                         Extend Timer by {suggestion.minutes} minutes
                                       </p>
-                                      <p className="text-xs text-muted-foreground">Suggested by {highlightText(suggestion.creator, searchQuery)}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Suggested by{" "}
+                                        <span 
+                                          className={cn(
+                                            "cursor-pointer hover:text-primary",
+                                            suggestion.creator === localFirstName && "cursor-default hover:text-muted-foreground"
+                                          )}
+                                          onClick={(e) => handleNameClick(suggestion.creator === localFirstName ? currentUserId : `mock-user-id-${suggestion.creator.toLowerCase()}`, suggestion.creator, e)} // NEW: Make clickable
+                                        >
+                                          {highlightText(suggestion.creator, searchQuery)}
+                                        </span>
+                                      </p>
                                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                         <span className={cn("flex items-center gap-1", mostPopularVote === 'yes' && "text-green-600 font-medium")}>
                                           <ThumbsUp size={14} className="inline-block mr-1" fill={mostPopularVote === 'yes' ? "currentColor" : "none"} /> {yesVotes}

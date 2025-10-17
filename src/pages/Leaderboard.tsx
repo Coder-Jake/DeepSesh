@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 import { cn } from "@/lib/utils"; // Import cn for conditional class names
 import { TimePeriod } from "@/contexts/ProfileContext"; // Import TimePeriod type
+import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
 
 const Leaderboard = () => {
   const { 
@@ -14,6 +15,7 @@ const Leaderboard = () => {
     setHistoryTimePeriod, // Use setHistoryTimePeriod from context
     statsData // Get statsData from ProfileContext
   } = useProfile(); // Use persistent states from context
+  const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
 
   const currentUserName = profile?.first_name || localFirstName || "You"; // Prioritize Supabase, then local, then default
   const currentUserId = profile?.id || "mock-user-id-999"; // Use a consistent mock ID if not logged in
@@ -34,44 +36,44 @@ const Leaderboard = () => {
   // Base data for Focus Hours Leaderboard (excluding current user initially)
   const baseFocusHoursLeaderboardData = {
     week: [
-      { id: "angie-id-1", name: "Angie", focusHours: 30 },
-      { id: "bob-id-1", name: "Bob", focusHours: 25 },
-      { id: "charlie-id-1", name: "Charlie", focusHours: 20 },
-      { id: "diana-id-1", name: "Diana", focusHours: 18 },
+      { id: "mock-user-id-1", name: "Alice", focusHours: 30 },
+      { id: "mock-user-id-2", name: "Bob", focusHours: 25 },
+      { id: "mock-user-id-3", name: "Charlie", focusHours: 20 },
+      { id: "mock-user-id-4", name: "Diana", focusHours: 18 },
     ],
     month: [
-      { id: "angie-id-2", name: "Angie", focusHours: 120 },
-      { id: "bob-id-2", name: "Bob", focusHours: 110 },
-      { id: "diana-id-2", name: "Diana", focusHours: 95 },
-      { id: "charlie-id-2", name: "Charlie", focusHours: 80 },
+      { id: "mock-user-id-1", name: "Alice", focusHours: 120 },
+      { id: "mock-user-id-2", name: "Bob", focusHours: 110 },
+      { id: "mock-user-id-4", name: "Diana", focusHours: 95 },
+      { id: "mock-user-id-3", name: "Charlie", focusHours: 80 },
     ],
     all: [
-      { id: "angie-id-3", name: "Angie", focusHours: 500 },
-      { id: "bob-id-3", name: "Bob", focusHours: 450 },
-      { id: "charlie-id-3", name: "Charlie", focusHours: 400 },
-      { id: "diana-id-3", name: "Diana", focusHours: 350 },
+      { id: "mock-user-id-1", name: "Alice", focusHours: 500 },
+      { id: "mock-user-id-2", name: "Bob", focusHours: 450 },
+      { id: "mock-user-id-3", name: "Charlie", focusHours: 400 },
+      { id: "mock-user-id-4", name: "Diana", focusHours: 350 },
     ],
   };
 
   // Base data for Collaborated Users Leaderboard (excluding current user initially)
   const baseCollaboratedUsersLeaderboardData = {
     week: [
-      { id: "angie-id-4", name: "Angie", collaboratedUsers: 8 },
-      { id: "frank-id-4", name: "Frank", collaboratedUsers: 7 },
-      { id: "grace-id-4", name: "Grace", collaboratedUsers: 6 },
-      { id: "heidi-id-4", name: "Heidi", collaboratedUsers: 4 }, 
+      { id: "mock-user-id-1", name: "Alice", collaboratedUsers: 8 },
+      { id: "mock-user-id-6", name: "Frank", collaboratedUsers: 7 },
+      { id: "mock-user-id-7", name: "Grace", collaboratedUsers: 6 },
+      { id: "mock-user-id-8", name: "Heidi", collaboratedUsers: 4 }, 
     ],
     month: [
-      { id: "angie-id-5", name: "Angie", collaboratedUsers: 25 },
-      { id: "liam-id-5", name: "Liam", collaboratedUsers: 22 }, 
-      { id: "mia-id-5", name: "Mia", collaboratedUsers: 17 }, 
-      { id: "noah-id-5", name: "Noah", collaboratedUsers: 15 }, 
+      { id: "mock-user-id-1", name: "Alice", collaboratedUsers: 25 },
+      { id: "mock-user-id-9", name: "Ivan", collaboratedUsers: 22 }, 
+      { id: "mock-user-id-10", name: "Judy", collaboratedUsers: 17 }, 
+      { id: "mock-user-id-2", name: "Bob", collaboratedUsers: 15 }, 
     ],
     all: [
-      { id: "angie-id-6", name: "Angie", collaboratedUsers: 100 },
-      { id: "peter-id-6", name: "Peter", collaboratedUsers: 90 }, 
-      { id: "quinn-id-6", name: "Quinn", collaboratedUsers: 80 }, 
-      { id: "rachel-id-6", name: "Rachel", collaboratedUsers: 70 }, 
+      { id: "mock-user-id-1", name: "Alice", collaboratedUsers: 100 },
+      { id: "mock-user-id-6", name: "Frank", collaboratedUsers: 90 }, 
+      { id: "mock-user-id-7", name: "Grace", collaboratedUsers: 80 }, 
+      { id: "mock-user-id-8", name: "Heidi", collaboratedUsers: 70 }, 
     ],
   };
 
@@ -110,6 +112,12 @@ const Leaderboard = () => {
   const currentFocusHoursLeaderboard = getFocusHoursLeaderboard(historyTimePeriod); // Use historyTimePeriod
   const currentCollaboratedUsersLeaderboard = getCollaboratedUsersLeaderboard(historyTimePeriod); // Use historyTimePeriod
 
+  // NEW: Handle name click for profile pop-up
+  const handleNameClick = useCallback((userId: string, userName: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent parent click handlers
+    openProfilePopUp(userId, userName, event.clientX, event.clientY);
+  }, [openProfilePopUp]);
+
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
       <div className="mb-6 text-center">
@@ -138,8 +146,10 @@ const Leaderboard = () => {
                 key={user.id} 
                 className={cn(
                   "flex items-center justify-between p-3 rounded-lg",
-                  user.id === currentUserId ? "bg-primary text-primary-foreground" : "bg-muted"
+                  user.id === currentUserId ? "bg-primary text-primary-foreground" : "bg-muted",
+                  user.id !== currentUserId && "cursor-pointer hover:bg-muted/80" // Make clickable if not current user
                 )}
+                onClick={(e) => user.id !== currentUserId && handleNameClick(user.id, user.name, e)} // NEW: Make clickable
               >
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-lg">{index + 1}.</span>
@@ -166,8 +176,10 @@ const Leaderboard = () => {
                 key={user.id} 
                 className={cn(
                   "flex items-center justify-between p-3 rounded-lg",
-                  user.id === currentUserId ? "bg-primary text-primary-foreground" : "bg-muted"
+                  user.id === currentUserId ? "bg-primary text-primary-foreground" : "bg-muted",
+                  user.id !== currentUserId && "cursor-pointer hover:bg-muted/80" // Make clickable if not current user
                 )}
+                onClick={(e) => user.id !== currentUserId && handleNameClick(user.id, user.name, e)} // NEW: Make clickable
               >
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-lg">{index + 1}.</span>

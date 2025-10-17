@@ -8,7 +8,9 @@ import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GlobalTooltipProvider, useGlobalTooltip } from "@/contexts/GlobalTooltipContext";
+import { ProfilePopUpProvider } from "@/contexts/ProfilePopUpContext"; // NEW: Import ProfilePopUpProvider
 import GlobalTooltip from "@/components/GlobalTooltip";
+import ProfilePopUpCard from "@/components/ProfilePopUpCard"; // NEW: Import ProfilePopUpCard
 import Header from "@/components/Header";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -210,6 +212,7 @@ const AppContent = () => {
       </Routes>
       {areToastsEnabled && <Toaster toasts={toasts} />} {/* NEW: Conditionally render Toaster */}
       <GlobalTooltip />
+      <ProfilePopUpCard /> {/* NEW: Render the ProfilePopUpCard */}
     </div>
   );
 };
@@ -222,10 +225,12 @@ const App = () => (
           <ProfileProvider>
             <TimerProvider>
               <GlobalTooltipProvider>
-                <Sonner />
-                <BrowserRouter>
-                  <AppContent />
-                </BrowserRouter>
+                <ProfilePopUpProvider> {/* NEW: Wrap with ProfilePopUpProvider */}
+                  <Sonner />
+                  <BrowserRouter>
+                    <AppContent />
+                  </BrowserRouter>
+                </ProfilePopUpProvider>
               </GlobalTooltipProvider>
             </TimerProvider>
           </ProfileProvider>
