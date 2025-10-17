@@ -430,13 +430,28 @@ const Profile = () => {
                   </TooltipTrigger>
                   <TooltipContent className="p-2">
                     <p className="font-semibold mb-1">Visibility Settings:</p>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li className="text-green-600">Public</li>
-                      <li className="text-blue-500">Friends Only</li>
-                      <li className="text-red-500">Organisation Only</li>
-                      <li className="text-purple-500">Friends & Organisation</li>
-                      <li className="text-gray-500">Private</li>
-                    </ul>
+                    <div className="space-y-2"> {/* Use a div for spacing instead of ul */}
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 rounded-full bg-green-600" />
+                        <span className="font-bold text-foreground">Public</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 rounded-full bg-blue-500" />
+                        <span className="font-bold text-foreground">Friends Only</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 rounded-full bg-red-500" />
+                        <span className="font-bold text-foreground">Organisation Only</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 rounded-full bg-purple-500" />
+                        <span className="font-bold text-foreground">Friends & Organisation</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 rounded-full bg-gray-500" />
+                        <span className="font-bold text-foreground">Private</span>
+                      </div>
+                    </div>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
