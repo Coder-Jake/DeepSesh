@@ -13,7 +13,6 @@ const ProfilePopUpCard: React.FC = () => {
   const { 
     getPublicProfile, 
     profile: currentUserProfile, 
-    updateProfile, // Need to update profile from here
     bioVisibility, setBioVisibility, 
     intentionVisibility, setIntentionVisibility, 
     linkedinVisibility, setLinkedinVisibility 
@@ -152,7 +151,7 @@ const ProfilePopUpCard: React.FC = () => {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
-    }
+    };
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -171,15 +170,6 @@ const ProfilePopUpCard: React.FC = () => {
     zIndex: 10000, // Higher than other elements
   };
 
-  // Determine visibility based on target user's profileVisibility settings
-  const isCurrentUserProfile = currentUserProfile && targetProfile?.id === currentUserProfile.id;
-  const isPublic = targetProfile?.profileVisibility?.includes('public');
-  const isFriends = targetProfile?.profileVisibility?.includes('friends'); // Placeholder for future friend logic
-  const isOrganization = targetProfile?.profileVisibility?.includes('organisation'); // Placeholder for future org logic
-  const isPrivate = targetProfile?.profileVisibility?.includes('private');
-
-  const showFullProfile = isCurrentUserProfile || isPublic || (isFriends && false) || (isOrganization && false); // Simplified for now
-
   const renderContent = () => {
     if (loading) {
       return <p className="text-center text-muted-foreground">Loading profile...</p>;
@@ -192,8 +182,20 @@ const ProfilePopUpCard: React.FC = () => {
     }
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
+    const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
 
-    if (!isCurrentUserProfile && isPrivate && targetProfile.profileVisibility?.length === 1) {
+    // Helper to determine if a specific field should be visible
+    const isFieldVisible = (fieldVisibility: ('public' | 'friends' | 'organisation' | 'private')[] | null | undefined) => {
+      if (isCurrentUserProfile) return true; // Always show own profile details
+      if (!fieldVisibility || fieldVisibility.includes('private')) return false; // Explicitly private
+      // For demo, if it's not private, and includes public, friends, or organisation, show it.
+      return fieldVisibility.includes('public') || fieldVisibility.includes('friends') || fieldVisibility.includes('organisation');
+    };
+
+    // If the profile is explicitly private and not the current user, show only name
+    if (!isCurrentUserProfile && targetProfile.bio_visibility?.includes('private') && 
+        targetProfile.intention_visibility?.includes('private') && 
+        targetProfile.linkedin_visibility?.includes('private')) {
       return (
         <div className="text-center space-y-2">
           <User className="h-8 w-8 text-muted-foreground mx-auto" />
@@ -203,7 +205,7 @@ const ProfilePopUpCard: React.FC = () => {
       );
     }
 
-    // Derive current visibility for labels
+    // Derive current visibility for labels (only for current user, otherwise use targetProfile's saved visibility)
     const currentBioVisibility = isCurrentUserProfile ? bioVisibility : (targetProfile.bio_visibility || ['public']);
     const currentIntentionVisibility = isCurrentUserProfile ? intentionVisibility : (targetProfile.intention_visibility || ['public']);
     const currentLinkedinVisibility = isCurrentUserProfile ? linkedinVisibility : (targetProfile.linkedin_visibility || ['public']);
@@ -215,7 +217,7 @@ const ProfilePopUpCard: React.FC = () => {
           <h3 className="font-bold text-xl">{displayName}</h3>
         </div>
 
-        {targetProfile.bio && showFullProfile && (
+        {targetProfile.bio && isFieldVisible(targetProfile.bio_visibility) && (
           <div>
             <h4 
               className={cn(
@@ -231,7 +233,7 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.intention && showFullProfile && (
+        {targetProfile.intention && isFieldVisible(targetProfile.intention_visibility) && (
           <div>
             <h4 
               className={cn(
@@ -247,7 +249,10 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.sociability !== null && showFullProfile && (
+        {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility) || isFieldVisible(targetProfile.intention_visibility) || isFieldVisible(targetProfile.linkedin_visibility)) && (
+          // Sociability is generally visible if any other field is visible, or if it's explicitly public (though no direct sociability_visibility field)
+          // For now, tie its visibility to other fields or assume it's always visible if not private overall.
+          // A more robust solution would involve a dedicated sociability_visibility field.
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Users size={16} /> Sociability
@@ -262,7 +267,8 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.organization && showFullProfile && (
+        {targetProfile.organization && (isFieldVisible(targetProfile.bio_visibility) || isFieldVisible(targetProfile.intention_visibility) || isFieldVisible(targetProfile.linkedin_visibility)) && (
+          // Organization is generally visible if any other field is visible, or if it's explicitly public.
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 size={16} /> Organization
@@ -271,7 +277,7 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.linkedin_url && showFullProfile && (
+        {targetProfile.linkedin_url && isFieldVisible(targetProfile.linkedin_visibility) && (
           <div>
             <h4 
               className={cn(
