@@ -20,38 +20,8 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 import { Linkedin, Clipboard, Key } from "lucide-react"; // Changed Copy to Clipboard, Added Key
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
-import { cn } from "@/lib/utils"; // Import cn for conditional class names
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from "@/lib/utils"; // Import shared utils
 import { useTimer } from "@/contexts/TimerContext"; // NEW: Import useTimer
-
-// Define the mapping from index to visibility options
-const VISIBILITY_OPTIONS_MAP = [
-  ['public'], // Index 0: Green
-  ['friends'], // Index 1: Blue
-  ['organisation'], // Index 2: Red
-  ['friends', 'organisation'], // Index 3: Purple
-  ['private'], // Index 4: Gray
-];
-
-// Helper to get the index from a visibility array
-const getIndexFromVisibility = (visibility: ('public' | 'friends' | 'organisation' | 'private')[] | null): number => {
-  if (!visibility || visibility.length === 0) return 0; // Default to public if not set
-
-  const sortedVisibility = [...visibility].sort().join(','); // Ensure consistent order for comparison
-
-  for (let i = 0; i < VISIBILITY_OPTIONS_MAP.length; i++) {
-    const mapEntry = [...VISIBILITY_OPTIONS_MAP[i]].sort().join(',');
-    if (sortedVisibility === mapEntry) {
-      return i;
-    }
-  }
-  return 0; // Default to public if no match
-};
-
-// Helper function to determine the privacy color class from an index
-const getPrivacyColorClassFromIndex = (index: number): string => {
-  const labelColors = ["text-green-700", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
-  return labelColors[index % labelColors.length];
-};
 
 const Profile = () => {
   const { 

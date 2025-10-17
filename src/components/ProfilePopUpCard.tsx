@@ -5,11 +5,18 @@ import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin } from 'l
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { Profile } from '@/contexts/ProfileContext'; // Import the Profile type
-import { cn } from '@/lib/utils';
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils'; // Import shared utils
 
 const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
-  const { getPublicProfile, profile: currentUserProfile } = useProfile(); // Get current user's profile for comparison
+  const { 
+    getPublicProfile, 
+    profile: currentUserProfile, 
+    updateProfile, // Need to update profile from here
+    bioVisibility, setBioVisibility, 
+    intentionVisibility, setIntentionVisibility, 
+    linkedinVisibility, setLinkedinVisibility 
+  } = useProfile(); // Get current user's profile and visibility setters
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,15 +25,25 @@ const ProfilePopUpCard: React.FC = () => {
   // State for adjusted position
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
 
-  // NEW: Label color states and handler
-  const labelColors = ["text-green-700", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
-  const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
-  const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
-  const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
+  // NEW: Label color states are now derived from ProfileContext for the current user
+  // For other users, they will be derived from targetProfile's visibility settings.
 
-  const handleLabelClick = useCallback((currentIndex: number, setter: React.Dispatch<React.SetStateAction<number>>) => {
-    setter((prevIndex) => (prevIndex + 1) % labelColors.length);
-  }, [labelColors.length]);
+  const handleLabelClick = useCallback(async (
+    currentVisibility: ('public' | 'friends' | 'organisation' | 'private')[], 
+    visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
+    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility'
+  ) => {
+    const currentIndex = getIndexFromVisibility(currentVisibility);
+    const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
+    const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
+    
+    visibilitySetter(newVisibility); // Update context state immediately
+    
+    // Also update Supabase
+    if (currentUserProfile) {
+      await updateProfile({ [fieldName]: newVisibility });
+    }
+  }, [currentUserProfile, updateProfile]);
 
   useEffect(() => {
     const fetchTargetProfile = async () => {
@@ -36,7 +53,13 @@ const ProfilePopUpCard: React.FC = () => {
         
         // Check if the target user is the current user
         if (currentUserProfile && targetUserId === currentUserProfile.id) {
-          setTargetProfile(currentUserProfile);
+          // If it's the current user, use the profile from context directly
+          setTargetProfile({
+            ...currentUserProfile,
+            bio_visibility: bioVisibility,
+            intention_visibility: intentionVisibility,
+            linkedin_visibility: linkedinVisibility,
+          });
           setLoading(false);
         } else {
           try {
@@ -54,16 +77,12 @@ const ProfilePopUpCard: React.FC = () => {
 
     if (isPopUpOpen) {
       fetchTargetProfile();
-      // Reset label colors when pop-up opens
-      setBioLabelColorIndex(0);
-      setIntentionLabelColorIndex(0);
-      setLinkedinLabelColorIndex(0);
     } else {
       setTargetProfile(null);
       setLoading(true);
       setError(null);
     }
-  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile]);
+  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, bioVisibility, intentionVisibility, linkedinVisibility]); // Add visibility states as dependencies
 
   // Effect to adjust position based on viewport
   useLayoutEffect(() => {
@@ -129,14 +148,13 @@ const ProfilePopUpCard: React.FC = () => {
   };
 
   // Determine visibility based on target user's profileVisibility settings
-  // If it's the current user's profile, always show full details
-  const isCurrentUser = currentUserProfile && targetProfile?.id === currentUserProfile.id;
+  const isCurrentUserProfile = currentUserProfile && targetProfile?.id === currentUserProfile.id;
   const isPublic = targetProfile?.profileVisibility?.includes('public');
   const isFriends = targetProfile?.profileVisibility?.includes('friends'); // Placeholder for future friend logic
   const isOrganization = targetProfile?.profileVisibility?.includes('organisation'); // Placeholder for future org logic
   const isPrivate = targetProfile?.profileVisibility?.includes('private');
 
-  const showFullProfile = isCurrentUser || isPublic || (isFriends && false) || (isOrganization && false); // Simplified for now
+  const showFullProfile = isCurrentUserProfile || isPublic || (isFriends && false) || (isOrganization && false); // Simplified for now
 
   const renderContent = () => {
     if (loading) {
@@ -151,7 +169,7 @@ const ProfilePopUpCard: React.FC = () => {
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
 
-    if (!isCurrentUser && isPrivate && targetProfile.profileVisibility?.length === 1) {
+    if (!isCurrentUserProfile && isPrivate && targetProfile.profileVisibility?.length === 1) {
       return (
         <div className="text-center space-y-2">
           <User className="h-8 w-8 text-muted-foreground mx-auto" />
@@ -160,6 +178,11 @@ const ProfilePopUpCard: React.FC = () => {
         </div>
       );
     }
+
+    // Derive current visibility for labels
+    const currentBioVisibility = isCurrentUserProfile ? bioVisibility : (targetProfile.bio_visibility || ['public']);
+    const currentIntentionVisibility = isCurrentUserProfile ? intentionVisibility : (targetProfile.intention_visibility || ['public']);
+    const currentLinkedinVisibility = isCurrentUserProfile ? linkedinVisibility : (targetProfile.linkedin_visibility || ['public']);
 
     return (
       <div className="space-y-4">
@@ -173,10 +196,10 @@ const ProfilePopUpCard: React.FC = () => {
             <h4 
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUser && "cursor-pointer select-none", // Only apply cursor and select-none for current user
-                isCurrentUser && labelColors[bioLabelColorIndex] // Only apply dynamic color for current user
+                isCurrentUserProfile && "cursor-pointer select-none",
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentBioVisibility))
               )}
-              onClick={isCurrentUser ? () => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex) : undefined} // Only clickable for current user
+              onClick={isCurrentUserProfile ? () => handleLabelClick(currentBioVisibility, setBioVisibility, 'bio_visibility') : undefined}
             >
               <MessageSquare size={16} /> Bio
             </h4>
@@ -189,10 +212,10 @@ const ProfilePopUpCard: React.FC = () => {
             <h4 
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUser && "cursor-pointer select-none", // Only apply cursor and select-none for current user
-                isCurrentUser && labelColors[intentionLabelColorIndex] // Only apply dynamic color for current user
+                isCurrentUserProfile && "cursor-pointer select-none",
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentIntentionVisibility))
               )}
-              onClick={isCurrentUser ? () => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex) : undefined} // Only clickable for current user
+              onClick={isCurrentUserProfile ? () => handleLabelClick(currentIntentionVisibility, setIntentionVisibility, 'intention_visibility') : undefined}
             >
               <Lightbulb size={16} /> Intention
             </h4>
@@ -229,10 +252,10 @@ const ProfilePopUpCard: React.FC = () => {
             <h4 
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUser && "cursor-pointer select-none", // Only apply cursor and select-none for current user
-                isCurrentUser && labelColors[linkedinLabelColorIndex] // Only apply dynamic color for current user
+                isCurrentUserProfile && "cursor-pointer select-none",
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentLinkedinVisibility))
               )}
-              onClick={isCurrentUser ? () => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex) : undefined} // Only clickable for current user
+              onClick={isCurrentUserProfile ? () => handleLabelClick(currentLinkedinVisibility, setLinkedinVisibility, 'linkedin_visibility') : undefined}
             >
               <Linkedin size={16} /> LinkedIn
             </h4>
