@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Calendar, FileText, Search, X, MessageSquarePlus, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimeFilterToggle from "@/components/TimeFilterToggle";
-import { useState, useMemo, useCallback } from "react"; // Removed useRef
+import { useState, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -21,10 +21,10 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Poll, ExtendSuggestion, ActiveAskItem } from "@/types/timer";
 import { cn } from "@/lib/utils";
-import UserProfileDialog from "@/components/UserProfileDialog"; // NEW: Import UserProfileDialog
+import UserProfileDialog from "@/components/UserProfileDialog";
 
 const History = () => {
-  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession, profile: currentUserProfile } = useProfile(); // NEW: Get currentUserProfile
+  const { historyTimePeriod, setHistoryTimePeriod, sessions, statsData, deleteSession, profile: currentUserProfile } = useProfile();
   const { toast } = useToast();
 
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -160,7 +160,7 @@ const History = () => {
   }, []);
 
   return (
-    <>
+    <React.Fragment>
       <main className="max-w-4xl mx-auto pt-16 px-6 pb-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
@@ -171,7 +171,7 @@ const History = () => {
         </div>
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-2 gap-4 mb-8">
               <Link to="/leaderboard#focus-hours-leaderboard" className="block hover:opacity-80 transition-opacity">
                 <Card>
                   <CardContent className="p-4">
@@ -282,7 +282,7 @@ const History = () => {
                                             key={index} 
                                             variant="ghost" 
                                             className="h-auto p-0 text-sm text-muted-foreground hover:text-foreground hover:bg-transparent justify-start"
-                                            onClick={(e) => handleOpenProfileDialog(e, name)} // NEW: Make name clickable
+                                            onClick={(e) => handleOpenProfileDialog(e, name)}
                                           >
                                             {name}
                                           </Button>
@@ -338,7 +338,6 @@ const History = () => {
                                       <p className="font-medium text-sm">{highlightText(poll.question, searchQuery)}</p>
                                       <div className="space-y-1 text-sm text-muted-foreground">
                                         {poll.options.map((option, optionIndex) => {
-                                          const totalVotes = option.votes.length;
                                           let IconComponent;
                                           if (poll.type === 'closed') {
                                             if (option.id === 'closed-yes') IconComponent = ThumbsUp;
@@ -356,7 +355,7 @@ const History = () => {
                                                 {IconComponent && <IconComponent size={14} className="text-muted-foreground" />}
                                                 <span>{highlightText(option.text, searchQuery)}</span>
                                               </div>
-                                              <Badge variant="secondary">{totalVotes} votes</Badge>
+                                              <Badge variant="secondary">{option.votes.length} votes</Badge>
                                             </div>
                                           );
                                         })}
@@ -496,7 +495,7 @@ const History = () => {
           isOpen={isProfileDialogOpen}
           onClose={handleCloseProfileDialog}
         />
-    </>
+    </React.Fragment>
   );
 };
 
