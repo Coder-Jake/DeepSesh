@@ -157,52 +157,99 @@ const Profile = () => {
     }
   };
 
+  // This useEffect runs on mount and whenever the profile data from context changes.
+  // It intelligently updates local states only if the incoming profile value is different
+  // from the current local state, preventing unnecessary re-renders and flicker.
   useEffect(() => {
-    // Initialize local states from profile or defaults
-    setFirstNameInput(profile?.first_name || localFirstName || "You"); // Initialize local input state
-    setBio(profile?.bio || "");
-    setIntention(profile?.intention || "");
-    setSociability([profile?.sociability || 50]);
-    setOrganization(profile?.organization || ""); // Initialize organization
+    if (profile || !user) {
+      // Handle first name
+      const newFirstName = profile?.first_name || localFirstName || "You";
+      if (firstNameInput !== newFirstName) {
+          setFirstNameInput(newFirstName);
+      }
 
-    // Extract username from full LinkedIn URL
-    const fullLinkedinUrl = profile?.linkedin_url || "";
-    const linkedinUsername = fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
-                             ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
-                             : "";
-    setLinkedinUrl(linkedinUsername); // Initialize LinkedIn URL with just the handle
+      // Handle bio
+      const newBio = profile?.bio || "";
+      if (bio !== newBio) {
+          setBio(newBio);
+      }
 
-    // NEW: Initialize host code from context
-    setHostCode(hostCode); // Use the hostCode from context
+      // Handle intention
+      const newIntention = profile?.intention || "";
+      if (intention !== newIntention) {
+          setIntention(newIntention);
+      }
 
-    // NEW: Initialize per-field visibility states and their corresponding color indices
-    const initialBioVisibility = (profile?.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
-    const initialIntentionVisibility = (profile?.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
-    const initialLinkedinVisibility = (profile?.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
+      // Handle sociability
+      const newSociability = [profile?.sociability || 50];
+      if (sociability[0] !== newSociability[0]) {
+          setSociability(newSociability);
+      }
 
-    setBioVisibility(initialBioVisibility);
-    setIntentionVisibility(initialIntentionVisibility);
-    setLinkedinVisibility(initialLinkedinVisibility);
+      // Handle organization
+      const newOrganization = profile?.organization || "";
+      if (organization !== newOrganization) {
+          setOrganization(newOrganization);
+      }
 
-    setBioLabelColorIndex(getIndexFromVisibility(initialBioVisibility));
-    setIntentionLabelColorIndex(getIndexFromVisibility(initialIntentionVisibility));
-    setLinkedinLabelColorIndex(getIndexFromVisibility(initialLinkedinVisibility));
+      // Handle LinkedIn URL
+      const fullLinkedinUrl = profile?.linkedin_url || "";
+      const linkedinUsername = fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
+                               ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
+                               : "";
+      if (linkedinUrl !== linkedinUsername) {
+          setLinkedinUrl(linkedinUsername);
+      }
 
-    // Set original values for change detection
-    setOriginalValues({
-      firstName: profile?.first_name || localFirstName || "You", // Use context's localFirstName
-      bio: profile?.bio || "",
-      intention: profile?.intention || "",
-      sociability: [profile?.sociability || 50],
-      organization: profile?.organization || "", // Set original organization
-      linkedinUrl: linkedinUsername, // Set original LinkedIn handle
-      hostCode: hostCode, // Use the hostCode from context
-      bioVisibility: initialBioVisibility, // NEW
-      intentionVisibility: initialIntentionVisibility, // NEW
-      linkedinVisibility: initialLinkedinVisibility, // NEW
-    });
-    setHasChanges(false);
-  }, [profile, localFirstName, hostCode, setHostCode, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]); // Add new visibility setters as dependencies
+      // Handle host code
+      const newHostCode = profile?.host_code || hostCode || ""; // Use profile's host_code, fallback to local, then empty
+      if (hostCode !== newHostCode) { 
+          setHostCode(newHostCode);
+      }
+
+      // Handle visibility settings
+      const initialBioVisibility = (profile?.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
+      if (JSON.stringify(bioVisibility) !== JSON.stringify(initialBioVisibility)) {
+          setBioVisibility(initialBioVisibility);
+          setBioLabelColorIndex(getIndexFromVisibility(initialBioVisibility));
+      }
+
+      const initialIntentionVisibility = (profile?.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
+      if (JSON.stringify(intentionVisibility) !== JSON.stringify(initialIntentionVisibility)) {
+          setIntentionVisibility(initialIntentionVisibility);
+          setIntentionLabelColorIndex(getIndexFromVisibility(initialIntentionVisibility));
+      }
+
+      const initialLinkedinVisibility = (profile?.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
+      if (JSON.stringify(linkedinVisibility) !== JSON.stringify(initialLinkedinVisibility)) {
+          setLinkedinVisibility(initialLinkedinVisibility);
+          setLinkedinLabelColorIndex(getIndexFromVisibility(initialLinkedinVisibility));
+      }
+
+      // Update originalValues to reflect the *current* profile state from context.
+      // This is crucial for `checkForChanges` to work correctly.
+      setOriginalValues({
+        firstName: newFirstName,
+        bio: newBio,
+        intention: newIntention,
+        sociability: newSociability,
+        organization: newOrganization,
+        linkedinUrl: linkedinUsername,
+        hostCode: newHostCode,
+        bioVisibility: initialBioVisibility,
+        intentionVisibility: initialIntentionVisibility,
+        linkedinVisibility: initialLinkedinVisibility,
+      });
+      setHasChanges(false); // Reset hasChanges when profile is synced from context
+    }
+  }, [
+    profile, user, loading, localFirstName, // Dependencies for the source of truth
+    firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, // Current local states for comparison
+    bioVisibility, intentionVisibility, linkedinVisibility, // Current local visibility states for comparison
+    setBioVisibility, setIntentionVisibility, setLinkedinVisibility, // Setters for visibility
+    setBioLabelColorIndex, setIntentionLabelColorIndex, setLinkedinLabelColorIndex, // Setters for label colors
+    getIndexFromVisibility, setHostCode // For helper function and hostCode setter
+  ]);
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -244,8 +291,9 @@ const Profile = () => {
     setHasChanges(changed);
   }, [
     originalValues, 
-    firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, // These are dependencies for the *current* state, not the `new` values
-    bioVisibility, intentionVisibility, linkedinVisibility // These are also dependencies for the *current* state
+    // These are dependencies for the *current* state, not the `new` values passed to checkForChanges
+    // They are implicitly used by originalValues, but explicitly listing them here is redundant
+    // as originalValues is already a dependency.
   ]);
 
   const handleFirstNameChange = (value: string) => {
