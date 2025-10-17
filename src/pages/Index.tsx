@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react";
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, GripVertical } from "lucide-react"; // Added GripVertical
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +37,11 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import UpcomingScheduleCardContent from "@/components/UpcomingScheduleCard";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
+
+// DND Kit imports
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, arrayMove, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ExtendSuggestion {
   id: string;
@@ -144,13 +149,61 @@ const mockFriendsSessions: DemoSession[] = [
 ];
 
 // NEW: Mock data for inactive friends
-const mockInactiveFriends = [
+const initialInactiveFriends = [ // Renamed to initialInactiveFriends
   { id: "mock-user-id-11", name: "Liam", lastActive: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() }, // 5 days ago
   { id: "mock-user-id-12", name: "Mia", lastActive: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },  // 2 days ago
   { id: "mock-user-id-13", name: "Noah", lastActive: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() }, // 10 days ago
   { id: "mock-user-id-14", name: "Olivia", lastActive: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() }, // 1 day ago
   { id: "mock-user-id-15", name: "Ethan", lastActive: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() }, // 7 days ago
 ];
+
+// Define a type for the draggable item
+interface DraggableFriend {
+  id: string;
+  name: string;
+  lastActive: string;
+}
+
+// Component for a sortable item
+const SortableFriendItem: React.FC<{ friend: DraggableFriend; onNameClick: (userId: string, userName: string, event: React.MouseEvent) => void; }> = ({ friend, onNameClick }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: friend.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 0, // Bring dragged item to front
+    opacity: isDragging ? 0.7 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80"
+      onClick={(e) => onNameClick(friend.id, friend.name, e)}
+    >
+      <div className="flex items-center gap-2">
+        <button
+          className="cursor-grab text-muted-foreground hover:text-foreground p-1 -ml-1" // Added padding and negative margin for better hit area
+          {...listeners}
+          {...attributes}
+          aria-label="Drag to reorder"
+        >
+          <GripVertical size={16} />
+        </button>
+        <p className="font-medium">{friend.name}</p>
+      </div>
+      <p className="text-sm text-muted-foreground">Last Active: {formatDistanceToNow(new Date(friend.lastActive), { addSuffix: true })}</p>
+    </div>
+  );
+};
 
 const Index = () => {
   const {
@@ -254,6 +307,8 @@ const Index = () => {
 
   // NEW: State for inactive friends list visibility
   const [showInactiveFriends, setShowInactiveFriends] = useState(false);
+  // NEW: State for draggable inactive friends list
+  const [inactiveFriendsState, setInactiveFriendsState] = useState<DraggableFriend[]>(initialInactiveFriends);
 
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [joinSessionCode, setJoinSessionCode] = useState("");
@@ -836,10 +891,26 @@ const Index = () => {
     setShowInactiveFriends(prev => !prev);
   };
 
-  // NEW: Sorted inactive friends by last active (most recent first)
-  const sortedInactiveFriends = useMemo(() => {
-    return [...mockInactiveFriends].sort((a, b) => new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime());
-  }, []);
+  // DND Kit sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end event
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setInactiveFriendsState((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -1282,9 +1353,9 @@ const Index = () => {
                       <div className="mt-6" data-name="Inactive Friends Section">
                         <button
                           onClick={toggleInactiveFriends}
-                          className="relative flex items-center justify-center w-full text-muted-foreground hover:opacity-80 transition-opacity"
+                          className="relative flex items-center justify-center w-full text-sm font-semibold text-muted-foreground hover:opacity-80 transition-opacity"
                         >
-                          <h3 className="text-sm font-semibold">Inactive</h3>
+                          <h3>Inactive</h3>
                           {showInactiveFriends ? (
                             <ChevronUp size={16} className="absolute right-2 top-1/2 -translate-y-1/2" />
                           ) : (
@@ -1293,16 +1364,24 @@ const Index = () => {
                         </button>
                         {showInactiveFriends && (
                           <div className="space-y-3 mt-3">
-                            {sortedInactiveFriends.map(friend => (
-                              <div
-                                key={friend.id}
-                                className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80"
-                                onClick={(e) => handleNameClick(friend.id, friend.name, e)}
+                            <DndContext
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={handleDragEnd}
+                            >
+                              <SortableContext
+                                items={inactiveFriendsState.map(f => f.id)}
+                                strategy={verticalListSortingStrategy}
                               >
-                                <p className="font-medium">{friend.name}</p>
-                                <p className="text-sm text-muted-foreground">Last Active: {formatDistanceToNow(new Date(friend.lastActive), { addSuffix: true })}</p>
-                              </div>
-                            ))}
+                                {inactiveFriendsState.map(friend => (
+                                  <SortableFriendItem
+                                    key={friend.id}
+                                    friend={friend}
+                                    onNameClick={handleNameClick}
+                                  />
+                                ))}
+                              </SortableContext>
+                            </DndContext>
                           </div>
                         )}
                       </div>
