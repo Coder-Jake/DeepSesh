@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings } from '@/types/timer'; // Import all types
 import { toast } from '@/hooks/use-toast'; // Using shadcn toast for UI feedback
 import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
@@ -79,6 +79,31 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentSessionRole, setCurrentSessionRole] = useState<'host' | 'coworker' | null>(null);
   const [currentSessionHostName, setCurrentSessionHostName] = useState<string | null>(null);
   const [currentSessionOtherParticipants, setCurrentSessionOtherParticipants] = useState<{ id: string; name: string; sociability?: number; intention?: string; bio?: string }[]>([]);
+
+  // Derived state for all participants to display in tooltips/coworker list
+  const allParticipantsToDisplay = useMemo(() => {
+    const participants: string[] = [];
+    const uniqueNames = new Set<string>();
+
+    // Add the current user
+    if (user?.id) {
+      uniqueNames.add(localFirstName);
+    }
+
+    // Add the host if they are not the current user
+    if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== localFirstName) {
+      uniqueNames.add(currentSessionHostName);
+    }
+
+    // Add other participants
+    currentSessionOtherParticipants.forEach(p => {
+      if (p.name !== localFirstName && p.name !== currentSessionHostName) {
+        uniqueNames.add(p.name);
+      }
+    });
+
+    return Array.from(uniqueNames).sort();
+  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, user?.id, localFirstName]);
 
   // Schedule pending state (only for the *active* schedule if it's custom_time and waiting)
   const [isSchedulePending, setIsSchedulePending] = useState(false);
@@ -575,7 +600,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             totalSession,
             activeJoinedSessionCoworkerCount,
             sessionStartTime || Date.now(),
-            activeAsks // NEW: Pass activeAsks to saveSession
+            activeAsks, // NEW: Pass activeAsks to saveSession
+            allParticipantsToDisplay // NEW: Pass allParticipantsToDisplay
           );
 
           resetSchedule();
@@ -615,7 +641,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
@@ -877,6 +903,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
+    allParticipantsToDisplay, // NEW: Expose allParticipantsToDisplay
 
     isSchedulePending,
     setIsSchedulePending,

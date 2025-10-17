@@ -22,6 +22,7 @@ export interface SessionHistory {
   asks?: ActiveAskItem[];
   session_start_time: string;
   session_end_time:   string;
+  participantNames?: string[]; // NEW: Added participantNames
 }
 
 export interface StatsPeriodData {
@@ -142,15 +143,15 @@ const dummyLeaderboardCollaboratedUsers = {
   ],
   month: [
     { id: "angie-id-5", name: "Angie", collaboratedUsers: 25 },
-    { id: "liam-id-5", name: "Liam", collaboratedUsers: 22 },
-    { id: "mia-id-5", name: "Mia", collaboratedUsers: 17 },
-    { id: "noah-id-5", name: "Noah", collaboratedUsers: 15 },
+    { id: "liam-id-5", name: "Liam", collaboratedUsers: 22 }, 
+    { id: "mia-id-5", name: "Mia", collaboratedUsers: 17 }, 
+    { id: "noah-id-5", name: "Noah", collaboratedUsers: 15 }, 
   ],
   all: [
     { id: "angie-id-6", name: "Angie", collaboratedUsers: 100 },
-    { id: "peter-id-6", name: "Peter", collaboratedUsers: 90 },
-    { id: "quinn-id-6", name: "Quinn", collaboratedUsers: 80 },
-    { id: "rachel-id-6", name: "Rachel", collaboratedUsers: 70 },
+    { id: "peter-id-6", name: "Peter", collaboratedUsers: 90 }, 
+    { id: "quinn-id-6", name: "Quinn", collaboratedUsers: 80 }, 
+    { id: "rachel-id-6", name: "Rachel", collaboratedUsers: 70 }, 
   ],
 };
 
@@ -239,6 +240,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-15T09:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-15T09:45:00Z").toISOString(),
+    participantNames: ["You", "Alice", "Bob"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
@@ -251,6 +253,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-14T10:30:00Z").toISOString(),
     session_end_time: new Date("2225-09-14T12:00:00Z").toISOString(),
+    participantNames: ["You", "Charlie", "Diana", "Eve", "Frank"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
@@ -263,6 +266,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-13T14:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-13T14:30:00Z").toISOString(),
+    participantNames: ["You"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
@@ -275,6 +279,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-12T11:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-12T13:00:00Z").toISOString(),
+    participantNames: ["You", "Grace"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
@@ -287,6 +292,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date("2225-09-11T16:00:00Z").toISOString(),
     session_end_time: new Date("2225-09-11T17:00:00Z").toISOString(),
+    participantNames: ["You", "Heidi", "Ivan", "Judy"], // Added mock participant names
   }
 ];
 
@@ -338,7 +344,8 @@ interface ProfileContextType {
     totalSessionSeconds: number,
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
-    activeAsks?: ActiveAskItem[]
+    activeAsks: ActiveAskItem[] | undefined,
+    allParticipantNames: string[] | undefined // NEW: Added allParticipantNames
   ) => Promise<void>;
 
   blockedUsers: string[];
@@ -575,6 +582,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             asks: localSesh.asks,
             session_start_time: supabaseSesh.session_start_time,
             session_end_time: supabaseSesh.session_end_time,
+            participantNames: localSesh.participantNames, // NEW: Preserve local participant names
           });
           processedSupabaseIds.add(supabaseSesh.id);
         } else {
@@ -595,6 +603,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
             asks: (supabaseSesh.active_asks || []) as ActiveAskItem[],
             session_start_time: supabaseSesh.session_start_time,
             session_end_time: supabaseSesh.session_end_time,
+            participantNames: undefined, // Supabase doesn't store this, so it's undefined
           });
         }
       });
@@ -655,7 +664,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     totalSessionSeconds: number,
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
-    activeAsks: ActiveAskItem[] | undefined
+    activeAsks: ActiveAskItem[] | undefined,
+    allParticipantNames: string[] | undefined // NEW: Added allParticipantNames
   ) => {
     setLoading(true);
     setError(null);
@@ -680,6 +690,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       asks: currentActiveAsks.length > 0 ? currentActiveAsks : undefined,
       session_start_time: newSessionDate.toISOString(),
       session_end_time: sessionEndTime.toISOString(),
+      participantNames: allParticipantNames, // NEW: Store participant names
     };
     console.log("ProfileContext: newSession.asks will be:", newSession.asks);
 
@@ -774,7 +785,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setProfile(data.profile ?? null);
       console.log("Profile loaded from local storage:", data.profile?.first_name);
       setHistoryTimePeriod(data.historyTimePeriod ?? 'week');
-      // Removed loading of leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
+      // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
     }
 
     const storedLocalFirstName = localStorage.getItem(LOCAL_FIRST_NAME_KEY);

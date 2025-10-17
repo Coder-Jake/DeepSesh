@@ -163,6 +163,7 @@ export interface TimerContextType {
   setCurrentSessionHostName: React.Dispatch<React.SetStateAction<string | null>>;
   currentSessionOtherParticipants: { id: string; name: string; sociability?: number; intention?: string; bio?: string }[];
   setCurrentSessionOtherParticipants: React.Dispatch<React.SetStateAction<{ id: string; name: string; sociability?: number; intention?: string; bio?: string }[]>>;
+  allParticipantsToDisplay: string[]; // NEW: Added allParticipantsToDisplay
 
   // Schedule pending state (only for the *active* schedule if it's custom_time and waiting)
   isSchedulePending: boolean;

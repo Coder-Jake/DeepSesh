@@ -225,6 +225,7 @@ const Index = () => {
     setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
+    allParticipantsToDisplay, // NEW: Get allParticipantsToDisplay
   } = useTimer();
   
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
@@ -463,7 +464,8 @@ const Index = () => {
         totalSessionSeconds,
         activeJoinedSessionCoworkerCount,
         sessionStartTime || Date.now(), // Use sessionStartTime or current time if null
-        activeAsks // NEW: Pass activeAsks to saveSession
+        activeAsks, // NEW: Pass activeAsks to saveSession
+        allParticipantsToDisplay // NEW: Pass allParticipantsToDisplay
       );
       await performStopActions();
     };
@@ -636,7 +638,7 @@ const Index = () => {
   const shouldHideSessionLists = !showSessionsWhileActive && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending); // Check for prepared schedule too
 
   // NEW: Unified list of all participants to display in the Coworkers card
-  const allParticipantsToDisplay = useMemo(() => {
+  const allParticipantsToDisplayInCard = useMemo(() => {
     const participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }> = [];
 
     // Add the current user first
@@ -1208,13 +1210,13 @@ const Index = () => {
           </Card>
 
           {/* Coworkers Section - Show only if there are more than just the current user */}
-          {allParticipantsToDisplay.length > 1 && (
+          {allParticipantsToDisplayInCard.length > 1 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Coworkers</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {allParticipantsToDisplay.map(person => (
+                {allParticipantsToDisplayInCard.map(person => (
                   <Tooltip key={person.id}>
                     <TooltipTrigger asChild>
                       <div className={cn(

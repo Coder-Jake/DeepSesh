@@ -243,10 +243,28 @@ const History = () => {
                                 <Calendar size={14} />
                                 {formatDate(session.date)}
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Users size={14} />
-                                {session.participants}
-                              </div>
+                              <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 cursor-pointer">
+                                      <Users size={14} />
+                                      {session.participants}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {session.participantNames && session.participantNames.length > 0 ? (
+                                      <div className="space-y-1">
+                                        <p className="font-medium">Participants:</p>
+                                        {session.participantNames.map((name, index) => (
+                                          <p key={index} className="text-sm text-muted-foreground">{name}</p>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p>No participant names available</p>
+                                    )}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                               <TooltipProvider delayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
