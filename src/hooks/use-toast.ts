@@ -126,41 +126,39 @@ type ToastFunction = {
   dismiss: (toastId?: string) => void
 }
 
-function createToastFunction(): ToastFunction {
-  const toast = function (props: Omit<ToasterToast, 'id' | 'open' | 'onOpenChange' | 'onDismiss'>) {
-    const id = genId()
+// Define and export the toast function directly
+export const toast = function (props: Omit<ToasterToast, 'id' | 'open' | 'onOpenChange' | 'onDismiss'>) {
+  const id = genId()
 
-    const update = (newProps: Partial<ToasterToast>) =>
-      dispatch({
-        type: actionTypes.UPDATE_TOAST,
-        toast: { ...newProps, id },
-      })
-    const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id })
-
+  const update = (newProps: Partial<ToasterToast>) =>
     dispatch({
-      type: actionTypes.ADD_TOAST,
-      toast: {
-        ...props,
-        id,
-        open: true,
-        onOpenChange: (open) => {
-          if (!open) dismiss()
-        },
-        onDismiss: dismiss, // Pass the dismiss function as onDismiss
-      },
+      type: actionTypes.UPDATE_TOAST,
+      toast: { ...newProps, id },
     })
+  const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id })
 
-    return {
-      id: id,
-      dismiss,
-      update,
-    }
+  dispatch({
+    type: actionTypes.ADD_TOAST,
+    toast: {
+      ...props,
+      id,
+      open: true,
+      onOpenChange: (open) => {
+        if (!open) dismiss()
+      },
+      onDismiss: dismiss, // Pass the dismiss function as onDismiss
+    },
+  })
+
+  return {
+    id: id,
+    dismiss,
+    update,
   }
+} as ToastFunction; // Cast to ToastFunction type
 
-  toast.dismiss = (toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId })
+toast.dismiss = (toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId })
 
-  return toast
-}
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
@@ -192,4 +190,4 @@ const addToRemoveQueue = (toastId: string) => {
   }, TOAST_REMOVE_DELAY) as unknown as number) // Explicitly cast to number
 }
 
-export { useToast, toast }
+export { useToast }
