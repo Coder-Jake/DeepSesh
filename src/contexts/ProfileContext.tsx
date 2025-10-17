@@ -653,10 +653,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     });
 
     // Automatically accept after 3 seconds for mock profiles
-    const timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(async () => { // Made async to use await getPublicProfile
+      const targetProfileData = await getPublicProfile(targetUserId, targetUserId); // Fetch profile name
+      const friendName = targetProfileData?.first_name || targetUserId; // Use name or ID as fallback
+
       setFriendStatuses(prev => {
         if (prev[targetUserId] === 'pending') { // Only accept if still pending
-          toast.success(`Friend request from ${targetUserId} accepted!`, { // Assuming targetUserId can be used as a name for mock
+          toast.success(`Friend request from ${friendName} accepted!`, {
             description: "You are now friends!",
           });
           return { ...prev, [targetUserId]: 'friends' };
@@ -667,7 +670,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }, 3000); // 3 seconds delay
 
     friendRequestTimeouts.current.set(targetUserId, timeoutId); // Store timeout ID
-  }, [toast]);
+  }, [toast, getPublicProfile]); // Added getPublicProfile to dependencies
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'friends' }));
@@ -680,16 +683,19 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
   }, [toast]);
 
-  const removeFriend = useCallback((targetUserId: string) => {
+  const removeFriend = useCallback(async (targetUserId: string) => { // Made async to use await getPublicProfile
+    const targetProfileData = await getPublicProfile(targetUserId, targetUserId); // Fetch profile name
+    const friendName = targetProfileData?.first_name || targetUserId; // Use name or ID as fallback
+
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'none' }));
-    toast.info("Friend removed.", {
+    toast.info(`'${friendName}' removed.`, {
       description: "You are no longer friends.",
     });
     if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
     }
-  }, [toast]);
+  }, [toast, getPublicProfile]); // Added getPublicProfile to dependencies
 
 
   const fetchProfile = async () => {
