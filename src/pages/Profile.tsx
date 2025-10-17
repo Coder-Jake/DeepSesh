@@ -79,6 +79,9 @@ const Profile = () => {
   const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
 
+  // NEW: State to store friend display names
+  const [friendDisplayNames, setFriendDisplayNames] = useState<Record<string, string>>({});
+
   // Helper to get display name for visibility status
   const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[] | null): string => {
     if (!visibility || visibility.length === 0) return 'public'; // Default to public if not set
@@ -514,6 +517,24 @@ const Profile = () => {
     .filter(([, status]) => status === 'friends')
     .map(([userId]) => userId); // Get just the user IDs of friends
 
+  // NEW: Effect to fetch friend names for display
+  useEffect(() => {
+    const fetchFriendNames = async () => {
+      const names: Record<string, string> = {};
+      for (const friendId of friends) {
+        const friendProfile = await getPublicProfile(friendId, friendId); // Pass friendId as fallback name
+        names[friendId] = friendProfile?.first_name || friendId;
+      }
+      setFriendDisplayNames(names);
+    };
+
+    if (friends.length > 0) {
+      fetchFriendNames();
+    } else {
+      setFriendDisplayNames({});
+    }
+  }, [friends, getPublicProfile]); // Depend on friends list and getPublicProfile
+
   if (loading) {
     return (
       <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6 text-center text-muted-foreground">
@@ -806,9 +827,9 @@ const Profile = () => {
                   <div 
                     key={friendId} 
                     className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80"
-                    onClick={(e) => handleNameClick(friendId, friendId, e)} // Use friendId as both ID and fallback name
+                    onClick={(e) => handleNameClick(friendId, friendDisplayNames[friendId] || friendId, e)} // Use friendDisplayNames
                   >
-                    <p className="font-medium">{friendId}</p> {/* Display the ID as name for now */}
+                    <p className="font-medium">{friendDisplayNames[friendId] || friendId}</p> {/* Display the fetched name */}
                   </div>
                 ))
               ) : (
