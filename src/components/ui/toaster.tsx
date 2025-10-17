@@ -20,7 +20,7 @@ export function Toaster() {
           </Toast>
         );
       })}
-      <ToastViewport className="bottom-32 z-[9999]" /> {/* Adjusted bottom position and added high z-index */}
+      <ToastViewport className="bottom-24" /> {/* Adjusted bottom position */}
     </ToastProvider>
   );
 }
