@@ -59,7 +59,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Tooltip>
-              <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+              <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
                 ~{session.totalDurationMinutes}m
               </TooltipTrigger>
               <TooltipContent>
@@ -76,7 +76,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
               </TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer">
+              <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer select-none">
                 {session.participants.length} participants
               </TooltipTrigger>
               <TooltipContent>
