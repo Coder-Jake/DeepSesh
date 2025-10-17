@@ -11,7 +11,7 @@ const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
   const { getPublicProfile, profile: currentUserProfile } = useProfile(); // Get current user's profile for comparison
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -156,7 +156,7 @@ const ProfilePopUpCard: React.FC = () => {
 
         {targetProfile.bio && showFullProfile && (
           <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-foreground">
+            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <MessageSquare size={16} /> Bio
             </h4>
             <p className="text-sm text-foreground mt-1">{targetProfile.bio}</p>
@@ -165,7 +165,7 @@ const ProfilePopUpCard: React.FC = () => {
 
         {targetProfile.intention && showFullProfile && (
           <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-foreground">
+            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Lightbulb size={16} /> Intention
             </h4>
             <p className="text-sm text-foreground mt-1">{targetProfile.intention}</p>
@@ -189,7 +189,7 @@ const ProfilePopUpCard: React.FC = () => {
 
         {targetProfile.organization && showFullProfile && (
           <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-foreground">
+            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 size={16} /> Organization
             </h4>
             <p className="text-sm text-foreground mt-1">{targetProfile.organization}</p>
@@ -198,7 +198,7 @@ const ProfilePopUpCard: React.FC = () => {
 
         {targetProfile.linkedin_url && showFullProfile && (
           <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-foreground">
+            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Linkedin size={16} /> LinkedIn
             </h4>
             <a
