@@ -1090,7 +1090,7 @@ const Settings = () => {
                         <Label htmlFor="toasts-toggle" className="cursor-help">Toasts</Label>
                       </TooltipTrigger>
                       <TooltipContent className="select-none">
-                        <p>Gives context to what the app is doing. Activate if encountering errors.</p>
+                        <p>Givescontext to what the app is doing. Activate if encountering errors.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
