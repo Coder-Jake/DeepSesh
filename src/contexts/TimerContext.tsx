@@ -123,12 +123,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [manualTransition, setManualTransition] = useState(false);
   const [maxDistance, setMaxDistance] = useState(1000); // Default to 1km
   const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // Changed default to false
+  const [joinNotifications, setJoinNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // NEW: Initialize joinNotifications
   const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // Changed default to false
   const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // Changed default to false
   const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false); // Changed default to false
   const [verificationStandard, setVerificationStandard] = useState<'anyone' | 'phone1' | 'organisation' | 'id1'>('anyone');
   const [profileVisibility, setProfileVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // Updated to array
   const [locationSharing, setLocationSharing] = useState(false);
+  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]); // Added
   const [is24HourFormat, setIs24HourFormat] = useState(true); // NEW: Default to 24-hour format
   const [areToastsEnabled, setAreToastsEnabled] = useState(false); // NEW: Default to false
@@ -723,6 +725,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setManualTransition(data.manualTransition ?? false);
       setMaxDistance(data.maxDistance ?? 1000);
       setAskNotifications(data.askNotifications ?? { push: false, vibrate: false, sound: false }); // Changed default to false
+      setJoinNotifications(data.joinNotifications ?? { push: false, vibrate: false, sound: false }); // NEW: Load joinNotifications
       setSessionInvites(data.sessionInvites ?? { push: false, vibrate: false, sound: false }); // Changed default to false
       setFriendActivity(data.friendActivity ?? { push: false, vibrate: false, sound: false }); // Changed default to false
       setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? false); // Changed default to false
@@ -767,14 +770,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
       shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
-      intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
+      intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites, // NEW: Save joinNotifications
       friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
       locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle: activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
       is24HourFormat, // NEW: Save is24HourFormat
       preparedSchedules, // NEW: Save prepared schedules
       timerIncrement, // Save timerIncrement
       areToastsEnabled, // NEW: Save areToastsEnabled
-      // NEW: Save role states
+      // NEW: Dependencies for role states
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
@@ -790,7 +793,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
-    intentionalBreaches, manualTransition, maxDistance, askNotifications, sessionInvites,
+    intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites, // NEW: Save joinNotifications
     friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
     locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
     is24HourFormat, // NEW: Save is24HourFormat
@@ -938,6 +941,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setMaxDistance,
     askNotifications,
     setAskNotifications,
+    joinNotifications, // NEW
+    setJoinNotifications, // NEW
     sessionInvites,
     setSessionInvites,
     friendActivity,
