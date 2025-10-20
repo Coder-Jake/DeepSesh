@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info } from "lucide-react"; // Changed Bell to MessageSquareWarning
+import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -80,6 +80,8 @@ const Settings = () => {
     setIs24HourFormat,
     areToastsEnabled,
     setAreToastsEnabled,
+    startStopNotifications, // NEW
+    setStartStopNotifications, // NEW
   } = useTimer();
 
   const { user } = useAuth();
@@ -128,6 +130,7 @@ const Settings = () => {
     is24HourFormat,
     areToastsEnabled,
     blockedUsers,
+    startStopNotifications, // NEW
   });
 
   useEffect(() => {
@@ -169,6 +172,7 @@ const Settings = () => {
       is24HourFormat,
       areToastsEnabled,
       blockedUsers,
+      startStopNotifications, // NEW
     };
 
     const changed = Object.keys(currentUiSettings).some(key => {
@@ -193,6 +197,7 @@ const Settings = () => {
     is24HourFormat,
     areToastsEnabled,
     blockedUsers,
+    startStopNotifications, // NEW
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -206,7 +211,7 @@ const Settings = () => {
   };
 
   const updateNotificationSetting = (
-    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins', 
+    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins' | 'startStop', // NEW: Added 'startStop'
     field: 'push' | 'vibrate' | 'sound',
     value: boolean
   ) => {
@@ -225,6 +230,8 @@ const Settings = () => {
       setSessionInvites((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     } else if (type === 'activity') {
       setFriendActivity((prev: NotificationSettings) => ({ ...prev, [field]: value }));
+    } else if (type === 'startStop') { // NEW
+      setStartStopNotifications((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     }
   };
 
@@ -232,12 +239,14 @@ const Settings = () => {
     type, 
     title, 
     description, 
-    value 
+    value,
+    hidePush = false, // NEW: Prop to hide push notification button
   }: { 
-    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins'; 
+    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins' | 'startStop'; // NEW: Added 'startStop'
     title: string;
     description?: string;
     value: { push: boolean; vibrate: boolean; sound: boolean; };
+    hidePush?: boolean; // NEW
   }) => (
     <div className="space-y-4">
       <div className="flex items-center gap-2"> {/* Flex container for Label and Info icon */}
@@ -259,21 +268,23 @@ const Settings = () => {
       </div>
       
       <div className="flex items-center gap-4">
-        <div className="relative min-w-[100px]"> {/* Added min-w-[100px] here */}
-          <Button
-            variant="outline"
-            size="icon"
-            className={`w-10 h-10 rounded-full transition-colors ${value.push ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
-            onClick={() => updateNotificationSetting(type, 'push', !value.push)}
-          >
-            <MessageSquareWarning size={20} /> {/* Changed Bell to MessageSquareWarning */}
-          </Button>
-          {momentaryText[`${type}-push`] && (
-            <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
-              Push {momentaryText[`${type}-push`]}
-            </span>
-          )}
-        </div>
+        {!hidePush && ( // NEW: Conditionally render push button
+          <div className="relative min-w-[100px]"> {/* Added min-w-[100px] here */}
+            <Button
+              variant="outline"
+              size="icon"
+              className={`w-10 h-10 rounded-full transition-colors ${value.push ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+              onClick={() => updateNotificationSetting(type, 'push', !value.push)}
+            >
+              <MessageSquareWarning size={20} /> {/* Changed Bell to MessageSquareWarning */}
+            </Button>
+            {momentaryText[`${type}-push`] && (
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
+                Push {momentaryText[`${type}-push`]}
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="relative min-w-[100px]"> {/* Added min-w-[100px] here */}
           <Button
@@ -382,6 +393,7 @@ const Settings = () => {
     setShouldPlayEndSound(shouldPlayEndSound);
     setShouldShowEndToast(shouldShowEndToast);
     setAreToastsEnabled(areToastsEnabled);
+    setStartStopNotifications(startStopNotifications); // NEW
 
     savedSettingsRef.current = {
       showSessionsWhileActive,
@@ -414,6 +426,7 @@ const Settings = () => {
       is24HourFormat,
       areToastsEnabled,
       blockedUsers,
+      startStopNotifications, // NEW
     };
     setHasChanges(false);
   };
@@ -1039,6 +1052,14 @@ const Settings = () => {
               Notifications
             </AccordionTrigger>
             <AccordionContent className="space-y-8 pt-4">
+              <NotificationControl
+                type="startStop" // NEW
+                title="Start/Stop" // NEW
+                description="Notifications when the timer starts, pauses, or stops." // NEW
+                value={startStopNotifications} // NEW
+                hidePush={true} // NEW: Hide push for start/stop
+              />
+
               <NotificationControl
                 type="ask"
                 title="Asks"

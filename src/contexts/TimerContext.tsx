@@ -134,6 +134,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]); // Added
   const [is24HourFormat, setIs24HourFormat] = useState(true); // NEW: Default to 24-hour format
   const [areToastsEnabled, setAreToastsEnabled] = useState(false); // NEW: Default to false
+  const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // NEW: Default off
 
   // Derived state for isSchedulePrepared (true if there's at least one prepared schedule)
   const isSchedulePrepared = preparedSchedules.length > 0;
@@ -170,6 +171,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 
   const playSound = useCallback(() => {
+    if (!startStopNotifications.sound) return; // NEW: Check startStopNotifications.sound
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -181,7 +183,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
-  }, []);
+  }, [startStopNotifications.sound]); // NEW: Dependency
+
+  const triggerVibration = useCallback(() => { // NEW: Function to trigger vibration
+    if (startStopNotifications.vibrate && navigator.vibrate) {
+      navigator.vibrate(200); // Vibrate for 200ms
+    }
+  }, [startStopNotifications.vibrate]);
 
   const formatTime = useCallback((totalSeconds: number) => {
     const days = Math.floor(totalSeconds / (3600 * 24));
@@ -368,6 +376,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             description: `"${scheduleTitle}" has begun.`,
         });
     }
+    playSound(); // NEW: Play sound on start
+    triggerVibration(); // NEW: Trigger vibration on start
 
     // NEW: Set role to host
     setCurrentSessionRole('host');
@@ -378,7 +388,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks
+    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks,
+    playSound, triggerVibration // NEW: Dependencies
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -463,13 +474,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             description: `"${templateToCommence.title}" has begun.`,
         });
     }
+    playSound(); // NEW: Play sound on commence
+    triggerVibration(); // NEW: Trigger vibration on commence
 
     // NEW: Set role to host
     setCurrentSessionRole('host');
     setCurrentSessionHostName(localFirstName); // Use localFirstName as the host name
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks, playSound, triggerVibration]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -569,6 +582,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       if (shouldPlayEndSound) playSound();
+      if (breakNotificationsVibrate && navigator.vibrate) navigator.vibrate(200); // NEW: Vibrate on break end
 
       if (isScheduleActive) {
         const nextIndex = currentScheduleIndex + 1;
@@ -643,7 +657,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration]);
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
@@ -739,6 +753,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? "My Focus Sesh"); // NEW: Load active schedule display title
       setIs24HourFormat(data.is24HourFormat ?? true); // NEW: Load is24HourFormat
       setAreToastsEnabled(data.areToastsEnabled ?? false); // NEW: Load areToastsEnabled
+      setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false }); // NEW: Load startStopNotifications
 
       // NEW: Load role states
       setCurrentSessionRole(data.currentSessionRole ?? null);
@@ -777,6 +792,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       preparedSchedules, // NEW: Save prepared schedules
       timerIncrement, // Save timerIncrement
       areToastsEnabled, // NEW: Save areToastsEnabled
+      startStopNotifications, // NEW: Save startStopNotifications
       // NEW: Dependencies for role states
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     };
@@ -800,6 +816,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     preparedSchedules, // NEW: Save prepared schedules
     timerIncrement, // Save timerIncrement
     areToastsEnabled, // NEW: Save areToastsEnabled
+    startStopNotifications, // NEW: Dependency
     // NEW: Dependencies for role states
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
   ]);
@@ -963,6 +980,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIs24HourFormat, // NEW
     areToastsEnabled, // NEW
     setAreToastsEnabled, // NEW
+    startStopNotifications, // NEW
+    setStartStopNotifications, // NEW
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

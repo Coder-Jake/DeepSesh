@@ -34,7 +34,7 @@ import { format } from 'date-fns'; // Import date-fns for time formatting
 import { ScheduledTimerTemplate } from "@/types/timer"; // Corrected import path for ScheduledTimerTemplate
 import { DAYS_OF_WEEK } from "@/contexts/TimerContext"; // DAYS_OF_WEEK is still exported from TimerContext
 import { Accordion } from "@/components/ui/accordion"; // NEW
-import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem"; // NEW
+import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleCard"; // Renamed import
 import UpcomingScheduleCardContent from "@/components/UpcomingScheduleCard"; // Renamed import
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
 
@@ -227,6 +227,10 @@ const Index = () => {
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
     allParticipantsToDisplay, // NEW: Get allParticipantsToDisplay
+
+    startStopNotifications, // NEW
+    playSound, // NEW
+    triggerVibration, // NEW
   } = useTimer();
   
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
@@ -268,19 +272,7 @@ const Index = () => {
     console.log("Index: Current activeAsks on homepage:", activeAsks);
   }, [activeAsks]);
 
-  const playStartSound = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.1);
-  };
+  // Removed playStartSound from here, now using playSound from context
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
@@ -360,7 +352,8 @@ const Index = () => {
       setActiveAsks([]); // NEW: Clear active asks when starting a new manual timer
     }
 
-    playStartSound();
+    playSound(); // NEW: Play sound on start
+    triggerVibration(); // NEW: Trigger vibration on start
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
@@ -379,7 +372,8 @@ const Index = () => {
   };
 
   const resumeTimer = () => {
-    playStartSound(); // Optional, but good for consistency
+    playSound(); // NEW: Play sound on resume
+    triggerVibration(); // NEW: Trigger vibration on resume
     setIsRunning(true);
     setIsPaused(false);
     // If a schedule was pending and now resuming, ensure currentPhaseStartTime is set
@@ -408,6 +402,8 @@ const Index = () => {
     }
     setIsPaused(true);
     setIsRunning(false);
+    playSound(); // NEW: Play sound on pause
+    triggerVibration(); // NEW: Trigger vibration on pause
   };
   
   const stopTimer = async () => {
@@ -464,6 +460,8 @@ const Index = () => {
         allParticipantsToDisplay // NEW: Pass allParticipantsToDisplay
       );
       await performStopActions();
+      playSound(); // NEW: Play sound on stop
+      triggerVibration(); // NEW: Trigger vibration on stop
     };
 
     if (longPressRef.current) {
@@ -523,6 +521,8 @@ const Index = () => {
       setCurrentSessionOtherParticipants([]);
       }
     }
+    playSound(); // NEW: Play sound on reset
+    triggerVibration(); // NEW: Trigger vibration on reset
   };
 
   const switchToBreak = () => {
@@ -535,7 +535,8 @@ const Index = () => {
     setTimeLeft(breakMinutes * 60);
     setIsFlashing(false);
     setIsRunning(true);
-    playStartSound();
+    playSound();
+    triggerVibration(); // NEW: Trigger vibration on switch
     setCurrentPhaseStartTime(Date.now()); // Start new phase timer
   };
 
@@ -549,7 +550,8 @@ const Index = () => {
     setTimeLeft(focusMinutes * 60);
     setIsFlashing(false);
     setIsRunning(true);
-    playStartSound();
+    playSound();
+    triggerVibration(); // NEW: Trigger vibration on switch
     setCurrentPhaseStartTime(Date.now()); // Start new phase timer
   };
 
@@ -602,6 +604,8 @@ const Index = () => {
       title: "Session Joined!",
       description: `You've joined "${session.title}".`,
     });
+    playSound(); // NEW: Play sound on join
+    triggerVibration(); // NEW: Trigger vibration on join
 
     // NEW: Set role to coworker
     setCurrentSessionRole('coworker');
@@ -799,7 +803,7 @@ const Index = () => {
     setIsScheduleActive(true); // Now it's actively running
     setIsRunning(true);
     setIsPaused(false);
-    // playStartSound(); // Play sound when schedule actually starts
+    // playSound(); // Play sound when schedule actually starts
     setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
     toast({
       title: "Schedule Commenced!",
@@ -846,7 +850,7 @@ const Index = () => {
   // NEW: Sort prepared schedules chronologically
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
-    return [...preparedSchedules].sort((a, b) => {
+    return [...preparedPchedules].sort((a, b) => {
       const timeA = getEffectiveStartTime(a, now);
       const timeB = getEffectiveStartTime(b, now);
 
@@ -856,7 +860,7 @@ const Index = () => {
       }
       return timeA - timeB;
     });
-  }, [preparedSchedules, getEffectiveStartTime]);
+  }, [preparedPchedules, getEffectiveStartTime]);
 
   // Handlers for toggling Nearby/Friends sections
   const toggleNearbySessions = () => {
