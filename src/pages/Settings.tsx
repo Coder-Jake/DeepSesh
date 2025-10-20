@@ -1033,35 +1033,35 @@ const Settings = () => {
               <NotificationControl
                 type="ask"
                 title="Asks"
-                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when a coworker creates an Ask."
+                description="Notifications when a coworker creates an Ask."
                 value={askNotifications}
               />
 
               <NotificationControl
                 type="joins"
                 title="Joins"
-                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when a coworker joins a session you are in."
+                description="Notifications when a coworker joins a session you are in."
                 value={joinNotifications}
               />
               
               <NotificationControl
                 type="break"
                 title="Break Reminders"
-                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when the timer starts, ends, or switches between focus/break."
+                description="Notifications when the timer starts, ends, or switches between focus/break."
                 value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }}
               />
               
               <NotificationControl
                 type="invites"
                 title="Session Invites"
-                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when you are invited to a session."
+                description="Notifications when you are invited to a session."
                 value={sessionInvites}
               />
               
               <NotificationControl
                 type="activity"
                 title="Friend Activity"
-                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when friends start/end a session, or they start a break."
+                description="Notifications when friends start/end a session, or they start a break."
                 value={friendActivity}
               />
 
