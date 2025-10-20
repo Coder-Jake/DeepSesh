@@ -791,7 +791,7 @@ const Index = () => {
       // For single-choice polls (closed/choice), if optionIds is empty, this effectively unvotes all.
       // For multi-choice (selection), if optionIds doesn't include this option, it remains unvoted.
 
-      return { ...option, votes: newVotes };
+      return { ...currentPoll, options: updatedOptions };
     });
 
     updateAsk({ ...currentPoll, options: updatedOptions });
@@ -850,7 +850,7 @@ const Index = () => {
   // NEW: Sort prepared schedules chronologically
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
-    return [...preparedPchedules].sort((a, b) => {
+    return [...preparedSchedules].sort((a, b) => { // Corrected typo here
       const timeA = getEffectiveStartTime(a, now);
       const timeB = getEffectiveStartTime(b, now);
 
@@ -860,7 +860,7 @@ const Index = () => {
       }
       return timeA - timeB;
     });
-  }, [preparedPchedules, getEffectiveStartTime]);
+  }, [preparedSchedules, getEffectiveStartTime]);
 
   // Handlers for toggling Nearby/Friends sections
   const toggleNearbySessions = () => {
