@@ -259,7 +259,7 @@ const Settings = () => {
       </div>
       
       <div className="flex items-center gap-4">
-        <div className="relative">
+        <div className="relative min-w-[100px]"> {/* Added min-w-[100px] here */}
           <Button
             variant="outline"
             size="icon"
@@ -269,13 +269,13 @@ const Settings = () => {
             <MessageSquareWarning size={20} /> {/* Changed Bell to MessageSquareWarning */}
           </Button>
           {momentaryText[`${type}-push`] && (
-            <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none"> {/* Adjusted top and added z-50 */}
+            <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
               Push {momentaryText[`${type}-push`]}
             </span>
           )}
         </div>
 
-        <div className="relative">
+        <div className="relative min-w-[100px]"> {/* Added min-w-[100px] here */}
           <Button
             variant="outline"
             size="icon"
@@ -285,13 +285,13 @@ const Settings = () => {
             <Vibrate size={20} /> 
           </Button>
           {momentaryText[`${type}-vibrate`] && (
-            <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none"> {/* Adjusted top and added z-50 */}
+            <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
               Vibrate {momentaryText[`${type}-vibrate`]}
             </span>
           )}
         </div>
 
-        <div className="relative">
+        <div className="relative min-w-[100px]"> {/* Added min-w-[100px] here */}
           <Button
             variant="outline"
             size="icon"
@@ -301,7 +301,7 @@ const Settings = () => {
             <Volume2 size={20} />
           </Button>
           {momentaryText[`${type}-sound`] && (
-            <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none"> {/* Adjusted top and added z-50 */}
+            <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
               Sound {momentaryText[`${type}-sound`]}
             </span>
           )}
