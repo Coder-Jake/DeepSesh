@@ -497,16 +497,16 @@ const Settings = () => {
                 </div >
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Switch
-                        id="lock"
-                        checked={lock}
-                        onCheckedChange={setLock}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none">
-                        <p>Requires App development</p>
-                    </TooltipContent>
+                      <TooltipTrigger asChild>
+                        <Switch
+                          id="lock"
+                          checked={lock}
+                          onCheckedChange={setLock}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                          <p>Requires App development</p>
+                      </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
@@ -1025,30 +1025,35 @@ const Settings = () => {
               <NotificationControl
                 type="ask"
                 title="Asks"
+                description="Notifications when a coworker creates an Ask."
                 value={askNotifications}
               />
 
               <NotificationControl
-                type="joins" // NEW: Separate control for Joins
+                type="joins"
                 title="Joins"
-                value={joinNotifications} // NEW: Use new state
+                description="Notifications when a coworker joins a session you are in."
+                value={joinNotifications}
               />
               
               <NotificationControl
                 type="break"
                 title="Break Reminders"
+                description="Notifications when the timer starts, ends, or switches between focus/break."
                 value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }}
               />
               
               <NotificationControl
                 type="invites"
                 title="Session Invites"
+                description="Notifications when you are invited to a session."
                 value={sessionInvites}
               />
               
               <NotificationControl
                 type="activity"
                 title="Friend Activity"
+                description="Notifications when friends start/end a session, or they start a break."
                 value={friendActivity}
               />
 
@@ -1060,7 +1065,7 @@ const Settings = () => {
                         <Label htmlFor="toasts-toggle" className="cursor-help">Toasts</Label>
                       </TooltipTrigger>
                       <TooltipContent className="select-none">
-                        <p>Givescontext to what the app is doing. Activate if encountering errors.</p>
+                        <p>Gives context to what the app is doing. Activate if encountering errors.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
