@@ -5,31 +5,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { Bell, Smartphone, Volume2, UserX, X } from "lucide-react"; // Added UserX and X icons
+import { Bell, Vibrate, Volume2, UserX, X } from "lucide-react"; // Changed Smartphone to Vibrate
 import { useTimer } from "@/contexts/TimerContext";
-import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
-import { Input } from "@/components/ui/input"; // Import Input
-import { cn } from "@/lib/utils"; // Import cn for conditional class names
-import { NotificationSettings } from "@/types/timer"; // Import NotificationSettings type
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
-import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { useToast } from "@/hooks/use-toast"; // Import useToast
-import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
-import { useProfile } from "@/contexts/ProfileContext"; // NEW: Import useProfile
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { NotificationSettings } from "@/types/timer";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useProfile } from "@/contexts/ProfileContext";
 
 const Settings = () => {
   const { 
     showSessionsWhileActive, 
     setShowSessionsWhileActive, 
-    // Use defaultFocusMinutes and defaultBreakMinutes for settings
     defaultFocusMinutes, 
     setDefaultFocusMinutes, 
     defaultBreakMinutes, 
     setDefaultBreakMinutes, 
     timerIncrement, 
-    setTimerIncrement, // Use the setter from context
+    setTimerIncrement,
     shouldPlayEndSound, 
     setShouldPlayEndSound, 
     shouldShowEndToast, 
@@ -58,6 +57,8 @@ const Settings = () => {
     setMaxDistance,
     askNotifications,
     setAskNotifications,
+    joinNotifications, // NEW: Get from context
+    setJoinNotifications, // NEW: Get from context
     sessionInvites,
     setSessionInvites,
     friendActivity,
@@ -66,38 +67,35 @@ const Settings = () => {
     setBreakNotificationsVibrate,
     verificationStandard,
     setVerificationStandard,
-    profileVisibility, // Now an array
-    setProfileVisibility, // Now handles array
+    profileVisibility,
+    setProfileVisibility,
     locationSharing,
     setLocationSharing,
-    isGlobalPrivate, // Renamed from isGlobalPublic
-    setIsGlobalPrivate, // Renamed from setIsGlobalPublic
-    openSettingsAccordions, // Get from context
-    setOpenSettingsAccordions, // Get from context
-    is24HourFormat, // NEW: Get from context
-    setIs24HourFormat, // NEW: Get from context
-    areToastsEnabled, // NEW: Get from context
-    setAreToastsEnabled, // NEW: Get from context
+    isGlobalPrivate,
+    setIsGlobalPrivate,
+    openSettingsAccordions,
+    setOpenSettingsAccordions,
+    is24HourFormat,
+    setIs24HourFormat,
+    areToastsEnabled,
+    setAreToastsEnabled,
   } = useTimer();
 
-  const { user } = useAuth(); // Get user from AuthContext
-  const navigate = useNavigate(); // Initialize useNavigate
-  const { toast } = useToast(); // Use shadcn toast for UI feedback
-  const { isDarkMode, toggleDarkMode } = useTheme(); // Use theme context
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile(); // NEW: Get from ProfileContext
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { isDarkMode, toggleDarkMode } = useTheme();
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile();
 
-  // Local state for temporary UI interactions or derived values
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
-  const [userNameToBlock, setUserNameToBlock] = useState(""); // NEW: State for input field
-  const [selectedCoworkerToBlock, setSelectedCoworkerToBlock] = useState<string | undefined>(undefined); // NEW: State for select field
+  const [userNameToBlock, setUserNameToBlock] = useState("");
+  const [selectedCoworkerToBlock, setSelectedCoworkerToBlock] = useState<string | undefined>(undefined);
 
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
   const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
-  // Ref to store the *last saved* or *initial loaded* state for comparison
-  // Initialize with current context values on first render
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
     isBatchNotificationsEnabled,
@@ -110,43 +108,34 @@ const Settings = () => {
     workApps,
     intentionalBreaches,
     manualTransition,
-    focusMinutes: defaultFocusMinutes, // Use defaultFocusMinutes for comparison
-    breakMinutes: defaultBreakMinutes, // Use defaultBreakMinutes for comparison
+    focusMinutes: defaultFocusMinutes,
+    breakMinutes: defaultBreakMinutes,
     maxDistance,
     askNotifications,
+    joinNotifications, // NEW: Added joinNotifications
     breakNotificationsVibrate,
     sessionInvites,
     friendActivity,
     verificationStandard,
-    profileVisibility, // Now an array
+    profileVisibility,
     locationSharing,
-    isGlobalPrivate, // Renamed
+    isGlobalPrivate,
     timerIncrement,
     shouldPlayEndSound,
     shouldShowEndToast,
-    isDarkMode, // Added isDarkMode to saved settings
-    is24HourFormat, // NEW: Added is24HourFormat
-    areToastsEnabled, // NEW: Added areToastsEnabled
-    blockedUsers, // NEW: Added blockedUsers to saved settings
+    isDarkMode,
+    is24HourFormat,
+    areToastsEnabled,
+    blockedUsers,
   });
 
-  // Effect to sync local UI states with context on initial load
-  // This runs once on mount to set up local states from context.
-  // It does NOT update savedSettingsRef.current after initial mount.
   useEffect(() => {
     setCurrentTimerIncrement(timerIncrement);
-    // No update to savedSettingsRef.current here after initial render
-  }, [
-    timerIncrement, // Only dependencies that affect local state initialization
-    // Other context values are directly used in the UI and don't need local state copies for display
-  ]);
+  }, [timerIncrement]);
 
-
-  // Effect to detect changes in local UI states compared to saved settings
   useEffect(() => {
-    // Directly use context values for comparison
-    const currentFocusVal = defaultFocusMinutes; // Use defaultFocusMinutes for comparison
-    const currentBreakVal = defaultBreakMinutes; // Use defaultBreakMinutes for comparison
+    const currentFocusVal = defaultFocusMinutes;
+    const currentBreakVal = defaultBreakMinutes;
 
     const currentUiSettings = {
       showSessionsWhileActive,
@@ -164,27 +153,27 @@ const Settings = () => {
       breakMinutes: currentBreakVal,
       maxDistance,
       askNotifications,
+      joinNotifications, // NEW: Added joinNotifications
       breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility, // Compare array
+      profileVisibility,
       locationSharing,
-      isGlobalPrivate, // Renamed
+      isGlobalPrivate,
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
-      isDarkMode, // Added isDarkMode to current UI settings
-      is24HourFormat, // NEW: Added is24HourFormat
-      areToastsEnabled, // NEW: Added areToastsEnabled
-      blockedUsers, // NEW: Compare blockedUsers
+      isDarkMode,
+      is24HourFormat,
+      areToastsEnabled,
+      blockedUsers,
     };
 
     const changed = Object.keys(currentUiSettings).some(key => {
       const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
       const savedVal = savedSettingsRef.current[key as keyof typeof savedSettingsRef.current];
 
-      // Deep comparison for objects/arrays (like NotificationSettings, profileVisibility, and blockedUsers)
       if (typeof currentVal === 'object' && currentVal !== null) {
         return JSON.stringify(currentVal) !== JSON.stringify(savedVal);
       }
@@ -194,15 +183,15 @@ const Settings = () => {
   }, [
     showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, defaultFocusMinutes, defaultBreakMinutes, maxDistance, // Updated dependencies
-    askNotifications, breakNotificationsVibrate, sessionInvites, friendActivity,
+    manualTransition, defaultFocusMinutes, defaultBreakMinutes, maxDistance,
+    askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, // NEW: Added joinNotifications
     verificationStandard, profileVisibility, locationSharing,
-    isGlobalPrivate, // Renamed
+    isGlobalPrivate,
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
-    isDarkMode, // Added isDarkMode dependency
-    is24HourFormat, // NEW: Added is24HourFormat dependency
-    areToastsEnabled, // NEW: Added areToastsEnabled dependency
-    blockedUsers, // NEW: Added blockedUsers dependency
+    isDarkMode,
+    is24HourFormat,
+    areToastsEnabled,
+    blockedUsers,
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -212,11 +201,11 @@ const Settings = () => {
     }
     timeoutRefs.current[key] = setTimeout(() => {
       setMomentaryText(prev => ({ ...prev, [key]: null }));
-    }, 1500); // Text visible for 1.5 seconds
+    }, 1500);
   };
 
   const updateNotificationSetting = (
-    type: 'ask' | 'break' | 'invites' | 'activity',
+    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins', // NEW: Added 'joins'
     field: 'push' | 'vibrate' | 'sound',
     value: boolean
   ) => {
@@ -225,6 +214,8 @@ const Settings = () => {
 
     if (type === 'ask') {
       setAskNotifications((prev: NotificationSettings) => ({ ...prev, [field]: value }));
+    } else if (type === 'joins') { // NEW: Handle join notifications
+      setJoinNotifications((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     } else if (type === 'break') {
       if (field === 'push') setShouldShowEndToast(value);
       if (field === 'vibrate') setBreakNotificationsVibrate(value);
@@ -242,7 +233,7 @@ const Settings = () => {
     description, 
     value 
   }: { 
-    type: 'ask' | 'break' | 'invites' | 'activity';
+    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins'; // NEW: Added 'joins'
     title: string;
     description?: string;
     value: { push: boolean; vibrate: boolean; sound: boolean; };
@@ -283,7 +274,7 @@ const Settings = () => {
             className={`w-10 h-10 rounded-full transition-colors ${value.vibrate ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
             onClick={() => updateNotificationSetting(type, 'vibrate', !value.vibrate)}
           >
-            <Smartphone size={20} />
+            <Vibrate size={20} /> {/* Changed Smartphone to Vibrate */}
           </Button>
           {momentaryText[`${type}-vibrate`] && (
             <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 select-none">
@@ -320,32 +311,25 @@ const Settings = () => {
 
       if (option === 'private') {
         if (checked) {
-          // If 'private' is checked, it becomes the only option
           newVisibility = ['private'];
         } else {
-          // If 'private' is unchecked, default to 'public'
           newVisibility = ['public']; 
         }
       } else {
-        // If a non-private option is toggled
         if (newVisibility.includes('private')) {
-          // If 'private' was active, deselect it first
           newVisibility = newVisibility.filter(v => v !== 'private');
         }
 
         if (checked) {
-          // Add the option if checked and not already present
           if (!newVisibility.includes(option)) {
             newVisibility.push(option);
           }
         } else {
-          // Remove the option if unchecked
           newVisibility = newVisibility.filter(v => v !== option);
         }
 
-        // Ensure at least one non-private option is selected if not private
         if (newVisibility.length === 0 && !newVisibility.includes('private')) {
-          newVisibility = ['public']; // Default to public if nothing else is selected
+          newVisibility = ['public'];
         }
       }
       return newVisibility;
@@ -363,11 +347,10 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    // Update default focus/break minutes in context
     setDefaultFocusMinutes(defaultFocusMinutes);
     setDefaultBreakMinutes(defaultBreakMinutes);
 
-    setTimerIncrement(currentTimerIncrement); // Corrected type here
+    setTimerIncrement(currentTimerIncrement);
     setShowSessionsWhileActive(showSessionsWhileActive);
     setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
     setBatchNotificationPreference(batchNotificationPreference);
@@ -381,20 +364,17 @@ const Settings = () => {
     setManualTransition(manualTransition);
     setMaxDistance(maxDistance);
     setAskNotifications(askNotifications);
+    setJoinNotifications(joinNotifications); // NEW: Save joinNotifications
     setSessionInvites(sessionInvites);
     setFriendActivity(friendActivity);
     setBreakNotificationsVibrate(breakNotificationsVibrate);
     setVerificationStandard(verificationStandard);
-    // profileVisibility is already updated via handleProfileVisibilityChange
     setLocationSharing(locationSharing);
-    setIsGlobalPrivate(isGlobalPrivate); // Renamed
+    setIsGlobalPrivate(isGlobalPrivate);
     setShouldPlayEndSound(shouldPlayEndSound);
     setShouldShowEndToast(shouldShowEndToast);
-    // isDarkMode is handled by ThemeContext and its useEffect
-    // is24HourFormat is handled by its own button
-    setAreToastsEnabled(areToastsEnabled); // NEW: Save areToastsEnabled
+    setAreToastsEnabled(areToastsEnabled);
 
-    // After saving, update the ref to reflect the new "saved" state
     savedSettingsRef.current = {
       showSessionsWhileActive,
       isBatchNotificationsEnabled,
@@ -407,24 +387,25 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: defaultFocusMinutes, // Save defaultFocusMinutes
-      breakMinutes: defaultBreakMinutes, // Save defaultBreakMinutes
+      focusMinutes: defaultFocusMinutes,
+      breakMinutes: defaultBreakMinutes,
       maxDistance,
       askNotifications,
+      joinNotifications, // NEW: Save joinNotifications
       breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility, // Save the array
+      profileVisibility,
       locationSharing,
-      isGlobalPrivate, // Renamed
+      isGlobalPrivate,
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
-      isDarkMode, // Save current dark mode state
-      is24HourFormat, // NEW: Save current time format state
-      areToastsEnabled, // NEW: Save areToastsEnabled
-      blockedUsers, // NEW: Save blockedUsers
+      isDarkMode,
+      is24HourFormat,
+      areToastsEnabled,
+      blockedUsers,
     };
     setHasChanges(false);
   };
@@ -442,7 +423,7 @@ const Settings = () => {
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
-      navigate('/'); // Redirect to home or login page after logout
+      navigate('/');
     }
   };
 
@@ -461,8 +442,8 @@ const Settings = () => {
         <Accordion 
           type="multiple" 
           className="space-y-4" 
-          value={openSettingsAccordions} // Bind to context state
-          onValueChange={setOpenSettingsAccordions} // Update context state
+          value={openSettingsAccordions}
+          onValueChange={setOpenSettingsAccordions}
         >
 
           {/* Behaviour */}
@@ -530,7 +511,6 @@ const Settings = () => {
                 </TooltipProvider>
               </div>
 
-              {/* Updated Batch Notifications Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -603,7 +583,6 @@ const Settings = () => {
               </div>
 
 
-              {/* New Exemptions Switch */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -625,7 +604,6 @@ const Settings = () => {
                   </TooltipProvider>
                 </div>
 
-                {/* Checkboxes for Exemptions (conditionally rendered) */}
                 {exemptionsEnabled && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-4 pt-2 border-l border-border ml-2">
                     <div className="flex items-center space-x-2">
@@ -680,7 +658,6 @@ const Settings = () => {
               Session Defaults
             </AccordionTrigger>
             <AccordionContent className="space-y-6 pt-4">
-              {/* Dark Mode Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="dark-mode-toggle">Dark Mode</Label>
@@ -692,24 +669,22 @@ const Settings = () => {
                 />
               </div>
 
-              {/* Global Session Visibility - Moved here */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="global-visibility-toggle">Visibility</Label>
                 </div >
                 <Button
                   id="global-visibility-toggle"
-                  variant="outline" // Use outline variant for transparent background and border
-                  onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)} // Toggle isGlobalPrivate
+                  variant="outline"
+                  onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)}
                   className={cn(
-                    "px-3 py-1 rounded-full transition-colors select-none text-foreground hover:bg-muted" // Apply homepage button styles
+                    "px-3 py-1 rounded-full transition-colors select-none text-foreground hover:bg-muted"
                   )}
                 >
-                  {!isGlobalPrivate ? "Public" : "Private"} {/* Display Public when false, Private when true */}
+                  {!isGlobalPrivate ? "Public" : "Private"}
                 </Button>
               </div>
 
-              {/* Time Format Toggle Button */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="time-format-toggle">Time Format</Label>
@@ -725,7 +700,6 @@ const Settings = () => {
                 </Button>
               </div>
 
-              {/* New Increments Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <TooltipProvider delayDuration={0}>
@@ -750,7 +724,6 @@ const Settings = () => {
                 </Button>
               </div>
 
-              {/* Focus and Break Duration Inputs - Now side-by-side */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="focus-duration">Focus</Label>
@@ -758,15 +731,15 @@ const Settings = () => {
                     id="focus-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={defaultFocusMinutes} // Bind to defaultFocusMinutes
-                    onChange={(e) => setDefaultFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))} // Update defaultFocusMinutes
+                    value={defaultFocusMinutes}
+                    onChange={(e) => setDefaultFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setDefaultFocusMinutes(currentTimerIncrement); // Default to timerIncrement
+                        setDefaultFocusMinutes(currentTimerIncrement);
                       }
                     }}
-                    min={currentTimerIncrement} // Use currentTimerIncrement
-                    step={currentTimerIncrement} // Use currentTimerIncrement
+                    min={currentTimerIncrement}
+                    step={currentTimerIncrement}
                     className="mt-2"
                     onFocus={(e) => e.target.select()}
                   />
@@ -778,8 +751,8 @@ const Settings = () => {
                     id="break-duration"
                     type="number"
                     placeholder="Minutes"
-                    value={defaultBreakMinutes} // Bind to defaultBreakMinutes
-                    onChange={(e) => setDefaultBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))} // Update defaultBreakMinutes
+                    value={defaultBreakMinutes}
+                    onChange={(e) => setDefaultBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                     onBlur={(e) => {
                       if (parseInt(e.target.value) === 0 || e.target.value === '') {
                         setDefaultBreakMinutes(timerIncrement);
@@ -799,8 +772,8 @@ const Settings = () => {
         <Accordion 
           type="multiple" 
           className="space-y-4"
-          value={openSettingsAccordions} // Bind to context state
-          onValueChange={setOpenSettingsAccordions} // Update context state
+          value={openSettingsAccordions}
+          onValueChange={setOpenSettingsAccordions}
         >
 
           {/* Location & Discovery */}
@@ -818,8 +791,8 @@ const Settings = () => {
                   </div>
                   <div className="relative group">
                     <Slider
-                      value={[maxDistance]} // Slider expects an array
-                      onValueChange={(val) => setMaxDistance(val[0])} // Extract single value
+                      value={[maxDistance]}
+                      onValueChange={(val) => setMaxDistance(val[0])}
                       max={5000}
                       min={100}
                       step={100}
@@ -918,10 +891,9 @@ const Settings = () => {
                 </div>
               </div>
 
-              {/* Verification Subheading */}
               <div className="border-t border-border pt-6 mt-6">
                 <h3 className="text-lg font-semibold mb-4">Verification</h3>
-                <div className="grid grid-cols-2 gap-4"> {/* Changed to grid layout */}
+                <div className="grid grid-cols-2 gap-4">
                   <p className="text-sm text-muted-foreground">
                     Get security clearance
                   </p>
@@ -929,9 +901,9 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground">Build trust with peers</p>
                   <p className="text-sm text-muted-foreground">Compete for prizes!</p>
                 </div>
-                  <Label className="mt-4 block">Your Verification</Label> {/* Added mt-4 block for spacing */}
+                  <Label className="mt-4 block">Your Verification</Label>
                   <Select 
-                    value={verificationStandard} // Corrected to use verificationStandard
+                    value={verificationStandard}
                     onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
                   >
                     <SelectTrigger>
@@ -974,7 +946,6 @@ const Settings = () => {
                 </div>
               </div>
 
-              {/* NEW: Block Section */}
               <div className="border-t border-border pt-6 mt-6">
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
@@ -1058,9 +1029,9 @@ const Settings = () => {
               />
 
               <NotificationControl
-                type="ask"
+                type="joins" // NEW: Separate control for Joins
                 title="Joins"
-                value={askNotifications}
+                value={joinNotifications} // NEW: Use new state
               />
               
               <NotificationControl
@@ -1081,7 +1052,6 @@ const Settings = () => {
                 value={friendActivity}
               />
 
-              {/* NEW: Toasts Switch */}
               <div className="flex items-center justify-between border-t border-border pt-6 mt-6">
                 <div className="space-y-0.5">
                   <TooltipProvider delayDuration={0}>
@@ -1106,7 +1076,6 @@ const Settings = () => {
         </Accordion>
       </div>
 
-      {/* Save Button */}
       <div className={cn(
         "fixed bottom-4 right-4 z-50 transition-opacity duration-300",
         hasChanges ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
