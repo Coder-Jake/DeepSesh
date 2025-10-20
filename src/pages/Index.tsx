@@ -190,7 +190,7 @@ const Index = () => {
     scheduleTitle, // This is the title for the schedule being *edited*
     commenceTime, // This is the commenceTime for the schedule being *edited*
     commenceDay, // This is the commenceDay for the schedule being *edited*
-    isGlobalPrivate,
+    isGlobalPrivate, // Use directly from context
     activeScheduleDisplayTitle, // NEW: Get activeScheduleDisplayTitle
 
     // New session tracking states and functions
@@ -233,7 +233,6 @@ const Index = () => {
   const navigate = useNavigate();
   const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
 
-  const [isPrivate, setIsPrivate] = useState(isGlobalPrivate);
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
@@ -255,11 +254,6 @@ const Index = () => {
   // NEW: State for Join input box visibility and value
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [joinSessionCode, setJoinSessionCode] = useState("");
-
-  // Effect to update local isPrivate when isGlobalPrivate changes
-  useEffect(() => {
-    setIsPrivate(isGlobalPrivate);
-  }, [isGlobalPrivate]);
 
   // Effect to focus the input when isEditingSeshTitle becomes true
   useEffect(() => {
@@ -306,10 +300,10 @@ const Index = () => {
   
   const handlePublicPrivateToggle = () => {
     if (isLongPress.current) {
-      setIsPrivate(!isPrivate);
+      setIsGlobalPrivate((prev: boolean) => !prev);
     } else {
       // Removed the confirm dialog here
-      setIsPrivate(!isPrivate);
+      setIsGlobalPrivate((prev: boolean) => !prev);
     }
   };
 
@@ -557,13 +551,6 @@ const Index = () => {
     setIsRunning(true);
     playStartSound();
     setCurrentPhaseStartTime(Date.now()); // Start new phase timer
-  };
-
-  const handleCircularProgressChange = (progress: number) => {
-    // This function is no longer needed as the CircularProgress is not interactive.
-    // However, to avoid breaking existing logic that might call it, we can keep it
-    // as a no-op or remove it if it's truly unused. For now, I'll keep it as a no-op.
-    console.log("CircularProgress is not interactive. Progress change ignored:", progress);
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
@@ -903,7 +890,7 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Timer Section */}
           <div className="space-y-6">
-            <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${!isPrivate ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
+            <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${!isGlobalPrivate ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
               {isSchedulingMode ? (
                 <ScheduleForm />
               ) : (
@@ -930,7 +917,7 @@ const Index = () => {
                         className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
                         data-name="Public/Private Toggle Button"
                       >
-                        {!isPrivate ? <>
+                        {!isGlobalPrivate ? <>
                             <Globe size={16} />
                             <span className="text-sm font-medium">Public</span>
                           </> : <>
@@ -1270,7 +1257,7 @@ const Index = () => {
             {/* Sessions List */}
             <TooltipProvider>
               {/* Nearby Sessions */}
-              {!shouldHideSessionLists && !isPrivate && (
+              {!shouldHideSessionLists && !isGlobalPrivate && (
                 <div className="mb-6" data-name="Nearby Sessions Section">
                   <button 
                     onClick={toggleNearbySessions} 
