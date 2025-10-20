@@ -702,7 +702,7 @@ const Index = () => {
       pollOptions.push(
         { id: 'closed-yes', text: 'Yes', votes: [] },
         { id: 'closed-no', text: 'No', votes: [] },
-        { id: "Don't Mind", text: "Don't Mind", votes: [] }
+        { id: 'closed-dont-mind', text: "Don't Mind", votes: [] }
       );
     }
 
@@ -850,7 +850,7 @@ const Index = () => {
   // NEW: Sort prepared schedules chronologically
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
-    return [...preparedSchedules].sort((a, b) => { // Corrected typo here
+    return [...preparedPchedules].sort((a, b) => {
       const timeA = getEffectiveStartTime(a, now);
       const timeB = getEffectiveStartTime(b, now);
 
@@ -860,7 +860,7 @@ const Index = () => {
       }
       return timeA - timeB;
     });
-  }, [preparedSchedules, getEffectiveStartTime]); // Corrected typo here
+  }, [preparedPchedules, getEffectiveStartTime]);
 
   // Handlers for toggling Nearby/Friends sections
   const toggleNearbySessions = () => {
