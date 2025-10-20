@@ -9,7 +9,7 @@ import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info } from "lucide-r
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { cn } "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { NotificationSettings } from "@/types/timer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
