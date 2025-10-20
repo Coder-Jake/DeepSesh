@@ -9,14 +9,14 @@ import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info } from "lucide-r
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn } "@/lib/utils";
 import { NotificationSettings } from "@/types/timer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } => "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useProfile } from "@/contexts/ProfileContext";
 
