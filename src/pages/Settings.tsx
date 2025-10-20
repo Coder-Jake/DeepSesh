@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useState, useRef, useEffect } => "react";
+import { useState, useRef, useEffect } from "react";
 import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info } from "lucide-react"; // Changed Bell to MessageSquareWarning
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } => "@/hooks/use-toast";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useProfile } from "@/contexts/ProfileContext";
 
