@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } => "react";
 import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info } from "lucide-react"; // Changed Bell to MessageSquareWarning
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -899,60 +899,69 @@ const Settings = () => {
                 </div>
               </div>
 
-              <div className="border-t border-border pt-6 mt-6">
-                <h3 className="text-lg font-semibold mb-4">Verification</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <p className="text-sm text-muted-foreground">
-                    Get security clearance
-                  </p>
-                  <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
-                  <p className="text-sm text-muted-foreground">Build trust with peers</p>
-                  <p className="text-sm text-muted-foreground">Compete for prizes!</p>
-                </div>
-                  <Label className="mt-4 block">Your Verification</Label>
-                  <Select 
-                    value={verificationStandard}
-                    onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select verification status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="anyone">None</SelectItem>
-                      <SelectItem value="phone1">Phone</SelectItem>
-                      <SelectItem value="organisation">Enterprise</SelectItem>
-                      <SelectItem value="id1">ID Verified</SelectItem>
-                    </SelectContent>
-                  </Select>
-                
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="border-t border-border pt-6 mt-6 opacity-50 pointer-events-none"> {/* Added opacity and pointer-events-none */}
+                      <h3 className="text-lg font-semibold mb-4">Verification</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <p className="text-sm text-muted-foreground">
+                          Get security clearance
+                        </p>
+                        <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
+                        <p className="text-sm text-muted-foreground">Build trust with peers</p>
+                        <p className="text-sm text-muted-foreground">Compete for prizes!</p>
+                      </div>
+                        <Label className="mt-4 block">Your Verification</Label>
+                        <Select 
+                          value={verificationStandard}
+                          onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select verification status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="anyone">None</SelectItem>
+                            <SelectItem value="phone1">Phone</SelectItem>
+                            <SelectItem value="organisation">Enterprise</SelectItem>
+                            <SelectItem value="id1">ID Verified</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      
 
-                <div className="space-y-2 mt-6">
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Label className="block cursor-help">Minimum Verification Status</Label>
-                      </TooltipTrigger>
-                      <TooltipContent className="select-none">
-                        <p>for users to interact with sessions you host</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <Select 
-                    value={verificationStandard} 
-                    onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select verification standard" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="anyone">Anyone - No verification required</SelectItem>
-                      <SelectItem value="phone1">Phone - Number verified</SelectItem>
-                      <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
-                      <SelectItem value="id1">ID Verified - verified government ID</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                      <div className="space-y-2 mt-6">
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Label className="block cursor-help">Minimum Verification Status</Label>
+                            </TooltipTrigger>
+                            <TooltipContent className="select-none">
+                              <p>for users to interact with sessions you host</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <Select 
+                          value={verificationStandard} 
+                          onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select verification standard" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="anyone">Anyone - No verification required</SelectItem>
+                            <SelectItem value="phone1">Phone - Number verified</SelectItem>
+                            <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
+                            <SelectItem value="id1">ID Verified - verified government ID</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none">
+                    <p>Requires App development</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               <div className="border-t border-border pt-6 mt-6">
                 <TooltipProvider delayDuration={0}>
