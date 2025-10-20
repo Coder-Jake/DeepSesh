@@ -5,13 +5,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { Bell, Vibrate, Volume2, UserX, X } from "lucide-react"; // Changed Smartphone to Vibrate
+import { Bell, Vibrate, Volume2, UserX, X, Info } from "lucide-react"; // Changed Smartphone to Vibrate, Added Info icon
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { NotificationSettings } from "@/types/timer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // NEW: Import Popover components
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,8 +58,8 @@ const Settings = () => {
     setMaxDistance,
     askNotifications,
     setAskNotifications,
-    joinNotifications, // NEW: Get from context
-    setJoinNotifications, // NEW: Get from context
+    joinNotifications, 
+    setJoinNotifications, 
     sessionInvites,
     setSessionInvites,
     friendActivity,
@@ -112,7 +113,7 @@ const Settings = () => {
     breakMinutes: defaultBreakMinutes,
     maxDistance,
     askNotifications,
-    joinNotifications, // NEW: Added joinNotifications
+    joinNotifications, 
     breakNotificationsVibrate,
     sessionInvites,
     friendActivity,
@@ -153,7 +154,7 @@ const Settings = () => {
       breakMinutes: currentBreakVal,
       maxDistance,
       askNotifications,
-      joinNotifications, // NEW: Added joinNotifications
+      joinNotifications, 
       breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
@@ -184,7 +185,7 @@ const Settings = () => {
     showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     manualTransition, defaultFocusMinutes, defaultBreakMinutes, maxDistance,
-    askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, // NEW: Added joinNotifications
+    askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPrivate,
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
@@ -205,7 +206,7 @@ const Settings = () => {
   };
 
   const updateNotificationSetting = (
-    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins', // NEW: Added 'joins'
+    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins', 
     field: 'push' | 'vibrate' | 'sound',
     value: boolean
   ) => {
@@ -214,7 +215,7 @@ const Settings = () => {
 
     if (type === 'ask') {
       setAskNotifications((prev: NotificationSettings) => ({ ...prev, [field]: value }));
-    } else if (type === 'joins') { // NEW: Handle join notifications
+    } else if (type === 'joins') { 
       setJoinNotifications((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     } else if (type === 'break') {
       if (field === 'push') setShouldShowEndToast(value);
@@ -233,20 +234,27 @@ const Settings = () => {
     description, 
     value 
   }: { 
-    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins'; // NEW: Added 'joins'
+    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins'; 
     title: string;
     description?: string;
     value: { push: boolean; vibrate: boolean; sound: boolean; };
   }) => (
     <div className="space-y-4">
-      <div>
+      <div className="flex items-center gap-2"> {/* Flex container for Label and Info icon */}
         <Label className="text-base font-medium">
           {title}
         </Label>
         {description && (
-          <p className="text-sm text-muted-foreground">
-            {description}
-          </p>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                <Info size={16} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 text-sm">
+              {description}
+            </PopoverContent>
+          </Popover>
         )}
       </div>
       
@@ -274,7 +282,7 @@ const Settings = () => {
             className={`w-10 h-10 rounded-full transition-colors ${value.vibrate ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
             onClick={() => updateNotificationSetting(type, 'vibrate', !value.vibrate)}
           >
-            <Vibrate size={20} /> {/* Changed Smartphone to Vibrate */}
+            <Vibrate size={20} /> 
           </Button>
           {momentaryText[`${type}-vibrate`] && (
             <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 select-none">
@@ -364,7 +372,7 @@ const Settings = () => {
     setManualTransition(manualTransition);
     setMaxDistance(maxDistance);
     setAskNotifications(askNotifications);
-    setJoinNotifications(joinNotifications); // NEW: Save joinNotifications
+    setJoinNotifications(joinNotifications); 
     setSessionInvites(sessionInvites);
     setFriendActivity(friendActivity);
     setBreakNotificationsVibrate(breakNotificationsVibrate);
@@ -391,7 +399,7 @@ const Settings = () => {
       breakMinutes: defaultBreakMinutes,
       maxDistance,
       askNotifications,
-      joinNotifications, // NEW: Save joinNotifications
+      joinNotifications, 
       breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
@@ -1025,35 +1033,35 @@ const Settings = () => {
               <NotificationControl
                 type="ask"
                 title="Asks"
-                description="Notifications when a coworker creates an Ask."
+                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when a coworker creates an Ask."
                 value={askNotifications}
               />
 
               <NotificationControl
                 type="joins"
                 title="Joins"
-                description="Notifications when a coworker joins a session you are in."
+                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when a coworker joins a session you are in."
                 value={joinNotifications}
               />
               
               <NotificationControl
                 type="break"
                 title="Break Reminders"
-                description="Notifications when the timer starts, ends, or switches between focus/break."
+                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when the timer starts, ends, or switches between focus/break."
                 value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }}
               />
               
               <NotificationControl
                 type="invites"
                 title="Session Invites"
-                description="Notifications when you are invited to a session."
+                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when you are invited to a session."
                 value={sessionInvites}
               />
               
               <NotificationControl
                 type="activity"
                 title="Friend Activity"
-                description="Notifications when friends start/end a session, or they start a break."
+                description="Push: Silent popup on your screen. Vibrate: Your device vibrates. Sound: A notification sound plays. Notifications when friends start/end a session, or they start a break."
                 value={friendActivity}
               />
 
