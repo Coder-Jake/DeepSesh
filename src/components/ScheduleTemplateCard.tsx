@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Play, Trash2, Share2 } from "lucide-react";
 import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer";
-import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
+import { useTimer } from "@/contexts/TimerContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
 
 interface ScheduleTemplateCardProps {
   template: ScheduledTimerTemplate;

@@ -8,9 +8,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Play, ListTodo } from "lucide-react";
 import { ScheduledTimerTemplate } from "@/types/timer";
-import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
+import { useTimer } from "@/contexts/TimerContext";
 import { cn } from "@/lib/utils";
 import UpcomingScheduleCardContent from './UpcomingScheduleCard'; // Import the modified content component
+import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
 
 interface UpcomingScheduleAccordionItemProps {
   template: ScheduledTimerTemplate;

@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScheduledTimer } from "@/types/timer";
 import { cn } from "@/lib/utils";
-import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
+import { useTimer } from "@/contexts/TimerContext";
+import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
 
 interface TimelineProps {
   schedule: ScheduledTimer[]; // Now represents the active/prepared schedule

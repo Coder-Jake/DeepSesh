@@ -32,10 +32,9 @@ import {
 import { toast } from "@/hooks/use-toast"; // Using shadcn toast for UI feedback
 import { format } from 'date-fns'; // Import date-fns for time formatting
 import { ScheduledTimerTemplate } from "@/types/timer"; // Corrected import path for ScheduledTimerTemplate
-import { DAYS_OF_WEEK } from "@/contexts/TimerContext"; // DAYS_OF_WEEK is still exported from TimerContext
+import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
 import { Accordion } from "@/components/ui/accordion"; // NEW
-import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleCard"; // Renamed import
-import UpcomingScheduleCardContent from "@/components/UpcomingScheduleCard"; // Renamed import
+import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem"; // Renamed import
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
 
 // Define types for Ask items (copied from TimerContext to ensure consistency)

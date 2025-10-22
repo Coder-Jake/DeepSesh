@@ -2,8 +2,9 @@ import React, { useCallback, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Play, Trash2, Clock, CalendarDays, ListTodo } from "lucide-react";
 import { ScheduledTimer } from "@/types/timer";
-import { useTimer, DAYS_OF_WEEK } from "@/contexts/TimerContext";
+import { useTimer } from "@/contexts/TimerContext";
 import { cn } from "@/lib/utils";
+import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
 
 interface UpcomingScheduleCardContentProps {
   schedule: ScheduledTimer[];
