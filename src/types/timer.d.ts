@@ -146,4 +146,6 @@ export type TimerContextType = {
   setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>;
   openSettingsAccordions: string[];
   setOpenSettingsAccordions: React.Dispatch<React.SetStateAction<string[]>>;
+  playSound: () => void; // NEW: Add playSound
+  triggerVibration: () => void; // NEW: Add triggerVibration
 };
