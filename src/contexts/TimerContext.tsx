@@ -5,8 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
 import { supabase } from '@/integrations/supabase/client'; // Import supabase client
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules'; // Import default templates
 import { useProfile } from './ProfileContext'; // Import useProfile
-
-export const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+import { DAYS_OF_WEEK } from '@/lib/constants'; // NEW: Import DAYS_OF_WEEK from constants
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -792,7 +791,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       preparedSchedules, // NEW: Save prepared schedules
       timerIncrement, // Save timerIncrement
       areToastsEnabled, // NEW: Save areToastsEnabled
-      startStopNotifications, // NEW: Save startStopNotifications
+      startStopNotifications, // NEW: Dependency
       // NEW: Dependencies for role states
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     };

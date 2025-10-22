@@ -1,4 +1,5 @@
-import { ScheduledTimerTemplate } from "@/types/timer";
+import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer"; // NEW: Import ScheduledTimer
+import { DAYS_OF_WEEK } from "@/lib/constants"; // NEW: Import DAYS_OF_WEEK from constants
 
 // Helper to generate unique IDs for timers within templates
 const generateId = () => {
@@ -41,7 +42,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
       { id: generateId(), title: "Study Hall", type: "focus", durationMinutes: 40, isCustom: true, customTitle: "Study Hall" },
     ],
     commenceTime: "08:30",
-    commenceDay: 1, // Monday
+    commenceDay: DAYS_OF_WEEK.indexOf("Monday"), // Monday
     scheduleStartOption: 'custom_time',
     isRecurring: true,
     recurrenceFrequency: 'weekly',
