@@ -170,6 +170,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 
   const playSound = useCallback(() => {
+    console.log("playSound called. startStopNotifications.sound:", startStopNotifications.sound); // Debug log
     if (!startStopNotifications.sound) return; // NEW: Check startStopNotifications.sound
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
@@ -185,6 +186,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [startStopNotifications.sound]); // NEW: Dependency
 
   const triggerVibration = useCallback(() => { // NEW: Function to trigger vibration
+    console.log("triggerVibration called. startStopNotifications.vibrate:", startStopNotifications.vibrate); // Debug log
     if (startStopNotifications.vibrate && navigator.vibrate) {
       navigator.vibrate(200); // Vibrate for 200ms
     }
