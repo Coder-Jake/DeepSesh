@@ -593,6 +593,7 @@ const Index = () => {
     let accumulatedDurationSeconds = 0;
     let currentPhaseType: 'focus' | 'break' = 'focus'; // Default
     let remainingSecondsInPhase = 0;
+    let currentPhaseDurationMinutes = 0; // NEW: Store current phase's total duration
 
     for (let i = 0; i < session.fullSchedule.length; i++) {
       const phase = session.fullSchedule[i];
@@ -603,6 +604,7 @@ const Index = () => {
         const timeIntoPhase = elapsedSecondsSinceSessionStart - accumulatedDurationSeconds;
         currentPhaseType = phase.type;
         remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
+        currentPhaseDurationMinutes = phase.durationMinutes; // NEW: Assign duration
         break;
       }
       accumulatedDurationSeconds += phaseDurationSeconds;
@@ -611,6 +613,15 @@ const Index = () => {
     setTimerType(currentPhaseType);
     setTimeLeft(Math.max(0, remainingSecondsInPhase)); // Ensure time is not negative
     
+    // NEW: Update homepage focus/break minutes to reflect the joined session's current phase duration
+    if (currentPhaseType === 'focus') {
+      setHomepageFocusMinutes(currentPhaseDurationMinutes);
+      setHomepageBreakMinutes(defaultBreakMinutes); // Reset break to default if not in break phase
+    } else {
+      setHomepageBreakMinutes(currentPhaseDurationMinutes);
+      setHomepageFocusMinutes(defaultFocusMinutes); // Reset focus to default if not in focus phase
+    }
+
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
