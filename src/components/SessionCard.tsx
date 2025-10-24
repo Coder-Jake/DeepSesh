@@ -38,19 +38,47 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
     isEnded: boolean;
   }>(() => calculateCurrentPhaseInfo(session));
 
-  // Helper function to calculate current phase and remaining time
+  // Helper function to calculate current phase and remaining time for repeating schedules
   function calculateCurrentPhaseInfo(currentSession: DemoSession) {
     const now = Date.now();
     const elapsedSecondsSinceSessionStart = Math.floor((now - currentSession.startTime) / 1000);
-    let accumulatedDurationSeconds = 0;
 
+    // Calculate total duration of the defined schedule
+    const totalScheduleDurationSeconds = currentSession.fullSchedule.reduce(
+      (sum, phase) => sum + phase.durationMinutes * 60,
+      0
+    );
+
+    if (totalScheduleDurationSeconds === 0) {
+      return {
+        type: 'focus', // Default type
+        durationMinutes: 0,
+        remainingSeconds: 0,
+        isEnded: true, // No schedule, so it's effectively ended
+      };
+    }
+
+    // If the session hasn't started yet
+    if (elapsedSecondsSinceSessionStart < 0) {
+      return {
+        type: currentSession.fullSchedule[0]?.type || 'focus', // Default to first phase type or focus
+        durationMinutes: currentSession.fullSchedule[0]?.durationMinutes || 0,
+        remainingSeconds: -elapsedSecondsSinceSessionStart, // Time until it starts
+        isEnded: false,
+      };
+    }
+
+    // Calculate the effective elapsed time within one full cycle of the schedule
+    const effectiveElapsedSeconds = elapsedSecondsSinceSessionStart % totalScheduleDurationSeconds;
+
+    let accumulatedDurationSecondsInCycle = 0;
     for (let i = 0; i < currentSession.fullSchedule.length; i++) {
       const phase = currentSession.fullSchedule[i];
       const phaseDurationSeconds = phase.durationMinutes * 60;
 
-      if (elapsedSecondsSinceSessionStart < accumulatedDurationSeconds + phaseDurationSeconds) {
-        // Current time falls within this phase
-        const timeIntoPhase = elapsedSecondsSinceSessionStart - accumulatedDurationSeconds;
+      if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
+        // Current effective time falls within this phase
+        const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle;
         const remainingSeconds = phaseDurationSeconds - timeIntoPhase;
         return {
           type: phase.type,
@@ -59,15 +87,19 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
           isEnded: false,
         };
       }
-      accumulatedDurationSeconds += phaseDurationSeconds;
+      accumulatedDurationSecondsInCycle += phaseDurationSeconds;
     }
 
-    // If elapsed time is beyond the total schedule duration
+    // This case should ideally not be reached if effectiveElapsedSeconds is correctly calculated
+    // and the loop covers all phases. It would imply effectiveElapsedSeconds is exactly
+    // totalScheduleDurationSeconds, meaning the very end of a cycle.
+    // For safety, return the last phase's info with 0 remaining.
+    const lastPhase = currentSession.fullSchedule[currentSession.fullSchedule.length - 1];
     return {
-      type: currentSession.fullSchedule[currentSession.fullSchedule.length - 1]?.type || 'focus', // Default to last phase type or focus
-      durationMinutes: 0,
+      type: lastPhase?.type || 'focus',
+      durationMinutes: lastPhase?.durationMinutes || 0,
       remainingSeconds: 0,
-      isEnded: true,
+      isEnded: false, // Still not "ended" if it repeats indefinitely
     };
   }
 

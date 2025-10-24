@@ -96,8 +96,6 @@ const mockNearbySessions: DemoSession[] = [
     fullSchedule: [
       { type: "focus", durationMinutes: 25 },
       { type: "break", durationMinutes: 5 },
-      { type: "focus", durationMinutes: 25 },
-      { type: "break", durationMinutes: 5 },
     ],
   },
   {
