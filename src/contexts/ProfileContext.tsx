@@ -263,20 +263,20 @@ const initialSessions: SessionHistory[] = [
   {
     id: crypto.randomUUID(),
     title: "Solo Focus",
-    date: new Date(`${currentYear}-09-13T14:00:00Z`).toISOString(),
+    date: new Date(`${currentYear}-10-06T14:00:00Z`).toISOString(),
     duration: "30 mins",
     participants: 1,
     type: "focus",
     notes: "Quick focused session to review quarterly goals and plan next steps.",
     asks: [],
     session_start_time: new Date(`${currentYear}-09-13T14:00:00Z`).toISOString(),
-    session_end_time: new Date(`${currentYear}-09-13T14:30:00Z`).toISOString(),
+    session_end_time: new Date(`${currentYear}-10-03T14:30:00Z`).toISOString(),
     participantNames: ["You"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
     title: "Coding Session",
-    date: new Date(`${currentYear}-09-12T11:00:00Z`).toISOString(),
+    date: new Date(`${currentYear}-09-21T11:00:00Z`).toISOString(),
     duration: "120 mins",
     participants: 2,
     type: "focus",
