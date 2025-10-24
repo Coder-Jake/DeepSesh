@@ -693,6 +693,90 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     );
   }, []);
 
+  // NEW: Effect to automatically commence prepared schedules
+  useEffect(() => {
+    const checkAndCommenceSchedules = () => {
+      const now = new Date();
+      for (const template of preparedSchedules) {
+        if (template.scheduleStartOption === 'custom_time') {
+          const [hours, minutes] = template.commenceTime.split(':').map(Number);
+          let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+          const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday
+          const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
+          const daysToAdd = (templateDay - currentDay + 7) % 7;
+          targetDate.setDate(now.getDate() + daysToAdd);
+
+          // If the target time is in the past for today, and it's not recurring, skip it.
+          // If it's recurring, and in the past, check for next week/month.
+          if (targetDate.getTime() < now.getTime()) {
+            if (!template.isRecurring) {
+              // If not recurring and time has passed, discard it
+              discardPreparedSchedule(template.id);
+              continue;
+            } else {
+              // For recurring schedules, advance to the next occurrence
+              if (template.recurrenceFrequency === 'daily') {
+                targetDate.setDate(targetDate.getDate() + 1);
+              } else if (template.recurrenceFrequency === 'weekly') {
+                targetDate.setDate(targetDate.getDate() + 7);
+              } else if (template.recurrenceFrequency === 'monthly') {
+                targetDate.setMonth(targetDate.getMonth() + 1);
+              }
+              // If after advancing, it's still in the past (e.g., a monthly schedule from last year),
+              // keep advancing until it's in the future.
+              while (targetDate.getTime() < now.getTime()) {
+                if (template.recurrenceFrequency === 'daily') {
+                  targetDate.setDate(targetDate.getDate() + 1);
+                } else if (template.recurrenceFrequency === 'weekly') {
+                  targetDate.setDate(targetDate.getDate() + 7);
+                } else if (template.recurrenceFrequency === 'monthly') {
+                  targetDate.setMonth(targetDate.getMonth() + 1);
+                }
+              }
+            }
+          }
+
+          // Check if current time is within a small window of the target time (e.g., 1 minute)
+          // This prevents multiple commencements if the interval is longer than 1 second.
+          const timeDifference = targetDate.getTime() - now.getTime();
+          if (timeDifference <= 60 * 1000 && timeDifference >= -1000) { // Within 1 minute in the future or slightly past
+            // Only commence if no other schedule is currently active or pending
+            if (!isScheduleActive && !isSchedulePending) {
+              commenceSpecificPreparedSchedule(template.id);
+              // If it's recurring, update the template's commence time for the next cycle
+              if (template.isRecurring) {
+                const nextCommenceDate = new Date(targetDate);
+                if (template.recurrenceFrequency === 'daily') {
+                  nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
+                } else if (template.recurrenceFrequency === 'weekly') {
+                  nextCommenceDate.setDate(nextCommenceDate.getDate() + 7);
+                } else if (template.recurrenceFrequency === 'monthly') {
+                  nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
+                }
+                // Update the template in preparedSchedules with the new next commence time
+                setPreparedSchedules(prev => prev.map(p => 
+                  p.id === template.id ? { 
+                    ...p, 
+                    commenceTime: nextCommenceDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+                    commenceDay: nextCommenceDate.getDay()
+                  } : p
+                ));
+              }
+              return; // Only commence one schedule per check interval
+            }
+          }
+        }
+      }
+    };
+
+    const intervalId = setInterval(checkAndCommenceSchedules, 60 * 1000); // Check every minute
+    checkAndCommenceSchedules(); // Run once immediately on mount
+
+    return () => clearInterval(intervalId);
+  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule]);
+
+
   // Load TimerContext states from local storage on initial mount
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
