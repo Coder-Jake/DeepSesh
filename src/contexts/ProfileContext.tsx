@@ -237,20 +237,20 @@ const initialSessions: SessionHistory[] = [
   {
     id: crypto.randomUUID(),
     title: "Deep Work Sprint",
-    date: new Date(`${currentYear}-09-15T09:00:00Z`).toISOString(),
+    date: new Date(`${currentYear}-10-15T09:00:00Z`).toISOString(),
     duration: "45 mins",
     participants: 3,
     type: "focus",
     notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
     asks: [],
-    session_start_time: new Date(`${currentYear}-09-15T09:00:00Z`).toISOString(),
+    session_start_time: new Date(`${currentYear}-10-15T09:00:00Z`).toISOString(),
     session_end_time: new Date(`${currentYear}-09-15T09:45:00Z`).toISOString(),
     participantNames: ["You", "Alice", "Bob"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
     title: "Study Group Alpha",
-    date: new Date(`${currentYear}-09-14T10:30:00Z`).toISOString(),
+    date: new Date(`${currentYear}-10-14T10:30:00Z`).toISOString(),
     duration: "90 mins",
     participants: 5,
     type: "focus",
