@@ -79,22 +79,26 @@ interface DemoSession {
   participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[]; // Changed to string
 }
 
+const now = new Date();
+const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
+const pomodoroStartTime = nextHour.getTime();
+
 const mockNearbySessions: DemoSession[] = [
   {
     id: "101",
-    title: "Advanced Calculus Study Group",
+    title: "Pomodoro Session", // Changed title
     type: "focus",
-    totalDurationMinutes: 90,
+    totalDurationMinutes: 60, // Changed total duration for 2 pomodoro cycles
     currentPhase: "focus",
-    currentPhaseDurationMinutes: 59,
-    startTime: Date.now() - (5.52 * 60 * 1000),
-    location: "Engineering Library - Room 304",
+    currentPhaseDurationMinutes: 25, // Changed current phase duration
+    startTime: pomodoroStartTime, // Set to start on the hour
+    location: "Quiet Study Zone - Desk 5", // Updated location
     workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "Quiet study space with whiteboards",
+    workspaceDescription: "Focused work with short breaks", // Updated description
     participants: [
-      { id: "mock-user-id-1", name: "Alice", sociability: 90, intention: "Reviewing differential equations." },
-      { id: "mock-user-id-2", name: "Bob", sociability: 80, intention: "Working on problem set 3." },
-      { id: "mock-user-id-3", name: "Charlie", sociability: 90, intention: "Preparing for the midterm exam." },
+      { id: "mock-user-id-1", name: "Alice", sociability: 90, intention: "Working on project proposal." }, // Updated intention
+      { id: "mock-user-id-2", name: "Bob", sociability: 80, intention: "Reviewing code for sprint." }, // Updated intention
+      { id: "mock-user-id-3", name: "Charlie", sociability: 90, intention: "Preparing for client demo." }, // Updated intention
     ],
   },
   {
