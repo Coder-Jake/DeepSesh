@@ -716,7 +716,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
 
     // NEW: Load friend statuses
-    const storedFriendStatuses = localStorage.Item(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
+    const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY); // Corrected from localStorage.Item
     if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
 
 
