@@ -66,17 +66,14 @@ type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
 
 interface DemoSession {
-  id: string; // Changed to string
+  id: string;
   title: string;
-  type: 'focus' | 'break';
-  totalDurationMinutes: number;
-  currentPhase: 'focus' | 'break';
-  currentPhaseDurationMinutes: number; // Added missing property
   startTime: number;
   location: string;
   workspaceImage: "/api/placeholder/200/120";
   workspaceDescription: string;
-  participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[]; // Changed to string
+  participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
+  fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[]; // NEW: Add fullSchedule
 }
 
 const now = new Date();
@@ -86,28 +83,26 @@ const pomodoroStartTime = nextHour.getTime();
 const mockNearbySessions: DemoSession[] = [
   {
     id: "101",
-    title: "Pomodoro Session", // Changed title
-    type: "focus",
-    totalDurationMinutes: 60, // Changed total duration for 2 pomodoro cycles
-    currentPhase: "focus",
-    currentPhaseDurationMinutes: 25, // Changed current phase duration
-    startTime: pomodoroStartTime, // Set to start on the hour
-    location: "Quiet Study Zone - Desk 5", // Updated location
+    title: "Pomodoro Session",
+    startTime: pomodoroStartTime,
+    location: "Quiet Study Zone - Desk 5",
     workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "Focused work with short breaks", // Updated description
+    workspaceDescription: "Focused work with short breaks",
     participants: [
-      { id: "mock-user-id-1", name: "Alice", sociability: 90, intention: "Working on project proposal." }, // Updated intention
-      { id: "mock-user-id-2", name: "Bob", sociability: 80, intention: "Reviewing code for sprint." }, // Updated intention
-      { id: "mock-user-id-3", name: "Charlie", sociability: 90, intention: "Preparing for client demo." }, // Updated intention
+      { id: "mock-user-id-1", name: "Alice", sociability: 90, intention: "Working on project proposal." },
+      { id: "mock-user-id-2", name: "Bob", sociability: 80, intention: "Reviewing code for sprint." },
+      { id: "mock-user-id-3", name: "Charlie", sociability: 90, intention: "Preparing for client demo." },
+    ],
+    fullSchedule: [
+      { type: "focus", durationMinutes: 25 },
+      { type: "break", durationMinutes: 5 },
+      { type: "focus", durationMinutes: 25 },
+      { type: "break", durationMinutes: 5 },
     ],
   },
   {
     id: "102",
     title: "Computer Science Lab",
-    type: "focus",
-    totalDurationMinutes: 120,
-    currentPhase: "focus",
-    currentPhaseDurationMinutes: 100,
     startTime: Date.now() - (76.8 * 60 * 1000),
     location: "Science Building - Computer Lab 2B",
     workspaceImage: "/api/placeholder/200/120",
@@ -119,6 +114,10 @@ const mockNearbySessions: DemoSession[] = [
       { id: "7", name: "Riley", sociability: 20, intention: "Code refactoring." },
       { id: "8", name: "Avery", sociability: 30, intention: "Designing database schema." },
     ],
+    fullSchedule: [ // Add a default schedule for this too
+      { type: "focus", durationMinutes: 100 },
+      { type: "break", durationMinutes: 20 },
+    ],
   },
 ];
 
@@ -126,10 +125,6 @@ const mockFriendsSessions: DemoSession[] = [
   {
     id: "201",
     title: "Psychology 101 Final Review",
-    type: "focus",
-    currentPhase: "break",
-    totalDurationMinutes: 90,
-    currentPhaseDurationMinutes: 15,
     startTime: Date.now() - (10.66 * 60 * 1000),
     location: "Main Library - Study Room 12",
     workspaceImage: "/api/placeholder/200/120",
@@ -143,6 +138,10 @@ const mockFriendsSessions: DemoSession[] = [
       { id: "14", name: "Pat", sociability: 55, intention: "Discussing theories." },
       { id: "15", name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
       { id: "16", name: "Jess", sociability: 70, intention: "Peer teaching." },
+    ],
+    fullSchedule: [ // Add a default schedule for this too
+      { type: "focus", durationMinutes: 75 },
+      { type: "break", durationMinutes: 15 },
     ],
   },
 ];
@@ -589,12 +588,30 @@ const Index = () => {
 
     setActiveJoinedSession(session);
     setActiveJoinedSessionCoworkerCount(session.participants.length); // Set coworker count
-    setTimerType(session.currentPhase);
     
-    // Calculate remaining time based on session's start time and current phase duration
-    const elapsedSecondsInJoinedPhase = Math.floor((Date.now() - session.startTime) / 1000);
-    const remainingSecondsInJoinedPhase = Math.max(0, session.currentPhaseDurationMinutes * 60 - elapsedSecondsInJoinedPhase);
-    setTimeLeft(remainingSecondsInJoinedPhase); // Set timer to continue from where the session was
+    // Calculate remaining time based on session's start time and its full schedule
+    const now = Date.now();
+    const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
+    let accumulatedDurationSeconds = 0;
+    let currentPhaseType: 'focus' | 'break' = 'focus'; // Default
+    let remainingSecondsInPhase = 0;
+
+    for (let i = 0; i < session.fullSchedule.length; i++) {
+      const phase = session.fullSchedule[i];
+      const phaseDurationSeconds = phase.durationMinutes * 60;
+
+      if (elapsedSecondsSinceSessionStart < accumulatedDurationSeconds + phaseDurationSeconds) {
+        // Current time falls within this phase
+        const timeIntoPhase = elapsedSecondsSinceSessionStart - accumulatedDurationSeconds;
+        currentPhaseType = phase.type;
+        remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
+        break;
+      }
+      accumulatedDurationSeconds += phaseDurationSeconds;
+    }
+
+    setTimerType(currentPhaseType);
+    setTimeLeft(Math.max(0, remainingSecondsInPhase)); // Ensure time is not negative
     
     setIsRunning(true);
     setIsPaused(false);
