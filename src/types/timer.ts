@@ -182,6 +182,7 @@ export type TimerContextType = {
 
   isSchedulePending: boolean;
   setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsSchedulePending
+  isTimeLeftManagedBySession: boolean; // NEW: Added isTimeLeftManagedBySession
 
   shouldPlayEndSound: boolean;
   setShouldPlayEndSound: React.Dispatch<React.SetStateAction<boolean>>;

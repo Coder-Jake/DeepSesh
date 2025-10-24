@@ -106,6 +106,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Schedule pending state (only for the *active* schedule if it's custom_time and waiting)
   const [isSchedulePending, setIsSchedulePending] = useState(false);
+  // NEW: State to indicate if timeLeft is being managed by an active session/schedule
+  const [isTimeLeftManagedBySession, setIsTimeLeftManagedBySession] = useState(false);
   
   // Settings states
   const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false); // Changed default to false
@@ -286,6 +288,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionHostName(null);
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0); // Reset coworker count
+    setIsTimeLeftManagedBySession(false); // NEW: Reset this flag
   }, [_defaultFocusMinutes, _defaultBreakMinutes]);
 
   const startSchedule = useCallback(() => {
@@ -365,6 +368,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     setCurrentScheduleIndex(0);
     setTimerType(schedule[0].type);
+    setIsTimeLeftManagedBySession(true); // NEW: Set flag
     setTimeLeft(schedule[0].durationMinutes * 60);
     setIsFlashing(false);
     setSessionStartTime(Date.now());
@@ -395,7 +399,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks,
-    playSound, triggerVibration // NEW: Dependencies
+    playSound, triggerVibration, setIsTimeLeftManagedBySession // NEW: Dependency
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -460,6 +464,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     setCurrentScheduleIndex(0);
     setTimerType(templateToCommence.schedule[0].type);
+    setIsTimeLeftManagedBySession(true); // NEW: Set flag
     setTimeLeft(templateToCommence.schedule[0].durationMinutes * 60);
     setIsFlashing(false);
     setSessionStartTime(Date.now()); // Record overall session start time
@@ -488,7 +493,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionHostName(localFirstName); // Use localFirstName as the host name
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks, playSound, triggerVibration]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -667,10 +672,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Initial time setting when focus/break minutes change
   useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
+    // Only set timeLeft if it's not currently managed by an active session/schedule
+    // and the timer is in an idle state (not running, not paused, not active schedule, not pending, not prepared)
+    if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
       setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared, isTimeLeftManagedBySession]);
 
   // Effect to synchronize seshTitle with activeScheduleDisplayTitle
   useEffect(() => {
@@ -815,6 +822,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.log("TimerContext: Loading activeAsks from local storage:", data.activeAsks); // DEBUG
       setIsSchedulePending(data.isSchedulePending ?? false);
       setScheduleStartOption(data.scheduleStartOption ?? 'now');
+      setIsTimeLeftManagedBySession(data.isTimeLeftManagedBySession ?? false); // NEW: Load isTimeLeftManagedBySession
       setShouldPlayEndSound(data.shouldPlayEndSound ?? false); // Changed default to false
       setShouldShowEndToast(data.shouldShowEndToast ?? false); // Changed default to false
       setIsBatchNotificationsEnabled(data.isBatchNotificationsEnabled ?? false);
@@ -873,6 +881,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
+      isTimeLeftManagedBySession, // NEW: Save isTimeLeftManagedBySession
       shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites, // NEW: Save joinNotifications
@@ -897,6 +906,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
     currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
+    isTimeLeftManagedBySession, // NEW: Dependency
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
     intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites, // NEW: Save joinNotifications
@@ -1017,6 +1027,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     isSchedulePending,
     setIsSchedulePending,
+    isTimeLeftManagedBySession, // NEW: Expose isTimeLeftManagedBySession
     scheduleStartOption,
     setScheduleStartOption,
 

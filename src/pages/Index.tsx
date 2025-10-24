@@ -216,6 +216,7 @@ const Index = () => {
     // New: Schedule pending state (for the *active* schedule)
     isSchedulePending,
     setIsSchedulePending, // NEW: Destructure setIsSchedulePending
+    isTimeLeftManagedBySession, // NEW: Get isTimeLeftManagedBySession
     scheduleStartOption, // Get scheduleStartOption from context
     is24HourFormat, // NEW: Get is24HourFormat from context
 
@@ -247,7 +248,7 @@ const Index = () => {
     activeScheduleDisplayTitle, sessionStartTime, setSessionStartTime, currentPhaseStartTime, setCurrentPhaseStartTime,
     accumulatedFocusSeconds, setAccumulatedFocusSeconds, accumulatedBreakSeconds, setAccumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount, activeAsks, addAsk, updateAsk, setActiveAsks,
-    isSchedulePending, setIsSchedulePending, scheduleStartOption, is24HourFormat, preparedSchedules,
+    isSchedulePending, setIsSchedulePending, isTimeLeftManagedBySession, scheduleStartOption, is24HourFormat, preparedSchedules,
     currentSessionRole, setCurrentSessionRole, currentSessionHostName, setCurrentSessionHostName,
     currentSessionOtherParticipants, setCurrentSessionOtherParticipants, allParticipantsToDisplay,
     startStopNotifications, playSound, triggerVibration
@@ -383,6 +384,7 @@ const Index = () => {
     setAccumulatedBreakSeconds(0);
     // Use current homepage timer values
     setTimeLeft(focusMinutes * 60); // Use current focusMinutes
+    setIsTimeLeftManagedBySession(true); // NEW: Set flag
 
     // NEW: Set role to host
     setCurrentSessionRole('host');
@@ -408,6 +410,7 @@ const Index = () => {
       // If it was a manual timer paused, restart phase tracking
       setCurrentPhaseStartTime(Date.now());
     }
+    setIsTimeLeftManagedBySession(true); // NEW: Set flag
   };
   
   const pauseTimer = () => {
@@ -424,6 +427,7 @@ const Index = () => {
     setIsRunning(false);
     playSound(); // NEW: Play sound on pause
     triggerVibration(); // NEW: Trigger vibration on pause
+    setIsTimeLeftManagedBySession(true); // NEW: Keep flag true as timer is still active (paused)
   };
   
   const stopTimer = async () => {
@@ -464,6 +468,7 @@ const Index = () => {
       setCurrentSessionRole(null);
       setCurrentSessionHostName(null);
       setCurrentSessionOtherParticipants([]);
+      setIsTimeLeftManagedBySession(false); // NEW: Reset flag
     };
 
     const handleSaveAndStop = async () => {
@@ -517,6 +522,7 @@ const Index = () => {
       setCurrentSessionRole(null);
       setCurrentSessionHostName(null);
       setCurrentSessionOtherParticipants([]);
+      setIsTimeLeftManagedBySession(false); // NEW: Reset flag
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
         setIsRunning(false);
@@ -539,6 +545,7 @@ const Index = () => {
       setCurrentSessionRole(null);
       setCurrentSessionHostName(null);
       setCurrentSessionOtherParticipants([]);
+      setIsTimeLeftManagedBySession(false); // NEW: Reset flag
       }
     }
     playSound(); // NEW: Play sound on reset
@@ -558,6 +565,7 @@ const Index = () => {
     playSound();
     triggerVibration(); // NEW: Trigger vibration on switch
     setCurrentPhaseStartTime(Date.now()); // Start new phase timer
+    setIsTimeLeftManagedBySession(true); // NEW: Set flag
   };
 
   const switchToFocus = () => {
@@ -573,6 +581,7 @@ const Index = () => {
     playSound();
     triggerVibration(); // NEW: Trigger vibration on switch
     setCurrentPhaseStartTime(Date.now()); // Start new phase timer
+    setIsTimeLeftManagedBySession(true); // NEW: Set flag
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
@@ -585,6 +594,7 @@ const Index = () => {
       setTimerType('break');
       setTimeLeft(breakMinutes * 60);
     }
+    setIsTimeLeftManagedBySession(false); // NEW: Reset flag for manual timer mode toggle
   };
 
   const handleJoinSession = (session: DemoSession) => {
@@ -605,7 +615,7 @@ const Index = () => {
     }
 
     setActiveJoinedSession(session);
-    setActiveJoinedSessionCoworkerCount(session.participants.length); // Set coworker count
+    setActiveJoinedSessionCoworkerCount(session.participants.length);
     
     // Calculate remaining time based on session's start time and its full schedule
     const now = Date.now();
@@ -631,6 +641,7 @@ const Index = () => {
     }
 
     setTimerType(currentPhaseType);
+    setIsTimeLeftManagedBySession(true); // NEW: Set flag
     setTimeLeft(Math.max(0, remainingSecondsInPhase));
     
     // NEW: Update homepage focus/break minutes to reflect the joined session's current phase duration
@@ -1099,7 +1110,7 @@ const Index = () => {
                     </div>
                   )}
 
-                  {!isScheduleActive && !isSchedulePrepared && ( // Hide timer settings if schedule is active or prepared
+                  {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && ( // Hide timer settings if schedule is active or prepared or time is managed by session
                     <div className="flex justify-center gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <span 
