@@ -172,23 +172,29 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const playSound = useCallback(() => {
     console.log("playSound called. startStopNotifications.sound:", startStopNotifications.sound); // Debug log
     if (!startStopNotifications.sound) return; // NEW: Check startStopNotifications.sound
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    oscillator.frequency.value = 440; // A4 note
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.1);
+    if (typeof window.AudioContext !== 'undefined' || typeof (window as any).webkitAudioContext !== 'undefined') { // NEW: Check for AudioContext availability
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = 440; // A4 note
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } else {
+      console.warn("AudioContext not supported in this browser."); // Warn if not supported
+    }
   }, [startStopNotifications.sound]); // NEW: Dependency
 
   const triggerVibration = useCallback(() => { // NEW: Function to trigger vibration
     console.log("triggerVibration called. startStopNotifications.vibrate:", startStopNotifications.vibrate); // Debug log
     if (startStopNotifications.vibrate && navigator.vibrate) {
       navigator.vibrate(200); // Vibrate for 200ms
+    } else if (startStopNotifications.vibrate) { // NEW: Warn if vibrate is enabled but API not supported
+      console.warn("Vibration API not supported in this browser.");
     }
   }, [startStopNotifications.vibrate]);
 
@@ -693,7 +699,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (storedData) {
       const data = JSON.parse(storedData);
       _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25); // Load default focus minutes
-      _setDefaultBreakMinutes(data._defaultBreakMinutes ?? 5);   // Load default break minutes
+      _setDefaultBreakMinutes(data. _defaultBreakMinutes ?? 5);   // Load default break minutes
       _setFocusMinutes(data.focusMinutes ?? data._defaultFocusMinutes ?? 25); // Initialize current from stored or default
       _setBreakMinutes(data.breakMinutes ?? data._defaultBreakMinutes ?? 5);   // Initialize current from stored or default
       _setSeshTitle(data._seshTitle ?? "Notes"); // Load internal state
@@ -788,7 +794,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites, // NEW: Save joinNotifications
       friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
-      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle: activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
+      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
       is24HourFormat, // NEW: Save is24HourFormat
       preparedSchedules, // NEW: Save prepared schedules
       timerIncrement, // Save timerIncrement
@@ -822,7 +828,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
   ]);
 
-  const value = {
+  const value: TimerContextType = { // NEW: Explicitly type the value object
     // Current homepage timer values
     focusMinutes,
     setHomepageFocusMinutes,
@@ -983,6 +989,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setAreToastsEnabled, // NEW
     startStopNotifications, // NEW
     setStartStopNotifications, // NEW
+    playSound,
+    triggerVibration,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
