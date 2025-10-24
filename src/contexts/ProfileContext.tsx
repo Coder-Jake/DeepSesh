@@ -231,71 +231,72 @@ const calculateStats = (allSessions: SessionHistory[], currentUserId: string | u
   return stats;
 };
 
+const currentYear = new Date().getFullYear();
 
 const initialSessions: SessionHistory[] = [
   {
     id: crypto.randomUUID(),
     title: "Deep Work Sprint",
-    date: new Date("2225-09-15T09:00:00Z").toISOString(),
+    date: new Date(`${currentYear}-09-15T09:00:00Z`).toISOString(),
     duration: "45 mins",
     participants: 3,
     type: "focus",
     notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
     asks: [],
-    session_start_time: new Date("2225-09-15T09:00:00Z").toISOString(),
-    session_end_time: new Date("2225-09-15T09:45:00Z").toISOString(),
+    session_start_time: new Date(`${currentYear}-09-15T09:00:00Z`).toISOString(),
+    session_end_time: new Date(`${currentYear}-09-15T09:45:00Z`).toISOString(),
     participantNames: ["You", "Alice", "Bob"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
     title: "Study Group Alpha",
-    date: new Date("2225-09-14T10:30:00Z").toISOString(),
+    date: new Date(`${currentYear}-09-14T10:30:00Z`).toISOString(),
     duration: "90 mins",
     participants: 5,
     type: "focus",
     notes: "Collaborative study session for the upcoming presentation. Everyone stayed focused and productive.",
     asks: [],
-    session_start_time: new Date("2225-09-14T10:30:00Z").toISOString(),
-    session_end_time: new Date("2225-09-14T12:00:00Z").toISOString(),
+    session_start_time: new Date(`${currentYear}-09-14T10:30:00Z`).toISOString(),
+    session_end_time: new Date(`${currentYear}-09-14T12:00:00Z`).toISOString(),
     participantNames: ["You", "Charlie", "Diana", "Eve", "Frank"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
     title: "Solo Focus",
-    date: new Date("2225-09-13T14:00:00Z").toISOString(),
+    date: new Date(`${currentYear}-09-13T14:00:00Z`).toISOString(),
     duration: "30 mins",
     participants: 1,
     type: "focus",
     notes: "Quick focused session to review quarterly goals and plan next steps.",
     asks: [],
-    session_start_time: new Date("2225-09-13T14:00:00Z").toISOString(),
-    session_end_time: new Date("2225-09-13T14:30:00Z").toISOString(),
+    session_start_time: new Date(`${currentYear}-09-13T14:00:00Z`).toISOString(),
+    session_end_time: new Date(`${currentYear}-09-13T14:30:00Z`).toISOString(),
     participantNames: ["You"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
     title: "Coding Session",
-    date: new Date("2225-09-12T11:00:00Z").toISOString(),
+    date: new Date(`${currentYear}-09-12T11:00:00Z`).toISOString(),
     duration: "120 mins",
     participants: 2,
     type: "focus",
     notes: "Pair programming session working on the new user interface components. Fixed several bugs.",
     asks: [],
-    session_start_time: new Date("2225-09-12T11:00:00Z").toISOString(),
-    session_end_time: new Date("2225-09-12T13:00:00Z").toISOString(),
+    session_start_time: new Date(`${currentYear}-09-12T11:00:00Z`).toISOString(),
+    session_end_time: new Date(`${currentYear}-09-12T13:00:00Z`).toISOString(),
     participantNames: ["You", "Grace"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
     title: "Research Deep Dive",
-    date: new Date("2225-09-11T16:00:00Z").toISOString(),
+    date: new Date(`${currentYear}-09-11T16:00:00Z`).toISOString(),
     duration: "60 mins",
     participants: 4,
     type: "focus",
     notes: "Market research session for the new product launch. Gathered valuable competitive intelligence.",
     asks: [],
-    session_start_time: new Date("2225-09-11T16:00:00Z").toISOString(),
-    session_end_time: new Date("2225-09-11T17:00:00Z").toISOString(),
+    session_start_time: new Date(`${currentYear}-09-11T16:00:00Z`).toISOString(),
+    session_end_time: new Date(`${currentYear}-09-11T17:00:00Z`).toISOString(),
     participantNames: ["You", "Heidi", "Ivan", "Judy"], // Added mock participant names
   }
 ];
@@ -715,7 +716,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
 
     // NEW: Load friend statuses
-    const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
+    const storedFriendStatuses = localStorage.Item(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
     if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
 
 
