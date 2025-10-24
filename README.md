@@ -16,7 +16,7 @@ Syncronised breaks create space to build community and socialise without interru
 
 The blend allows people to be both productive and connected.
 
-## What technologies are used for this project?
+## What technologies are used?
 
 This project is built with:
 
@@ -27,3 +27,5 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 - Carrd.co
+- Github
+- Supabase
