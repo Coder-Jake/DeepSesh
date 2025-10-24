@@ -76,9 +76,9 @@ interface DemoSession {
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[]; // NEW: Add fullSchedule
 }
 
-const now = new Date();
-const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
-const pomodoroStartTime = nextHour.getTime();
+const nowUtc = new Date(); // Use UTC for calculation
+const nextHourUtc = new Date(Date.UTC(nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate(), nowUtc.getUTCHours() + 1, 0, 0, 0));
+const pomodoroStartTime = nextHourUtc.getTime();
 
 const mockNearbySessions: DemoSession[] = [
   {
