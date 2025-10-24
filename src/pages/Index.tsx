@@ -233,6 +233,24 @@ const Index = () => {
     triggerVibration, // NEW
   } = useTimer();
   
+  // Log the entire object returned by useTimer
+  console.log("Index.tsx: Value from useTimer hook:", {
+    focusMinutes, setHomepageFocusMinutes, breakMinutes, setHomepageBreakMinutes,
+    defaultFocusMinutes, defaultBreakMinutes, isRunning, setIsRunning, isPaused, setIsPaused,
+    timeLeft, setTimeLeft, timerType, setTimerType, isFlashing, setIsFlashing, notes, setNotes,
+    seshTitle, setSeshTitle, isSeshTitleCustomized, formatTime, showSessionsWhileActive, timerIncrement,
+    schedule, activeSchedule, activeTimerColors, currentScheduleIndex, isSchedulingMode, setIsSchedulingMode,
+    isScheduleActive, setIsScheduleActive, isSchedulePrepared, startSchedule, commenceSpecificPreparedSchedule,
+    discardPreparedSchedule, resetSchedule, scheduleTitle, commenceTime, commenceDay, isGlobalPrivate,
+    activeScheduleDisplayTitle, sessionStartTime, setSessionStartTime, currentPhaseStartTime, setCurrentPhaseStartTime,
+    accumulatedFocusSeconds, setAccumulatedFocusSeconds, accumulatedBreakSeconds, setAccumulatedBreakSeconds,
+    activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount, activeAsks, addAsk, updateAsk, setActiveAsks,
+    isSchedulePending, setIsSchedulePending, scheduleStartOption, is24HourFormat, preparedSchedules,
+    currentSessionRole, setCurrentSessionRole, currentSessionHostName, setCurrentSessionHostName,
+    currentSessionOtherParticipants, setCurrentSessionOtherParticipants, allParticipantsToDisplay,
+    startStopNotifications, playSound, triggerVibration
+  });
+
   const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile(); // Get saveSession from useProfile
   const navigate = useNavigate();
   const { openProfilePopUp } = useProfilePopUp(); // NEW: Use ProfilePopUpContext
