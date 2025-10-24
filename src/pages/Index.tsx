@@ -217,6 +217,7 @@ const Index = () => {
     isSchedulePending,
     setIsSchedulePending, // NEW: Destructure setIsSchedulePending
     isTimeLeftManagedBySession, // NEW: Get isTimeLeftManagedBySession
+    setIsTimeLeftManagedBySession, // NEW: Get setIsTimeLeftManagedBySession
     scheduleStartOption, // Get scheduleStartOption from context
     is24HourFormat, // NEW: Get is24HourFormat from context
 
