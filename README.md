@@ -1,5 +1,5 @@
 # DeepSesh
-### A Productivity Tool For Professional Extroverts
+### The Productivity Tool Of Professional Extroverts
 
 ### What is DeepSesh?
 A minimalist platform to syncronise timers with nearby coworkers.
