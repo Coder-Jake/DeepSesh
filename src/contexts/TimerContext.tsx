@@ -1028,6 +1028,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     isSchedulePending,
     setIsSchedulePending,
     isTimeLeftManagedBySession, // NEW: Expose isTimeLeftManagedBySession
+    setIsTimeLeftManagedBySession, // NEW: Expose setIsTimeLeftManagedBySession
     scheduleStartOption,
     setScheduleStartOption,
 
