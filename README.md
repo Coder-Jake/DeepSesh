@@ -4,7 +4,7 @@
 ### What is DeepSesh?
 A platform to syncronise schedules with nearby coworkers.
 
-Sessions are often split into two intervals:
+Sessions often split into two intervals:
 **Focus**
 You work on your own projects.
 **Break**
