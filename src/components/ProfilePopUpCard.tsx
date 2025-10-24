@@ -252,7 +252,7 @@ const ProfilePopUpCard: React.FC = () => {
           )}
         </div>
 
-        {targetProfile.bio && isFieldVisible(targetProfile.bio_visibility) && (
+        {targetProfile.bio && isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
           <div>
             <h4 
               className={cn(
@@ -268,7 +268,7 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.intention && isFieldVisible(targetProfile.intention_visibility) && (
+        {targetProfile.intention && isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
           <div>
             <h4 
               className={cn(
@@ -284,7 +284,7 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility) || isFieldVisible(targetProfile.intention_visibility) || isFieldVisible(targetProfile.linkedin_visibility)) && (
+        {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
           // Sociability is generally visible if any other field is visible, or if it's explicitly public (though no direct sociability_visibility field)
           // For now, tie its visibility to other fields or assume it's always visible if not private overall.
           // A more robust solution would involve a dedicated sociability_visibility field.
@@ -302,7 +302,7 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.organization && (isFieldVisible(targetProfile.bio_visibility) || isFieldVisible(targetProfile.intention_visibility) || isFieldVisible(targetProfile.linkedin_visibility)) && (
+        {targetProfile.organization && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
           // Organization is generally visible if any other field is visible, or if it's explicitly public.
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
@@ -312,7 +312,7 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.linkedin_url && isFieldVisible(targetProfile.linkedin_visibility) && (
+        {targetProfile.linkedin_url && isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
           <div>
             <h4 
               className={cn(

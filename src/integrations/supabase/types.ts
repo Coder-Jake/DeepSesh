@@ -27,9 +27,9 @@ export type Database = {
           sociability: number | null
           updated_at: string | null
           host_code: string | null
-          bio_visibility: string[] | null // NEW
-          intention_visibility: string[] | null // NEW
-          linkedin_visibility: string[] | null // NEW
+          bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          intention_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          linkedin_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW
         }
         Insert: {
           avatar_url?: string | null
@@ -43,9 +43,9 @@ export type Database = {
           sociability?: number | null
           updated_at?: string | null
           host_code?: string | null
-          bio_visibility?: string[] | null // NEW
-          intention_visibility?: string[] | null // NEW
-          linkedin_visibility?: string[] | null // NEW
+          bio_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          intention_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          linkedin_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
         }
         Update: {
           avatar_url?: string | null
@@ -59,9 +59,9 @@ export type Database = {
           sociability?: number | null
           updated_at?: string | null
           host_code?: string | null
-          bio_visibility?: string[] | null // NEW
-          intention_visibility?: string[] | null // NEW
-          linkedin_visibility?: string[] | null // NEW
+          bio_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          intention_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          linkedin_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
         }
         Relationships: [
           {

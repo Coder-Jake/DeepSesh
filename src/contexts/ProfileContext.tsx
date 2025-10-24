@@ -1,13 +1,17 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react"; // NEW: Import useRef
 import { supabase } from "@/integrations/supabase/client";
-import { Tables, TablesInsert, TablesUpdate, Json } from "@/integrations/supabase/types";
+import { Tables, TablesUpdate, Json } from "@/integrations/supabase/types"; // MODIFIED: Changed TablesInsert to TablesUpdate for ProfileUpdate
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext"; // Import useAuth to get current user ID
 
-export type Profile = Tables<'public', 'profiles'>;
-type ProfileInsert = TablesInsert<'public', 'profiles'>;
-type ProfileUpdate = TablesInsert<'public', 'profiles'>;
+export type Profile = Tables<'public', 'profiles'> & { // Extend the base Profile type
+  bio_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  intention_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  linkedin_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
+};
+type ProfileInsert = Tables<'public', 'profiles'>['Insert']; // Keep Insert for new profile creation
+type ProfileUpdate = TablesUpdate<'public', 'profiles'>; // MODIFIED: Use TablesUpdate
 
 export type TimePeriod = 'week' | 'month' | 'all';
 
@@ -757,7 +761,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
 
     if (existingProfile) {
-      setProfile({ ...existingProfile, first_name: existingProfile.first_name || "" });
+      setProfile({ 
+        ...existingProfile, 
+        first_name: existingProfile.first_name || "",
+        bio_visibility: (existingProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        intention_visibility: (existingProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        linkedin_visibility: (existingProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+      });
       if (existingProfile.host_code) {
         setHostCode(existingProfile.host_code);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, existingProfile.host_code);
@@ -765,7 +775,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         const newHostCode = generateRandomHostCode();
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-        await updateProfile({ host_code: newHostCode });
+        await updateProfile({ id: user.id, host_code: newHostCode }); // MODIFIED: Added user.id
       }
       // NEW: Set per-field visibility from fetched profile
       setBioVisibility((existingProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
@@ -786,7 +796,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           bio_visibility: ['public'], // NEW: Default visibility on creation
           intention_visibility: ['public'], // NEW
           linkedin_visibility: ['public'], // NEW
-        })
+        } as ProfileInsert) // Cast to ProfileInsert
         .select()
         .single();
 
@@ -800,7 +810,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       } else if (newProfile) {
-        setProfile({ ...newProfile, first_name: newProfile.first_name || "" });
+        setProfile({ 
+          ...newProfile, 
+          first_name: newProfile.first_name || "",
+          bio_visibility: (newProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+          intention_visibility: (newProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+          linkedin_visibility: (newProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        });
         setHostCode(newProfile.host_code || newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newProfile.host_code || newHostCode);
         // NEW: Set per-field visibility from new profile
@@ -906,7 +922,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         description: error.message,
       });
     } else if (updatedData) {
-      setProfile({ ...updatedData, first_name: updatedData.first_name || "" });
+      setProfile({ 
+        ...updatedData, 
+        first_name: updatedData.first_name || "",
+        bio_visibility: (updatedData.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        intention_visibility: (updatedData.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        linkedin_visibility: (updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+      });
       if (updatedData.host_code) {
         setHostCode(updatedData.host_code);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, updatedData.host_code);
@@ -1067,7 +1089,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         throw new Error("Failed to fetch profile.");
       }
       if (data) {
-        return { ...data, first_name: data.first_name || "" };
+        return { 
+          ...data, 
+          first_name: data.first_name || "",
+          bio_visibility: (data.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+          intention_visibility: (data.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+          linkedin_visibility: (data.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        };
       }
     }
     

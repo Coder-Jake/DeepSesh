@@ -47,7 +47,7 @@ const AppContent = () => {
         <Route path="/feedback" element={<Feedback />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {areToastsEnabled && <Toaster toasts={toasts} />}
+      {areToastsEnabled && <Toaster />}
       <ProfilePopUpCard />
     </div>
   );

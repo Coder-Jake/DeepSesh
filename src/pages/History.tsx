@@ -193,7 +193,7 @@ const History = () => {
                     <div className="flex items-center gap-3">
                       <Users className="h-8 w-8 text-primary" />
                       <div>
-                        <p className="text-2xl font-bold">{currentStats.uniqueCoworkers}</p>
+                        <p className="text-2xl font-bold">{currentStats.coworkers}</p> {/* MODIFIED: Changed to currentStats.coworkers */}
                         <p className="text-sm text-muted-foreground"> Unique Coworkers</p>
                         <p className="text-xs text-muted-foreground">Rank: {currentStats.coworkerRank}</p>
                       </div>

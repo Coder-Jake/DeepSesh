@@ -181,6 +181,7 @@ export type TimerContextType = {
   allParticipantsToDisplay: string[];
 
   isSchedulePending: boolean;
+  setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsSchedulePending
 
   shouldPlayEndSound: boolean;
   setShouldPlayEndSound: React.Dispatch<React.SetStateAction<boolean>>;
@@ -234,6 +235,8 @@ export type TimerContextType = {
   setStartStopNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   playSound: () => void;
   triggerVibration: () => void;
+  showSessionsWhileActive: boolean; // NEW: Added showSessionsWhileActive
+  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setShowSessionsWhileActive
 };
 
 // Define the structure for a saved session

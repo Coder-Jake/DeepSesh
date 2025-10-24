@@ -44,7 +44,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [scheduleTitle, setScheduleTitle] = useState("My Focus Sesh"); // Title for the schedule being *edited*
   const [commenceTime, setCommenceTime] = useState(""); // Commence time for the schedule being *edited*
   const [commenceDay, setCommenceDay] = useState<number | null>(null); // Commence day for the schedule being *edited*
-  // Removed duplicate declaration: const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
+  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false); // Moved here from Settings.tsx
   const [isRecurring, setIsRecurring] = useState(false); // Added
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily'); // Added
   const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now'); // Start option for the schedule being *edited*
@@ -129,7 +129,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [verificationStandard, setVerificationStandard] = useState<'anyone' | 'phone1' | 'organisation' | 'id1'>('anyone');
   const [profileVisibility, setProfileVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // Updated to array
   const [locationSharing, setLocationSharing] = useState(false);
-  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]); // Added
   const [is24HourFormat, setIs24HourFormat] = useState(true); // NEW: Default to 24-hour format
   const [areToastsEnabled, setAreToastsEnabled] = useState(false); // NEW: Default to false
@@ -1063,8 +1062,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProfileVisibility,
     locationSharing,
     setLocationSharing,
-    isGlobalPrivate,
-    setIsGlobalPrivate,
     openSettingsAccordions,
     setOpenSettingsAccordions,
     is24HourFormat, // NEW

@@ -171,7 +171,8 @@ const Index = () => {
     setSeshTitle, // Get setSeshTitle from context
     isSeshTitleCustomized, // NEW: Get customization flag
     formatTime,
-    showSessionsWhileActive,
+    showSessionsWhileActive, // NEW: Destructure showSessionsWhileActive
+    setShowSessionsWhileActive, // NEW: Destructure setShowSessionsWhileActive
     timerIncrement,
     
     schedule, // Keep schedule for editing in ScheduleForm
@@ -191,6 +192,7 @@ const Index = () => {
     commenceTime, // This is the commenceTime for the schedule being *edited*
     commenceDay, // This is the commenceDay for the schedule being *edited*
     isGlobalPrivate, // Use directly from context
+    setIsGlobalPrivate, // NEW: Destructure setIsGlobalPrivate
     activeScheduleDisplayTitle, // NEW: Get activeScheduleDisplayTitle
 
     // New session tracking states and functions
@@ -213,7 +215,7 @@ const Index = () => {
 
     // New: Schedule pending state (for the *active* schedule)
     isSchedulePending,
-    setIsSchedulePending,
+    setIsSchedulePending, // NEW: Destructure setIsSchedulePending
     scheduleStartOption, // Get scheduleStartOption from context
     is24HourFormat, // NEW: Get is24HourFormat from context
 
@@ -629,7 +631,7 @@ const Index = () => {
     }
 
     setTimerType(currentPhaseType);
-    setTimeLeft(Math.max(0, remainingSecondsInPhase)); // Ensure time is not negative
+    setTimeLeft(Math.max(0, remainingSecondsInPhase));
     
     // NEW: Update homepage focus/break minutes to reflect the joined session's current phase duration
     if (currentPhaseType === 'focus') {
@@ -709,7 +711,7 @@ const Index = () => {
     // Add other participants, ensuring no duplicates with current user or host
     currentSessionOtherParticipants.forEach(p => {
       if (p.id !== currentUserId && p.name !== currentSessionHostName) { // Check both ID and name for uniqueness
-        participants.push({ ...p, role: 'coworker' });
+        participants.push({ ...p, sociability: p.sociability || 50, role: 'coworker' }); // MODIFIED: Ensure sociability is a number
       }
     });
 
@@ -838,7 +840,7 @@ const Index = () => {
       // For single-choice polls (closed/choice), if optionIds is empty, this effectively unvotes all.
       // For multi-choice (selection), if optionIds doesn't include this option, it remains unvoted.
 
-      return { ...currentPoll, options: updatedOptions };
+      return { ...option, votes: newVotes }; // MODIFIED: Return updated option, not currentPoll
     });
 
     updateAsk({ ...currentPoll, options: updatedOptions });
@@ -854,7 +856,7 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
     toast({
       title: "Schedule Commenced!",
-      description: "Your scheduled session has now begun.",
+      description: `Your scheduled session has now begun.`,
     });
 
     // NEW: Set role to host

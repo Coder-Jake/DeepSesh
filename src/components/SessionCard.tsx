@@ -39,7 +39,12 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
   }>(() => calculateCurrentPhaseInfo(session));
 
   // Helper function to calculate current phase and remaining time for repeating schedules
-  function calculateCurrentPhaseInfo(currentSession: DemoSession) {
+  function calculateCurrentPhaseInfo(currentSession: DemoSession): {
+    type: 'focus' | 'break';
+    durationMinutes: number;
+    remainingSeconds: number;
+    isEnded: boolean;
+  } {
     const now = Date.now();
     const elapsedSecondsSinceSessionStart = Math.floor((now - currentSession.startTime) / 1000);
 
