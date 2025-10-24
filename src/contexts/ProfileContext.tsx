@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react"; // NEW: Import useRef
 import { supabase } from "@/integrations/supabase/client";
-import { Tables, TablesUpdate, Json } from "@/integrations/supabase/types"; // MODIFIED: Changed TablesInsert to TablesUpdate for ProfileUpdate
+import { Tables, TablesUpdate, Json, TablesInsert } from "@/integrations/supabase/types"; // MODIFIED: Changed TablesInsert to TablesUpdate for ProfileUpdate
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext"; // Import useAuth to get current user ID
@@ -10,7 +10,7 @@ export type Profile = Tables<'public', 'profiles'> & { // Extend the base Profil
   intention_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
   linkedin_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
 };
-type ProfileInsert = Tables<'public', 'profiles'>['Insert']; // Keep Insert for new profile creation
+type ProfileInsert = TablesInsert<'public', 'profiles'>; // Keep Insert for new profile creation
 type ProfileUpdate = TablesUpdate<'public', 'profiles'>; // MODIFIED: Use TablesUpdate
 
 export type TimePeriod = 'week' | 'month' | 'all';
@@ -237,20 +237,20 @@ const initialSessions: SessionHistory[] = [
   {
     id: crypto.randomUUID(),
     title: "Deep Work Sprint",
-    date: new Date(`${currentYear}-10-15T09:00:00Z`).toISOString(),
+    date: new Date(`${currentYear}-09-15T09:00:00Z`).toISOString(),
     duration: "45 mins",
     participants: 3,
     type: "focus",
     notes: "Great session focusing on project documentation. Made significant progress on the API specs.",
     asks: [],
-    session_start_time: new Date(`${currentYear}-10-15T09:00:00Z`).toISOString(),
+    session_start_time: new Date(`${currentYear}-09-15T09:00:00Z`).toISOString(),
     session_end_time: new Date(`${currentYear}-09-15T09:45:00Z`).toISOString(),
     participantNames: ["You", "Alice", "Bob"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
     title: "Study Group Alpha",
-    date: new Date(`${currentYear}-10-14T10:30:00Z`).toISOString(),
+    date: new Date(`${currentYear}-09-14T10:30:00Z`).toISOString(),
     duration: "90 mins",
     participants: 5,
     type: "focus",
@@ -263,20 +263,20 @@ const initialSessions: SessionHistory[] = [
   {
     id: crypto.randomUUID(),
     title: "Solo Focus",
-    date: new Date(`${currentYear}-10-06T14:00:00Z`).toISOString(),
+    date: new Date(`${currentYear}-09-13T14:00:00Z`).toISOString(),
     duration: "30 mins",
     participants: 1,
     type: "focus",
     notes: "Quick focused session to review quarterly goals and plan next steps.",
     asks: [],
     session_start_time: new Date(`${currentYear}-09-13T14:00:00Z`).toISOString(),
-    session_end_time: new Date(`${currentYear}-10-03T14:30:00Z`).toISOString(),
+    session_end_time: new Date(`${currentYear}-09-13T14:30:00Z`).toISOString(),
     participantNames: ["You"], // Added mock participant names
   },
   {
     id: crypto.randomUUID(),
     title: "Coding Session",
-    date: new Date(`${currentYear}-09-21T11:00:00Z`).toISOString(),
+    date: new Date(`${currentYear}-09-12T11:00:00Z`).toISOString(),
     duration: "120 mins",
     participants: 2,
     type: "focus",
