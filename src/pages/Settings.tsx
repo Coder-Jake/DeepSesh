@@ -100,7 +100,7 @@ const Settings = () => {
   const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
   const savedSettingsRef = useRef({
-    showSessionsWhileActive,
+    showSessionsWhileActive, // MODIFIED: Now a string
     isBatchNotificationsEnabled,
     batchNotificationPreference,
     customBatchMinutes,
@@ -142,7 +142,7 @@ const Settings = () => {
     const currentBreakVal = defaultBreakMinutes;
 
     const currentUiSettings = {
-      showSessionsWhileActive,
+      showSessionsWhileActive, // MODIFIED: Now a string
       isBatchNotificationsEnabled,
       batchNotificationPreference,
       customBatchMinutes,
@@ -186,7 +186,8 @@ const Settings = () => {
     });
     setHasChanges(changed);
   }, [
-    showSessionsWhileActive, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
+    showSessionsWhileActive, // MODIFIED: Dependency
+    isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     manualTransition, defaultFocusMinutes, defaultBreakMinutes, maxDistance,
     askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
@@ -370,7 +371,7 @@ const Settings = () => {
     setDefaultBreakMinutes(defaultBreakMinutes);
 
     setTimerIncrement(currentTimerIncrement);
-    setShowSessionsWhileActive(showSessionsWhileActive);
+    setShowSessionsWhileActive(showSessionsWhileActive); // MODIFIED: Pass string value
     setIsBatchNotificationsEnabled(isBatchNotificationsEnabled);
     setBatchNotificationPreference(batchNotificationPreference);
     setCustomBatchMinutes(customBatchMinutes);
@@ -396,7 +397,7 @@ const Settings = () => {
     setStartStopNotifications(startStopNotifications); // NEW
 
     savedSettingsRef.current = {
-      showSessionsWhileActive,
+      showSessionsWhileActive, // MODIFIED: Save string value
       isBatchNotificationsEnabled,
       batchNotificationPreference,
       customBatchMinutes,
@@ -448,6 +449,14 @@ const Settings = () => {
     }
   };
 
+  // MODIFIED: Function to cycle through session visibility modes
+  const cycleSessionVisibility = () => {
+    const modes: ('hidden' | 'nearby' | 'friends' | 'yes')[] = ['hidden', 'nearby', 'friends', 'yes'];
+    const currentIndex = modes.indexOf(showSessionsWhileActive);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    setShowSessionsWhileActive(modes[nextIndex]);
+  };
+
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
       <div className="mb-6 flex justify-between items-center">
@@ -477,11 +486,19 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Label htmlFor="show-sessions-while-active">Show other sessions while active</Label>
                 </div>
-                <Switch
+                {/* MODIFIED: Replaced Switch with Button */}
+                <Button
                   id="show-sessions-while-active"
-                  checked={showSessionsWhileActive}
-                  onCheckedChange={setShowSessionsWhileActive}
-                />
+                  onClick={cycleSessionVisibility}
+                  className={cn(
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80 select-none"
+                  )}
+                >
+                  {showSessionsWhileActive === 'hidden' && "Hidden"}
+                  {showSessionsWhileActive === 'nearby' && "Nearby"}
+                  {showSessionsWhileActive === 'friends' && "Friends"}
+                  {showSessionsWhileActive === 'yes' && "Yes"}
+                </Button>
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">

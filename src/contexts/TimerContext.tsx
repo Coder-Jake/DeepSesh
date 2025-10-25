@@ -33,7 +33,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [notes, setNotes] = useState("");
   const [_seshTitle, _setSeshTitle] = useState("Notes"); // Renamed internal state
   const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false); // New state for customization
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState(false); // Changed default to false
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'yes'>('hidden'); // MODIFIED: Changed default to 'hidden'
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Schedule related states
@@ -217,10 +217,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return `${timeParts[0]} ${timeParts.slice(1).join(':')}`;
     } else if (hours > 0) {
       timeParts.push(pad(hours));
-      timeParts.push(pad(minutes));
-      timeParts.push(pad(seconds));
-      return timeParts.join(':');
-    } else if (minutes > 0) {
       timeParts.push(pad(minutes));
       timeParts.push(pad(seconds));
       return timeParts.join(':');
@@ -796,7 +792,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false); // Load new state
       setNotes(data.notes ?? "");
       setTimerIncrementInternal(data.timerIncrement ?? 5); // Load timerIncrement
-      setShowSessionsWhileActive(data.showSessionsWhileActive ?? false);
+      setShowSessionsWhileActive(data.showSessionsWhileActive ?? 'hidden'); // MODIFIED: Load new string type
       setIsGlobalPrivate(data.isGlobalPrivate ?? false);
       setTimerType(data.timerType ?? 'focus');
       setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? (data.focusMinutes ?? data._defaultFocusMinutes ?? 25) * 60 : (data.breakMinutes ?? data._defaultBreakMinutes ?? 5) * 60));

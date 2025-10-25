@@ -237,8 +237,8 @@ export type TimerContextType = {
   setStartStopNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   playSound: () => void;
   triggerVibration: () => void;
-  showSessionsWhileActive: boolean; // NEW: Added showSessionsWhileActive
-  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setShowSessionsWhileActive
+  showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'yes'; // MODIFIED: Changed to string literal union
+  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'yes'>>; // MODIFIED: Changed to string literal union
 };
 
 // Define the structure for a saved session
