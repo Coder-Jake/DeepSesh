@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { Menu, X, User, Home, Settings, Heart } from "lucide-react";
+import { Menu, X, User, Settings, Heart } from "lucide-react"; // Removed Home icon
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { localFirstName } = useProfile(); // Get localFirstName from ProfileContext
 
   const navigationItems = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "Profile", href: "/profile", icon: User },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Settings", href: "/settings", icon: Settings }, // Settings moved to top
+    { name: localFirstName, href: "/profile", icon: User }, // Profile changed to localFirstName
     { name: "Chip In", href: "/chip-in", icon: Heart },
   ];
 
