@@ -121,7 +121,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [favourites, setFavourites] = useState(false);
   const [workApps, setWorkApps] = useState(false);
   const [intentionalBreaches, setIntentionalBreaches] = useState(false);
-  const [manualTransition, setManualTransition] = useState(false);
+  const [manualTransition, setManualTransition] = useState(false); // Default to false (Auto)
   const [maxDistance, setMaxDistance] = useState(1000); // Default to 1km
   const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // Changed default to false
   const [joinNotifications, setJoinNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false }); // NEW: Initialize joinNotifications
@@ -830,7 +830,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setFavourites(data.favourites ?? false);
       setWorkApps(data.workApps ?? false);
       setIntentionalBreaches(data.intentionalBreaches ?? false);
-      setManualTransition(data.manualTransition ?? false);
+      setManualTransition(data.manualTransition ?? false); // NEW: Load manualTransition
       setMaxDistance(data.maxDistance ?? 1000);
       setAskNotifications(data.askNotifications ?? { push: false, vibrate: false, sound: false }); // Changed default to false
       setJoinNotifications(data.joinNotifications ?? { push: false, vibrate: false, sound: false }); // NEW: Load joinNotifications

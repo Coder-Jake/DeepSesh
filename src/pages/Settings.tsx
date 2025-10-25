@@ -457,6 +457,11 @@ const Settings = () => {
     setShowSessionsWhileActive(modes[nextIndex]);
   };
 
+  // NEW: Function to cycle through manualTransition modes
+  const cycleTimerTransitions = () => {
+    setManualTransition(prev => !prev);
+  };
+
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
       <div className="mb-6 flex justify-between items-center">
@@ -505,7 +510,7 @@ const Settings = () => {
                   <TooltipProvider delayDuration={0}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Label htmlFor="manual-transition" className="cursor-help">Manual Transitions</Label>
+                        <Label htmlFor="timer-transition-toggle" className="cursor-help">Timer Transitions</Label> {/* MODIFIED: Label text and htmlFor */}
                       </TooltipTrigger>
                       <TooltipContent className="select-none">
                         <p>Require confirmation to move between Focus/Break.</p>
@@ -513,11 +518,16 @@ const Settings = () => {
                     </Tooltip>
                   </TooltipProvider>
                 </div >
-                <Switch
-                  id="manual-transition"
-                  checked={manualTransition}
-                  onCheckedChange={setManualTransition}
-                />
+                {/* NEW: Replaced Switch with Button for Timer Transitions */}
+                <Button
+                  id="timer-transition-toggle"
+                  onClick={cycleTimerTransitions}
+                  className={cn(
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80 select-none"
+                  )}
+                >
+                  {manualTransition ? "Manual" : "Auto"}
+                </Button>
               </div>
 
               <div className="flex items-center justify-between">
