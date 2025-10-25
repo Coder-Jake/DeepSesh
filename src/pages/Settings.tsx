@@ -81,7 +81,6 @@ const Settings = () => {
     areToastsEnabled,
     setAreToastsEnabled,
     startStopNotifications,
-    setStartStopNotifications,
   } = useTimer();
 
   const { user } = useAuth();
@@ -754,45 +753,47 @@ const Settings = () => {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="focus-duration">Focus</Label>
-                  <Input
-                    id="focus-duration"
-                    type="number"
-                    placeholder="Minutes"
-                    value={defaultFocusMinutes}
-                    onChange={(e) => setDefaultFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
-                    onBlur={(e) => {
-                      if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setDefaultFocusMinutes(currentTimerIncrement);
-                      }
-                    }}
-                    min={currentTimerIncrement}
-                    step={currentTimerIncrement}
-                    className="mt-2"
-                    onFocus={(e) => e.target.select()}
-                  />
-                </div>
+              <div className="border-t border-border pt-6 mt-6"> {/* Added dividing line here */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="focus-duration">Focus</Label>
+                    <Input
+                      id="focus-duration"
+                      type="number"
+                      placeholder="Minutes"
+                      value={defaultFocusMinutes}
+                      onChange={(e) => setDefaultFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                      onBlur={(e) => {
+                        if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                          setDefaultFocusMinutes(currentTimerIncrement);
+                        }
+                      }}
+                      min={currentTimerIncrement}
+                      step={currentTimerIncrement}
+                      className="mt-2"
+                      onFocus={(e) => e.target.select()}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="break-duration">Break</Label>
-                  <Input
-                    id="break-duration"
-                    type="number"
-                    placeholder="Minutes"
-                    value={defaultBreakMinutes}
-                    onChange={(e) => setDefaultBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
-                    onBlur={(e) => {
-                      if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                        setDefaultBreakMinutes(timerIncrement);
-                      }
-                    }}
-                    min={timerIncrement}
-                    step={timerIncrement}
-                    className="mt-2"
-                    onFocus={(e) => e.target.select()}
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="break-duration">Break</Label>
+                    <Input
+                      id="break-duration"
+                      type="number"
+                      placeholder="Minutes"
+                      value={defaultBreakMinutes}
+                      onChange={(e) => setDefaultBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                      onBlur={(e) => {
+                        if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                          setDefaultBreakMinutes(timerIncrement);
+                        }
+                      }}
+                      min={timerIncrement}
+                      step={timerIncrement}
+                      className="mt-2"
+                      onFocus={(e) => e.target.select()}
+                    />
+                  </div>
                 </div>
               </div>
             </AccordionContent>
