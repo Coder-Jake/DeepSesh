@@ -335,10 +335,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Tech Innovators Inc.",
     linkedin_url: "https://www.linkedin.com/in/alicesmith",
-    host_code: "redfox",
     bio_visibility: ['public'], // NEW
     intention_visibility: ['public'], // NEW
     linkedin_visibility: ['public'], // NEW
+    host_code: "redfox",
   },
   {
     id: "mock-user-id-2",
@@ -351,10 +351,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Web Solutions Co.",
     linkedin_url: "https://www.linkedin.com/in/bobjohnson",
-    host_code: "bluebear",
     bio_visibility: ['public'], // NEW
     intention_visibility: ['public'], // NEW
     linkedin_visibility: ['public'], // NEW
+    host_code: "bluebear",
   },
   {
     id: "mock-user-id-3",
@@ -367,10 +367,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Cloud Builders LLC",
     linkedin_url: "https://www.linkedin.com/in/charliebrown",
-    host_code: "greencat",
     bio_visibility: ['friends', 'organisation'], // NEW
     intention_visibility: ['friends', 'organisation'], // NEW
     linkedin_visibility: ['friends', 'organisation'], // NEW
+    host_code: "greencat",
   },
   {
     id: "mock-user-id-4",
@@ -383,10 +383,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Global Enterprises",
     linkedin_url: "https://www.linkedin.com/in/dianaprince",
-    host_code: "yellowdog",
     bio_visibility: ['public', 'organisation'], // NEW
     intention_visibility: ['public', 'organisation'], // NEW
     linkedin_visibility: ['public', 'organisation'], // NEW
+    host_code: "yellowdog",
   },
   {
     id: "mock-user-id-5",
@@ -399,10 +399,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Design Innovations",
     linkedin_url: "https://www.linkedin.com/in/eveadams",
-    host_code: "purplelion",
     bio_visibility: ['private'], // NEW
     intention_visibility: ['private'], // NEW
     linkedin_visibility: ['private'], // NEW
+    host_code: "purplelion",
   },
   {
     id: "mock-user-id-6",
@@ -415,10 +415,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Data Insights Co.",
     linkedin_url: "https://www.linkedin.com/in/frankwhite",
-    host_code: "orangetiger",
     bio_visibility: ['public'], // NEW
     intention_visibility: ['public'], // NEW
     linkedin_visibility: ['public'], // NEW
+    host_code: "orangetiger",
   },
   {
     id: "mock-user-id-7",
@@ -431,10 +431,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Creative Minds Agency",
     linkedin_url: "https://www.linkedin.com/in/gracetaylor",
-    host_code: "pinkwolf",
     bio_visibility: ['public'], // NEW
     intention_visibility: ['public'], // NEW
     linkedin_visibility: ['public'], // NEW
+    host_code: "pinkwolf",
   },
   {
     id: "mock-user-id-8",
@@ -447,10 +447,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Secure Solutions Ltd.",
     linkedin_url: "https://www.linkedin.com/in/heidiclark",
-    host_code: "browndeer",
     bio_visibility: ['public'], // NEW
     intention_visibility: ['public'], // NEW
     linkedin_visibility: ['public'], // NEW
+    host_code: "browndeer",
   },
   {
     id: "mock-user-id-9",
@@ -463,10 +463,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Automate Everything Inc.",
     linkedin_url: "https://www.linkedin.com/in/ivanking",
-    host_code: "greyzebra",
     bio_visibility: ['public'], // NEW
     intention_visibility: ['public'], // NEW
     linkedin_visibility: ['public'], // NEW
+    host_code: "greyzebra",
   },
   {
     id: "mock-user-id-10",
@@ -479,10 +479,10 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Innovate UX",
     linkedin_url: "https://www.linkedin.com/in/judylee",
-    host_code: "blackpanda",
     bio_visibility: ['public'], // NEW
     intention_visibility: ['public'], // NEW
     linkedin_visibility: ['public'], // NEW
+    host_code: "blackpanda",
   },
 ];
 
@@ -497,13 +497,7 @@ interface ProfileContextType {
   localFirstName: string;
   setLocalFirstName: React.Dispatch<React.SetStateAction<string>>;
 
-  sessions: SessionHistory[];
-  setSessions: React.Dispatch<React.SetStateAction<SessionHistory[]>>;
-  statsData: StatsData;
-
-  historyTimePeriod: TimePeriod;
-  setHistoryTimePeriod: React.Dispatch<React.SetStateAction<TimePeriod>>;
-  // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
+  // Removed sessions, setSessions, statsData, historyTimePeriod, setHistoryTimePeriod
 
   saveSession: (
     seshTitle: string,
@@ -525,7 +519,7 @@ interface ProfileContextType {
   hostCode: string;
   setHostCode: React.Dispatch<React.SetStateAction<string>>;
 
-  deleteSession: (sessionId: string) => Promise<void>;
+  // Removed deleteSession
   getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>; // NEW: Added getPublicProfile
 
   // NEW: Per-field visibility states
@@ -561,7 +555,7 @@ const LOCAL_STORAGE_KEY = 'deepsesh_profile_data';
 const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name';
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users';
 const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
-const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions';
+// Removed LOCAL_STORAGE_SESSIONS_KEY
 const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility'; // NEW
 const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility'; // NEW
 const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility'; // NEW
@@ -574,12 +568,17 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [error, setError] = useState<string | null>(null);
   const [localFirstName, setLocalFirstName] = useState("You");
 
-  const [sessions, setSessions] = useState<SessionHistory[]>(initialSessions);
+  // Removed sessions and setSessions
   
-  const statsData = useMemo(() => calculateStats(sessions, user?.id, localFirstName), [sessions, user?.id, localFirstName]);
+  // Removed statsData
+  const statsData = useMemo(() => ({
+    week: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+    month: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+    all: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
+  }), []);
 
-  const [historyTimePeriod, setHistoryTimePeriod] = useState<TimePeriod>('week');
-  // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod states
+
+  // Removed historyTimePeriod and setHistoryTimePeriod
 
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [hostCode, setHostCode] = useState("");
@@ -619,7 +618,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     [...mockNearbyParticipants, ...mockFriendsParticipants].forEach(p => uniqueNames.add(p.name));
     
     return Array.from(uniqueNames).sort();
-  }, [sessions]);
+  }, []);
 
   const blockUser = useCallback((userName: string) => {
     const trimmedName = userName.trim();
@@ -701,11 +700,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
-    let localSessions: SessionHistory[] = [];
-    const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
-    if (storedSessions) {
-      localSessions = JSON.parse(storedSessions);
-    }
+    // Removed localSessions logic
 
     // NEW: Load per-field visibility from local storage for unauthenticated users
     const storedBioVisibility = localStorage.getItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY);
@@ -731,7 +726,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       }
-      setSessions(localSessions.length > 0 ? localSessions : initialSessions);
+      // Removed setSessions(localSessions.length > 0 ? localSessions : initialSessions);
       return;
     }
 
@@ -757,7 +752,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       }
-      setSessions(localSessions.length > 0 ? localSessions : initialSessions);
+      // Removed setSessions(localSessions.length > 0 ? localSessions : initialSessions);
       return;
     }
 
@@ -828,70 +823,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       }
     }
 
-    const { data: fetchedSupabaseSessions, error: sessionsError } = await supabase
-      .from('sessions')
-      .select('id, title, break_duration_seconds, coworker_count, created_at, focus_duration_seconds, session_end_time, session_start_time, total_session_seconds, user_id, active_asks, notes')
-      .eq('user_id', user.id)
-      .order('session_start_time', { ascending: false });
-
-    if (sessionsError) {
-      console.error("Error fetching sessions:", sessionsError);
-      setError(sessionsError.message);
-      toast.error("Error fetching sessions", {
-        description: sessionsError.message,
-      });
-      setSessions(localSessions.length > 0 ? localSessions : initialSessions);
-    } else if (fetchedSupabaseSessions) {
-      const supabaseSessionsMap = new Map<string, Tables<'public', 'sessions'>>();
-      fetchedSupabaseSessions.forEach(s => supabaseSessionsMap.set(s.id, s));
-
-      const mergedSessions: SessionHistory[] = [];
-      const processedSupabaseIds = new Set<string>();
-
-      localSessions.forEach(localSesh => {
-        const supabaseSesh = supabaseSessionsMap.get(localSesh.id);
-        if (supabaseSesh) {
-          mergedSessions.push({
-            id: supabaseSesh.id,
-            title: supabaseSesh.title,
-            date: supabaseSesh.session_start_time,
-            duration: formatSecondsToDurationString(supabaseSesh.total_session_seconds),
-            participants: supabaseSesh.coworker_count,
-            type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
-            notes: localSesh.notes,
-            asks: localSesh.asks,
-            session_start_time: supabaseSesh.session_start_time,
-            session_end_time: supabaseSesh.session_end_time,
-            participantNames: localSesh.participantNames, // NEW: Preserve local participant names
-          });
-          processedSupabaseIds.add(supabaseSesh.id);
-        } else {
-          mergedSessions.push(localSesh);
-        }
-      });
-
-      fetchedSupabaseSessions.forEach(supabaseSesh => {
-        if (!processedSupabaseIds.has(supabaseSesh.id)) {
-          mergedSessions.push({
-            id: supabaseSesh.id,
-            title: supabaseSesh.title,
-            date: supabaseSesh.session_start_time,
-            duration: formatSecondsToDurationString(supabaseSesh.total_session_seconds),
-            participants: supabaseSesh.coworker_count,
-            type: supabaseSesh.focus_duration_seconds > supabaseSesh.break_duration_seconds ? 'focus' : 'break',
-            notes: supabaseSesh.notes || '',
-            asks: (supabaseSesh.active_asks || []) as ActiveAskItem[],
-            session_start_time: supabaseSesh.session_start_time,
-            session_end_time: supabaseSesh.session_end_time,
-            participantNames: undefined, // Supabase doesn't store this, so it's undefined
-          });
-        }
-      });
-
-      mergedSessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setSessions(mergedSessions);
-      console.log("ProfileContext: Sessions fetched and merged:", mergedSessions);
-    }
+    // Removed session fetching logic
     setLoading(false);
   };
 
@@ -970,27 +902,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const currentActiveAsks = activeAsks ?? [];
     console.log("ProfileContext: currentActiveAsks for new session:", currentActiveAsks);
 
-    const newSession: SessionHistory = {
-      id: crypto.randomUUID(),
-      title: seshTitle,
-      date: newSessionDate.toISOString(),
-      duration: formatSecondsToDurationString(totalSessionSeconds),
-      participants: activeJoinedSessionCoworkerCount,
-      type: finalAccumulatedFocusSeconds > 0 ? 'focus' : 'break',
-      notes: notes,
-      asks: currentActiveAsks.length > 0 ? currentActiveAsks : undefined,
-      session_start_time: newSessionDate.toISOString(),
-      session_end_time: sessionEndTime.toISOString(),
-      participantNames: allParticipantNames, // NEW: Store participant names
-    };
-    console.log("ProfileContext: newSession.asks will be:", newSession.asks);
-
-    setSessions(prevSessions => {
-      const updatedSessions = [newSession, ...prevSessions];
-      localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions));
-      console.log("ProfileContext: Sessions saved to local storage:", updatedSessions);
-      return updatedSessions;
-    });
+    // Removed local session saving logic
 
     if (!user) {
       toast.success("Session saved locally!", {
@@ -1001,7 +913,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
 
     const sessionData: TablesInsert<'public', 'sessions'> = {
-      id: newSession.id,
+      id: crypto.randomUUID(), // Generate new ID for Supabase
       user_id: user.id,
       title: seshTitle,
       focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
@@ -1035,38 +947,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
-  const deleteSession = useCallback(async (sessionId: string) => {
-    setLoading(true);
-    setError(null);
-    const { data: { user } = {} } = await supabase.auth.getUser();
-
-    setSessions(prevSessions => {
-      const updatedSessions = prevSessions.filter(session => session.id !== sessionId);
-      localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(updatedSessions));
-      return updatedSessions;
-    });
-
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    const { error: deleteError } = await supabase
-      .from('sessions')
-      .delete()
-      .eq('id', sessionId);
-
-    if (deleteError) {
-      console.error("Error deleting session from Supabase:", deleteError);
-      setError(deleteError.message);
-      toast.error("Error deleting session", {
-        description: `Failed to delete core session data from cloud. Local data removed. ${deleteError.message}`,
-      });
-    } else {
-      console.log("Core session data deleted from Supabase:", sessionId);
-    }
-    setLoading(false);
-  }, [toast]);
+  // Removed deleteSession
 
   // NEW: Function to get a public profile by ID or name
   const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
@@ -1126,8 +1007,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       const data = JSON.parse(storedData);
       setProfile(data.profile ?? null);
       console.log("Profile loaded from local storage:", data.profile?.first_name);
-      setHistoryTimePeriod(data.historyTimePeriod ?? 'week');
-      // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod
+      // Removed setHistoryTimePeriod
     }
 
     const storedLocalFirstName = localStorage.getItem(LOCAL_FIRST_NAME_KEY);
@@ -1155,12 +1035,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           setHostCode(newHostCode);
           localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
         }
-        const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
-        if (storedSessions) {
-          setSessions(JSON.parse(storedSessions));
-        } else {
-          setSessions(initialSessions);
-        }
+        // Removed sessions loading
         // NEW: Reset per-field visibility to default for unauthenticated users
         setBioVisibility(['public']);
         setIntentionVisibility(['public']);
@@ -1179,15 +1054,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   useEffect(() => {
     const dataToSave = {
       profile,
-      historyTimePeriod,
-      // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod from dataToSave
+      // Removed historyTimePeriod from dataToSave
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
     console.log("Profile saved to local storage:", profile?.first_name);
   }, [
     profile,
-    historyTimePeriod,
-    // Removed leaderboardFocusTimePeriod, leaderboardCollaborationTimePeriod from dependencies
+    // Removed historyTimePeriod from dependencies
   ]);
 
   useEffect(() => {
@@ -1230,12 +1103,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     fetchProfile,
     localFirstName,
     setLocalFirstName,
-    sessions,
-    setSessions,
-    statsData,
-    historyTimePeriod,
-    setHistoryTimePeriod,
-    // Removed leaderboardFocusTimePeriod and leaderboardCollaborationTimePeriod from value
+    // Removed sessions, setSessions, statsData, historyTimePeriod, setHistoryTimePeriod
     saveSession,
     blockedUsers,
     blockUser,
@@ -1243,7 +1111,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     recentCoworkers,
     hostCode,
     setHostCode,
-    deleteSession,
+    // Removed deleteSession
     getPublicProfile, // NEW: Expose getPublicProfile
     bioVisibility, // NEW
     setBioVisibility, // NEW
