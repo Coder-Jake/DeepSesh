@@ -602,7 +602,7 @@ const Settings = () => {
                         }}
                         onBlur={() => {
                           if (customBatchMinutes === 0) {
-                            setCustomBatchMinutes(timerIncrement);
+                            setCustomBatchMinutes(currentTimerIncrement); // Changed from timerIncrement
                           }
                         }}
                         min={timerIncrement}
@@ -785,11 +785,11 @@ const Settings = () => {
                       onChange={(e) => setDefaultBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                       onBlur={(e) => {
                         if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                          setDefaultBreakMinutes(timerIncrement);
+                          setDefaultBreakMinutes(currentTimerIncrement); // Changed from timerIncrement
                         }
                       }}
-                      min={timerIncrement}
-                      step={timerIncrement}
+                      min={currentTimerIncrement}
+                      step={currentTimerIncrement}
                       className="mt-2"
                       onFocus={(e) => e.target.select()}
                     />
