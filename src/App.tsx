@@ -1,71 +1,64 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { TimerProvider, useTimer } from "@/contexts/TimerContext";
-import { ProfileProvider } from "@/contexts/ProfileContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { ProfilePopUpProvider } from "@/contexts/ProfilePopUpContext";
-import ProfilePopUpCard from "@/components/ProfilePopUpCard";
-import Header from "@/components/Header";
-import Index from "./pages/Index";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
-import ChipIn from "./pages/ChipIn";
-import Login from "./pages/Login";
-import Feedback from "./pages/Feedback";
-import NotFound from "./pages/NotFound";
-import { useEffect, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Index from './pages/Index';
+import About from './pages/About';
+import Settings from './pages/Settings';
+import Profile from './pages/Profile';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
+import AuthLayout from './layouts/AuthLayout';
+import AppLayout from './layouts/AppLayout';
+import { AuthProvider } from './contexts/AuthContext';
+import { TimerProvider } from './contexts/TimerContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { Toaster } from './components/ui/sonner';
+import { TooltipProvider } from './components/ui/tooltip';
+import { ProfileProvider } from './contexts/ProfileContext';
+import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
+import ChipIn from './pages/ChipIn';
+import Feedback from './pages/Feedback';
+import Credits from './pages/Credits';
+import UpcomingFeatures from './pages/UpcomingFeatures'; // NEW: Import UpcomingFeatures
 
-const queryClient = new QueryClient();
-
-const AppContent = () => {
-  const navigate = useNavigate();
-  const { toasts } = useToast();
-  const { areToastsEnabled } = useTimer();
-
-  // Removed all tooltip-related state and effects.
-
+function App() {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/chip-in" element={<ChipIn />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/feedback" element={<Feedback />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      {areToastsEnabled && <Toaster />}
-      <ProfilePopUpCard />
-    </div>
-  );
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider delayDuration={0} skipDelayDuration={300}>
+    <Router>
       <ThemeProvider>
         <AuthProvider>
           <ProfileProvider>
             <TimerProvider>
-                <ProfilePopUpProvider>
-                  <Sonner offset={96} />
-                  <BrowserRouter>
-                    <AppContent />
-                  </BrowserRouter>
-                </ProfilePopUpProvider>
+              <ProfilePopUpProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Routes>
+                    <Route path="/" element={<AppLayout />}>
+                      <Route index element={<Index />} />
+                      <Route path="about" element={<About />} />
+                      <Route path="settings" element={<Settings />} />
+                      <Route path="profile" element={<Profile />} />
+                      <Route path="chip-in" element={<ChipIn />} />
+                      <Route path="feedback" element={<Feedback />} />
+                      <Route path="credits" element={<Credits />} />
+                      <Route path="upcoming-features" element={<UpcomingFeatures />} /> {/* NEW: Add route */}
+                    </Route>
+                    <Route path="/" element={<AuthLayout />}>
+                      <Route path="login" element={<Login />} />
+                      <Route path="register" element={<Register />} />
+                      <Route path="forgot-password" element={<ForgotPassword />} />
+                      <Route path="reset-password" element={<ResetPassword />} />
+                      <Route path="verify-email" element={<VerifyEmail />} />
+                    </Route>
+                  </Routes>
+                </TooltipProvider>
+              </ProfilePopUpProvider>
             </TimerProvider>
           </ProfileProvider>
         </AuthProvider>
       </ThemeProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </Router>
+  );
+}
 
 export default App;

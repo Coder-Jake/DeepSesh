@@ -162,20 +162,22 @@ const ChipIn = () => {
                   <p>$4,500 (from early supporters)</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Lightbulb className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium text-foreground">Upcoming Developments:</p>
-                  <ul className="list-disc list-inside ml-2">
-                    <li>Mobile app ($12,000)</li>
-                    <li>User Verification ($6,000)</li>
-                    <li>Real-time collaboration ($5,000)</li>
-                    <li>Leaderboard ($3,500)</li>
-                    <li>Personal Statistics ($3,000)</li>
-                    <li>Stake accountability ($7,500)</li>
-                  </ul>
+              <Link to="/upcoming-features" className="block cursor-pointer hover:bg-muted rounded-md p-2 -mx-2 -my-1 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Lightbulb className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium text-foreground">Upcoming Developments:</p>
+                    <ul className="list-disc list-inside ml-2 text-muted-foreground">
+                      <li>Mobile app ($12,000)</li>
+                      <li>User Verification ($6,000)</li>
+                      <li>Real-time collaboration ($5,000)</li>
+                      <li>Leaderboard ($3,500)</li>
+                      <li>Personal Statistics ($3,000)</li>
+                      <li>Stake accountability ($7,500)</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </CardContent>
           </Card>
 
