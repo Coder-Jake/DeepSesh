@@ -81,23 +81,7 @@ const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.
 const pomodoroStartTime = nextHour.getTime();
 
 const mockNearbySessions: DemoSession[] = [
-  {
-    id: "101",
-    title: "Pomodoro Session",
-    startTime: pomodoroStartTime,
-    location: "Quiet Study Zone - Desk 5",
-    workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "Focused work with short breaks",
-    participants: [
-      { id: "mock-user-id-1", name: "Alice", sociability: 90, intention: "Working on project proposal." },
-      { id: "mock-user-id-2", name: "Bob", sociability: 80, intention: "Reviewing code for sprint." },
-      { id: "mock-user-id-3", name: "Charlie", sociability: 90, intention: "Preparing for client demo." },
-    ],
-    fullSchedule: [
-      { type: "focus", durationMinutes: 25 },
-      { type: "break", durationMinutes: 5 },
-    ],
-  },
+  // Removed Pomodoro Session
   {
     id: "102",
     title: "Computer Science Lab",
