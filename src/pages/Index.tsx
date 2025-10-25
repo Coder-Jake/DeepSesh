@@ -256,9 +256,6 @@ const Index = () => {
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   // NEW: States for Nearby/Friends session list visibility
-  // These are now derived from showSessionsWhileActive
-  // const [showNearbySessions, setShowNearbySessions] = useState(true);
-  // const [showFriendsSessions, setShowFriendsSessions] = useState(true);
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
 
@@ -674,25 +671,40 @@ const Index = () => {
     }
   };
 
-  // MODIFIED: Logic for hiding session lists based on new showSessionsWhileActive string
-  const shouldHideSessionLists = (
-    showSessionsWhileActive === 'hidden' ||
-    (showSessionsWhileActive === 'nearby' && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending)) ||
-    (showSessionsWhileActive === 'friends' && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending)) ||
-    (showSessionsWhileActive === 'yes' && (isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending))
-  );
+  // Determine if any timer is active (running, paused, flashing, or part of a schedule)
+  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
 
-  // NEW: Logic for showing specific session types
-  const showNearbySessionsList = (
-    !shouldHideSessionLists &&
-    !isGlobalPrivate &&
-    (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'yes')
-  );
+  // Logic for showing Nearby Sessions list
+  const shouldShowNearbySessions = useMemo(() => {
+    if (!isActiveTimer) {
+      return !isGlobalPrivate; // Always show nearby if no timer active and not globally private
+    }
 
-  const showFriendsSessionsList = (
-    !shouldHideSessionLists &&
-    (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'yes')
-  );
+    // If timer is active, apply the setting
+    if (showSessionsWhileActive === 'hidden') {
+      return false;
+    }
+    if (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'yes') {
+      return !isGlobalPrivate; // Show nearby if setting allows and not globally private
+    }
+    return false; // 'friends' mode or other cases
+  }, [isActiveTimer, isGlobalPrivate, showSessionsWhileActive]);
+
+  // Logic for showing Friends Sessions list
+  const shouldShowFriendsSessions = useMemo(() => {
+    if (!isActiveTimer) {
+      return true; // Always show friends if no timer active
+    }
+
+    // If timer is active, apply the setting
+    if (showSessionsWhileActive === 'hidden') {
+      return false;
+    }
+    if (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'yes') {
+      return true; // Show friends if setting allows
+    }
+    return false; // 'nearby' mode or other cases
+  }, [isActiveTimer, showSessionsWhileActive]);
 
   // NEW: Unified list of all participants to display in the Coworkers card
   const allParticipantsToDisplayInCard = useMemo(() => {
@@ -885,9 +897,6 @@ const Index = () => {
     ? activeSchedule[currentScheduleIndex].durationMinutes // Use activeSchedule here
     : (timerType === 'focus' ? focusMinutes : breakMinutes);
 
-  // Determine if the timer is in an active state (running, paused, flashing, or part of a schedule)
-  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending; // Check for prepared schedule too
-
   // Helper function to get the effective start timestamp for sorting
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
@@ -925,24 +934,6 @@ const Index = () => {
       return timeA - timeB;
     });
   }, [preparedSchedules, getEffectiveStartTime]);
-
-  // Handlers for toggling Nearby/Friends sections
-  // These are now controlled by showSessionsWhileActive
-  // const toggleNearbySessions = () => {
-  //   setShowNearbySessions(prev => {
-  //     const newState = !prev;
-  //     setHiddenNearbyCount(newState ? 0 : mockNearbySessions.length);
-  //     return newState;
-  //   });
-  // };
-
-  // const toggleFriendsSessions = () => {
-  //   setShowFriendsSessions(prev => {
-  //     const newState = !prev;
-  //     setHiddenFriendsCount(newState ? 0 : mockFriendsSessions.length);
-  //     return newState;
-  //   });
-  // };
 
   // NEW: Handle name click for profile pop-up
   const handleNameClick = useCallback((userId: string, userName: string, event: React.MouseEvent) => {
@@ -1326,10 +1317,10 @@ const Index = () => {
             {/* Sessions List */}
             <TooltipProvider>
               {/* Nearby Sessions */}
-              {showNearbySessionsList && !isGlobalPrivate && ( // MODIFIED: Use showNearbySessionsList
+              {shouldShowNearbySessions && ( // MODIFIED: Use new logic
                 <div className="mb-6" data-name="Nearby Sessions Section">
                   <button 
-                    onClick={() => setShowNearbySessions(prev => !prev)} // Keep local state for collapsing
+                    // No local state for collapsing, always show if shouldShowNearbySessions is true
                     className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
                   >
                     <h3>Nearby</h3>
@@ -1337,31 +1328,27 @@ const Index = () => {
                       {hiddenNearbyCount > 0 && (
                         <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
                       )}
-                      {/* Use local state for chevron direction */}
-                      {showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'yes' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                      <ChevronUp size={20} /> {/* Always show up arrow if visible */}
                     </div>
                   </button>
-                  {/* Render based on local state, but only if overall visibility allows */}
-                  {(showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'yes') && (
-                    <div className="space-y-3">
-                      {mockNearbySessions.map(session => (
-                        <SessionCard 
-                          key={session.id} 
-                          session={session} 
-                          onJoinSession={handleJoinSession} 
-                          onNameClick={handleNameClick} // NEW: Pass handleNameClick
-                        />
-                      ))}
-                    </div>
-                  )}
+                  <div className="space-y-3">
+                    {mockNearbySessions.map(session => (
+                      <SessionCard 
+                        key={session.id} 
+                        session={session} 
+                        onJoinSession={handleJoinSession} 
+                        onNameClick={handleNameClick}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Friends Sessions */}
-              {showFriendsSessionsList && ( // MODIFIED: Use showFriendsSessionsList
+              {shouldShowFriendsSessions && ( // MODIFIED: Use new logic
                 <div data-name="Friends Sessions Section">
                   <button 
-                    onClick={() => setShowFriendsSessions(prev => !prev)} // Keep local state for collapsing
+                    // No local state for collapsing, always show if shouldShowFriendsSessions is true
                     className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
                   >
                     <h3>Friends</h3>
@@ -1369,23 +1356,19 @@ const Index = () => {
                       {hiddenFriendsCount > 0 && (
                         <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
                       )}
-                      {/* Use local state for chevron direction */}
-                      {showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'yes' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                      <ChevronUp size={20} /> {/* Always show up arrow if visible */}
                     </div>
                   </button>
-                  {/* Render based on local state, but only if overall visibility allows */}
-                  {(showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'yes') && (
-                    <div className="space-y-3">
-                      {mockFriendsSessions.map(session => (
-                        <SessionCard 
-                          key={session.id} 
-                          session={session} 
-                          onJoinSession={handleJoinSession} 
-                          onNameClick={handleNameClick} // NEW: Pass handleNameClick
-                        />
-                      ))}
-                    </div>
-                  )}
+                  <div className="space-y-3">
+                    {mockFriendsSessions.map(session => (
+                      <SessionCard 
+                        key={session.id} 
+                        session={session} 
+                        onJoinSession={handleJoinSession} 
+                        onNameClick={handleNameClick}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </TooltipProvider>
