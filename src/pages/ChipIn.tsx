@@ -170,7 +170,7 @@ const ChipIn = () => {
                     <li>Mobile app ($12,000)</li>
                     <li>User Verification ($6,000)</li>
                     <li>Real-time collaboration ($5,000)</li>
-                    <li>Advanced stats dashboard ($3,000)</li>
+                    <li>Personal Statistics ($3,000)</li>
                     <li>Stake accountability ($2,500)</li>
                   </ul>
                 </div>
