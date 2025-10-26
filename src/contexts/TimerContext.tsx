@@ -221,8 +221,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       timeParts.push(pad(seconds));
       return timeParts.join(':');
     } else {
-      // Only seconds or zero
-      return `00:${pad(seconds)}`;
+      // Only minutes and seconds or just seconds if minutes is 0
+      return `${pad(minutes)}:${pad(seconds)}`;
     }
   }, []);
 
