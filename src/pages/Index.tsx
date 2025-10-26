@@ -80,53 +80,9 @@ const now = new Date();
 const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
 const pomodoroStartTime = nextHour.getTime();
 
-const mockNearbySessions: DemoSession[] = [
-  // Removed Pomodoro Session
-  {
-    id: "102",
-    title: "Computer Science Lab",
-    startTime: Date.now() - (76.8 * 60 * 1000),
-    location: "Science Building - Computer Lab 2B",
-    workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "Modern lab with dual monitors",
-    participants: [
-      { id: "mock-user-id-4", name: "Diana", sociability: 20, intention: "Debugging a Python script." },
-      { id: "mock-user-id-5", name: "Eve", sociability: 10, intention: "Writing documentation for API." },
-      { id: "mock-user-id-6", name: "Frank", sociability: 20, intention: "Learning new framework." },
-      { id: "7", name: "Riley", sociability: 20, intention: "Code refactoring." },
-      { id: "8", name: "Avery", sociability: 30, intention: "Designing database schema." },
-    ],
-    fullSchedule: [ // Add a default schedule for this too
-      { type: "focus", durationMinutes: 100 },
-      { type: "break", durationMinutes: 20 },
-    ],
-  },
-];
+const mockNearbySessions: DemoSession[] = []; // Removed mock data
 
-const mockFriendsSessions: DemoSession[] = [
-  {
-    id: "201",
-    title: "Psychology 101 Final Review",
-    startTime: Date.now() - (10.66 * 60 * 1000),
-    location: "Main Library - Study Room 12",
-    workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "Private group study room",
-    participants: [
-      { id: "mock-user-id-7", name: "Grace", sociability: 60, intention: "Reviewing cognitive psychology." },
-      { id: "mock-user-id-8", name: "Heidi", sociability: 60, intention: "Memorizing key terms." },
-      { id: "mock-user-id-9", name: "Ivan", sociability: 70, intention: "Practicing essay questions." },
-      { id: "12", name: "Drew", sociability: 60, intention: "Summarizing research papers." },
-      { id: "13", name: "Chris", sociability: 50, intention: "Creating flashcards." },
-      { id: "14", name: "Pat", sociability: 55, intention: "Discussing theories." },
-      { id: "15", name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
-      { id: "16", name: "Jess", sociability: 70, intention: "Peer teaching." },
-    ],
-    fullSchedule: [ // Add a default schedule for this too
-      { type: "focus", durationMinutes: 75 },
-      { type: "break", durationMinutes: 15 },
-    ],
-  },
-];
+const mockFriendsSessions: DemoSession[] = []; // Removed mock data
 
 const Index = () => {
   const {
@@ -1103,8 +1059,8 @@ const Index = () => {
                           <Square size={16} fill="currentColor" /> {/* Solid Square icon */}
                         </Button>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && ( // Hide timer settings if schedule is active or prepared or time is managed by session
                     <div className="flex justify-center gap-4 text-sm">
@@ -1317,7 +1273,7 @@ const Index = () => {
             {/* Sessions List */}
             <TooltipProvider>
               {/* Nearby Sessions */}
-              {shouldShowNearbySessions && ( // MODIFIED: Use new logic
+              {shouldShowNearbySessions && mockNearbySessions.length > 0 && ( // MODIFIED: Use new logic and check for length
                 <div className="mb-6" data-name="Nearby Sessions Section">
                   <button 
                     // No local state for collapsing, always show if shouldShowNearbySessions is true
@@ -1345,7 +1301,7 @@ const Index = () => {
               )}
 
               {/* Friends Sessions */}
-              {shouldShowFriendsSessions && ( // MODIFIED: Use new logic
+              {shouldShowFriendsSessions && mockFriendsSessions.length > 0 && ( // MODIFIED: Use new logic and check for length
                 <div data-name="Friends Sessions Section">
                   <button 
                     // No local state for collapsing, always show if shouldShowFriendsSessions is true
