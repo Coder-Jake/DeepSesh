@@ -145,7 +145,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
             </span>
             {showPhaseDuration && (
               <span className=""> {/* Removed ml-1 as it's now on a new line */}
-                ({currentPhaseInfo.durationMinutes}m {currentPhaseType === 'focus' ? 'Focus' : 'Break'})
+                {currentPhaseInfo.durationMinutes}"({currentPhaseType === 'focus' ? 'Focus' : 'Break'})
               </span>
             )}
           </div>
