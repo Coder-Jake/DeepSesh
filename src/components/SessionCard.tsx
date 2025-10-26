@@ -136,13 +136,15 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
             </p>
           </div>
           <div 
-            className="text-sm text-muted-foreground cursor-pointer select-none"
+            className="text-sm text-muted-foreground cursor-pointer select-none flex flex-col items-end" // Added flex-col and items-end
             onClick={() => setShowPhaseDuration(prev => !prev)}
           >
-            {currentPhaseType === 'break' ? 'Break - ' : ''}
-            {formatTime(remainingSeconds)} remaining
+            <span> {/* Wrap the main timer text */}
+              {currentPhaseType === 'break' ? 'Break - ' : ''}
+              {formatTime(remainingSeconds)} remaining
+            </span>
             {showPhaseDuration && (
-              <span className="ml-1">
+              <span className=""> {/* Removed ml-1 as it's now on a new line */}
                 ({currentPhaseInfo.durationMinutes}m {currentPhaseType === 'focus' ? 'Focus' : 'Break'})
               </span>
             )}
