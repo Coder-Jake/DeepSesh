@@ -347,7 +347,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (shouldResetManualTimer) {
             setIsRunning(false);
             setIsPaused(false);
-            setIsFlashing(false);
             setAccumulatedFocusSeconds(0);
             setAccumulatedBreakSeconds(0);
             setNotes("");
@@ -670,15 +669,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Initial time setting when focus/break minutes change
   useEffect(() => {
     // Only set timeLeft if it's not currently managed by an active session/schedule
-    // and the timer is in an idle state (not running, not paused, not active schedule, not pending)
-    if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
+    // and the timer is in an idle state (not running, not paused, not active schedule, not pending, not prepared)
+    if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
       const expectedTime = (timerType === 'focus' ? focusMinutes : breakMinutes) * 60;
       // Update if timeLeft is different from the expected value
       if (timeLeft !== expectedTime) {
         setTimeLeft(expectedTime);
       }
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, timeLeft]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared, isTimeLeftManagedBySession, timeLeft]);
 
   // Effect to synchronize seshTitle with activeScheduleDisplayTitle
   useEffect(() => {
