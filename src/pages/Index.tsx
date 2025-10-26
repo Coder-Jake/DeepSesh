@@ -1059,8 +1059,8 @@ const Index = () => {
                           <Square size={16} fill="currentColor" /> {/* Solid Square icon */}
                         </Button>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && ( // Hide timer settings if schedule is active or prepared or time is managed by session
                     <div className="flex justify-center gap-4 text-sm">
