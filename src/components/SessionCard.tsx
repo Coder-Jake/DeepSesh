@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'; // Added useMemo
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ interface DemoSession {
   workspaceImage: string;
   workspaceDescription: string;
   participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
-  fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[]; // NEW
+  fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
 }
 
 interface SessionCardProps {
@@ -30,6 +30,15 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
     return session.fullSchedule.reduce((sum, phase) => sum + phase.durationMinutes, 0);
   }, [session.fullSchedule]);
 
+  // NEW: Calculate total focus and break minutes for the entire schedule
+  const totalFocusMinutes = useMemo(() => {
+    return session.fullSchedule.filter(phase => phase.type === 'focus').reduce((sum, phase) => sum + phase.durationMinutes, 0);
+  }, [session.fullSchedule]);
+
+  const totalBreakMinutes = useMemo(() => {
+    return session.fullSchedule.filter(phase => phase.type === 'break').reduce((sum, phase) => sum + phase.durationMinutes, 0);
+  }, [session.fullSchedule]);
+
   // State for dynamically calculated current phase and remaining time
   const [currentPhaseInfo, setCurrentPhaseInfo] = useState<{
     type: 'focus' | 'break';
@@ -38,7 +47,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
     isEnded: boolean;
   }>(() => calculateCurrentPhaseInfo(session));
 
-  // NEW: State to toggle display of phase duration
+  // State to toggle display of phase duration
   const [showPhaseDuration, setShowPhaseDuration] = useState(false);
 
   // Helper function to calculate current phase and remaining time for repeating schedules
@@ -136,16 +145,16 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
             </p>
           </div>
           <div 
-            className="text-sm text-muted-foreground cursor-pointer select-none flex flex-col items-end" // Added flex-col and items-end
+            className="text-sm text-muted-foreground cursor-pointer select-none flex flex-col items-end"
             onClick={() => setShowPhaseDuration(prev => !prev)}
           >
-            <span> {/* Wrap the main timer text */}
+            <span>
               {currentPhaseType === 'break' ? 'Break - ' : ''}
               {formatTime(remainingSeconds)} remaining
             </span>
             {showPhaseDuration && (
-              <span className=""> {/* Removed ml-1 as it's now on a new line */}
-                {currentPhaseInfo.durationMinutes}"({currentPhaseType === 'focus' ? 'Focus' : 'Break'})
+              <span className="">
+                ({totalFocusMinutes}/{totalBreakMinutes})
               </span>
             )}
           </div>
