@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Outlet, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import ProfilePopUpCard from '@/components/ProfilePopUpCard';
 
@@ -8,10 +8,42 @@ const AppLayout = () => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'p' || event.key === 'P') {
-        navigate('/profile');
-      } else if (event.key === 's' || event.key === 'S') {
-        navigate('/settings');
+      // Prevent navigation if a modifier key is pressed
+      if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
+        return;
+      }
+
+      // Prevent navigation if the active element is an input field or contenteditable
+      const activeElement = document.activeElement;
+      const isTyping = 
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement?.hasAttribute('contenteditable');
+
+      if (isTyping) {
+        return;
+      }
+
+      switch (event.key) {
+        case '1':
+          event.preventDefault();
+          navigate('/');
+          break;
+        case '2':
+          event.preventDefault();
+          navigate('/settings');
+          break;
+        case '3':
+          event.preventDefault();
+          navigate('/profile');
+          break;
+        case '4':
+          event.preventDefault();
+          navigate('/chip-in');
+          break;
+        default:
+          // Do nothing for other keys
+          break;
       }
     };
 
