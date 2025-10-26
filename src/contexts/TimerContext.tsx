@@ -268,7 +268,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentPhaseStartTime(null);
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    setNotes("");
+    // setNotes(""); // Removed: Notes should not be cleared
     _setSeshTitle("Notes"); // Reset internal seshTitle
     setIsSeshTitleCustomized(false); // Reset customization flag
     setTimerColors({}); // Reset timer colors for the editing schedule
@@ -350,7 +350,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsFlashing(false);
             setAccumulatedFocusSeconds(0);
             setAccumulatedBreakSeconds(0);
-            setNotes("");
+            // setNotes(""); // Removed: Notes should not be cleared
             _setSeshTitle("Notes");
             setIsSeshTitleCustomized(false);
             setActiveAsks([]); // NEW: Clear active asks for manual timer
@@ -395,7 +395,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks,
+    _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks,
     playSound, triggerVibration, setIsTimeLeftManagedBySession // NEW: Dependency
 ]);
 
@@ -446,7 +446,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsPaused(false);
             setAccumulatedFocusSeconds(0);
             setAccumulatedBreakSeconds(0);
-            setNotes("");
+            // setNotes(""); // Removed: Notes should not be cleared
             _setSeshTitle("Notes");
             setIsSeshTitleCustomized(false);
             setActiveAsks([]); // NEW: Clear active asks for manual timer
@@ -490,7 +490,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionHostName(localFirstName); // Use localFirstName as the host name
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setNotes, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));

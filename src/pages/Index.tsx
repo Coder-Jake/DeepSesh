@@ -202,7 +202,7 @@ const Index = () => {
     setIsSchedulePending, // NEW: Destructure setIsSchedulePending
     isTimeLeftManagedBySession, // NEW: Get isTimeLeftManagedBySession
     setIsTimeLeftManagedBySession, // NEW: Get setIsTimeLeftManagedBySession
-    scheduleStartOption, // Get scheduleStartOption from context
+    scheduleStartOption,
     is24HourFormat, // NEW: Get is24HourFormat from context
 
     preparedSchedules, // NEW: Get the array of prepared schedules
@@ -361,7 +361,7 @@ const Index = () => {
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setNotes("");
+      // setNotes(""); // Removed: Notes should not be cleared
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
       setActiveAsks([]); // NEW: Clear active asks when starting a new manual timer
     }
@@ -452,7 +452,7 @@ const Index = () => {
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setNotes("");
+      // setNotes(""); // Removed: Notes should not be cleared
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
       console.log("Index: Calling setActiveAsks. Current value of setActiveAsks:", setActiveAsks); // DEBUG
       setActiveAsks([]); // NEW: Clear active asks after saving
@@ -507,7 +507,7 @@ const Index = () => {
       setCurrentPhaseStartTime(null); // Reset current phase start time
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setNotes("");
+      // setNotes(""); // Removed: Notes should not be cleared
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
       setActiveAsks([]); // NEW: Clear active asks on reset
 
@@ -530,7 +530,7 @@ const Index = () => {
         setCurrentPhaseStartTime(null); // Reset current phase start time
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
-      setNotes("");
+      // setNotes(""); // Removed: Notes should not be cleared
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
       setActiveAsks([]); // NEW: Clear active asks on reset
 
@@ -602,7 +602,7 @@ const Index = () => {
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setNotes("");
+      // setNotes(""); // Removed: Notes should not be cleared
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
       setActiveAsks([]); // NEW: Clear active asks when joining a session
     }
