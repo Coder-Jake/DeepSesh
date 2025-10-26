@@ -671,9 +671,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Only set timeLeft if it's not currently managed by an active session/schedule
     // and the timer is in an idle state (not running, not paused, not active schedule, not pending, not prepared)
     if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
-      setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
+      // If timeLeft is 0, or if it's not the correct value for the current timerType, reset it.
+      const expectedTime = (timerType === 'focus' ? focusMinutes : breakMinutes) * 60;
+      if (timeLeft === 0 || timeLeft !== expectedTime) {
+        setTimeLeft(expectedTime);
+      }
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared, isTimeLeftManagedBySession]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared, isTimeLeftManagedBySession, timeLeft]); // Add timeLeft to dependencies
 
   // Effect to synchronize seshTitle with activeScheduleDisplayTitle
   useEffect(() => {
@@ -877,7 +881,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // NEW: timerColors
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
-      isTimeLeftManagedBySession, // NEW: Save isTimeLeftManagedBySession
+      isTimeLeftManagedBySession, // NEW: Dependency
       shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites, // NEW: Save joinNotifications
