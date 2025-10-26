@@ -81,7 +81,6 @@ const Settings = () => {
     areToastsEnabled,
     setAreToastsEnabled,
     startStopNotifications,
-    setStartStopNotifications, // NEW: Added setStartStopNotifications
   } = useTimer();
 
   const { user } = useAuth();
