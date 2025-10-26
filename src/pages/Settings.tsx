@@ -81,6 +81,7 @@ const Settings = () => {
     areToastsEnabled,
     setAreToastsEnabled,
     startStopNotifications,
+    setStartStopNotifications, // Fix: Added setStartStopNotifications
   } = useTimer();
 
   const { user } = useAuth();
@@ -619,7 +620,14 @@ const Settings = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="exemptions" className="text-muted-foreground">Exemptions</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="exemptions" className="text-muted-foreground">Exemptions</Label>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Disable other apps during Focus.</p>
+                    </TooltipContent>
+                    </Tooltip>
                   </div>
                   <Tooltip>
                     <TooltipTrigger asChild>
