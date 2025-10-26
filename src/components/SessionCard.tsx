@@ -30,7 +30,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
     return session.fullSchedule.reduce((sum, phase) => sum + phase.durationMinutes, 0);
   }, [session.fullSchedule]);
 
-  // NEW: Calculate total focus and break minutes for the entire schedule
+  // Calculate total focus and break minutes for the entire schedule
   const totalFocusMinutes = useMemo(() => {
     return session.fullSchedule.filter(phase => phase.type === 'focus').reduce((sum, phase) => sum + phase.durationMinutes, 0);
   }, [session.fullSchedule]);
@@ -154,7 +154,13 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
             </span>
             {showPhaseDuration && (
               <span className="">
-                ({totalFocusMinutes}/{totalBreakMinutes})
+                <span className={cn(currentPhaseType === 'focus' && "font-bold")}>
+                  {totalFocusMinutes}
+                </span>
+                /
+                <span className={cn(currentPhaseType === 'break' && "font-bold")}>
+                  {totalBreakMinutes}
+                </span>
               </span>
             )}
           </div>
