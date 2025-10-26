@@ -254,6 +254,8 @@ const Index = () => {
   // State for editable Sesh Title
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  // NEW: Ref for the auto-resizing textarea
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // NEW: States for Nearby/Friends session list visibility
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
@@ -270,6 +272,14 @@ const Index = () => {
       titleInputRef.current.select(); // Select the text when focused
     }
   }, [isEditingSeshTitle]);
+
+  // NEW: Effect for auto-resizing the notes textarea
+  useEffect(() => {
+    if (notesTextareaRef.current) {
+      notesTextareaRef.current.style.height = 'auto'; // Reset height to recalculate
+      notesTextareaRef.current.style.height = notesTextareaRef.current.scrollHeight + 'px';
+    }
+  }, [notes]); // Re-run when notes content changes
 
   // NEW: Log activeAsks on homepage
   useEffect(() => {
@@ -1255,10 +1265,12 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <Textarea
+                  ref={notesTextareaRef} // Add ref here
                   placeholder="Jot down your thoughts, to-do items, or reflections..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-[120px] resize-none"
+                  rows={3} // Initial smaller height
+                  className="resize-none overflow-hidden" // Remove min-h and allow overflow to be hidden
                   onFocus={(e) => e.target.select()}
                   data-name="Notes Textarea"
                 />
