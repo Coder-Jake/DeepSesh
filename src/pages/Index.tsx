@@ -96,9 +96,9 @@ const mockNearbySessions: DemoSession[] = [
       { id: "7", name: "Riley", sociability: 20, intention: "Code refactoring." },
       { id: "8", name: "Avery", sociability: 30, intention: "Designing database schema." },
     ],
-    fullSchedule: [ // Add a default schedule for this too
-      { type: "focus", durationMinutes: 100 },
-      { type: "break", durationMinutes: 20 },
+    fullSchedule: [ // Updated to 55/5
+      { type: "focus", durationMinutes: 55 },
+      { type: "break", durationMinutes: 5 },
     ],
   },
 ];
@@ -121,9 +121,9 @@ const mockFriendsSessions: DemoSession[] = [
       { id: "15", name: "Taylor", sociability: 65, intention: "Collaborating on study guide." },
       { id: "16", name: "Jess", sociability: 70, intention: "Peer teaching." },
     ],
-    fullSchedule: [ // Add a default schedule for this too
-      { type: "focus", durationMinutes: 75 },
-      { type: "break", durationMinutes: 15 },
+    fullSchedule: [ // Updated to 25/5
+      { type: "focus", durationMinutes: 25 },
+      { type: "break", durationMinutes: 5 },
     ],
   },
 ];
