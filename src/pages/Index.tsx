@@ -462,6 +462,10 @@ const Index = () => {
       setCurrentSessionHostName(null);
       setCurrentSessionOtherParticipants([]);
       setIsTimeLeftManagedBySession(false); // NEW: Reset flag
+
+      // ADDED: Reset homepage focus/break minutes to defaults
+      setHomepageFocusMinutes(defaultFocusMinutes);
+      setHomepageBreakMinutes(defaultBreakMinutes);
     };
 
     const handleSaveAndStop = async () => {
