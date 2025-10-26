@@ -613,24 +613,46 @@ const Index = () => {
     // Calculate remaining time based on session's start time and its full schedule
     const now = Date.now();
     const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
-    let accumulatedDurationSeconds = 0;
+    
+    // Calculate total duration of the defined schedule
+    const totalScheduleDurationSeconds = session.fullSchedule.reduce(
+      (sum, phase) => sum + phase.durationMinutes * 60,
+      0
+    );
+
     let currentPhaseType: 'focus' | 'break' = 'focus'; // Default
     let remainingSecondsInPhase = 0;
-    let currentPhaseDurationMinutes = 0; // NEW: Store current phase's total duration
+    let currentPhaseDurationMinutes = 0;
 
-    for (let i = 0; i < session.fullSchedule.length; i++) {
-      const phase = session.fullSchedule[i];
-      const phaseDurationSeconds = phase.durationMinutes * 60;
+    if (totalScheduleDurationSeconds === 0) {
+      // Handle empty schedule case
+      currentPhaseType = 'focus';
+      remainingSecondsInPhase = 0;
+      currentPhaseDurationMinutes = 0;
+    } else if (elapsedSecondsSinceSessionStart < 0) {
+      // Session hasn't started yet
+      currentPhaseType = session.fullSchedule[0]?.type || 'focus';
+      currentPhaseDurationMinutes = session.fullSchedule[0]?.durationMinutes || 0;
+      remainingSecondsInPhase = -elapsedSecondsSinceSessionStart; // Time until it starts
+    } else {
+      // Calculate the effective elapsed time within one full cycle of the schedule
+      const effectiveElapsedSeconds = elapsedSecondsSinceSessionStart % totalScheduleDurationSeconds;
 
-      if (elapsedSecondsSinceSessionStart < accumulatedDurationSeconds + phaseDurationSeconds) {
-        // Current time falls within this phase
-        const timeIntoPhase = elapsedSecondsSinceSessionStart - accumulatedDurationSeconds;
-        currentPhaseType = phase.type;
-        remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
-        currentPhaseDurationMinutes = phase.durationMinutes; // NEW: Assign duration
-        break;
+      let accumulatedDurationSecondsInCycle = 0;
+      for (let i = 0; i < session.fullSchedule.length; i++) {
+        const phase = session.fullSchedule[i];
+        const phaseDurationSeconds = phase.durationMinutes * 60;
+
+        if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
+          // Current effective time falls within this phase
+          const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle;
+          currentPhaseType = phase.type;
+          remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
+          currentPhaseDurationMinutes = phase.durationMinutes;
+          break;
+        }
+        accumulatedDurationSecondsInCycle += phaseDurationSeconds;
       }
-      accumulatedDurationSeconds += phaseDurationSeconds;
     }
 
     setTimerType(currentPhaseType);
