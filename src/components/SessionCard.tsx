@@ -38,6 +38,9 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
     isEnded: boolean;
   }>(() => calculateCurrentPhaseInfo(session));
 
+  // NEW: State to toggle display of phase duration
+  const [showPhaseDuration, setShowPhaseDuration] = useState(false);
+
   // Helper function to calculate current phase and remaining time for repeating schedules
   function calculateCurrentPhaseInfo(currentSession: DemoSession): {
     type: 'focus' | 'break';
@@ -132,8 +135,17 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
               {currentPhaseType === 'focus' ? 'Deep Work Session' : 'Break Session'}
             </p>
           </div>
-          <div className="text-sm text-muted-foreground">
-            {currentPhaseType === 'break' ? 'Break - ' : ''}{formatTime(remainingSeconds)} remaining
+          <div 
+            className="text-sm text-muted-foreground cursor-pointer select-none"
+            onClick={() => setShowPhaseDuration(prev => !prev)}
+          >
+            {currentPhaseType === 'break' ? 'Break - ' : ''}
+            {formatTime(remainingSeconds)} remaining
+            {showPhaseDuration && (
+              <span className="ml-1">
+                ({currentPhaseInfo.durationMinutes}m {currentPhaseType === 'focus' ? 'Focus' : 'Break'})
+              </span>
+            )}
           </div>
         </div>
       </CardHeader>
