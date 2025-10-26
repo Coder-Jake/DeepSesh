@@ -34,7 +34,7 @@
 
     --radius: 0.5rem;
 
-    --public-bg: 120 60% 90%; /* Light green for public */
+    --public-bg: 120 90% 85%; /* Light green for public */
     --private-bg: 200 60% 90%; /* Light blue for private */
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 10%; /* Darker olive for text */
