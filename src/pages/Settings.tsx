@@ -717,7 +717,8 @@ const Settings = () => {
                   variant="outline"
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)}
                   className={cn(
-                    "px-3 py-1 rounded-full transition-colors select-none text-foreground hover:bg-muted"
+                    "px-3 py-1 rounded-full transition-colors select-none text-foreground",
+                    !isGlobalPrivate ? "bg-[hsl(var(--public-bg))] hover:bg-[hsl(var(--public-bg))]/80" : "bg-[hsl(var(--private-bg))] hover:bg-[hsl(var(--private-bg))]/80"
                   )}
                 >
                   {!isGlobalPrivate ? "Public" : "Private"}
