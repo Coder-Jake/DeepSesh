@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // Added useMemo
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,7 @@ interface DemoSession {
   workspaceImage: string;
   workspaceDescription: string;
   participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
-  fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
-  isRepeating?: boolean; // NEW: Added to distinguish repeating vs. single-run schedules
+  fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[]; // NEW
 }
 
 interface SessionCardProps {
@@ -39,7 +38,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
     isEnded: boolean;
   }>(() => calculateCurrentPhaseInfo(session));
 
-  // State to toggle display of phase duration
+  // NEW: State to toggle display of phase duration
   const [showPhaseDuration, setShowPhaseDuration] = useState(false);
 
   // Helper function to calculate current phase and remaining time for repeating schedules
@@ -77,22 +76,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
       };
     }
 
-    // NEW: Determine if the session has ended for non-repeating schedules
-    const isRepeating = currentSession.isRepeating ?? false; // Default to false if not specified
-    if (!isRepeating && elapsedSecondsSinceSessionStart >= totalScheduleDurationSeconds) {
-      // If not repeating and total schedule duration has passed, the session is ended.
-      // Return info for the last phase with 0 remaining time.
-      const lastPhase = currentSession.fullSchedule[currentSession.fullSchedule.length - 1];
-      return {
-        type: lastPhase?.type || 'focus',
-        durationMinutes: lastPhase?.durationMinutes || 0,
-        remainingSeconds: 0,
-        isEnded: true, // Session has completed its full run
-      };
-    }
-
     // Calculate the effective elapsed time within one full cycle of the schedule
-    // This will wrap around for repeating schedules, or for non-repeating ones that haven't ended yet.
     const effectiveElapsedSeconds = elapsedSecondsSinceSessionStart % totalScheduleDurationSeconds;
 
     let accumulatedDurationSecondsInCycle = 0;
@@ -123,7 +107,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
       type: lastPhase?.type || 'focus',
       durationMinutes: lastPhase?.durationMinutes || 0,
       remainingSeconds: 0,
-      isEnded: false, // Still not "ended" if it repeats indefinitely, or if it's the last moment before ending
+      isEnded: false, // Still not "ended" if it repeats indefinitely
     };
   }
 
