@@ -30,10 +30,14 @@ const AppLayout = () => {
           navigate('/');
           break;
         case '2':
+        case 's': // Added 's' for Settings
+        case 'S': // Added 'S' for Settings
           event.preventDefault();
           navigate('/settings');
           break;
         case '3':
+        case 'p': // Added 'p' for Profile
+        case 'P': // Added 'P' for Profile
           event.preventDefault();
           navigate('/profile');
           break;
