@@ -403,7 +403,7 @@ const Index = () => {
       // If it was a manual timer paused, restart phase tracking
       setCurrentPhaseStartTime(Date.now());
     }
-    setIsTimeLeftManagedBySession(true); // NEW: Set flag
+    setIsTimeLeftManagedBySession(true); // NEW: Keep flag true as timer is still active (paused)
   };
   
   const pauseTimer = () => {
@@ -444,8 +444,8 @@ const Index = () => {
       setIsPaused(false);
       setIsFlashing(false);
       setTimerType('focus'); // Reset to default focus type
-      // Use current homepage timer values
-      setTimeLeft(focusMinutes * 60); // Reset to current focus time
+      // Use default focus/break minutes from settings
+      setTimeLeft(defaultFocusMinutes * 60); // Reset to default focus time
       setActiveJoinedSession(null);
       if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
       setSessionStartTime(null);
@@ -498,8 +498,8 @@ const Index = () => {
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
-      // Use current homepage timer values
-      const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60; // Use current homepage values
+      // Use default focus/break minutes from settings
+      const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60; // Use default values
       setTimeLeft(initialTime);
       setActiveJoinedSession(null);
       if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
@@ -521,8 +521,8 @@ const Index = () => {
         setIsRunning(false);
         setIsPaused(false);
         setIsFlashing(false);
-        // Use current homepage timer values
-        const initialTime = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60; // Use current homepage values
+        // Use default focus/break minutes from settings
+        const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60; // Use default values
         setTimeLeft(initialTime);
         setActiveJoinedSession(null);
         if (isScheduleActive || isSchedulePrepared) resetSchedule(); // Reset any active or prepared schedule
