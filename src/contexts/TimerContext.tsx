@@ -143,31 +143,38 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // For now, I'll keep it in the type and provide a no-op here.
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
 
-  // Public setters for homepage timer values
-  const setHomepageFocusMinutes = useCallback((minutes: number) => {
-    _setFocusMinutes(minutes);
+  // Public setter for timerIncrement, ensuring a minimum of 1
+  const setTimerIncrement = useCallback((increment: number) => {
+    setTimerIncrementInternal(Math.max(1, increment));
   }, []);
+
+  // Public setters for homepage timer values, ensuring a minimum of timerIncrement
+  const setHomepageFocusMinutes = useCallback((minutes: number) => {
+    _setFocusMinutes(Math.max(timerIncrement, minutes));
+  }, [timerIncrement]);
 
   const setHomepageBreakMinutes = useCallback((minutes: number) => {
-    _setBreakMinutes(minutes);
-  }, []);
+    _setBreakMinutes(Math.max(timerIncrement, minutes));
+  }, [timerIncrement]);
 
-  // Public setters for default timer values (from settings)
+  // Public setters for default timer values (from settings), ensuring a minimum of timerIncrement
   const setDefaultFocusMinutes = useCallback((minutes: number) => {
-    _setDefaultFocusMinutes(minutes);
+    const clampedMinutes = Math.max(timerIncrement, minutes);
+    _setDefaultFocusMinutes(clampedMinutes);
     // Also update current homepage value if not running/paused/scheduled
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
-      _setFocusMinutes(minutes);
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
+      _setFocusMinutes(clampedMinutes);
     }
-  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
+  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, timerIncrement]);
 
   const setDefaultBreakMinutes = useCallback((minutes: number) => {
-    _setDefaultBreakMinutes(minutes);
+    const clampedMinutes = Math.max(timerIncrement, minutes);
+    _setDefaultBreakMinutes(clampedMinutes);
     // Also update current homepage value if not running/paused/scheduled
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
-      _setBreakMinutes(minutes);
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
+      _setBreakMinutes(clampedMinutes);
     }
-  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
+  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, timerIncrement]);
 
 
   const playSound = useCallback(() => {
@@ -787,20 +794,38 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Load TimerContext states from local storage on initial mount
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
+    const minIncrement = 1; // Minimum allowed increment
+
     if (storedData) {
       const data = JSON.parse(storedData);
-      _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25); // Load default focus minutes
-      _setDefaultBreakMinutes(data. _defaultBreakMinutes ?? 5);   // Load default break minutes
-      _setFocusMinutes(data.focusMinutes ?? data._defaultFocusMinutes ?? 25); // Initialize current from stored or default
-      _setBreakMinutes(data.breakMinutes ?? data._defaultBreakMinutes ?? 5);   // Initialize current from stored or default
+      
+      // Clamp timerIncrement first, as other values depend on it
+      const loadedTimerIncrement = Math.max(data.timerIncrement ?? 5, minIncrement);
+      setTimerIncrementInternal(loadedTimerIncrement);
+
+      // Clamp default focus/break minutes
+      const loadedDefaultFocus = Math.max(data._defaultFocusMinutes ?? 25, loadedTimerIncrement);
+      const loadedDefaultBreak = Math.max(data._defaultBreakMinutes ?? 5, loadedTimerIncrement);
+      _setDefaultFocusMinutes(loadedDefaultFocus);
+      _setDefaultBreakMinutes(loadedDefaultBreak);
+
+      // Clamp current homepage focus/break minutes
+      const loadedFocusMinutes = Math.max(data.focusMinutes ?? loadedDefaultFocus, loadedTimerIncrement);
+      const loadedBreakMinutes = Math.max(data.breakMinutes ?? loadedDefaultBreak, loadedTimerIncrement);
+      _setFocusMinutes(loadedFocusMinutes);
+      _setBreakMinutes(loadedBreakMinutes);
+
       _setSeshTitle(data._seshTitle ?? "Notes"); // Load internal state
       setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false); // Load new state
       setNotes(data.notes ?? "");
-      setTimerIncrementInternal(data.timerIncrement ?? 5); // Load timerIncrement
       setShowSessionsWhileActive(data.showSessionsWhileActive ?? 'hidden'); // Load new string type, default to 'hidden'
       setIsGlobalPrivate(data.isGlobalPrivate ?? false);
       setTimerType(data.timerType ?? 'focus');
-      setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? (data.focusMinutes ?? data._defaultFocusMinutes ?? 25) * 60 : (data.breakMinutes ?? data._defaultBreakMinutes ?? 5) * 60));
+      
+      // Calculate timeLeft based on clamped values
+      const initialTimeLeft = data.timeLeft ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
+      setTimeLeft(initialTimeLeft);
+
       setIsRunning(data.isRunning ?? false);
       setIsPaused(data.isPaused ?? false);
       setIsFlashing(data.isFlashing ?? false);
@@ -808,7 +833,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
       setIsScheduleActive(data.isScheduleActive ?? false);
-      // isSchedulePrepared is now derived
       setScheduleTitle(data.scheduleTitle ?? "My Focus Sesh");
       setCommenceTime(data.commenceTime ?? ""); // Changed default to empty string
       setCommenceDay(data.commenceDay ?? null);
@@ -828,7 +852,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setShouldShowEndToast(data.shouldShowEndToast ?? false); // Changed default to false
       setIsBatchNotificationsEnabled(data.isBatchNotificationsEnabled ?? false);
       setBatchNotificationPreference(data.batchNotificationPreference ?? 'break');
-      setCustomBatchMinutes(data.customBatchMinutes ?? timerIncrement);
+      setCustomBatchMinutes(data.customBatchMinutes ?? loadedTimerIncrement);
       setLock(data.lock ?? false);
       setExemptionsEnabled(data.exemptionsEnabled ?? false);
       setPhoneCalls(data.phoneCalls ?? false);
@@ -954,7 +978,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showSessionsWhileActive,
     setShowSessionsWhileActive,
     timerIncrement,
-    setTimerIncrement: setTimerIncrementInternal, // Expose internal setter
+    setTimerIncrement, // Expose public setter
 
     schedule,
     setSchedule,
