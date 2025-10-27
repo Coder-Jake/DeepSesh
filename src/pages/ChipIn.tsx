@@ -6,14 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
 import { toast } from 'sonner'; // Import toast from sonner directly
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const navigate = useNavigate(); // Initialize useNavigate
 
   const quickAmounts = [5, 10, 25, 50];
 
@@ -96,16 +95,29 @@ const ChipIn = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="feedback-button">Give Feedback</Label> {/* Changed label text */}
-              <Button
-                id="feedback-button"
-                variant="outline"
-                onClick={() => navigate('/feedback')} // Navigate to feedback page
-                className="w-full justify-start text-left px-3 py-2 border rounded-md bg-background text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" // Styled as an input
-              >
-                <Lightbulb className="h-4 w-4 mr-2" /> {/* Added Lightbulb icon */}
-                Share your ideas or report a bug...
-              </Button>
+              <Label htmlFor="custom-amount">Custom amount ($)</Label>
+              <Input
+                id="custom-amount"
+                type="number"
+                placeholder="Enter amount"
+                value={amount}
+                onChange={(e) => handleCustomAmount(e.target.value)}
+                min="1"
+                step="0.01"
+                onFocus={(e) => e.target.select()}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="message">Message (optional)</Label>
+              <Textarea
+                id="message"
+                placeholder="Leave a message for the developers..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={4}
+                onFocus={(e) => e.target.select()}
+              />
             </div>
 
             <Button 
