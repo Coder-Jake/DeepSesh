@@ -89,6 +89,10 @@ const ScheduleForm: React.FC = () => {
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
   // Removed local timerColors state, now using context
 
+  // NEW: State to control trash icon visibility
+  const [visibleTrashId, setVisibleTrashId] = useState<string | null>(null);
+  const trashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Order for displaying days in the Select component (Monday first, Sunday last)
   const daysOfWeekDisplayOrder = [
     "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
@@ -203,6 +207,10 @@ const ScheduleForm: React.FC = () => {
 
   const handleRemoveTimer = (id: string) => {
     setSchedule((prev: ScheduledTimer[]) => prev.filter((timer: ScheduledTimer) => timer.id !== id));
+    setVisibleTrashId(null); // Hide trash after removal
+    if (trashTimeoutRef.current) {
+      clearTimeout(trashTimeoutRef.current);
+    }
   };
 
   const handleCommenceSchedule = () => {
@@ -263,6 +271,19 @@ const ScheduleForm: React.FC = () => {
     setPickerPosition(null);
   };
 
+  // NEW: Handler for showing trash icon
+  const handleTimerDivClick = (timerId: string) => {
+    // Clear any existing timeout to prevent premature hiding
+    if (trashTimeoutRef.current) {
+      clearTimeout(trashTimeoutRef.current);
+    }
+    setVisibleTrashId(timerId);
+    // Set a new timeout to hide the trash icon after 2 seconds
+    trashTimeoutRef.current = setTimeout(() => {
+      setVisibleTrashId(null);
+    }, 2000);
+  };
+
   const buttonText =
       (scheduleStartOption === 'now' ? "Begin" : "Prepare");
 
@@ -311,11 +332,12 @@ const ScheduleForm: React.FC = () => {
                 key={timer.id} 
                 className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50" // Changed px-3 to px-2
                 style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }} // Apply dynamic background color or default baby blue for focus
+                onClick={() => handleTimerDivClick(timer.id)} // NEW: Add click handler to show trash
               >
                 <div className="flex items-center gap-1 flex-grow-0"> {/* Adjusted gap to gap-1 */}
                   <span 
                     className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors" // Removed self-start
-                    onClick={(e) => handleOpenColorPicker(e, timer.id)} // Open color picker on click
+                    onClick={(e) => { e.stopPropagation(); handleOpenColorPicker(e, timer.id); }} // Open color picker on click, stop propagation
                   >
                     {index + 1}.
                   </span>
@@ -369,11 +391,13 @@ const ScheduleForm: React.FC = () => {
                   </SelectContent>
                 </Select>
                 
-                <Trash2 
-                  className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
-                  onClick={() => handleRemoveTimer(timer.id)} 
-                  data-ignore-enter-nav
-                />
+                {visibleTrashId === timer.id && ( // NEW: Conditionally render Trash2 icon
+                  <Trash2 
+                    className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
+                    onClick={(e) => { e.stopPropagation(); handleRemoveTimer(timer.id); }} // Stop propagation to prevent re-triggering parent div click
+                    data-ignore-enter-nav
+                  />
+                )}
               </div>
             ))}
           </div>
