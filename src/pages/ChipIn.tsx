@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
 import { toast } from 'sonner'; // Import toast from sonner directly
 import { Link } from "react-router-dom";
@@ -11,7 +10,7 @@ import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSe
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
-  const [message, setMessage] = useState("");
+  // Removed message state as it's no longer a text input
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
 
   const quickAmounts = [5, 10, 25, 50];
@@ -48,7 +47,7 @@ const ChipIn = () => {
     }
     
     setAmount("");
-    setMessage("");
+    // Removed setMessage as it's no longer a text input
     setSelectedAmount(null);
   };
 
@@ -110,14 +109,14 @@ const ChipIn = () => {
 
             <div className="space-y-2">
               <Label htmlFor="message">Message (optional)</Label>
-              <Textarea
-                id="message"
-                placeholder="Leave a message for the developers..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={4}
-                onFocus={(e) => e.target.select()}
-              />
+              {/* Changed Textarea to Link, styled to look like a textarea */}
+              <Link
+                to="/feedback"
+                id="message" // Kept id for label association
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-muted-foreground items-center"
+              >
+                Leave a message for the developers...
+              </Link>
             </div>
 
             <Button 
