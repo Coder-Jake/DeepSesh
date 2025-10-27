@@ -1104,7 +1104,7 @@ const Settings = () => {
               <NotificationControl
                 type="activity"
                 title="Friend Activity"
-                description="Notifications when friends start/end a session, or they start a break."
+                description="Notifications when friends start/end a session."
                 value={friendActivity}
               />
 
