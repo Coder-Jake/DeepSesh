@@ -101,10 +101,10 @@ const ChipIn = () => {
                 id="feedback-button"
                 variant="outline"
                 onClick={() => navigate('/feedback')} // Navigate to feedback page
-                className="w-full h-12 text-base" // Styled as a button
+                className="w-full justify-start text-left px-3 py-2 border rounded-md bg-background text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" // Styled as an input
               >
                 <Lightbulb className="h-4 w-4 mr-2" /> {/* Added Lightbulb icon */}
-                Share your ideas or report a bug
+                Share your ideas or report a bug...
               </Button>
             </div>
 
