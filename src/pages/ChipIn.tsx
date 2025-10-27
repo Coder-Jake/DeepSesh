@@ -96,20 +96,16 @@ const ChipIn = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="message">Message (optional)</Label>
-              {/* Wrapped Textarea in a Link to redirect on click */}
-              <Link to="/feedback" className="block cursor-pointer">
-                <Textarea
-                  id="message"
-                  placeholder="Leave a message for the developers..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={4}
-                  readOnly // Make it read-only so users can't type
-                  tabIndex={-1} // Prevent it from being tab-focused
-                  className="cursor-pointer" // Indicate it's clickable
-                />
-              </Link>
+              <Label htmlFor="feedback-button">Give Feedback</Label> {/* Changed label text */}
+              <Button
+                id="feedback-button"
+                variant="outline"
+                onClick={() => navigate('/feedback')} // Navigate to feedback page
+                className="w-full justify-start text-left px-3 py-2 border rounded-md bg-background text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" // Styled as an input
+              >
+                <Lightbulb className="h-4 w-4 mr-2" /> {/* Added Lightbulb icon */}
+                Share your ideas or report a bug...
+              </Button>
             </div>
 
             <Button 
