@@ -97,41 +97,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
-
-  const savedSettingsRef = useRef({
-    showSessionsWhileActive,
-    isBatchNotificationsEnabled,
-    batchNotificationPreference,
-    customBatchMinutes,
-    lock,
-    exemptionsEnabled,
-    phoneCalls,
-    favourites,
-    workApps,
-    intentionalBreaches,
-    manualTransition,
-    focusMinutes: defaultFocusMinutes,
-    breakMinutes: defaultBreakMinutes,
-    maxDistance,
-    askNotifications,
-    joinNotifications, 
-    breakNotificationsVibrate,
-    sessionInvites,
-    friendActivity,
-    verificationStandard,
-    profileVisibility,
-    locationSharing,
-    isGlobalPrivate,
-    timerIncrement,
-    shouldPlayEndSound,
-    shouldShowEndToast,
-    isDarkMode,
-    is24HourFormat,
-    areToastsEnabled,
-    blockedUsers,
-    startStopNotifications,
-  });
+  timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
   useEffect(() => {
     setCurrentTimerIncrement(timerIncrement);
@@ -268,7 +234,7 @@ const Settings = () => {
         )}
       </div>
       
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 justify-end">
         {!hidePush && (
           <div className="relative min-w-[100px]">
             <Button
