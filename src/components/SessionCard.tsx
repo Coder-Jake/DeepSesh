@@ -39,6 +39,13 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
     return session.fullSchedule.filter(phase => phase.type === 'break').reduce((sum, phase) => sum + phase.durationMinutes, 0);
   }, [session.fullSchedule]);
 
+  // Calculate average sociability of participants
+  const averageSociability = useMemo(() => {
+    if (session.participants.length === 0) return 0;
+    const totalSociability = session.participants.reduce((sum, p) => sum + p.sociability, 0);
+    return totalSociability / session.participants.length;
+  }, [session.participants]);
+
   // State for dynamically calculated current phase and remaining time
   const [currentPhaseInfo, setCurrentPhaseInfo] = useState<{
     type: 'focus' | 'break';
@@ -211,7 +218,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
             </Tooltip>
             <div className="flex items-center gap-2">
               <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div>
+                <div className="h-full bg-primary rounded-full" style={{width: `${averageSociability}%`}}></div>
               </div>
             </div>
           </div>
