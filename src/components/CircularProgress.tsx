@@ -28,6 +28,8 @@ export const CircularProgress = ({
     ? (timerType === 'focus' ? 'hsl(var(--focus-background))' : 'hsl(var(--break-background))')
     : 'hsl(var(--neutral-background))'; // Use neutral background when inactive
 
+  const progressStrokeColor = timerType === 'break' ? 'silver' : 'hsl(var(--primary))';
+
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
       <svg
@@ -50,7 +52,7 @@ export const CircularProgress = ({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="hsl(var(--primary))"
+          stroke={progressStrokeColor}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={strokeDasharray}
@@ -58,7 +60,7 @@ export const CircularProgress = ({
           strokeLinecap="round"
           className="transition-all duration-200 ease-out"
           style={{
-            filter: `drop-shadow(0 0 4px hsl(var(--primary) / 0.2))` // Added subtle shadow
+            filter: `drop-shadow(0 0 4px ${timerType === 'break' ? 'rgba(192, 192, 192, 0.4)' : 'hsl(var(--primary) / 0.2)'})` // Added subtle shadow, adjusted for silver
           }}
         />
       </svg>
