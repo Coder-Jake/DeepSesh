@@ -6,13 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
 import { toast } from 'sonner'; // Import toast from sonner directly
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const quickAmounts = [5, 10, 25, 50];
 
@@ -95,29 +96,20 @@ const ChipIn = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="custom-amount">Custom amount ($)</Label>
-              <Input
-                id="custom-amount"
-                type="number"
-                placeholder="Enter amount"
-                value={amount}
-                onChange={(e) => handleCustomAmount(e.target.value)}
-                min="1"
-                step="0.01"
-                onFocus={(e) => e.target.select()}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="message">Message (optional)</Label>
-              <Textarea
-                id="message"
-                placeholder="Leave a message for the developers..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={4}
-                onFocus={(e) => e.target.select()}
-              />
+              {/* Wrapped Textarea in a Link to redirect on click */}
+              <Link to="/feedback" className="block cursor-pointer">
+                <Textarea
+                  id="message"
+                  placeholder="Leave a message for the developers..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={4}
+                  readOnly // Make it read-only so users can't type
+                  tabIndex={-1} // Prevent it from being tab-focused
+                  className="cursor-pointer" // Indicate it's clickable
+                />
+              </Link>
             </div>
 
             <Button 
