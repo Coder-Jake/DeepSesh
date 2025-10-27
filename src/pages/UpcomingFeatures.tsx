@@ -9,7 +9,7 @@ const UpcomingFeatures = () => {
     { name: "Mobile App", cost: "$12,000", description: "Native applications for iOS and Android, enabling on-the-go focus and collaboration." },
     { name: "User Verification", cost: "$6,000", description: "Implement robust identity verification to enhance trust and security within the community." },
     { name: "Real-time Collaboration", cost: "$5,000", description: "Advanced features for shared notes, synchronized timers, and live interaction during sessions." },
-    { name: "Leaderboard", cost: "$3,500", description: "Weekly, Monthly, and All Time leaderboards. Gamified elements to track and display user achievements, streaks, and focus hours." },
+    { name: "Leaderboard", cost: "$3,500", description: "Weekly, Monthly, and All Time leaderboards. Including gamified elements to track and display user achievements, streaks, and focus hours." },
     { name: "Personal Statistics", cost: "$3,000", description: "Detailed analytics and insights into individual focus patterns, productivity, and session history." },
     { name: "Stake Accountability", cost: "$7,500", description: "Allow users to set stakes (e.g., donate to charity) for meeting their focus goals, with automated tracking." },
     { name: "Advanced Scheduling", cost: "$4,000", description: "More flexible and powerful scheduling options, including recurring events and calendar integrations." },
