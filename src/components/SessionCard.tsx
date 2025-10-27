@@ -210,7 +210,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
               </TooltipContent>
             </Tooltip>
             <div className="flex items-center gap-2">
-              <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+              <div className="w-16 h-3 bg-secondary rounded-full overflow-hidden">
                 <div className="h-full bg-primary rounded-full" style={{width: '63%'}}></div>
               </div>
             </div>
