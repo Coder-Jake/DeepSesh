@@ -97,66 +97,45 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({}); // Corrected declaration
+  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
-  useEffect(() => {
-    setCurrentTimerIncrement(timerIncrement);
-  }, [timerIncrement]);
-
-  // This ref will store the "saved" state of settings for comparison
-  const savedSettingsRef = useRef<any>({});
-
-  // Initialize savedSettingsRef on mount and whenever relevant settings change
-  useEffect(() => {
-    savedSettingsRef.current = {
-      showSessionsWhileActive,
-      isBatchNotificationsEnabled,
-      batchNotificationPreference,
-      customBatchMinutes,
-      lock,
-      exemptionsEnabled,
-      phoneCalls,
-      favourites,
-      workApps,
-      intentionalBreaches,
-      manualTransition,
-      focusMinutes: defaultFocusMinutes,
-      breakMinutes: defaultBreakMinutes,
-      maxDistance,
-      askNotifications,
-      joinNotifications, 
-      breakNotificationsVibrate,
-      sessionInvites,
-      friendActivity,
-      verificationStandard,
-      profileVisibility,
-      locationSharing,
-      isGlobalPrivate,
-      timerIncrement: currentTimerIncrement,
-      shouldPlayEndSound,
-      shouldShowEndToast,
-      isDarkMode,
-      is24HourFormat,
-      areToastsEnabled,
-      blockedUsers,
-      startStopNotifications,
-    };
-  }, [
+  const savedSettingsRef = useRef({
     showSessionsWhileActive,
-    isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
-    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, defaultFocusMinutes, defaultBreakMinutes, maxDistance,
-    askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
-    verificationStandard, profileVisibility, locationSharing,
+    isBatchNotificationsEnabled,
+    batchNotificationPreference,
+    customBatchMinutes,
+    lock,
+    exemptionsEnabled,
+    phoneCalls,
+    favourites,
+    workApps,
+    intentionalBreaches,
+    manualTransition,
+    focusMinutes: defaultFocusMinutes,
+    breakMinutes: defaultBreakMinutes,
+    maxDistance,
+    askNotifications,
+    joinNotifications, 
+    breakNotificationsVibrate,
+    sessionInvites,
+    friendActivity,
+    verificationStandard,
+    profileVisibility,
+    locationSharing,
     isGlobalPrivate,
-    currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
+    timerIncrement,
+    shouldPlayEndSound,
+    shouldShowEndToast,
     isDarkMode,
     is24HourFormat,
     areToastsEnabled,
     blockedUsers,
     startStopNotifications,
-  ]);
+  });
 
+  useEffect(() => {
+    setCurrentTimerIncrement(timerIncrement);
+  }, [timerIncrement]);
 
   useEffect(() => {
     const currentFocusVal = defaultFocusMinutes;
@@ -289,7 +268,7 @@ const Settings = () => {
         )}
       </div>
       
-      <div className="flex items-center gap-4 justify-end">
+      <div className="flex items-center gap-4">
         {!hidePush && (
           <div className="relative min-w-[100px]">
             <Button
