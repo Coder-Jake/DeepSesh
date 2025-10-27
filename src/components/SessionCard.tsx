@@ -140,9 +140,6 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-lg">{session.title}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {currentPhaseType === 'focus' ? 'Deep Session' : 'Break Session'}
-            </p>
           </div>
           <div 
             className="text-sm text-muted-foreground cursor-pointer select-none flex flex-col items-end"
