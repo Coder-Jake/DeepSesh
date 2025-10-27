@@ -80,6 +80,9 @@ const now = new Date();
 const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
 const pomodoroStartTime = nextHour.getTime();
 
+// Calculate the beginning of the most recent hour
+const beginningOfMostRecentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
+
 const mockNearbySessions: DemoSession[] = [
   // Removed Pomodoro Session
   {
@@ -107,7 +110,7 @@ const mockFriendsSessions: DemoSession[] = [
   {
     id: "201",
     title: "Psychology 101 Final Review",
-    startTime: Date.now() - (10.66 * 60 * 1000),
+    startTime: beginningOfMostRecentHour, // MODIFIED: Set to the beginning of the most recent hour
     location: "Main Library - Study Room 12",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
