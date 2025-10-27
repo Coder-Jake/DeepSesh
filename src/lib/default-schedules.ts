@@ -37,6 +37,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
       { id: generateId(), title: "Math Class", type: "focus", durationMinutes: 50, isCustom: true, customTitle: "Math Class" },
       { id: generateId(), title: "Recess", type: "break", durationMinutes: 10, isCustom: true, customTitle: "Recess" },
       { id: generateId(), title: "Science Lab", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Science Lab" },
+      { id: generateId(), title: "PE", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "PE" }, // NEW: Added PE
       { id: generateId(), title: "Lunch Break", type: "break", durationMinutes: 30, isCustom: true, customTitle: "Lunch Break" },
       { id: generateId(), title: "English Literature", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "English Literature" },
       { id: generateId(), title: "Study Hall", type: "focus", durationMinutes: 40, isCustom: true, customTitle: "Study Hall" },
