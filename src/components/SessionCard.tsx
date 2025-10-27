@@ -141,7 +141,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
           <div>
             <CardTitle className="text-lg">{session.title}</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {currentPhaseType === 'focus' 'Deep Session' : 'Break Session'}
+              {currentPhaseType === 'focus' ? 'Deep Session' : 'Break Session'}
             </p>
           </div>
           <div 
