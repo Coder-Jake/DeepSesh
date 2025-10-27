@@ -269,7 +269,7 @@ const Settings = () => {
       </div>
       
       <div className="flex items-center gap-4">
-        {!hidePush && (
+        {!hidePush ? (
           <div className="relative min-w-[100px]">
             <Button
               variant="outline"
@@ -285,6 +285,9 @@ const Settings = () => {
               </span>
             )}
           </div>
+        ) : (
+          // Placeholder to maintain alignment when Push button is hidden
+          <div className="relative min-w-[100px]" />
         )}
 
         <div className="relative min-w-[100px]">
@@ -606,8 +609,8 @@ const Settings = () => {
                             setCustomBatchMinutes(currentTimerIncrement); // Changed from timerIncrement
                           }
                         }}
-                        min={timerIncrement}
-                        step={timerIncrement}
+                        min={currentTimerIncrement}
+                        step={currentTimerIncrement}
                         className="mt-2"
                         onFocus={(e) => e.target.select()}
                       />
