@@ -97,11 +97,66 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
+  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({}); // Corrected declaration
 
   useEffect(() => {
     setCurrentTimerIncrement(timerIncrement);
   }, [timerIncrement]);
+
+  // This ref will store the "saved" state of settings for comparison
+  const savedSettingsRef = useRef<any>({});
+
+  // Initialize savedSettingsRef on mount and whenever relevant settings change
+  useEffect(() => {
+    savedSettingsRef.current = {
+      showSessionsWhileActive,
+      isBatchNotificationsEnabled,
+      batchNotificationPreference,
+      customBatchMinutes,
+      lock,
+      exemptionsEnabled,
+      phoneCalls,
+      favourites,
+      workApps,
+      intentionalBreaches,
+      manualTransition,
+      focusMinutes: defaultFocusMinutes,
+      breakMinutes: defaultBreakMinutes,
+      maxDistance,
+      askNotifications,
+      joinNotifications, 
+      breakNotificationsVibrate,
+      sessionInvites,
+      friendActivity,
+      verificationStandard,
+      profileVisibility,
+      locationSharing,
+      isGlobalPrivate,
+      timerIncrement: currentTimerIncrement,
+      shouldPlayEndSound,
+      shouldShowEndToast,
+      isDarkMode,
+      is24HourFormat,
+      areToastsEnabled,
+      blockedUsers,
+      startStopNotifications,
+    };
+  }, [
+    showSessionsWhileActive,
+    isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
+    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
+    manualTransition, defaultFocusMinutes, defaultBreakMinutes, maxDistance,
+    askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
+    verificationStandard, profileVisibility, locationSharing,
+    isGlobalPrivate,
+    currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
+    isDarkMode,
+    is24HourFormat,
+    areToastsEnabled,
+    blockedUsers,
+    startStopNotifications,
+  ]);
+
 
   useEffect(() => {
     const currentFocusVal = defaultFocusMinutes;
