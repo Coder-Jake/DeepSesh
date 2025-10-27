@@ -153,8 +153,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
             onClick={() => setShowPhaseDuration(prev => !prev)}
           >
             <span>
-              {currentPhaseType === 'break' ? 'Break - ' : ''}
-              {formatTime(remainingSeconds)} remaining
+              {formatTime(remainingSeconds)} {currentPhaseType === 'break' ? 'Break' : 'Focus'}
             </span>
             {showPhaseDuration && (
               <span className="">
