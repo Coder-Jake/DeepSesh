@@ -3,14 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react"; // Removed MessageSquareText
-import { toast } from 'sonner';
+import { Textarea } from "@/components/ui/textarea";
+import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
+import { toast } from 'sonner'; // Import toast from sonner directly
 import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
-  // Removed message state as it's no longer an input field
+  const [message, setMessage] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
 
   const quickAmounts = [5, 10, 25, 50];
@@ -47,6 +48,7 @@ const ChipIn = () => {
     }
     
     setAmount("");
+    setMessage("");
     setSelectedAmount(null);
   };
 
@@ -66,7 +68,7 @@ const ChipIn = () => {
       {/* New Feedback and Collaborate Section */}
       <FeedbackAndCollaborateSection />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8"> {/* Added mt-8 for spacing */}
         {/* Donation Form */}
         <Card>
           <CardHeader>
@@ -93,14 +95,29 @@ const ChipIn = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="feedback-link">Message (optional)</Label> {/* Reverted label text */}
-              <Link
-                to="/feedback"
-                id="feedback-link"
-                className="block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground min-h-[80px] cursor-pointer" // Reverted styling to match textarea
-              >
-                Leave a message for the developers...
-              </Link>
+              <Label htmlFor="custom-amount">Custom amount ($)</Label>
+              <Input
+                id="custom-amount"
+                type="number"
+                placeholder="Enter amount"
+                value={amount}
+                onChange={(e) => handleCustomAmount(e.target.value)}
+                min="1"
+                step="0.01"
+                onFocus={(e) => e.target.select()}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="message">Message (optional)</Label>
+              <Textarea
+                id="message"
+                placeholder="Leave a message for the developers..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={4}
+                onFocus={(e) => e.target.select()}
+              />
             </div>
 
             <Button 
