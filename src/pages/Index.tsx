@@ -695,37 +695,44 @@ const Index = () => {
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
-    const sessionSuffixes = ["Focus Sesh", "Study Sesh", "Productivity Sesh"];
 
-    let staggerOffsetMinutes = 0;
+    organizationNames.forEach((orgName) => {
+      // Simple hash function for deterministic staggering
+      const getDeterministicOffset = (name: string) => {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+          const char = name.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash |= 0; // Convert to 32bit integer
+        }
+        return Math.abs(hash);
+      };
 
-    organizationNames.forEach((orgName, index) => {
+      const hashValue = getDeterministicOffset(orgName);
+      const minuteOffset = (hashValue % 12) * 5; // 12 slots of 5 minutes in an hour
+
       const now = new Date();
       const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
       
-      const staggeredStartTime = currentHourStart + staggerOffsetMinutes * 60 * 1000;
-
-      const sessionTitleSuffix = sessionSuffixes[index % sessionSuffixes.length];
+      const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
 
       sessions.push({
-        id: `org-session-${orgName.replace(/\s/g, '-')}-${index}`,
-        title: `${orgName} ${sessionTitleSuffix}`,
+        id: `org-session-${orgName.replace(/\s/g, '-')}`,
+        title: `${orgName} Focus Sesh`,
         startTime: staggeredStartTime,
         location: `${orgName} HQ - Study Room`,
         workspaceImage: "/api/placeholder/200/120",
         workspaceDescription: "Dedicated study space for organization members",
         participants: [
           { id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined },
-          { id: `org-coworker-${index}-1`, name: `Org Member ${index + 1}A`, sociability: 70, intention: "Working on Q3 report." },
-          { id: `org-coworker-${index}-2`, name: `Org Member ${index + 1}B`, sociability: 60, intention: "Preparing for client meeting." },
+          { id: `org-coworker-${orgName}-1`, name: `Org Member A`, sociability: 70, intention: "Working on Q3 report." },
+          { id: `org-coworker-${orgName}-2`, name: `Org Member B`, sociability: 60, intention: "Preparing for client meeting." },
         ],
         fullSchedule: [
           { type: "focus", durationMinutes: 50 },
           { type: "break", durationMinutes: 10 },
         ],
       });
-
-      staggerOffsetMinutes += 10;
     });
 
     return sessions;
@@ -1023,7 +1030,9 @@ const Index = () => {
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <h3>Organisations</h3>
-              {isOrganizationSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              <div className="flex items-center gap-2">
+                {isOrganizationSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
             </button>
             {isOrganizationSessionsOpen && (
               <div className="space-y-3">
