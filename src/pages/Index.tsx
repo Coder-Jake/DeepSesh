@@ -758,15 +758,21 @@ const Index = () => {
     const sessions: DemoSession[] = [];
     const sessionSuffixes = ["Focus Session", "Study Session", "Productivity Session"];
 
+    let staggerOffsetMinutes = 0; // Initialize stagger offset
+
     organizationNames.forEach((orgName, index) => {
       const now = new Date();
       const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
+      
+      // Calculate staggered start time
+      const staggeredStartTime = currentHourStart + staggerOffsetMinutes * 60 * 1000;
+
       const sessionTitleSuffix = sessionSuffixes[index % sessionSuffixes.length];
 
       sessions.push({
         id: `org-session-${orgName.replace(/\s/g, '-')}-${index}`,
         title: `${orgName} ${sessionTitleSuffix}`,
-        startTime: currentHourStart,
+        startTime: staggeredStartTime, // Use staggered start time
         location: `${orgName} HQ - Study Room`,
         workspaceImage: "/api/placeholder/200/120",
         workspaceDescription: "Dedicated study space for organization members",
@@ -780,6 +786,8 @@ const Index = () => {
           { type: "break", durationMinutes: 10 },
         ],
       });
+
+      staggerOffsetMinutes += 10; // Increment offset for the next session
     });
 
     return sessions;
