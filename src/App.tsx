@@ -27,8 +27,8 @@ function App() {
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <ProfileProvider>
-            <TimerProvider>
+          <TimerProvider> {/* Moved TimerProvider here */}
+            <ProfileProvider>
               <ProfilePopUpProvider>
                 <TooltipProvider>
                   <Toaster />
@@ -53,8 +53,8 @@ function App() {
                   </Routes>
                 </TooltipProvider>
               </ProfilePopUpProvider>
-            </TimerProvider>
-          </ProfileProvider>
+            </ProfileProvider>
+          </TimerProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>
