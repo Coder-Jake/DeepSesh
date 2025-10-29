@@ -268,6 +268,13 @@ const Index = () => {
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [joinSessionCode, setJoinSessionCode] = useState("");
 
+  // NEW: States for custom accordion sections
+  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(true);
+  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(true);
+  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(true);
+  const [openUpcomingScheduleAccordions, setOpenUpcomingScheduleAccordions] = useState<string[]>([]);
+
+
   // Effect to focus the input when isEditingSeshTitle becomes true
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
@@ -1410,7 +1417,7 @@ const Index = () => {
               {shouldShowNearbySessions && ( // MODIFIED: Use new logic
                 <div className="mb-6" data-name="Nearby Sessions Section">
                   <button 
-                    // No local state for collapsing, always show if shouldShowNearbySessions is true
+                    onClick={() => setIsNearbySessionsOpen(prev => !prev)}
                     className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
                   >
                     <h3>Nearby</h3>
@@ -1418,19 +1425,21 @@ const Index = () => {
                       {hiddenNearbyCount > 0 && (
                         <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
                       )}
-                      <ChevronUp size={20} /> {/* Always show up arrow if visible */}
+                      {isNearbySessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </div>
                   </button>
-                  <div className="space-y-3">
-                    {mockNearbySessions.map(session => (
-                      <SessionCard 
-                        key={session.id} 
-                        session={session} 
-                        onJoinSession={handleJoinSession} 
-                        onNameClick={handleNameClick}
-                      />
-                    ))}
-                  </div>
+                  {isNearbySessionsOpen && (
+                    <div className="space-y-3">
+                      {mockNearbySessions.map(session => (
+                        <SessionCard 
+                          key={session.id} 
+                          session={session} 
+                          onJoinSession={handleJoinSession} 
+                          onNameClick={handleNameClick}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1438,7 +1447,7 @@ const Index = () => {
               {shouldShowFriendsSessions && ( // MODIFIED: Use new logic
                 <div data-name="Friends Sessions Section">
                   <button 
-                    // No local state for collapsing, always show if shouldShowFriendsSessions is true
+                    onClick={() => setIsFriendsSessionsOpen(prev => !prev)}
                     className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
                   >
                     <h3>Friends</h3>
@@ -1446,19 +1455,21 @@ const Index = () => {
                       {hiddenFriendsCount > 0 && (
                         <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
                       )}
-                      <ChevronUp size={20} /> {/* Always show up arrow if visible */}
+                      {isFriendsSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </div>
                   </button>
-                  <div className="space-y-3">
-                    {mockFriendsSessions.map(session => (
-                      <SessionCard 
-                        key={session.id} 
-                        session={session} 
-                        onJoinSession={handleJoinSession} 
-                        onNameClick={handleNameClick}
-                      />
-                    ))}
-                  </div>
+                  {isFriendsSessionsOpen && (
+                    <div className="space-y-3">
+                      {mockFriendsSessions.map(session => (
+                        <SessionCard 
+                          key={session.id} 
+                          session={session} 
+                          onJoinSession={handleJoinSession} 
+                          onNameClick={handleNameClick}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1466,21 +1477,24 @@ const Index = () => {
               {shouldShowOrganizationSessions && mockOrganizationSessions.length > 0 && (
                 <div data-name="Organization Sessions Section">
                   <button 
+                    onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
                     className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
                   >
                     <h3>Organisations</h3>
-                    <ChevronUp size={20} />
+                    {isOrganizationSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </button>
-                  <div className="space-y-3">
-                    {mockOrganizationSessions.map(session => (
-                      <SessionCard 
-                        key={session.id} 
-                        session={session} 
-                        onJoinSession={handleJoinSession} 
-                        onNameClick={handleNameClick}
-                      />
-                    ))}
-                  </div>
+                  {isOrganizationSessionsOpen && (
+                    <div className="space-y-3">
+                      {mockOrganizationSessions.map(session => (
+                        <SessionCard 
+                          key={session.id} 
+                          session={session} 
+                          onJoinSession={handleJoinSession} 
+                          onNameClick={handleNameClick}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </TooltipProvider>
@@ -1506,7 +1520,12 @@ const Index = () => {
         {sortedPreparedSchedules.length > 0 && (
           <div className="mt-8" data-name="Upcoming Section">
             <h3 className="text-xl font-bold text-foreground mb-4">Upcoming Schedules</h3>
-            <Accordion type="multiple" className="w-full space-y-4"> {/* Use Accordion here */}
+            <Accordion 
+              type="multiple" 
+              className="w-full space-y-4" 
+              value={openUpcomingScheduleAccordions} 
+              onValueChange={setOpenUpcomingScheduleAccordions}
+            > {/* Use Accordion here */}
               {sortedPreparedSchedules.map((template) => (
                 <UpcomingScheduleAccordionItem
                   key={template.id}
