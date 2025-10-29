@@ -8,7 +8,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } => "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
@@ -91,11 +91,11 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "mock-user-id-4", name: "Diana", sociability: 20, intention: "Debugging a Python script." },
-      { id: "mock-user-id-5", name: "Eve", sociability: 10, intention: "Writing documentation for API." },
-      { id: "mock-user-id-6", name: "Frank", sociability: 20, intention: "Learning new framework." },
-      { id: "7", name: "Riley", sociability: 20, intention: "Code refactoring." },
-      { id: "8", name: "Avery", sociability: 30, intention: "Designing database schema." },
+      { id: "mock-user-id-4", name: "Bezos", sociability: 20, intention: "Optimizing cloud infrastructure." },
+      { id: "mock-user-id-5", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
+      { id: "mock-user-id-6", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
+      { id: "7", name: "Gates", sociability: 20, intention: "Refining operating system architecture." },
+      { id: "8", name: "Jobs", sociability: 30, intention: "Innovating user interface design." },
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 55 },
