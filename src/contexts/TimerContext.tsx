@@ -4,8 +4,9 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
-import { useProfile } from './ProfileContext';
+// Removed: import { useProfile } from './ProfileContext'; // No longer needed
 import { DAYS_OF_WEEK } from '@/lib/constants';
+import { saveSessionToDatabase } from '@/utils/session-utils'; // NEW: Import the utility function
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -13,7 +14,8 @@ const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context';
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const { saveSession, localFirstName } = useProfile();
+  // Removed: const { saveSession, localFirstName } = useProfile(); // No longer using useProfile directly
+  // localFirstName will be derived from user or a default for host name display
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
@@ -72,22 +74,24 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const participants: string[] = [];
     const uniqueNames = new Set<string>();
 
+    const currentUserName = user?.user_metadata?.first_name || "You"; // Derive localFirstName from user or default
+
     if (user?.id) {
-      uniqueNames.add(localFirstName);
+      uniqueNames.add(currentUserName);
     }
 
-    if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== localFirstName) {
+    if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName) {
       uniqueNames.add(currentSessionHostName);
     }
 
     currentSessionOtherParticipants.forEach(p => {
-      if (p.name !== localFirstName && p.name !== currentSessionHostName) {
+      if (p.name !== currentUserName && p.name !== currentSessionHostName) {
         uniqueNames.add(p.name);
       }
     });
 
     return Array.from(uniqueNames).sort();
-  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, user?.id, localFirstName]);
+  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, user?.id, user?.user_metadata?.first_name]);
 
   const [isSchedulePending, setIsSchedulePending] = useState(false);
   const [isTimeLeftManagedBySession, setIsTimeLeftManagedBySession] = useState(false);
@@ -348,14 +352,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     triggerVibration();
 
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(localFirstName);
+    setCurrentSessionHostName(user?.user_metadata?.first_name || "Host"); // Use user's first name or default
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks,
+    _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks,
     playSound, triggerVibration, setIsTimeLeftManagedBySession
 ]);
 
@@ -438,10 +442,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     triggerVibration();
 
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(localFirstName);
+    setCurrentSessionHostName(user?.user_metadata?.first_name || "Host"); // Use user's first name or default
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, localFirstName, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -559,7 +563,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const totalSession = finalFocusSeconds + finalBreakSeconds;
 
           console.log("TimerContext: activeAsks before saving (schedule completion):", activeAsks);
-          saveSession(
+          saveSessionToDatabase( // Use the new utility function
+            user?.id, // Pass user ID
             _seshTitle,
             notes,
             finalFocusSeconds,
@@ -568,7 +573,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             activeJoinedSessionCoworkerCount,
             sessionStartTime || Date.now(),
             activeAsks,
-            allParticipantsToDisplay
+            allParticipantsToDisplay,
+            areToastsEnabled // Pass areToastsEnabled
           );
 
           resetSchedule();
@@ -606,7 +612,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, saveSession, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, user?.id, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration]);
 
   useEffect(() => {
     if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {

@@ -234,7 +234,7 @@ const Index = () => {
     startStopNotifications, playSound, triggerVibration, areToastsEnabled
   });
 
-  const { profile, loading: profileLoading, localFirstName, saveSession } = useProfile();
+  const { profile, loading: profileLoading, localFirstName } = useProfile(); // Removed saveSession from here
   const navigate = useNavigate();
   const { openProfilePopUp } = useProfilePopUp();
 
@@ -451,17 +451,7 @@ const Index = () => {
 
     const handleSaveAndStop = async () => {
       console.log("Index: Calling saveSession with activeAsks:", activeAsks);
-      await saveSession(
-        seshTitle,
-        notes,
-        finalAccumulatedFocus,
-        finalAccumulatedBreak,
-        totalSessionSeconds,
-        activeJoinedSessionCoworkerCount,
-        sessionStartTime || Date.now(),
-        activeAsks,
-        allParticipantsToDisplay
-      );
+      // Removed saveSession from here, it's now handled by TimerContext's useEffect
       await performStopActions();
       playSound();
       triggerVibration();
