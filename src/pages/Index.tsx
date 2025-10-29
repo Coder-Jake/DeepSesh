@@ -750,30 +750,39 @@ const Index = () => {
     return !!profile?.organization; // Only show if user has an organization
   }, [profile?.organization]);
 
-  // NEW: Mock Organization Session
-  const mockOrganizationSession: DemoSession | null = useMemo(() => {
-    if (!profile?.organization) return null;
+  // NEW: Mock Organization Sessions (plural)
+  const mockOrganizationSessions: DemoSession[] = useMemo(() => {
+    if (!profile?.organization) return [];
 
-    const now = new Date();
-    const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
+    const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
+    const sessions: DemoSession[] = [];
+    const sessionSuffixes = ["Focus Session", "Study Session", "Productivity Session"];
 
-    return {
-      id: "org-session-1",
-      title: `${profile.organization} Study Session`,
-      startTime: currentHourStart,
-      location: `${profile.organization} HQ - Study Room`,
-      workspaceImage: "/api/placeholder/200/120",
-      workspaceDescription: "Dedicated study space for organization members",
-      participants: [
-        { id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined },
-        { id: "org-coworker-1", name: "Org Member 1", sociability: 70, intention: "Working on Q3 report." },
-        { id: "org-coworker-2", name: "Org Member 2", sociability: 60, intention: "Preparing for client meeting." },
-      ],
-      fullSchedule: [
-        { type: "focus", durationMinutes: 50 },
-        { type: "break", durationMinutes: 10 },
-      ],
-    };
+    organizationNames.forEach((orgName, index) => {
+      const now = new Date();
+      const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
+      const sessionTitleSuffix = sessionSuffixes[index % sessionSuffixes.length];
+
+      sessions.push({
+        id: `org-session-${orgName.replace(/\s/g, '-')}-${index}`,
+        title: `${orgName} ${sessionTitleSuffix}`,
+        startTime: currentHourStart,
+        location: `${orgName} HQ - Study Room`,
+        workspaceImage: "/api/placeholder/200/120",
+        workspaceDescription: "Dedicated study space for organization members",
+        participants: [
+          { id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined },
+          { id: `org-coworker-${index}-1`, name: `Org Member ${index + 1}A`, sociability: 70, intention: "Working on Q3 report." },
+          { id: `org-coworker-${index}-2`, name: `Org Member ${index + 1}B`, sociability: 60, intention: "Preparing for client meeting." },
+        ],
+        fullSchedule: [
+          { type: "focus", durationMinutes: 50 },
+          { type: "break", durationMinutes: 10 },
+        ],
+      });
+    });
+
+    return sessions;
   }, [profile, currentUserId, currentUserName]);
 
 
@@ -1446,7 +1455,7 @@ const Index = () => {
               )}
 
               {/* NEW: Organization Sessions */}
-              {shouldShowOrganizationSessions && mockOrganizationSession && (
+              {shouldShowOrganizationSessions && mockOrganizationSessions.length > 0 && (
                 <div data-name="Organization Sessions Section">
                   <button 
                     className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
@@ -1455,12 +1464,14 @@ const Index = () => {
                     <ChevronUp size={20} />
                   </button>
                   <div className="space-y-3">
-                    <SessionCard 
-                      key={mockOrganizationSession.id} 
-                      session={mockOrganizationSession} 
-                      onJoinSession={handleJoinSession} 
-                      onNameClick={handleNameClick}
-                    />
+                    {mockOrganizationSessions.map(session => (
+                      <SessionCard 
+                        key={session.id} 
+                        session={session} 
+                        onJoinSession={handleJoinSession} 
+                        onNameClick={handleNameClick}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
