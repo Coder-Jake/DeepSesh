@@ -745,6 +745,38 @@ const Index = () => {
     return false; // 'nearby' mode or other cases
   }, [isActiveTimer, showSessionsWhileActive]);
 
+  // NEW: Logic for showing Organization Sessions list
+  const shouldShowOrganizationSessions = useMemo(() => {
+    return !!profile?.organization; // Only show if user has an organization
+  }, [profile?.organization]);
+
+  // NEW: Mock Organization Session
+  const mockOrganizationSession: DemoSession | null = useMemo(() => {
+    if (!profile?.organization) return null;
+
+    const now = new Date();
+    const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
+
+    return {
+      id: "org-session-1",
+      title: `${profile.organization} Study Session`,
+      startTime: currentHourStart,
+      location: `${profile.organization} HQ - Study Room`,
+      workspaceImage: "/api/placeholder/200/120",
+      workspaceDescription: "Dedicated study space for organization members",
+      participants: [
+        { id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined },
+        { id: "org-coworker-1", name: "Org Member 1", sociability: 70, intention: "Working on Q3 report." },
+        { id: "org-coworker-2", name: "Org Member 2", sociability: 60, intention: "Preparing for client meeting." },
+      ],
+      fullSchedule: [
+        { type: "focus", durationMinutes: 50 },
+        { type: "break", durationMinutes: 10 },
+      ],
+    };
+  }, [profile, currentUserId, currentUserName]);
+
+
   // NEW: Unified list of all participants to display in the Coworkers card
   const allParticipantsToDisplayInCard = useMemo(() => {
     const participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }> = [];
@@ -1409,6 +1441,26 @@ const Index = () => {
                         onNameClick={handleNameClick}
                       />
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* NEW: Organization Sessions */}
+              {shouldShowOrganizationSessions && mockOrganizationSession && (
+                <div data-name="Organization Sessions Section">
+                  <button 
+                    className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
+                  >
+                    <h3>Organisations</h3>
+                    <ChevronUp size={20} />
+                  </button>
+                  <div className="space-y-3">
+                    <SessionCard 
+                      key={mockOrganizationSession.id} 
+                      session={mockOrganizationSession} 
+                      onJoinSession={handleJoinSession} 
+                      onNameClick={handleNameClick}
+                    />
                   </div>
                 </div>
               )}
