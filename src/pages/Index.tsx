@@ -261,7 +261,7 @@ const Index = () => {
   // NEW: Ref for the auto-resizing textarea
   const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // NEW: States for Nearby/Friends session list visibility
+  // NEW: States for Nearby/Friends sesh list visibility
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
 
@@ -386,7 +386,7 @@ const Index = () => {
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
-    setSessionStartTime(Date.now()); // Record overall session start time
+    setSessionStartTime(Date.now()); // Record overall sesh start time
     setCurrentPhaseStartTime(Date.now()); // Record current phase start time
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
@@ -398,7 +398,7 @@ const Index = () => {
     setCurrentSessionRole('host');
     setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
-    setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host session
+    setActiveJoinedSessionCoworkerCount(0); // Ensure coworker count is 0 for a new host sesh
   };
 
   const resumeTimer = () => {
@@ -492,7 +492,7 @@ const Index = () => {
         finalAccumulatedBreak,
         totalSessionSeconds,
         activeJoinedSessionCoworkerCount,
-        sessionStartTime || Date.now(), // Use sessionStartTime or current time if null
+        sessionStartTime || Date.now(), // Use seshStartTime or current time if null
         activeAsks, // NEW: Pass activeAsks to saveSession
         allParticipantsToDisplay // NEW: Pass allParticipantsToDisplay
       );
@@ -611,7 +611,7 @@ const Index = () => {
 
   const handleJoinSession = (session: DemoSession) => {
     if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) { // Check for prepared schedule too
-      if (!confirm("A timer or schedule is already active. Do you want to override it and join this session?")) {
+      if (!confirm("A timer or schedule is already active. Do you want to override it and join this sesh?")) {
         return;
       }
       // If confirmed, reset existing schedule/timer before joining new one
@@ -623,13 +623,13 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       // setNotes(""); // Removed: Notes should not be cleared
       setSeshTitle("Notes"); // Use the public setter, which will also set isSeshTitleCustomized(false)
-      setActiveAsks([]); // NEW: Clear active asks when joining a session
+      setActiveAsks([]); // NEW: Clear active asks when joining a sesh
     }
 
     setActiveJoinedSession(session);
     setActiveJoinedSessionCoworkerCount(session.participants.length);
     
-    // Calculate remaining time based on session's start time and its full schedule
+    // Calculate remaining time based on sesh's start time and its full schedule
     const now = Date.now();
     const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
     
@@ -649,7 +649,7 @@ const Index = () => {
       remainingSecondsInPhase = 0;
       currentPhaseDurationMinutes = 0;
     } else if (elapsedSecondsSinceSessionStart < 0) {
-      // Session hasn't started yet
+      // Sesh hasn't started yet
       currentPhaseType = session.fullSchedule[0]?.type || 'focus';
       currentPhaseDurationMinutes = session.fullSchedule[0]?.durationMinutes || 0;
       remainingSecondsInPhase = -elapsedSecondsSinceSessionStart; // Time until it starts
@@ -678,7 +678,7 @@ const Index = () => {
     setIsTimeLeftManagedBySession(true); // NEW: Set flag
     setTimeLeft(Math.max(0, remainingSecondsInPhase));
     
-    // NEW: Update homepage focus/break minutes to reflect the joined session's current phase duration
+    // NEW: Update homepage focus/break minutes to reflect the joined sesh's current phase duration
     if (currentPhaseType === 'focus') {
       setHomepageFocusMinutes(currentPhaseDurationMinutes);
       setHomepageBreakMinutes(defaultBreakMinutes); // Reset break to default if not in break phase
@@ -690,12 +690,12 @@ const Index = () => {
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
-    setSessionStartTime(Date.now()); // Record overall session start time for *this user*
+    setSessionStartTime(Date.now()); // Record overall sesh start time for *this user*
     setCurrentPhaseStartTime(Date.now()); // Record current phase start time for *this user*
     setAccumulatedFocusSeconds(0); // Reset personal accumulated focus time
     setAccumulatedBreakSeconds(0); // Reset personal accumulated break time
     toast({
-      title: "Session Joined!",
+      title: "Sesh Joined!",
       description: `You've joined "${session.title}".`,
     });
     playSound(); // NEW: Play sound on join
@@ -703,7 +703,7 @@ const Index = () => {
 
     // NEW: Set role to coworker
     setCurrentSessionRole('coworker');
-    // Assuming the first participant in the demo session is the host
+    // Assuming the first participant in the demo sesh is the host
     setCurrentSessionHostName(session.participants[0]?.name || session.title);
     // Filter out the current user from the participants list to get other coworkers
     setCurrentSessionOtherParticipants(session.participants.filter(p => p.id !== currentUserId));
@@ -712,11 +712,11 @@ const Index = () => {
   const handleJoinCodeSubmit = () => {
     if (joinSessionCode.trim()) {
       toast({
-        title: "Joining Session",
-        description: `Attempting to join session with code: ${joinSessionCode.trim()}`,
+        title: "Joining Sesh",
+        description: `Attempting to join sesh with code: ${joinSessionCode.trim()}`,
       });
       // In a real application, you would send this code to your backend
-      // to validate and join the user to the corresponding session.
+      // to validate and join the user to the corresponding sesh.
       setJoinSessionCode(""); // Clear input after attempt
       setShowJoinInput(false); // Hide input after attempt
     }
@@ -725,7 +725,7 @@ const Index = () => {
   // Determine if any timer is active (running, paused, flashing, or part of a schedule)
   const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
 
-  // Logic for showing Nearby Sessions list
+  // Logic for showing Nearby Seshs list
   const shouldShowNearbySessions = useMemo(() => {
     if (!isActiveTimer) {
       return !isGlobalPrivate; // Always show nearby if no timer active and not globally private
@@ -741,7 +741,7 @@ const Index = () => {
     return false; // 'friends' mode or other cases
   }, [isActiveTimer, isGlobalPrivate, showSessionsWhileActive]);
 
-  // Logic for showing Friends Sessions list
+  // Logic for showing Friends Seshs list
   const shouldShowFriendsSessions = useMemo(() => {
     if (!isActiveTimer) {
       return true; // Always show friends if no timer active
@@ -757,18 +757,18 @@ const Index = () => {
     return false; // 'nearby' mode or other cases
   }, [isActiveTimer, showSessionsWhileActive]);
 
-  // NEW: Logic for showing Organization Sessions list
+  // NEW: Logic for showing Organization Seshs list
   const shouldShowOrganizationSessions = useMemo(() => {
     return !!profile?.organization; // Only show if user has an organization
   }, [profile?.organization]);
 
-  // NEW: Mock Organization Sessions (plural)
+  // NEW: Mock Organization Seshs (plural)
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
     if (!profile?.organization) return [];
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
-    const sessionSuffixes = ["Focus Session", "Study Session", "Productivity Session"];
+    const sessionSuffixes = ["Focus Sesh", "Study Sesh", "Productivity Sesh"]; // MODIFIED: Changed to 'Sesh'
 
     let staggerOffsetMinutes = 0; // Initialize stagger offset
 
@@ -799,7 +799,7 @@ const Index = () => {
         ],
       });
 
-      staggerOffsetMinutes += 10; // Increment offset for the next session
+      staggerOffsetMinutes += 10; // Increment offset for the next sesh
     });
 
     return sessions;
@@ -983,7 +983,7 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now()); // Start the first phase timer
     toast({
       title: "Schedule Commenced!",
-      description: `Your scheduled session has now begun.`,
+      description: `Your scheduled sesh has now begun.`,
     });
 
     // NEW: Set role to host
@@ -1212,7 +1212,7 @@ const Index = () => {
                           size="sm"
                           onClick={() => setShowJoinInput(true)} // Open the dialog
                           className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
-                          data-name="Join Session Button"
+                          data-name="Join Sesh Button"
                         >
                           <Users size={16} />
                           <span className="text-sm font-medium">Join</span>
@@ -1308,7 +1308,7 @@ const Index = () => {
                     </div>
                   )}
 
-                  {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && ( // Hide timer settings if schedule is active or prepared or time is managed by session
+                  {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && ( // Hide timer settings if schedule is active or prepared or time is managed by sesh
                     <div className="flex justify-center gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <span 
@@ -1588,13 +1588,13 @@ const Index = () => {
           </div>
         )}
 
-        {/* Join Session Dialog */}
+        {/* Join Sesh Dialog */}
         <Dialog open={showJoinInput} onOpenChange={setShowJoinInput}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Join Session</DialogTitle>
+              <DialogTitle>Join Sesh</DialogTitle>
               <DialogDescription>
-                Enter the session code to join an active session.
+                Enter the sesh code to join an active sesh.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
