@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus } from 'lucide-react'; // NEW: Import UserPlus, UserCheck, UserMinus
+import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus } from 'lucide-react';
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
-import { Profile } from '@/contexts/ProfileContext'; // Import the Profile type
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils'; // Import shared utils
-import { useToast } from '@/hooks/use-toast'; // NEW: Import useToast
+import { Profile } from '@/contexts/ProfileContext';
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils';
+import { toast } from 'sonner'; // Changed to sonner toast
+import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
 
 const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
@@ -16,28 +17,25 @@ const ProfilePopUpCard: React.FC = () => {
     bioVisibility, setBioVisibility, 
     intentionVisibility, setIntentionVisibility, 
     linkedinVisibility, setLinkedinVisibility,
-    friendStatuses, sendFriendRequest, acceptFriendRequest, removeFriend // NEW: Get friend states and functions
-  } = useProfile(); // Get current user's profile and visibility setters
+    friendStatuses, sendFriendRequest, acceptFriendRequest, removeFriend
+  } = useProfile();
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast(); // NEW: Initialize useToast
 
-  // State for adjusted position
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
 
-  // NEW: Helper to get display name for visibility status (copied from Profile.tsx for consistency)
   const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[]): string => {
     if (visibility.includes('private')) return 'private';
     if (visibility.includes('public')) return 'public';
     if (visibility.includes('friends') && visibility.includes('organisation')) return 'friends & organisation only';
     if (visibility.includes('friends')) return 'friends only';
     if (visibility.includes('organisation')) return 'organisation only';
-    return 'public'; // Fallback
+    return 'public';
   }, []);
 
-  // NEW: Helper to get display name for field (copied from Profile.tsx for consistency)
   const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility'): string => {
     switch (fieldName) {
       case 'bio_visibility': return 'Bio';
@@ -56,18 +54,15 @@ const ProfilePopUpCard: React.FC = () => {
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
     const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
     
-    visibilitySetter(newVisibility); // Update context state immediately
+    visibilitySetter(newVisibility);
     
-    // Construct specific success message for immediate toast feedback
-    const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
-    toast({
-      title: "Privacy Setting Changed",
-      description: successMessage,
-    });
-
-    // The actual saving to Supabase is now handled by the main Profile page's Save button.
-    // This function only updates the local context state and provides immediate UI feedback.
-  }, [toast, getDisplayFieldName, getDisplayVisibilityStatus]); // NEW: Added toast, getDisplayFieldName, getDisplayVisibilityStatus to dependencies
+    if (areToastsEnabled) { // NEW: Conditional toast
+      const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
+      toast.success("Privacy Setting Changed", {
+        description: successMessage,
+      });
+    }
+  }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus]);
 
   useEffect(() => {
     const fetchTargetProfile = async () => {
@@ -75,9 +70,7 @@ const ProfilePopUpCard: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // Check if the target user is the current user
         if (currentUserProfile && targetUserId === currentUserProfile.id) {
-          // If it's the current user, use the profile from context directly
           setTargetProfile({
             ...currentUserProfile,
             bio_visibility: bioVisibility,
@@ -106,41 +99,35 @@ const ProfilePopUpCard: React.FC = () => {
       setLoading(true);
       setError(null);
     }
-  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, bioVisibility, intentionVisibility, linkedinVisibility]); // Add visibility states as dependencies
+  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, bioVisibility, intentionVisibility, linkedinVisibility]);
 
-  // Effect to adjust position based on viewport
   useLayoutEffect(() => {
     if (isPopUpOpen && popUpPosition && cardRef.current) {
       const cardRect = cardRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const margin = 15; // Margin from viewport edges
+      const margin = 15;
 
-      let newX = popUpPosition.x + 10; // Initial offset from cursor
+      let newX = popUpPosition.x + 10;
       let newY = popUpPosition.y + 10;
 
-      // Check if card goes off right edge
       if (newX + cardRect.width + margin > viewportWidth) {
         newX = viewportWidth - cardRect.width - margin;
       }
-      // Check if card goes off bottom edge
       if (newY + cardRect.height + margin > viewportHeight) {
         newY = viewportHeight - cardRect.height - margin;
       }
-      // Ensure it doesn't go off left edge
       if (newX < margin) {
         newX = margin;
       }
-      // Ensure it doesn't go off top edge
       if (newY < margin) {
         newY = margin;
       }
 
       setAdjustedPosition({ x: newX, y: newY });
     }
-  }, [isPopUpOpen, popUpPosition, targetProfile, loading, error]); // Recalculate if content changes
+  }, [isPopUpOpen, popUpPosition, targetProfile, loading, error]);
 
-  // Close pop-up if clicked outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
@@ -163,12 +150,11 @@ const ProfilePopUpCard: React.FC = () => {
     return null;
   }
 
-  // Use adjustedPosition for styling
   const style: React.CSSProperties = {
     position: 'fixed',
     left: adjustedPosition?.x,
     top: adjustedPosition?.y,
-    zIndex: 10000, // Higher than other elements
+    zIndex: 10000,
   };
 
   const renderContent = () => {
@@ -184,17 +170,14 @@ const ProfilePopUpCard: React.FC = () => {
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
     const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
-    const currentFriendStatus = friendStatuses[targetProfile.id] || 'none'; // NEW: Get friend status
+    const currentFriendStatus = friendStatuses[targetProfile.id] || 'none';
 
-    // Helper to determine if a specific field should be visible
     const isFieldVisible = (fieldVisibility: ('public' | 'friends' | 'organisation' | 'private')[] | null | undefined) => {
-      if (isCurrentUserProfile) return true; // Always show own profile details
-      if (!fieldVisibility || fieldVisibility.includes('private')) return false; // Explicitly private
-      // For demo, if it's not private, and includes public, friends, or organisation, show it.
+      if (isCurrentUserProfile) return true;
+      if (!fieldVisibility || fieldVisibility.includes('private')) return false;
       return fieldVisibility.includes('public') || fieldVisibility.includes('friends') || fieldVisibility.includes('organisation');
     };
 
-    // If the profile is explicitly private and not the current user, show only name
     if (!isCurrentUserProfile && targetProfile.bio_visibility?.includes('private') && 
         targetProfile.intention_visibility?.includes('private') && 
         targetProfile.linkedin_visibility?.includes('private')) {
@@ -207,7 +190,6 @@ const ProfilePopUpCard: React.FC = () => {
       );
     }
 
-    // Derive current visibility for labels (only for current user, otherwise use targetProfile's saved visibility)
     const currentBioVisibility = isCurrentUserProfile ? bioVisibility : (targetProfile.bio_visibility || ['public']);
     const currentIntentionVisibility = isCurrentUserProfile ? intentionVisibility : (targetProfile.intention_visibility || ['public']);
     const currentLinkedinVisibility = isCurrentUserProfile ? linkedinVisibility : (targetProfile.linkedin_visibility || ['public']);
@@ -218,7 +200,6 @@ const ProfilePopUpCard: React.FC = () => {
           <User className="h-6 w-6 text-primary" />
           <h3 className="font-bold text-xl">{displayName}</h3>
           
-          {/* NEW: Friend Icon */}
           {!isCurrentUserProfile && (
             <Button
               variant="ghost"
@@ -235,7 +216,6 @@ const ProfilePopUpCard: React.FC = () => {
                 } else if (currentFriendStatus === 'friends') {
                   removeFriend(targetProfile.id);
                 }
-                // No action for 'pending' state on click
               }}
               disabled={currentFriendStatus === 'pending'}
             >
@@ -243,7 +223,7 @@ const ProfilePopUpCard: React.FC = () => {
                 <UserPlus size={18} />
               )}
               {currentFriendStatus === 'pending' && (
-                <UserPlus size={18} className="opacity-50" /> // Greyed out for pending
+                <UserPlus size={18} className="opacity-50" />
               )}
               {currentFriendStatus === 'friends' && (
                 <UserCheck size={18} />
@@ -285,9 +265,6 @@ const ProfilePopUpCard: React.FC = () => {
         )}
 
         {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
-          // Sociability is generally visible if any other field is visible, or if it's explicitly public (though no direct sociability_visibility field)
-          // For now, tie its visibility to other fields or assume it's always visible if not private overall.
-          // A more robust solution would involve a dedicated sociability_visibility field.
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Users size={16} /> Sociability
@@ -303,7 +280,6 @@ const ProfilePopUpCard: React.FC = () => {
         )}
 
         {targetProfile.organization && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
-          // Organization is generally visible if any other field is visible, or if it's explicitly public.
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 size={16} /> Organization

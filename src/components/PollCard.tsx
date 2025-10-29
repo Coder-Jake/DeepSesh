@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, X } from "lucide-react"; // Import X icon
-import { useToast } from "@/hooks/use-toast";
+import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, X } from "lucide-react";
+import { toast } from 'sonner'; // Changed to sonner toast
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
 
 interface PollOption {
   id: string;
@@ -29,11 +30,12 @@ interface PollCardProps {
   poll: Poll;
   onVote: (pollId: string, optionIds: string[], customOptionText?: string) => void;
   currentUserId: string;
-  onHide: (id: string) => void; // NEW: Prop to handle hiding the card
+  onHide: (id: string) => void;
 }
 
 const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide }) => {
-  const { toast } = useToast();
+  // Removed: const { toast } = useToast(); // Removed shadcn toast
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
   const [selectedOption, setSelectedOption] = useState<string | null>(() => {
     if (poll.type === 'closed' || poll.type === 'choice') {
       const votedOption = poll.options.find(option => option.votes.some(vote => vote.userId === currentUserId));
@@ -51,17 +53,15 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
   });
   const [customResponse, setCustomResponse] = useState("");
 
-  // Effect to synchronize selectedOption with poll prop changes
   useEffect(() => {
     if (poll.type === 'closed' || poll.type === 'choice') {
       const votedOption = poll.options.find(option => option.votes.some(vote => vote.userId === currentUserId));
       setSelectedOption(votedOption ? votedOption.id : null);
     } else {
-      setSelectedOption(null); // Ensure it's null for selection type
+      setSelectedOption(null);
     }
   }, [poll, currentUserId]);
 
-  // Effect to synchronize selectedOptions with poll prop changes
   useEffect(() => {
     if (poll.type === 'selection') {
       setSelectedOptions(
@@ -70,11 +70,10 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
           .map(option => option.id)
       );
     } else {
-      setSelectedOptions([]); // Ensure it's empty for closed/choice type
+      setSelectedOptions([]);
     }
   }, [poll, currentUserId]);
 
-  // Helper to submit the current state of votes
   const submitVote = (
     newSelectedOption: string | null,
     newSelectedOptions: string[],
@@ -95,18 +94,15 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
       customTextToSend = newCustomResponse.trim();
     }
 
-    // Determine if there was a previous vote state to compare for unvote messages
     const hadPreviousVote = (selectedOption !== null || selectedOptions.length > 0 || customResponse.trim() !== '');
     const hasCurrentVote = (votesToSend.length > 0 || customTextToSend);
 
     if (!hasCurrentVote && !hadPreviousVote) {
-      // No vote to submit, and no previous vote to clear. Do nothing.
       return;
     }
 
     onVote(poll.id, votesToSend, customTextToSend);
 
-    // Determine toast message
     let newVoteText = "";
     if (poll.type === 'closed' && newSelectedOption) {
       if (newSelectedOption === 'closed-yes') newVoteText = 'yes';
@@ -120,19 +116,17 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
       newVoteText = customTextToSend;
     }
 
-    if (!hasCurrentVote) { // This means an unvote that left nothing
-      toast({
-        title: "Vote Removed",
+    if (!hasCurrentVote && areToastsEnabled) { // NEW: Conditional toast
+      toast.info("Vote Removed", {
         description: `Your vote for the poll has been removed.`,
       });
     } 
-    // Removed the "Vote Cast" toast here
   };
 
   const handleClosedPollVote = (optionId: string) => {
     let newVoteId: string | null = optionId;
     if (selectedOption === optionId) {
-      newVoteId = null; // User clicked the same option again, so unvote
+      newVoteId = null;
     }
     setSelectedOption(newVoteId);
     submitVote(newVoteId, selectedOptions, customResponse);
@@ -143,8 +137,8 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
     submitVote(newOptionId, selectedOptions, customResponse);
   };
 
-  const handleSelectionChange = (optionId: string, checked: boolean | 'indeterminate') => { // Updated type for checked
-    const isChecked = !!checked; // Ensure it's a boolean
+  const handleSelectionChange = (optionId: string, checked: boolean | 'indeterminate') => {
+    const isChecked = !!checked;
     const newSelectedOptions = isChecked
       ? [...selectedOptions, optionId]
       : selectedOptions.filter(id => id !== optionId);
@@ -157,14 +151,13 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
   };
 
   const handleCustomResponseBlur = () => {
-    // Submit the current state when the custom response input loses focus
     submitVote(selectedOption, selectedOptions, customResponse);
   };
 
   const handleCustomResponseKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent default form submission behavior
-      handleCustomResponseBlur(); // This already calls submitVote
+      e.preventDefault();
+      handleCustomResponseBlur();
     }
   };
 
@@ -185,7 +178,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
   const neutralVotes = getTotalVotes('closed-dont-mind');
 
   return (
-    <Card className="bg-card border-border relative"> {/* Added relative for absolute positioning */}
+    <Card className="bg-card border-border relative">
       <Button
         variant="ghost"
         size="icon"
@@ -208,7 +201,6 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
           <div className="space-y-3">
             {poll.type === 'closed' && (
               <div className="flex justify-center gap-4">
-                {/* Thumbs Up */}
                 <button 
                   onClick={() => handleClosedPollVote('closed-yes')} 
                   className={cn(
@@ -218,7 +210,6 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
                 >
                   <ThumbsUp className="h-6 w-6" fill={selectedOption === 'closed-yes' ? "currentColor" : "none"} /> {yesVotes}
                 </button>
-                {/* Neutral / Don't Mind */}
                 <button 
                   onClick={() => handleClosedPollVote('closed-dont-mind')} 
                   className={cn(
@@ -228,7 +219,6 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
                 >
                   <Minus className="h-6 w-6" fill={selectedOption === 'closed-dont-mind' ? "currentColor" : "none"} /> {neutralVotes}
                 </button>
-                {/* Thumbs Down */}
                 <button 
                   onClick={() => handleClosedPollVote('closed-no')} 
                   className={cn(
@@ -241,7 +231,6 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
               </div>
             )}
 
-            {/* Custom Response Input - Moved to top */}
             {poll.allowCustomResponses && (poll.type === 'choice' || poll.type === 'selection') && (
               <div className="space-y-2">
                 <Label htmlFor={`${poll.id}-custom-response`}>Your Custom Response</Label>

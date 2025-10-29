@@ -4,20 +4,26 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner'; // Changed to sonner toast
+import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
 
 const Login = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
 
   useEffect(() => {
     if (!loading && user) {
-      // User is logged in, redirect to home page
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success("Logged in successfully!", {
+          description: `Welcome back, ${user.email}.`,
+        });
+      }
       navigate('/');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, areToastsEnabled]); // Added areToastsEnabled to dependencies
 
   if (loading || user) {
-    // Show a loading state or nothing while checking auth status or if already logged in
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Loading...</p>
@@ -31,7 +37,7 @@ const Login = () => {
         <h1 className="text-2xl font-bold text-center text-foreground">Welcome!</h1>
         <Auth
           supabaseClient={supabase}
-          providers={[]} // No third-party providers unless specified
+          providers={[]}
           appearance={{
             theme: ThemeSupa,
             variables: {
@@ -44,7 +50,7 @@ const Login = () => {
             },
           }}
           theme="light"
-          redirectTo={window.location.origin + '/'} // Redirect to home after login
+          redirectTo={window.location.origin + '/'}
           localization={{
             variables: {
               sign_in: {

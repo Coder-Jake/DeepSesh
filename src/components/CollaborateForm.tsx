@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client'; // Corrected import
+import { supabase } from '@/integrations/supabase/client';
+import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),
@@ -20,7 +21,7 @@ const formSchema = z.object({
 type CollaborateFormValues = z.infer<typeof formSchema>;
 
 const CollaborateForm = () => {
-  // Removed createClient call as supabase is already initialized and imported
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
   const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<CollaborateFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -35,7 +36,7 @@ const CollaborateForm = () => {
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           name: values.name,
-          email: values.email || undefined, // Send undefined if empty string
+          email: values.email || undefined,
           message: values.message,
           type: 'collaborate',
         },
@@ -45,15 +46,19 @@ const CollaborateForm = () => {
         throw error;
       }
 
-      toast.success('Collaboration offer sent!', {
-        description: 'We will get back to you soon.',
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success('Collaboration offer sent!', {
+          description: 'We will get back to you soon.',
+        });
+      }
       reset();
     } catch (error: any) {
       console.error('Error sending collaboration offer:', error);
-      toast.error('Failed to send collaboration offer.', {
-        description: error.message || 'Please try again later.',
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error('Failed to send collaboration offer.', {
+          description: error.message || 'Please try again later.',
+        });
+      }
     }
   };
 

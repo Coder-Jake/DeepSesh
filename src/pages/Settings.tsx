@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner'; // Changed to sonner toast
 import { useTheme } from "@/contexts/ThemeContext";
 import { useProfile } from "@/contexts/ProfileContext";
 
@@ -78,15 +78,15 @@ const Settings = () => {
     setOpenSettingsAccordions,
     is24HourFormat,
     setIs24HourFormat,
-    areToastsEnabled,
+    areToastsEnabled, // NEW: Get areToastsEnabled
     setAreToastsEnabled,
     startStopNotifications,
-    setStartStopNotifications, // Fix: Added setStartStopNotifications
+    setStartStopNotifications,
   } = useTimer();
 
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  // Removed: const { toast } = useToast(); // Removed shadcn toast
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile();
 
@@ -286,7 +286,6 @@ const Settings = () => {
             )}
           </div>
         ) : (
-          // Placeholder to maintain alignment when Push button is hidden
           <div className="relative min-w-[100px]" />
         )}
 
@@ -438,16 +437,17 @@ const Settings = () => {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast({
-        title: "Logout Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("Logout Error", {
+          description: error.message,
+        });
+      }
     } else {
-      toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success("Logged Out", {
+          description: "You have been successfully logged out.",
+        });
+      }
       navigate('/');
     }
   };
@@ -482,7 +482,6 @@ const Settings = () => {
           onValueChange={setOpenSettingsAccordions}
         >
 
-          {/* Behaviour */}
           <AccordionItem value="behaviour" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
               Behaviour
@@ -606,7 +605,7 @@ const Settings = () => {
                         }}
                         onBlur={() => {
                           if (customBatchMinutes === 0) {
-                            setCustomBatchMinutes(currentTimerIncrement); // Changed from timerIncrement
+                            setCustomBatchMinutes(currentTimerIncrement);
                           }
                         }}
                         min={currentTimerIncrement}
@@ -694,7 +693,6 @@ const Settings = () => {
             </AccordionContent>
           </AccordionItem>
 
-          {/* Session Defaults */}
           <AccordionItem value="session-defaults" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
               Session Defaults
@@ -765,7 +763,7 @@ const Settings = () => {
                 </Button>
               </div>
 
-              <div className="border-t border-border pt-6 mt-6"> {/* Added dividing line here */}
+              <div className="border-t border-border pt-6 mt-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="focus-duration">Focus</Label>
@@ -797,7 +795,7 @@ const Settings = () => {
                       onChange={(e) => setDefaultBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                       onBlur={(e) => {
                         if (parseInt(e.target.value) === 0 || e.target.value === '') {
-                          setDefaultBreakMinutes(currentTimerIncrement); // Changed from timerIncrement
+                          setDefaultBreakMinutes(currentTimerIncrement);
                         }
                       }}
                       min={currentTimerIncrement}
@@ -819,7 +817,6 @@ const Settings = () => {
           onValueChange={setOpenSettingsAccordions}
         >
 
-          {/* Location & Discovery */}
           <AccordionItem value="location" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
               Location & Discovery
@@ -856,7 +853,6 @@ const Settings = () => {
             </AccordionContent>
           </AccordionItem>
 
-          {/* Privacy & Safety */}
           <AccordionItem value="privacy" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
               Safety
@@ -1062,7 +1058,6 @@ const Settings = () => {
             </AccordionContent>
           </AccordionItem>
 
-          {/* Notifications */}
           <AccordionItem value="notifications" className="border rounded-lg px-6">
             <AccordionTrigger className="text-xl font-semibold">
               Notifications

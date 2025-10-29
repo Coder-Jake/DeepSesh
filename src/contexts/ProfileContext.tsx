@@ -1,18 +1,18 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react"; // NEW: Import useRef
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Tables, TablesUpdate, Json, TablesInsert } from "@/integrations/supabase/types"; // MODIFIED: Changed TablesInsert to TablesUpdate for ProfileUpdate
+import { Tables, TablesUpdate, Json, TablesInsert } from "@/integrations/supabase/types";
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
-import { useAuth } from "./AuthContext"; // Import useAuth to get current user ID
-import { useTimer } from "./TimerContext"; // NEW: Import useTimer
+import { useAuth } from "./AuthContext";
+// Removed: import { useTimer } from "./TimerContext"; // This import is removed
 
-export type Profile = Tables<'public', 'profiles'> & { // Extend the base Profile type
+export type Profile = Tables<'public', 'profiles'> & {
   bio_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
   intention_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
   linkedin_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
 };
-type ProfileInsert = TablesInsert<'public', 'profiles'>; // Keep Insert for new profile creation
-type ProfileUpdate = TablesUpdate<'public', 'profiles'>; // MODIFIED: Use TablesUpdate
+type ProfileInsert = TablesInsert<'public', 'profiles'>;
+type ProfileUpdate = TablesUpdate<'public', 'profiles'>;
 
 export type TimePeriod = 'week' | 'month' | 'all';
 
@@ -27,13 +27,13 @@ export interface SessionHistory {
   asks?: ActiveAskItem[];
   session_start_time: string;
   session_end_time:   string;
-  participantNames?: string[]; // NEW: Added participantNames
+  participantNames?: string[];
 }
 
 export interface StatsPeriodData {
   totalFocusTime: string;
   sessionsCompleted: number;
-  coworkers: number; // Changed from uniqueCoworkers
+  coworkers: number;
   focusRank: string;
   coworkerRank: string;
 }
@@ -44,7 +44,6 @@ export interface StatsData {
   all: StatsPeriodData;
 }
 
-// Helper function to format seconds into a duration string (e.g., "1h 30m" or "45 mins")
 const formatSecondsToDurationString = (totalSeconds: number): string => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.round((totalSeconds % 3600) / 60);
@@ -55,7 +54,6 @@ const formatSecondsToDurationString = (totalSeconds: number): string => {
   return `${minutes} mins`;
 };
 
-// Helper function to parse "XXh YYm" to total seconds
 const parseDurationStringToSeconds = (durationString: string): number => {
   const matchHours = durationString.match(/(\d+)h/);
   const matchMinutes = durationString.match(/(\d+)m/);
@@ -67,7 +65,6 @@ const parseDurationStringToSeconds = (durationString: string): number => {
   if (matchMinutes) {
     totalSeconds += parseInt(matchMinutes[1], 10) * 60;
   }
-  // If it's just "X mins" (e.g., "45 mins"), parse it directly
   const matchMinsOnly = durationString.match(/(\d+)\s*mins/);
   if (!matchHours && !matchMinutes && matchMinsOnly) {
     totalSeconds += parseInt(matchMinsOnly[1], 10) * 60;
@@ -75,7 +72,6 @@ const parseDurationStringToSeconds = (durationString: string): number => {
   return totalSeconds;
 };
 
-// Helper function to parse "XXh YYm" to total hours (number) for ranking
 const parseDurationStringToHours = (durationString: string): number => {
   const matchHours = durationString.match(/(\d+)h/);
   const matchMinutes = durationString.match(/(\d+)m/);
@@ -91,33 +87,30 @@ const parseDurationStringToHours = (durationString: string): number => {
   return hours + (minutes / 60);
 };
 
-// Helper to check if a session date falls within the current week (starting Monday)
 const isDateInCurrentWeek = (sessionDate: Date, today: Date): boolean => {
   const startOfWeek = new Date(today);
-  const day = today.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
-  const diff = day === 0 ? 6 : day - 1; // Days to subtract to get to Monday
+  const day = today.getDay();
+  const diff = day === 0 ? 6 : day - 1;
   startOfWeek.setDate(today.getDate() - diff);
   startOfWeek.setHours(0, 0, 0, 0);
 
   const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6); // Set to Sunday of current week
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
 
   return sessionDate >= startOfWeek && sessionDate <= endOfWeek;
 };
 
-// Helper to check if a session date falls within the current month (starting 1st)
 const isDateInCurrentMonth = (sessionDate: Date, today: Date): boolean => {
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   endOfMonth.setHours(23, 59, 59, 999);
 
   return sessionDate >= startOfMonth && sessionDate <= endOfMonth;
 };
 
-// Dummy Leaderboard Data (consistent with Leaderboard.tsx)
 const dummyLeaderboardFocusHours = {
   week: [
     { id: "angie-id-1", name: "Angie", focusHours: 30 },
@@ -160,7 +153,6 @@ const dummyLeaderboardCoworkers = {
   ],
 };
 
-// Function to calculate stats from a list of sessions
 const calculateStats = (allSessions: SessionHistory[], currentUserId: string | undefined, currentUserName: string): StatsData => {
   const today = new Date();
   const stats: StatsData = {
@@ -200,7 +192,6 @@ const calculateStats = (allSessions: SessionHistory[], currentUserId: string | u
     const userFocusHours = parseDurationStringToHours(formatSecondsToDurationString(totalFocusSeconds));
     const userCoworkerCount = totalCoworkerCount;
 
-    // Calculate Focus Rank
     const focusLeaderboard = [...dummyLeaderboardFocusHours[period]];
     const existingUserFocusIndex = focusLeaderboard.findIndex(user => user.id === currentUserId);
     if (existingUserFocusIndex !== -1) {
@@ -211,7 +202,6 @@ const calculateStats = (allSessions: SessionHistory[], currentUserId: string | u
     focusLeaderboard.sort((a, b) => b.focusHours - a.focusHours);
     const userFocusRank = focusLeaderboard.findIndex(user => user.id === currentUserId) + 1;
 
-    // Calculate Coworker Rank
     const collaborationLeaderboard = [...dummyLeaderboardCoworkers[period]];
     const existingUserCollaborationIndex = collaborationLeaderboard.findIndex(user => user.id === currentUserId);
     if (existingUserCollaborationIndex !== -1) {
@@ -246,7 +236,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date(`${currentYear}-09-15T09:00:00Z`).toISOString(),
     session_end_time: new Date(`${currentYear}-09-15T09:45:00Z`).toISOString(),
-    participantNames: ["You", "Alice", "Bob"], // Added mock participant names
+    participantNames: ["You", "Alice", "Bob"],
   },
   {
     id: crypto.randomUUID(),
@@ -259,7 +249,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date(`${currentYear}-09-14T10:30:00Z`).toISOString(),
     session_end_time: new Date(`${currentYear}-09-14T12:00:00Z`).toISOString(),
-    participantNames: ["You", "Charlie", "Diana", "Eve", "Frank"], // Added mock participant names
+    participantNames: ["You", "Charlie", "Diana", "Eve", "Frank"],
   },
   {
     id: crypto.randomUUID(),
@@ -272,7 +262,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date(`${currentYear}-09-13T14:00:00Z`).toISOString(),
     session_end_time: new Date(`${currentYear}-09-13T14:30:00Z`).toISOString(),
-    participantNames: ["You"], // Added mock participant names
+    participantNames: ["You"],
   },
   {
     id: crypto.randomUUID(),
@@ -285,7 +275,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date(`${currentYear}-09-12T11:00:00Z`).toISOString(),
     session_end_time: new Date(`${currentYear}-09-12T13:00:00Z`).toISOString(),
-    participantNames: ["You", "Grace"], // Added mock participant names
+    participantNames: ["You", "Grace"],
   },
   {
     id: crypto.randomUUID(),
@@ -298,7 +288,7 @@ const initialSessions: SessionHistory[] = [
     asks: [],
     session_start_time: new Date(`${currentYear}-09-11T16:00:00Z`).toISOString(),
     session_end_time: new Date(`${currentYear}-09-11T17:00:00Z`).toISOString(),
-    participantNames: ["You", "Heidi", "Ivan", "Judy"], // Added mock participant names
+    participantNames: ["You", "Heidi", "Ivan", "Judy"],
   }
 ];
 
@@ -323,7 +313,6 @@ const generateRandomHostCode = () => {
   return `${randomColor}${randomAnimal}`;
 };
 
-// NEW: Mock profiles for demonstration
 const mockProfiles: Profile[] = [
   {
     id: "mock-user-id-1",
@@ -336,9 +325,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Tech Innovators Inc.",
     linkedin_url: "https://www.linkedin.com/in/alicesmith",
-    bio_visibility: ['public'], // NEW
-    intention_visibility: ['public'], // NEW
-    linkedin_visibility: ['public'], // NEW
+    bio_visibility: ['public'],
+    intention_visibility: ['public'],
+    linkedin_visibility: ['public'],
     host_code: "redfox",
   },
   {
@@ -352,9 +341,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Web Solutions Co.",
     linkedin_url: "https://www.linkedin.com/in/bobjohnson",
-    bio_visibility: ['public'], // NEW
-    intention_visibility: ['public'], // NEW
-    linkedin_visibility: ['public'], // NEW
+    bio_visibility: ['public'],
+    intention_visibility: ['public'],
+    linkedin_visibility: ['public'],
     host_code: "bluebear",
   },
   {
@@ -368,9 +357,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Cloud Builders LLC",
     linkedin_url: "https://www.linkedin.com/in/charliebrown",
-    bio_visibility: ['friends', 'organisation'], // NEW
-    intention_visibility: ['friends', 'organisation'], // NEW
-    linkedin_visibility: ['friends', 'organisation'], // NEW
+    bio_visibility: ['friends', 'organisation'],
+    intention_visibility: ['friends', 'organisation'],
+    linkedin_visibility: ['friends', 'organisation'],
     host_code: "greencat",
   },
   {
@@ -384,9 +373,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Global Enterprises",
     linkedin_url: "https://www.linkedin.com/in/dianaprince",
-    bio_visibility: ['public', 'organisation'], // NEW
-    intention_visibility: ['public', 'organisation'], // NEW
-    linkedin_visibility: ['public', 'organisation'], // NEW
+    bio_visibility: ['public', 'organisation'],
+    intention_visibility: ['public', 'organisation'],
+    linkedin_visibility: ['public', 'organisation'],
     host_code: "yellowdog",
   },
   {
@@ -400,9 +389,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Design Innovations",
     linkedin_url: "https://www.linkedin.com/in/eveadams",
-    bio_visibility: ['private'], // NEW
-    intention_visibility: ['private'], // NEW
-    linkedin_visibility: ['private'], // NEW
+    bio_visibility: ['private'],
+    intention_visibility: ['private'],
+    linkedin_visibility: ['private'],
     host_code: "purplelion",
   },
   {
@@ -416,9 +405,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Data Insights Co.",
     linkedin_url: "https://www.linkedin.com/in/frankwhite",
-    bio_visibility: ['public'], // NEW
-    intention_visibility: ['public'], // NEW
-    linkedin_visibility: ['public'], // NEW
+    bio_visibility: ['public'],
+    intention_visibility: ['public'],
+    linkedin_visibility: ['public'],
     host_code: "orangetiger",
   },
   {
@@ -432,9 +421,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Creative Minds Agency",
     linkedin_url: "https://www.linkedin.com/in/gracetaylor",
-    bio_visibility: ['public'], // NEW
-    intention_visibility: ['public'], // NEW
-    linkedin_visibility: ['public'], // NEW
+    bio_visibility: ['public'],
+    intention_visibility: ['public'],
+    linkedin_visibility: ['public'],
     host_code: "pinkwolf",
   },
   {
@@ -448,9 +437,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Secure Solutions Ltd.",
     linkedin_url: "https://www.linkedin.com/in/heidiclark",
-    bio_visibility: ['public'], // NEW
-    intention_visibility: ['public'], // NEW
-    linkedin_visibility: ['public'], // NEW
+    bio_visibility: ['public'],
+    intention_visibility: ['public'],
+    linkedin_visibility: ['public'],
     host_code: "browndeer",
   },
   {
@@ -464,9 +453,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Automate Everything Inc.",
     linkedin_url: "https://www.linkedin.com/in/ivanking",
-    bio_visibility: ['public'], // NEW
-    intention_visibility: ['public'], // NEW
-    linkedin_visibility: ['public'], // NEW
+    bio_visibility: ['public'],
+    intention_visibility: ['public'],
+    linkedin_visibility: ['public'],
     host_code: "greyzebra",
   },
   {
@@ -480,9 +469,9 @@ const mockProfiles: Profile[] = [
     updated_at: new Date().toISOString(),
     organization: "Innovate UX",
     linkedin_url: "https://www.linkedin.com/in/judylee",
-    bio_visibility: ['public'], // NEW
-    intention_visibility: ['public'], // NEW
-    linkedin_visibility: ['public'], // NEW
+    bio_visibility: ['public'],
+    intention_visibility: ['public'],
+    linkedin_visibility: ['public'],
     host_code: "blackpanda",
   },
 ];
@@ -492,13 +481,11 @@ interface ProfileContextType {
   profile: Profile | null;
   loading: boolean;
   error: string | null;
-  updateProfile: (data: ProfileUpdate, successMessage?: string) => Promise<void>; // MODIFIED: Added successMessage
+  updateProfile: (data: ProfileUpdate, successMessage?: string) => Promise<void>;
   fetchProfile: () => Promise<void>;
   
   localFirstName: string;
   setLocalFirstName: React.Dispatch<React.SetStateAction<string>>;
-
-  // Removed sessions, setSessions, statsData, historyTimePeriod, setHistoryTimePeriod
 
   saveSession: (
     seshTitle: string,
@@ -509,7 +496,7 @@ interface ProfileContextType {
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
     activeAsks: ActiveAskItem[] | undefined,
-    allParticipantNames: string[] | undefined // NEW: Added allParticipantNames
+    allParticipantNames: string[] | undefined
   ) => Promise<void>;
 
   blockedUsers: string[];
@@ -520,10 +507,8 @@ interface ProfileContextType {
   hostCode: string;
   setHostCode: React.Dispatch<React.SetStateAction<string>>;
 
-  // Removed deleteSession
-  getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>; // NEW: Added getPublicProfile
+  getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>;
 
-  // NEW: Per-field visibility states
   bioVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
   setBioVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
   intentionVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
@@ -531,7 +516,6 @@ interface ProfileContextType {
   linkedinVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
   setLinkedinVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
 
-  // NEW: Friend status states and functions
   friendStatuses: Record<string, 'none' | 'pending' | 'friends'>;
   sendFriendRequest: (targetUserId: string) => void;
   acceptFriendRequest: (targetUserId: string) => void;
@@ -556,43 +540,34 @@ const LOCAL_STORAGE_KEY = 'deepsesh_profile_data';
 const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name';
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users';
 const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
-// Removed LOCAL_STORAGE_SESSIONS_KEY
-const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility'; // NEW
-const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility'; // NEW
-const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility'; // NEW
-const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses'; // NEW
+const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility';
+const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility';
+const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility';
+const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses';
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user } = useAuth();
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
+  // Removed: const { areToastsEnabled } = useTimer(); // This line is removed
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [localFirstName, setLocalFirstName] = useState("You");
 
-  // Removed sessions and setSessions
-  
-  // Removed statsData
   const statsData = useMemo(() => ({
     week: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
     month: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
     all: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
   }), []);
 
-
-  // Removed historyTimePeriod and setHistoryTimePeriod
-
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [hostCode, setHostCode] = useState("");
 
-  // NEW: Per-field visibility states
   const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
 
-  // NEW: Friend status state
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
-  const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map()); // NEW: Ref to store timeouts
+  const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
@@ -626,60 +601,58 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const trimmedName = userName.trim();
     if (trimmedName && !blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => [...prev, trimmedName]);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.success(`'${trimmedName}' has been blocked.`, {
           description: "They will no longer see your sessions.",
         });
-      }
+      // }
     } else if (trimmedName && blockedUsers.includes(trimmedName)) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.info(`'${trimmedName}' is already blocked.`, {
           description: "No changes made.",
         });
-      }
+      // }
     }
-  }, [blockedUsers, toast, areToastsEnabled]);
+  }, [blockedUsers, toast]);
 
   const unblockUser = useCallback((userName: string) => {
     const trimmedName = userName.trim();
     if (trimmedName && blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => prev.filter(name => name !== trimmedName));
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.success(`'${trimmedName}' has been unblocked.`, {
           description: "They can now see your sessions again.",
         });
-      }
+      // }
     } else if (trimmedName && !blockedUsers.includes(trimmedName)) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.info(`'${trimmedName}' is not in your blocked list.`, {
           description: "No changes made.",
         });
-      }
+      // }
     }
-  }, [blockedUsers, toast, areToastsEnabled]);
+  }, [blockedUsers, toast]);
 
-  // NEW: Mock friend request functions
   const sendFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'pending' }));
     // toast.success("Friend request sent!", {
     //   description: "They will be notified of your request.",
     // });
 
-    // Automatically accept after 3 seconds for mock profiles
     const timeoutId = setTimeout(() => {
       setFriendStatuses(prev => {
-        if (prev[targetUserId] === 'pending') { // Only accept if still pending
-          // toast.success(`Friend request from ${targetUserId} accepted!`, { // Assuming targetUserId can be used as a name for mock
+        if (prev[targetUserId] === 'pending') {
+          // toast.success(`Friend request from ${targetUserId} accepted!`, {
           //   description: "You are now friends!",
           // });
           return { ...prev, [targetUserId]: 'friends' };
         }
         return prev;
       });
-      friendRequestTimeouts.current.delete(targetUserId); // Clean up timeout reference
-    }, 3000); // 3 seconds delay
+      friendRequestTimeouts.current.delete(targetUserId);
+    }, 3000);
 
-    friendRequestTimeouts.current.set(targetUserId, timeoutId); // Store timeout ID
+    friendRequestTimeouts.current.set(targetUserId, timeoutId);
   }, []);
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
@@ -687,7 +660,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     // toast.success("Friend request accepted!", {
     //   description: "You are now friends!",
     // });
-    if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
+    if (friendRequestTimeouts.current.has(targetUserId)) {
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
     }
@@ -698,7 +671,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     // toast.info("Friend removed.", {
     //   description: "You are no longer friends.",
     // });
-    if (friendRequestTimeouts.current.has(targetUserId)) { // Clear any pending auto-accept
+    if (friendRequestTimeouts.current.has(targetUserId)) {
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
     }
@@ -710,9 +683,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Removed localSessions logic
-
-    // NEW: Load per-field visibility from local storage for unauthenticated users
     const storedBioVisibility = localStorage.getItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY);
     if (storedBioVisibility) setBioVisibility(JSON.parse(storedBioVisibility));
     const storedIntentionVisibility = localStorage.getItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY);
@@ -720,8 +690,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const storedLinkedinVisibility = localStorage.getItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY);
     if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
 
-    // NEW: Load friend statuses
-    const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY); // Corrected from localStorage.Item
+    const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
     if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
 
 
@@ -736,7 +705,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       }
-      // Removed setSessions(localSessions.length > 0 ? localSessions : initialSessions);
       return;
     }
 
@@ -749,11 +717,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error("Error fetching profile:", fetchError);
       setError(fetchError.message);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.error("Error fetching profile", {
           description: fetchError.message,
         });
-      }
+      // }
       setProfile(null);
       setLoading(false);
       const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
@@ -764,7 +732,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
       }
-      // Removed setSessions(localSessions.length > 0 ? localSessions : initialSessions);
       return;
     }
 
@@ -783,9 +750,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         const newHostCode = generateRandomHostCode();
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-        await updateProfile({ id: user.id, host_code: newHostCode }); // MODIFIED: Added user.id
+        await updateProfile({ id: user.id, host_code: newHostCode });
       }
-      // NEW: Set per-field visibility from fetched profile
       setBioVisibility((existingProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
       setIntentionVisibility((existingProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
       setLinkedinVisibility((existingProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
@@ -801,21 +767,21 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           first_name: user.user_metadata.first_name, 
           last_name: user.user_metadata.last_name,
           host_code: newHostCode,
-          bio_visibility: ['public'], // NEW: Default visibility on creation
-          intention_visibility: ['public'], // NEW
-          linkedin_visibility: ['public'], // NEW
-        } as ProfileInsert) // Cast to ProfileInsert
+          bio_visibility: ['public'],
+          intention_visibility: ['public'],
+          linkedin_visibility: ['public'],
+        } as ProfileInsert)
         .select()
         .single();
 
       if (insertError) {
         console.error("Error creating profile:", insertError);
         setError(insertError.message);
-        if (areToastsEnabled) { // NEW: Conditional toast
+        // Removed: if (areToastsEnabled) {
           toast.error("Error creating profile", {
             description: insertError.message,
           });
-        }
+        // }
         setProfile(null);
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
@@ -829,7 +795,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         });
         setHostCode(newProfile.host_code || newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newProfile.host_code || newHostCode);
-        // NEW: Set per-field visibility from new profile
         setBioVisibility((newProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
         setIntentionVisibility((newProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
         setLinkedinVisibility((newProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
@@ -837,11 +802,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       }
     }
 
-    // Removed session fetching logic
     setLoading(false);
   };
 
-  const updateProfile = async (data: ProfileUpdate, successMessage?: string) => { // MODIFIED: Added successMessage
+  const updateProfile = async (data: ProfileUpdate, successMessage?: string) => {
     setLoading(true);
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
@@ -849,11 +813,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (!user) {
       setError("User not authenticated.");
       setLoading(false);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.error("Authentication required", {
           description: "Please log in to update your profile.",
         });
-      }
+      // }
       return;
     }
 
@@ -867,11 +831,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (error) {
       console.error("Error updating profile:", error);
       setError(error.message);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.error("Error updating profile", {
           description: error.message,
         });
-      }
+      // }
     } else if (updatedData) {
       setProfile({ 
         ...updatedData, 
@@ -884,17 +848,16 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         setHostCode(updatedData.host_code);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, updatedData.host_code);
       }
-      // NEW: Update per-field visibility states after successful update
       setBioVisibility((updatedData.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
       setIntentionVisibility((updatedData.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
       setLinkedinVisibility((updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
 
       console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.success(successMessage || "Profile updated!", { // MODIFIED: Use successMessage or fallback
+      // Removed: if (areToastsEnabled) {
+        toast.success(successMessage || "Profile updated!", {
           description: "Your profile has been successfully saved.",
         });
-      }
+      // }
     }
     setLoading(false);
   };
@@ -908,7 +871,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     activeJoinedSessionCoworkerCount: number,
     sessionStartTime: number,
     activeAsks: ActiveAskItem[] | undefined,
-    allParticipantNames: string[] | undefined // NEW: Added allParticipantNames
+    allParticipantNames: string[] | undefined
   ) => {
     setLoading(true);
     setError(null);
@@ -922,20 +885,18 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const currentActiveAsks = activeAsks ?? [];
     console.log("ProfileContext: currentActiveAsks for new session:", currentActiveAsks);
 
-    // Removed local session saving logic
-
     if (!user) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.success("Session saved locally!", {
           description: "Your session has been recorded in this browser.",
         });
-      }
+      // }
       setLoading(false);
       return;
     }
 
     const sessionData: TablesInsert<'public', 'sessions'> = {
-      id: crypto.randomUUID(), // Generate new ID for Supabase
+      id: crypto.randomUUID(),
       user_id: user.id,
       title: seshTitle,
       focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
@@ -957,33 +918,28 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (insertError) {
       console.error("Error saving session to Supabase:", insertError);
       setError(insertError.message);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.error("Error saving session", {
           description: `Failed to save core session data to cloud. Notes and asks are saved locally. ${insertError.message}`,
         });
-      }
+      // }
     } else if (data) {
       console.log("Core session data saved to Supabase:", data);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      // Removed: if (areToastsEnabled) {
         toast.success("Session saved!", {
           description: "Your session has been successfully recorded.",
         });
-      }
+      // }
     }
     setLoading(false);
   };
 
-  // Removed deleteSession
-
-  // NEW: Function to get a public profile by ID or name
   const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
-    // First, try to find in mock profiles
     const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
     if (mockProfile) {
       return mockProfile;
     }
 
-    // If not in mock profiles, try to fetch from Supabase (if user is authenticated)
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (currentUser) {
       const { data, error } = await supabase
@@ -992,7 +948,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         .eq('id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+      if (error && error.code !== 'PGRST116') {
         console.error("Error fetching public profile from Supabase:", error);
         throw new Error("Failed to fetch profile.");
       }
@@ -1007,7 +963,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       }
     }
     
-    // Fallback for unknown users (e.g., if only name is available and not in mocks/DB)
     return {
       id: userId,
       first_name: userName,
@@ -1015,14 +970,14 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       avatar_url: null,
       bio: null,
       intention: null,
-      sociability: 50, // Default sociability
+      sociability: 50,
       updated_at: new Date().toISOString(),
       organization: null,
       linkedin_url: null,
       host_code: null,
-      bio_visibility: ['public'], // NEW: Default visibility for unknown users
-      intention_visibility: ['public'], // NEW
-      linkedin_visibility: ['public'], // NEW
+      bio_visibility: ['public'],
+      intention_visibility: ['public'],
+      linkedin_visibility: ['public'],
     };
   }, []);
 
@@ -1033,7 +988,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       const data = JSON.parse(storedData);
       setProfile(data.profile ?? null);
       console.log("Profile loaded from local storage:", data.profile?.first_name);
-      // Removed setHistoryTimePeriod
     }
 
     const storedLocalFirstName = localStorage.getItem(LOCAL_FIRST_NAME_KEY);
@@ -1061,8 +1015,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
           setHostCode(newHostCode);
           localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
         }
-        // Removed sessions loading
-        // NEW: Reset per-field visibility to default for unauthenticated users
         setBioVisibility(['public']);
         setIntentionVisibility(['public']);
         setLinkedinVisibility(['public']);
@@ -1071,22 +1023,19 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
     return () => {
       authListener.subscription.unsubscribe();
-      // Clean up any pending friend request timeouts on unmount
       friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
       friendRequestTimeouts.current.clear();
     };
-  }, [areToastsEnabled]); // NEW: Add areToastsEnabled as a dependency
+  }, []); // Removed areToastsEnabled from useEffect dependencies
 
   useEffect(() => {
     const dataToSave = {
       profile,
-      // Removed historyTimePeriod from dataToSave
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
     console.log("Profile saved to local storage:", profile?.first_name);
   }, [
     profile,
-    // Removed historyTimePeriod from dependencies
   ]);
 
   useEffect(() => {
@@ -1103,7 +1052,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }
   }, [hostCode]);
 
-  // NEW: Save per-field visibility to local storage
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY, JSON.stringify(bioVisibility));
   }, [bioVisibility]);
@@ -1116,7 +1064,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(linkedinVisibility));
   }, [linkedinVisibility]);
 
-  // NEW: Save friend statuses to local storage
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
   }, [friendStatuses]);
@@ -1129,7 +1076,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     fetchProfile,
     localFirstName,
     setLocalFirstName,
-    // Removed sessions, setSessions, statsData, historyTimePeriod, setHistoryTimePeriod
     saveSession,
     blockedUsers,
     blockUser,
@@ -1137,18 +1083,17 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     recentCoworkers,
     hostCode,
     setHostCode,
-    // Removed deleteSession
-    getPublicProfile, // NEW: Expose getPublicProfile
-    bioVisibility, // NEW
-    setBioVisibility, // NEW
-    intentionVisibility, // NEW
-    setIntentionVisibility, // NEW
-    linkedinVisibility, // NEW
-    setLinkedinVisibility, // NEW
-    friendStatuses, // NEW
-    sendFriendRequest, // NEW
-    acceptFriendRequest, // NEW
-    removeFriend, // NEW
+    getPublicProfile,
+    bioVisibility,
+    setBioVisibility,
+    intentionVisibility,
+    setIntentionVisibility,
+    linkedinVisibility,
+    setLinkedinVisibility,
+    friendStatuses,
+    sendFriendRequest,
+    acceptFriendRequest,
+    removeFriend,
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

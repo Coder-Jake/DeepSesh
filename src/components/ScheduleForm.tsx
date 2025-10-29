@@ -8,12 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner'; // Changed to sonner toast
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
-import ColorPicker from './ColorPicker'; // Import the new ColorPicker component
-import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
+import ColorPicker from './ColorPicker';
+import { DAYS_OF_WEEK } from "@/lib/constants";
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -30,22 +30,22 @@ const ScheduleForm: React.FC = () => {
     scheduleStartOption, 
     setScheduleStartOption, 
     timerIncrement,
-    isRecurring, // Now exists on TimerContextType
-    setIsRecurring, // Now exists on TimerContextType
-    recurrenceFrequency, // Now exists on TimerContextType
-    setRecurrenceFrequency, // Now exists on TimerContextType
-    isSchedulePending, // This is for the *active* schedule, not the prepared ones
-    isScheduleActive, // Added for confirmation check
-    isRunning, // Added for confirmation check
-    isPaused, // Added for confirmation check
-    resetSchedule, // Added for confirmation check
-    saveCurrentScheduleAsTemplate, // Now exists on TimerContextType
-    timerColors, // NEW: Get from context
-    setTimerColors, // NEW: Get from context
+    isRecurring,
+    setIsRecurring,
+    recurrenceFrequency,
+    setRecurrenceFrequency,
+    isSchedulePending,
+    isScheduleActive,
+    isRunning,
+    isPaused,
+    resetSchedule,
+    saveCurrentScheduleAsTemplate,
+    timerColors,
+    setTimerColors,
+    areToastsEnabled, // NEW: Get areToastsEnabled
   } = useTimer();
-  const { toast } = useToast();
+  // Removed: const { toast } = useToast(); // Removed shadcn toast
 
-  // Initialize schedule if it's empty (e.g., first time opening schedule form)
   useEffect(() => {
     if (schedule.length === 0) {
       setSchedule([
@@ -59,16 +59,14 @@ const ScheduleForm: React.FC = () => {
     }
   }, [schedule, setSchedule]);
 
-  // Initialize commenceTime to the nearest following hour if not already set and custom_time is selected
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
       const now = new Date();
       let hours = now.getHours();
       const minutes = now.getMinutes();
 
-      // If current minutes are not 0, move to the next hour
       if (minutes > 0) {
-        hours = (hours + 1) % 24; // Handle midnight (23 -> 0)
+        hours = (hours + 1) % 24;
       }
 
       const nearestHour = String(hours).padStart(2, '0') + ":00";
@@ -81,24 +79,18 @@ const ScheduleForm: React.FC = () => {
   const [isEditingScheduleTitle, setIsEditingScheduleTitle] = useState(false);
   const scheduleTitleInputRef = useRef<HTMLInputElement>(null);
 
-  // Removed editingCustomTitleId, tempCustomTitle, customTitleInputRef, longPressRef, isLongPress
   const [isSaveButtonBlue, setIsSaveButtonBlue] = useState(false);
 
-  // New state for color picker
   const [editingColorTimerId, setEditingColorTimerId] = useState<string | null>(null);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
-  // Removed local timerColors state, now using context
 
-  // NEW: State to control trash icon visibility
   const [visibleTrashId, setVisibleTrashId] = useState<string | null>(null);
   const trashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Order for displaying days in the Select component (Monday first, Sunday last)
   const daysOfWeekDisplayOrder = [
     "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
   ];
 
-  // Map display day name to its Date.getDay() index (0 for Sunday, 1 for Monday, etc.)
   const getDayIndexForDisplayDay = (displayDay: string): number => {
     switch (displayDay) {
       case "Monday": return 1;
@@ -108,7 +100,7 @@ const ScheduleForm: React.FC = () => {
       case "Friday": return 5;
       case "Saturday": return 6;
       case "Sunday": return 0;
-      default: return -1; // Should not happen
+      default: return -1;
     }
   };
 
@@ -119,34 +111,28 @@ const ScheduleForm: React.FC = () => {
     }
   }, [isEditingScheduleTitle]);
 
-  // Removed useEffect for editingCustomTitleId
-
   const handleEnterKeyNavigation = useCallback((e: React.KeyboardEvent<HTMLElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent default form submission or button click
+      e.preventDefault();
 
       const activeElement = document.activeElement as HTMLElement;
-      const inputType = activeElement.dataset.inputType; // Get the custom data attribute
+      const inputType = activeElement.dataset.inputType;
 
       if (inputType) {
         const formElement = document.getElementById('plan-tab-content');
         if (!formElement) return;
 
-        // Find all elements of the same inputType within the form
         const sameTypeElements = Array.from(
           formElement.querySelectorAll<HTMLElement>(`[data-input-type="${inputType}"]`)
-        ).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0); // Filter out hidden elements
+        ).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0);
 
         const currentIndex = sameTypeElements.indexOf(activeElement);
         if (currentIndex > -1 && currentIndex < sameTypeElements.length - 1) {
           sameTypeElements[currentIndex + 1].focus();
         } else if (currentIndex === sameTypeElements.length - 1) {
-          // If it's the last element of its type, blur it
           activeElement.blur();
         }
       } else {
-        // If it's a button or other element without data-input-type,
-        // let it perform its default action or just blur.
         activeElement.blur();
       }
     }
@@ -163,7 +149,7 @@ const ScheduleForm: React.FC = () => {
       if (scheduleTitle.trim() === "") {
         setScheduleTitle("My Schedule");
       }
-      handleEnterKeyNavigation(e); // Call navigation after handling local logic
+      handleEnterKeyNavigation(e);
     }
   };
 
@@ -178,8 +164,8 @@ const ScheduleForm: React.FC = () => {
     setSchedule((prev: ScheduledTimer[]) => {
       const lastTimerType = prev.length > 0 ? prev[prev.length - 1].type : null;
       const newTimerType = lastTimerType === 'focus' ? 'break' : 'focus';
-      const newTimerTitle = newTimerType === 'focus' ? "Focus" : "Break"; // Default title based on type
-      const newTimerDuration = newTimerType === 'focus' ? 25 : 5; // Default duration based on type
+      const newTimerTitle = newTimerType === 'focus' ? "Focus" : "Break";
+      const newTimerDuration = newTimerType === 'focus' ? 25 : 5;
 
       return [
         ...prev,
@@ -197,7 +183,6 @@ const ScheduleForm: React.FC = () => {
     setSchedule((prev: ScheduledTimer[]) =>
       prev.map(timer => {
         if (timer.id === id) {
-          // Simplified logic: 'type' is now directly updated by the Select component
           return { ...timer, [field]: value };
         }
         return timer;
@@ -207,7 +192,7 @@ const ScheduleForm: React.FC = () => {
 
   const handleRemoveTimer = (id: string) => {
     setSchedule((prev: ScheduledTimer[]) => prev.filter((timer: ScheduledTimer) => timer.id !== id));
-    setVisibleTrashId(null); // Hide trash after removal
+    setVisibleTrashId(null);
     if (trashTimeoutRef.current) {
       clearTimeout(trashTimeoutRef.current);
     }
@@ -215,44 +200,42 @@ const ScheduleForm: React.FC = () => {
 
   const handleCommenceSchedule = () => {
     if (!scheduleTitle.trim()) {
-      toast({
-        title: "Schedule Title Missing",
-        description: "Please enter a title for your schedule.",
-        variant: "destructive",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("Schedule Title Missing", {
+          description: "Please enter a title for your schedule.",
+        });
+      }
       return;
     }
     if (schedule.length === 0) {
-      toast({
-        title: "No Timers in Schedule",
-        description: "Please add at least one timer to your schedule.",
-        variant: "destructive",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("No Timers in Schedule", {
+          description: "Please add at least one timer to your schedule.",
+        });
+      }
       return;
     }
     if (schedule.some(timer => timer.durationMinutes <= 0)) {
-      toast({
-        title: "Invalid Duration",
-        description: "Timers must have a duration greater than 0 minutes.",
-        variant: "destructive",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("Invalid Duration", {
+          description: "Timers must have a duration greater than 0 minutes.",
+        });
+      }
       return;
     }
 
-    startSchedule(); // Call the context function
+    startSchedule();
   };
-
-  // Removed handleLongPressStart, handleLongPressEnd, handleCustomTitleInputKeyDown, handleCustomTitleInputBlur, handleTypeButtonClick
 
   const handleSaveSchedule = () => {
     saveCurrentScheduleAsTemplate();
     setIsSaveButtonBlue(true);
-    setTimeout(() => setIsSaveButtonBlue(false), 1000); // Reset color after 1 second
+    setTimeout(() => setIsSaveButtonBlue(false), 1000);
   };
 
   const handleColorSelect = (timerId: string, color: string) => {
     setTimerColors(prev => ({ ...prev, [timerId]: color }));
-    setEditingColorTimerId(null); // Close picker after selection
+    setEditingColorTimerId(null);
     setPickerPosition(null);
   };
 
@@ -261,7 +244,7 @@ const ScheduleForm: React.FC = () => {
     const rect = target.getBoundingClientRect();
     setEditingColorTimerId(timerId);
     setPickerPosition({
-      top: rect.bottom + window.scrollY, // Position below the clicked element
+      top: rect.bottom + window.scrollY,
       left: rect.left + window.scrollX,
     });
   };
@@ -271,14 +254,11 @@ const ScheduleForm: React.FC = () => {
     setPickerPosition(null);
   };
 
-  // NEW: Handler for showing trash icon
   const handleTimerDivClick = (timerId: string) => {
-    // Clear any existing timeout to prevent premature hiding
     if (trashTimeoutRef.current) {
       clearTimeout(trashTimeoutRef.current);
     }
     setVisibleTrashId(timerId);
-    // Set a new timeout to hide the trash icon after 2 seconds
     trashTimeoutRef.current = setTimeout(() => {
       setVisibleTrashId(null);
     }, 2000);
@@ -306,7 +286,7 @@ const ScheduleForm: React.FC = () => {
                 placeholder="Schedule Title"
                 className="text-2xl font-bold h-auto py-2"
                 onFocus={(e) => e.target.select()}
-                data-input-type="schedule-title" // Added data-input-type
+                data-input-type="schedule-title"
               />
             ) : (
               <CardTitle
@@ -326,18 +306,18 @@ const ScheduleForm: React.FC = () => {
           </Button>
         </CardHeader>
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
-          <div className="space-y-1 pr-2"> {/* Removed max-h-[400px] and overflow-y-auto */}
+          <div className="space-y-1 pr-2">
             {schedule.map((timer, index) => (
               <div 
                 key={timer.id} 
-                className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50" // Changed px-3 to px-2
-                style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }} // Apply dynamic background color or default baby blue for focus
-                onClick={() => handleTimerDivClick(timer.id)} // NEW: Add click handler to show trash
+                className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50"
+                style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }}
+                onClick={() => handleTimerDivClick(timer.id)}
               >
-                <div className="flex items-center gap-1 flex-grow-0"> {/* Adjusted gap to gap-1 */}
+                <div className="flex items-center gap-1 flex-grow-0">
                   <span 
-                    className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors" // Removed self-start
-                    onClick={(e) => { e.stopPropagation(); handleOpenColorPicker(e, timer.id); }} // Open color picker on click, stop propagation
+                    className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleOpenColorPicker(e, timer.id); }}
                   >
                     {index + 1}.
                   </span>
@@ -348,7 +328,7 @@ const ScheduleForm: React.FC = () => {
                     className="flex-grow min-w-0"
                     onFocus={(e) => e.target.select()}
                     onKeyDown={handleEnterKeyNavigation}
-                    data-input-type="timer-title" // Added data-input-type
+                    data-input-type="timer-title"
                   />
                 </div>
                 
@@ -374,10 +354,9 @@ const ScheduleForm: React.FC = () => {
                   className="w-16 text-center flex-shrink-0"
                   onFocus={(e) => e.target.select()}
                   onKeyDown={handleEnterKeyNavigation}
-                  data-input-type="timer-duration" // Added data-input-type
+                  data-input-type="timer-duration"
                 />
                 
-                {/* Replaced custom title input/button with Select for timer type */}
                 <Select
                   value={timer.type}
                   onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
@@ -391,10 +370,10 @@ const ScheduleForm: React.FC = () => {
                   </SelectContent>
                 </Select>
                 
-                {visibleTrashId === timer.id && ( // NEW: Conditionally render Trash2 icon
+                {visibleTrashId === timer.id && (
                   <Trash2 
                     className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
-                    onClick={(e) => { e.stopPropagation(); handleRemoveTimer(timer.id); }} // Stop propagation to prevent re-triggering parent div click
+                    onClick={(e) => { e.stopPropagation(); handleRemoveTimer(timer.id); }}
                     data-ignore-enter-nav
                   />
                 )}
@@ -406,8 +385,8 @@ const ScheduleForm: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Add Timer
           </Button>
 
-          <div className="space-y-0"> {/* New wrapper div with reduced vertical spacing */}
-            <div className="flex gap-2 items-center"> {/* Removed mt-4 */}
+          <div className="space-y-0">
+            <div className="flex gap-2 items-center">
               <Button
                 variant={scheduleStartOption === 'now' ? 'secondary' : 'outline'}
                 size="sm"
@@ -419,10 +398,10 @@ const ScheduleForm: React.FC = () => {
                 Now
               </Button>
               <Button
-                variant={scheduleStartOption === 'manual' ? 'secondary' : 'outline'} // Fixed comparison
+                variant={scheduleStartOption === 'manual' ? 'secondary' : 'outline'}
                 size="sm"
                 className="text-xs px-3 py-1 h-auto text-muted-foreground"
-                onClick={() => setScheduleStartOption('manual')} // Fixed assignment
+                onClick={() => setScheduleStartOption('manual')}
                 onKeyDown={handleEnterKeyNavigation}
                 data-input-type="start-option-button"
               >
@@ -451,7 +430,7 @@ const ScheduleForm: React.FC = () => {
             </div>
 
             {scheduleStartOption === 'custom_time' && (
-              <div className="grid grid-cols-2 gap-4"> {/* Removed mt-4 */}
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Input
                     id="commence-time"
@@ -462,23 +441,23 @@ const ScheduleForm: React.FC = () => {
                     }}
                     onFocus={(e) => e.target.select()}
                     onKeyDown={handleEnterKeyNavigation}
-                    data-input-type="commence-time" // Added data-input-type
+                    data-input-type="commence-time"
                   />
                 </div>
                 <div className="space-y-2">
                   <Select 
-                    value={commenceDay === null ? "today-default" : commenceDay.toString()} // Use "today-default" for null
+                    value={commenceDay === null ? "today-default" : commenceDay.toString()}
                     onValueChange={(value) => {
-                      setCommenceDay(value === "today-default" ? null : parseInt(value)); // Set to null if "today-default" is selected
+                      setCommenceDay(value === "today-default" ? null : parseInt(value));
                     }}
                   >
                     <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
-                      <SelectValue placeholder="Select Day"> {/* Placeholder for blank */}
+                      <SelectValue placeholder="Select Day">
                         {commenceDay === null ? "Today (default)" : DAYS_OF_WEEK[commenceDay]}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="today-default">Today (default)</SelectItem> {/* Use non-empty value */}
+                      <SelectItem value="today-default">Today (default)</SelectItem>
                       {daysOfWeekDisplayOrder.map((day) => (
                         <SelectItem key={day} value={getDayIndexForDisplayDay(day).toString()}>
                           {day}
@@ -503,7 +482,7 @@ const ScheduleForm: React.FC = () => {
 
       {editingColorTimerId && pickerPosition && (
         <div
-          className="absolute z-50" // High z-index to ensure it's on top
+          className="absolute z-50"
           style={{ top: pickerPosition.top, left: pickerPosition.left }}
         >
           <ColorPicker
