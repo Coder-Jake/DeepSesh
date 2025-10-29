@@ -613,6 +613,7 @@ const Index = () => {
 
         if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
           currentPhaseType = phase.type;
+          const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle; // Declare timeIntoPhase
           remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
           currentPhaseDurationMinutes = phase.durationMinutes;
           break;
