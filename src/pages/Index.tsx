@@ -724,14 +724,14 @@ const Index = () => {
       
       const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
 
-      // Select a few unique names for participants based on the organization hash
       const participantNames: { id: string; name: string; sociability: number; intention?: string; bio?: string }[] = [];
       const usedIndices = new Set<number>();
 
-      // Add current user if they are part of this organization
-      participantNames.push({ id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined });
+      // Do NOT add current user by default. They join by clicking 'Join'.
+      // participantNames.push({ id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined });
 
       // Add 2-3 other mock participants
+      const hostSociability = profile.sociability || 50; // Use current user's sociability as a base for host
       for (let i = 0; i < 3; i++) {
         let randomIndex = (hashValue + i) % famousNames.length;
         while (usedIndices.has(randomIndex)) {
@@ -739,10 +739,15 @@ const Index = () => {
         }
         usedIndices.add(randomIndex);
         const name = famousNames[randomIndex];
+        
+        // Vary sociability by up to 7 points from the host's sociability
+        const sociabilityOffset = Math.floor(Math.random() * 15) - 7; // -7 to +7
+        const variedSociability = Math.max(0, Math.min(100, hostSociability + sociabilityOffset));
+
         participantNames.push({ 
           id: `org-coworker-${orgName}-${name.replace(/\s/g, '-')}`, 
           name: name, 
-          sociability: (hashValue % 100) + 1, // Random sociability
+          sociability: variedSociability,
           intention: `Deep work on ${name}'s theories.` 
         });
       }
