@@ -36,6 +36,7 @@ import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
 import { Accordion } from "@/components/ui/accordion"; // NEW
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem"; // Renamed import
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext"; // NEW: Import useProfilePopUp
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'; // NEW: Import react-beautiful-dnd
 
 // Define types for Ask items (copied from TimerContext to ensure consistency)
 interface ExtendSuggestion {
@@ -274,6 +275,10 @@ const Index = () => {
   const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(true);
   const [openUpcomingScheduleAccordions, setOpenUpcomingScheduleAccordions] = useState<string[]>([]);
 
+  // NEW: State for section order
+  const [sectionOrder, setSectionOrder] = useState<('nearby' | 'friends' | 'organization')[]>(
+    ['nearby', 'friends', 'organization']
+  );
 
   // Effect to focus the input when isEditingSeshTitle becomes true
   useEffect(() => {
@@ -1036,6 +1041,108 @@ const Index = () => {
     openProfilePopUp(userId, userName, event.clientX, event.clientY);
   }, [openProfilePopUp]);
 
+  // NEW: onDragEnd handler for react-beautiful-dnd
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) {
+      return;
+    }
+
+    const items = Array.from(sectionOrder);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setSectionOrder(items as ('nearby' | 'friends' | 'organization')[]);
+  };
+
+  const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
+    switch (sectionId) {
+      case 'nearby':
+        return shouldShowNearbySessions && (
+          <div className="mb-6" data-name="Nearby Sessions Section">
+            <button 
+              onClick={() => setIsNearbySessionsOpen(prev => !prev)}
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
+            >
+              <h3>Nearby</h3>
+              <div className="flex items-center gap-2">
+                {hiddenNearbyCount > 0 && (
+                  <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
+                )}
+                {isNearbySessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+            {isNearbySessionsOpen && (
+              <div className="space-y-3">
+                {mockNearbySessions.map(session => (
+                  <SessionCard 
+                    key={session.id} 
+                    session={session} 
+                    onJoinSession={handleJoinSession} 
+                    onNameClick={handleNameClick}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      case 'friends':
+        return shouldShowFriendsSessions && (
+          <div data-name="Friends Sessions Section">
+            <button 
+              onClick={() => setIsFriendsSessionsOpen(prev => !prev)}
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
+            >
+              <h3>Friends</h3>
+              <div className="flex items-center gap-2">
+                {hiddenFriendsCount > 0 && (
+                  <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
+                )}
+                {isFriendsSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+            {isFriendsSessionsOpen && (
+              <div className="space-y-3">
+                {mockFriendsSessions.map(session => (
+                  <SessionCard 
+                    key={session.id} 
+                    session={session} 
+                    onJoinSession={handleJoinSession} 
+                    onNameClick={handleNameClick}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      case 'organization':
+        return shouldShowOrganizationSessions && mockOrganizationSessions.length > 0 && (
+          <div data-name="Organization Sessions Section">
+            <button 
+              onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
+            >
+              <h3>Organisations</h3>
+              {isOrganizationSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            {isOrganizationSessionsOpen && (
+              <div className="space-y-3">
+                {mockOrganizationSessions.map(session => (
+                  <SessionCard 
+                    key={session.id} 
+                    session={session} 
+                    onJoinSession={handleJoinSession} 
+                    onNameClick={handleNameClick}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
@@ -1413,90 +1520,32 @@ const Index = () => {
 
             {/* Sessions List */}
             <TooltipProvider>
-              {/* Nearby Sessions */}
-              {shouldShowNearbySessions && ( // MODIFIED: Use new logic
-                <div className="mb-6" data-name="Nearby Sessions Section">
-                  <button 
-                    onClick={() => setIsNearbySessionsOpen(prev => !prev)}
-                    className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
-                  >
-                    <h3>Nearby</h3>
-                    <div className="flex items-center gap-2">
-                      {hiddenNearbyCount > 0 && (
-                        <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
-                      )}
-                      {isNearbySessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                    </div>
-                  </button>
-                  {isNearbySessionsOpen && (
-                    <div className="space-y-3">
-                      {mockNearbySessions.map(session => (
-                        <SessionCard 
-                          key={session.id} 
-                          session={session} 
-                          onJoinSession={handleJoinSession} 
-                          onNameClick={handleNameClick}
-                        />
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="sessions-list">
+                  {(provided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="space-y-6" // Apply spacing here
+                    >
+                      {sectionOrder.map((sectionId, index) => (
+                        <Draggable key={sectionId} draggableId={sectionId} index={index}>
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              {renderSection(sectionId)}
+                            </div>
+                          )}
+                        </Draggable>
                       ))}
+                      {provided.placeholder}
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* Friends Sessions */}
-              {shouldShowFriendsSessions && ( // MODIFIED: Use new logic
-                <div data-name="Friends Sessions Section">
-                  <button 
-                    onClick={() => setIsFriendsSessionsOpen(prev => !prev)}
-                    className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
-                  >
-                    <h3>Friends</h3>
-                    <div className="flex items-center gap-2">
-                      {hiddenFriendsCount > 0 && (
-                        <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
-                      )}
-                      {isFriendsSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                    </div>
-                  </button>
-                  {isFriendsSessionsOpen && (
-                    <div className="space-y-3">
-                      {mockFriendsSessions.map(session => (
-                        <SessionCard 
-                          key={session.id} 
-                          session={session} 
-                          onJoinSession={handleJoinSession} 
-                          onNameClick={handleNameClick}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* NEW: Organization Sessions */}
-              {shouldShowOrganizationSessions && mockOrganizationSessions.length > 0 && (
-                <div data-name="Organization Sessions Section">
-                  <button 
-                    onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
-                    className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
-                  >
-                    <h3>Organisations</h3>
-                    {isOrganizationSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  </button>
-                  {isOrganizationSessionsOpen && (
-                    <div className="space-y-3">
-                      {mockOrganizationSessions.map(session => (
-                        <SessionCard 
-                          key={session.id} 
-                          session={session} 
-                          onJoinSession={handleJoinSession} 
-                          onNameClick={handleNameClick}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                </Droppable>
+              </DragDropContext>
             </TooltipProvider>
           </div>
         </div>
