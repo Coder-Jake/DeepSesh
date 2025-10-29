@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogFooter } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner'; // MODIFIED: Import toast directly from sonner
 import { PlusCircle } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext"; // Import useTimer
 
@@ -15,15 +15,13 @@ interface ExtendTimerFormProps {
 const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) => {
   const { timerIncrement, areToastsEnabled } = useTimer(); // Get timerIncrement and areToastsEnabled from context
   const [minutes, setMinutes] = useState(timerIncrement); // Default to timerIncrement
-  const { toast } = useToast();
+  // Removed: const { toast } = useToast();
 
   const handleSubmit = () => {
     if (minutes <= 0) { // Changed condition to be greater than 0
       if (areToastsEnabled) { // NEW: Conditional toast
-        toast({
-          title: "Invalid minutes",
+        toast.error("Invalid minutes", { // MODIFIED: Changed to toast.error for sonner
           description: `Please enter a positive number of minutes to extend (minimum ${timerIncrement}).`,
-          variant: "destructive",
         });
       }
       return;

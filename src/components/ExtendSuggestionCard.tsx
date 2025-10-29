@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, ThumbsUp, ThumbsDown, Minus, X } from "lucide-react"; // Import X icon
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner'; // MODIFIED: Import toast directly from sonner
 import { cn } from "@/lib/utils";
 import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
 
@@ -22,7 +22,7 @@ interface ExtendSuggestionCardProps {
 }
 
 const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion, onVote, currentUserId, onHide }) => {
-  const { toast } = useToast();
+  // Removed: const { toast } = useToast(); // Removed shadcn toast
   const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
   const userVote = suggestion.votes.find(v => v.userId === currentUserId)?.vote;
 
@@ -40,8 +40,7 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
     onVote(suggestion.id, newVote);
     
     if (newVote === null && areToastsEnabled) { // NEW: Conditional toast
-      toast({
-        title: "Vote Removed",
+      toast.info("Vote Removed", { // MODIFIED: Changed to toast.info for sonner
         description: `Your vote for the extension has been removed.`,
       });
     } 

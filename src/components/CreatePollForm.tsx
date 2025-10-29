@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DialogFooter } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner'; // MODIFIED: Import toast directly from sonner
 import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react";
 import { Switch } from "@/components/ui/switch"; // Still needed for the type, but not rendered
 import { cn } from "@/lib/utils";
@@ -22,7 +22,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const [pollType, setPollType] = useState<PollType>('closed');
   const [options, setOptions] = useState("");
   const [allowCustomResponses, setAllowCustomResponses] = useState(false);
-  const { toast } = useToast();
+  // Removed: const { toast } = useToast();
   const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
 
   const getOptionsPlaceholderText = (type: PollType) => {
@@ -54,10 +54,8 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const handleSubmit = () => {
     if (!question.trim()) {
       if (areToastsEnabled) { // NEW: Conditional toast
-        toast({
-          title: "Missing Question",
+        toast.error("Missing Question", { // MODIFIED: Changed to toast.error for sonner
           description: "Please enter a question for your poll.",
-          variant: "destructive",
         });
       }
       return;
@@ -70,10 +68,8 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       // Only enforce minimum options if custom responses are NOT allowed
       if (!allowCustomResponses && pollOptionsArray.length < 2) {
         if (areToastsEnabled) { // NEW: Conditional toast
-          toast({
-            title: "Insufficient Options",
+          toast.error("Insufficient Options", { // MODIFIED: Changed to toast.error for sonner
             description: "Please provide at least two comma-separated options for Choice/Selection polls, or enable custom responses.",
-            variant: "destructive",
           });
         }
         return;
