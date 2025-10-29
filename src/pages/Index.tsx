@@ -696,6 +696,14 @@ const Index = () => {
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
 
+    // List of famous philosophers/scientists
+    const famousNames = [
+      "Aristotle", "Plato", "Socrates", "Descartes", "Kant", "Locke", "Hume", "Rousseau",
+      "Newton", "Einstein", "Curie", "Darwin", "Galileo", "Hawking", "Turing", "Hypatia",
+      "Copernicus", "Kepler", "Bohr", "Heisenberg", "Schrödinger", "Maxwell", "Faraday",
+      "Pascal", "Leibniz", "Pythagoras", "Euclid", "Archimedes", "Da Vinci", "Franklin"
+    ];
+
     organizationNames.forEach((orgName) => {
       // Simple hash function for deterministic staggering
       const getDeterministicOffset = (name: string) => {
@@ -716,6 +724,29 @@ const Index = () => {
       
       const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
 
+      // Select a few unique names for participants based on the organization hash
+      const participantNames: { id: string; name: string; sociability: number; intention?: string; bio?: string }[] = [];
+      const usedIndices = new Set<number>();
+
+      // Add current user if they are part of this organization
+      participantNames.push({ id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined });
+
+      // Add 2-3 other mock participants
+      for (let i = 0; i < 3; i++) {
+        let randomIndex = (hashValue + i) % famousNames.length;
+        while (usedIndices.has(randomIndex)) {
+          randomIndex = (randomIndex + 1) % famousNames.length;
+        }
+        usedIndices.add(randomIndex);
+        const name = famousNames[randomIndex];
+        participantNames.push({ 
+          id: `org-coworker-${orgName}-${name.replace(/\s/g, '-')}`, 
+          name: name, 
+          sociability: (hashValue % 100) + 1, // Random sociability
+          intention: `Deep work on ${name}'s theories.` 
+        });
+      }
+
       sessions.push({
         id: `org-session-${orgName.replace(/\s/g, '-')}`,
         title: `${orgName} Focus Sesh`,
@@ -723,11 +754,7 @@ const Index = () => {
         location: `${orgName} HQ - Study Room`,
         workspaceImage: "/api/placeholder/200/120",
         workspaceDescription: "Dedicated study space for organization members",
-        participants: [
-          { id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined },
-          { id: `org-coworker-${orgName}-1`, name: `Org Member A`, sociability: 70, intention: "Working on Q3 report." },
-          { id: `org-coworker-${orgName}-2`, name: `Org Member B`, sociability: 60, intention: "Preparing for client meeting." },
-        ],
+        participants: participantNames,
         fullSchedule: [
           { type: "focus", durationMinutes: 50 },
           { type: "break", durationMinutes: 10 },
