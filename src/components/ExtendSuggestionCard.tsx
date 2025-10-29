@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, ThumbsUp, ThumbsDown, Minus, X } from "lucide-react"; // Import X icon
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
 
 interface ExtendSuggestion {
   id: string;
@@ -22,6 +23,7 @@ interface ExtendSuggestionCardProps {
 
 const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion, onVote, currentUserId, onHide }) => {
   const { toast } = useToast();
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
   const userVote = suggestion.votes.find(v => v.userId === currentUserId)?.vote;
 
   const yesVotes = suggestion.votes.filter(v => v.vote === 'yes').length;
@@ -37,7 +39,7 @@ const ExtendSuggestionCard: React.FC<ExtendSuggestionCardProps> = ({ suggestion,
     
     onVote(suggestion.id, newVote);
     
-    if (newVote === null) {
+    if (newVote === null && areToastsEnabled) { // NEW: Conditional toast
       toast({
         title: "Vote Removed",
         description: `Your vote for the extension has been removed.`,

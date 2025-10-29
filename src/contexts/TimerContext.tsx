@@ -889,7 +889,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
       locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, // NEW: Save active schedule and colors, and display title
       is24HourFormat, // NEW: Save is24HourFormat
-      preparedSchedules, // NEW: Save prepared schedules
+      preparedSchedules, // NEW: Save preparedSchedules
       timerIncrement, // Save timerIncrement
       areToastsEnabled, // NEW: Save areToastsEnabled
       startStopNotifications, // NEW: Dependency

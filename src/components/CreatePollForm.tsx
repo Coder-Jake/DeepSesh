@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react";
 import { Switch } from "@/components/ui/switch"; // Still needed for the type, but not rendered
 import { cn } from "@/lib/utils";
+import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
 
 interface CreatePollFormProps {
   onClose: () => void;
@@ -22,6 +23,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const [options, setOptions] = useState("");
   const [allowCustomResponses, setAllowCustomResponses] = useState(false);
   const { toast } = useToast();
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
 
   const getOptionsPlaceholderText = (type: PollType) => {
     switch (type) {
@@ -51,11 +53,13 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
 
   const handleSubmit = () => {
     if (!question.trim()) {
-      toast({
-        title: "Missing Question",
-        description: "Please enter a question for your poll.",
-        variant: "destructive",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast({
+          title: "Missing Question",
+          description: "Please enter a question for your poll.",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
@@ -65,11 +69,13 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       
       // Only enforce minimum options if custom responses are NOT allowed
       if (!allowCustomResponses && pollOptionsArray.length < 2) {
-        toast({
-          title: "Insufficient Options",
-          description: "Please provide at least two comma-separated options for Choice/Selection polls, or enable custom responses.",
-          variant: "destructive",
-        });
+        if (areToastsEnabled) { // NEW: Conditional toast
+          toast({
+            title: "Insufficient Options",
+            description: "Please provide at least two comma-separated options for Choice/Selection polls, or enable custom responses.",
+            variant: "destructive",
+          });
+        }
         return;
       }
     }

@@ -13,17 +13,19 @@ interface ExtendTimerFormProps {
 }
 
 const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) => {
-  const { timerIncrement } = useTimer(); // Get timerIncrement from context
+  const { timerIncrement, areToastsEnabled } = useTimer(); // Get timerIncrement and areToastsEnabled from context
   const [minutes, setMinutes] = useState(timerIncrement); // Default to timerIncrement
   const { toast } = useToast();
 
   const handleSubmit = () => {
     if (minutes <= 0) { // Changed condition to be greater than 0
-      toast({
-        title: "Invalid minutes",
-        description: `Please enter a positive number of minutes to extend (minimum ${timerIncrement}).`,
-        variant: "destructive",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast({
+          title: "Invalid minutes",
+          description: `Please enter a positive number of minutes to extend (minimum ${timerIncrement}).`,
+          variant: "destructive",
+        });
+      }
       return;
     }
     onSubmit(minutes); // Call the onSubmit prop

@@ -4,6 +4,7 @@ import { Tables, TablesUpdate, Json, TablesInsert } from "@/integrations/supabas
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext"; // Import useAuth to get current user ID
+import { useTimer } from "./TimerContext"; // NEW: Import useTimer
 
 export type Profile = Tables<'public', 'profiles'> & { // Extend the base Profile type
   bio_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
@@ -563,6 +564,7 @@ const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses'; // NEW
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user } = useAuth();
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled from TimerContext
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -624,29 +626,37 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const trimmedName = userName.trim();
     if (trimmedName && !blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => [...prev, trimmedName]);
-      toast.success(`'${trimmedName}' has been blocked.`, {
-        description: "They will no longer see your sessions.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success(`'${trimmedName}' has been blocked.`, {
+          description: "They will no longer see your sessions.",
+        });
+      }
     } else if (trimmedName && blockedUsers.includes(trimmedName)) {
-      toast.info(`'${trimmedName}' is already blocked.`, {
-        description: "No changes made.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.info(`'${trimmedName}' is already blocked.`, {
+          description: "No changes made.",
+        });
+      }
     }
-  }, [blockedUsers, toast]);
+  }, [blockedUsers, toast, areToastsEnabled]);
 
   const unblockUser = useCallback((userName: string) => {
     const trimmedName = userName.trim();
     if (trimmedName && blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => prev.filter(name => name !== trimmedName));
-      toast.success(`'${trimmedName}' has been unblocked.`, {
-        description: "They can now see your sessions again.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success(`'${trimmedName}' has been unblocked.`, {
+          description: "They can now see your sessions again.",
+        });
+      }
     } else if (trimmedName && !blockedUsers.includes(trimmedName)) {
-      toast.info(`'${trimmedName}' is not in your blocked list.`, {
-        description: "No changes made.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.info(`'${trimmedName}' is not in your blocked list.`, {
+          description: "No changes made.",
+        });
+      }
     }
-  }, [blockedUsers, toast]);
+  }, [blockedUsers, toast, areToastsEnabled]);
 
   // NEW: Mock friend request functions
   const sendFriendRequest = useCallback((targetUserId: string) => {
@@ -739,9 +749,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error("Error fetching profile:", fetchError);
       setError(fetchError.message);
-      toast.error("Error fetching profile", {
-        description: fetchError.message,
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("Error fetching profile", {
+          description: fetchError.message,
+        });
+      }
       setProfile(null);
       setLoading(false);
       const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
@@ -799,9 +811,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       if (insertError) {
         console.error("Error creating profile:", insertError);
         setError(insertError.message);
-        toast.error("Error creating profile", {
-          description: insertError.message,
-        });
+        if (areToastsEnabled) { // NEW: Conditional toast
+          toast.error("Error creating profile", {
+            description: insertError.message,
+          });
+        }
         setProfile(null);
         setHostCode(newHostCode);
         localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
@@ -835,9 +849,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (!user) {
       setError("User not authenticated.");
       setLoading(false);
-      toast.error("Authentication required", {
-        description: "Please log in to update your profile.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("Authentication required", {
+          description: "Please log in to update your profile.",
+        });
+      }
       return;
     }
 
@@ -851,9 +867,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (error) {
       console.error("Error updating profile:", error);
       setError(error.message);
-      toast.error("Error updating profile", {
-        description: error.message,
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("Error updating profile", {
+          description: error.message,
+        });
+      }
     } else if (updatedData) {
       setProfile({ 
         ...updatedData, 
@@ -872,9 +890,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       setLinkedinVisibility((updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
 
       console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
-      toast.success(successMessage || "Profile updated!", { // MODIFIED: Use successMessage or fallback
-        description: "Your profile has been successfully saved.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success(successMessage || "Profile updated!", { // MODIFIED: Use successMessage or fallback
+          description: "Your profile has been successfully saved.",
+        });
+      }
     }
     setLoading(false);
   };
@@ -905,9 +925,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     // Removed local session saving logic
 
     if (!user) {
-      toast.success("Session saved locally!", {
-        description: "Your session has been recorded in this browser.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success("Session saved locally!", {
+          description: "Your session has been recorded in this browser.",
+        });
+      }
       setLoading(false);
       return;
     }
@@ -935,14 +957,18 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (insertError) {
       console.error("Error saving session to Supabase:", insertError);
       setError(insertError.message);
-      toast.error("Error saving session", {
-        description: `Failed to save core session data to cloud. Notes and asks are saved locally. ${insertError.message}`,
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("Error saving session", {
+          description: `Failed to save core session data to cloud. Notes and asks are saved locally. ${insertError.message}`,
+        });
+      }
     } else if (data) {
       console.log("Core session data saved to Supabase:", data);
-      toast.success("Session saved!", {
-        description: "Your session has been successfully recorded.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success("Session saved!", {
+          description: "Your session has been successfully recorded.",
+        });
+      }
     }
     setLoading(false);
   };
@@ -1049,7 +1075,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
       friendRequestTimeouts.current.clear();
     };
-  }, []);
+  }, [areToastsEnabled]); // NEW: Add areToastsEnabled as a dependency
 
   useEffect(() => {
     const dataToSave = {
