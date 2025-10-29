@@ -277,8 +277,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setPreparedSchedules(prev => [...prev, newPreparedSchedule]);
         setIsSchedulingMode(false);
         if (areToastsEnabled) {
-            toast({
-                title: "Schedule Prepared!",
+            toast("Schedule Prepared!", {
                 description: `"${scheduleTitle}" is ready. ${scheduleStartOption === 'custom_time' ? 'It will begin at the scheduled time.' : 'Hit \'Commence\' to begin.'}`,
             });
         }
@@ -343,8 +342,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentPhaseStartTime(Date.now());
     updateSeshTitleWithSchedule(scheduleTitle);
     if (areToastsEnabled) {
-        toast({
-            title: "Schedule Started!",
+        toast("Schedule Started!", {
             description: `"${scheduleTitle}" has begun.`,
         });
     }
@@ -433,8 +431,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
 
     if (areToastsEnabled) {
-        toast({
-            title: "Schedule Commenced!",
+        toast("Schedule Commenced!", {
             description: `"${templateToCommence.title}" has begun.`,
         });
     }
@@ -450,8 +447,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
     if (areToastsEnabled) {
-        toast({
-            title: "Schedule Discarded",
+        toast("Schedule Discarded", {
             description: "The upcoming schedule has been removed.",
         });
     }
@@ -460,10 +456,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const saveCurrentScheduleAsTemplate = useCallback(() => {
     if (!scheduleTitle.trim() || schedule.length === 0) {
       if (areToastsEnabled) {
-        toast({
-          title: "Cannot save schedule",
+        toast("Cannot save schedule", {
           description: "Please provide a title and add timers to your schedule.",
-          variant: "destructive",
+          // Removed variant: "destructive" as sonner toast doesn't have this directly
         });
       }
       return;
@@ -483,8 +478,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     setSavedSchedules((prev) => [...prev, newTemplate]);
     if (areToastsEnabled) {
-        toast({
-            title: "Schedule Saved!",
+        toast("Schedule Saved!", {
             description: `"${scheduleTitle}" has been saved as a template.`,
         });
     }
@@ -503,8 +497,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setTimerColors(templateToLoad.timerColors || {});
       
       if (areToastsEnabled) {
-        toast({
-          title: "Template Loaded!",
+        toast("Template Loaded!", {
           description: `"${templateToLoad.title}" has been loaded into the editor.`,
         });
       }
@@ -514,8 +507,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
     if (areToastsEnabled) {
-        toast({
-            title: "Schedule Deleted!",
+        toast("Schedule Deleted!", {
             description: "The schedule template has been removed.",
         });
     }
@@ -552,8 +544,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setCurrentPhaseStartTime(Date.now());
         } else {
           if (shouldShowEndToast && areToastsEnabled) {
-            toast({
-              title: "Schedule Completed!",
+            toast("Schedule Completed!", {
               description: `"${scheduleTitle}" has finished.`,
             });
           }
@@ -581,8 +572,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       } else {
         if (shouldShowEndToast && areToastsEnabled) {
-          toast({
-            title: "Timer Ended!",
+          toast("Timer Ended!", {
             description: `Your ${timerType} session has finished.`,
           });
         }
