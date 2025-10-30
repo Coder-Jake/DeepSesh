@@ -36,16 +36,16 @@ const Header = () => {
   return (
     <header className="fixed top-0 w-full z-50 border-b border-border px-4 py-2 lg:px-6 lg:py-3 bg-background">
       <div className="max-w-4xl mx-auto flex justify-between items-center">
-        <div className="relative flex items-center"> {/* Added flex items-center here */}
+        <div className="relative flex items-center">
           <Link 
             to="/" 
-            className="hover:opacity-80 transition-opacity flex items-center" // Added flex items-center
+            className="hover:opacity-80 transition-opacity flex items-center"
             onClick={handleHeaderClick}
           >
             <img 
               src="/Deepsesh Logo - size 3.png" 
               alt="DeepSesh Logo" 
-              className="h-8 w-8 mr-1" // Adjusted margin-right from mr-2 to mr-1
+              className="h-8 w-8 mr-1 mt-[-2px]" // Added mt-[-2px] to bump it up
             />
             <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
               DeepSesh
@@ -54,7 +54,7 @@ const Header = () => {
               )}
             </h1>
           </Link>
-          {showSecretTextDiv && ( // Conditionally render the div
+          {showSecretTextDiv && (
             <div
               className={`absolute left-0 top-full mt-1 text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
                 secretTextVisible ? "opacity-100" : "opacity-0"
