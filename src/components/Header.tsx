@@ -36,12 +36,17 @@ const Header = () => {
   return (
     <header className="fixed top-0 w-full z-50 border-b border-border px-4 py-2 lg:px-6 lg:py-3 bg-background">
       <div className="max-w-4xl mx-auto flex justify-between items-center">
-        <div className="relative">
+        <div className="relative flex items-center"> {/* Added flex items-center here */}
           <Link 
             to="/" 
-            className="hover:opacity-80 transition-opacity"
+            className="hover:opacity-80 transition-opacity flex items-center" // Added flex items-center
             onClick={handleHeaderClick}
           >
+            <img 
+              src="/Deepsesh Logo - size 3.png" 
+              alt="DeepSesh Logo" 
+              className="h-8 w-8 mr-2" // Adjust size and margin as needed
+            />
             <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
               DeepSesh
               {isHomePage && (
