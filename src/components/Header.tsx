@@ -45,7 +45,7 @@ const Header = () => {
             <img 
               src="/Deepsesh Logo - size 3.png" 
               alt="DeepSesh Logo" 
-              className="h-8 w-8 mr-2" // Adjust size and margin as needed
+              className="h-8 w-8 mr-1" // Adjusted margin-right from mr-2 to mr-1
             />
             <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
               DeepSesh
