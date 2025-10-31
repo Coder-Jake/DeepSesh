@@ -137,7 +137,7 @@ const ProfilePopUpCard: React.FC = () => {
       const viewportHeight = window.innerHeight;
       const margin = 15;
 
-      let newX = popUpPosition.x + 10;
+      let newX = popUpPosition.x + 30; // Increased offset to move it further right
       let newY = popUpPosition.y + 10;
 
       if (newX + cardRect.width + margin > viewportWidth) {
