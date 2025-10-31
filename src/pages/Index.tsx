@@ -92,11 +92,11 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "mock-user-id-4", name: "Bezos", sociability: 20, intention: "Optimizing cloud infrastructure." },
-      { id: "mock-user-id-5", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
-      { id: "mock-user-id-6", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
-      { id: "7", name: "Gates", sociability: 20, intention: "Refining operating system architecture." },
-      { id: "8", name: "Jobs", sociability: 30, intention: "Innovating user interface design." },
+      { id: "mock-user-id-bezos", name: "Bezos", sociability: 20, intention: "Optimizing cloud infrastructure." },
+      { id: "mock-user-id-musk", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
+      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
+      { id: "mock-user-id-gates", name: "Gates", sociability: 20, intention: "Refining operating system architecture." },
+      { id: "mock-user-id-jobs", name: "Jobs", sociability: 30, intention: "Innovating user interface design." },
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 55 },
@@ -114,14 +114,14 @@ const mockFriendsSessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
     participants: [
-      { id: "mock-user-id-7", name: "Freud", sociability: 60, intention: "Reviewing psychoanalytic theories." },
-      { id: "mock-user-id-8", name: "Skinner", sociability: 60, intention: "Memorizing behavioral principles." },
-      { id: "mock-user-id-9", name: "Piaget", sociability: 70, intention: "Practicing cognitive development questions." },
-      { id: "12", name: "Jung", sociability: 60, intention: "Summarizing archetypal concepts." },
-      { id: "13", name: "Maslow", sociability: 50, intention: "Creating hierarchy of needs flashcards." },
-      { id: "14", name: "Rogers", sociability: 55, intention: "Discussing humanistic approaches." },
-      { id: "15", name: "Bandura", sociability: 65, intention: "Collaborating on social learning theory guide." },
-      { id: "16", name: "Pavlov", sociability: 70, intention: "Peer teaching classical conditioning." },
+      { id: "mock-user-id-freud", name: "Freud", sociability: 60, intention: "Reviewing psychoanalytic theories." },
+      { id: "mock-user-id-skinner", name: "Skinner", sociability: 60, intention: "Memorizing behavioral principles." },
+      { id: "mock-user-id-piaget", name: "Piaget", sociability: 70, intention: "Practicing cognitive development questions." },
+      { id: "mock-user-id-jung", name: "Jung", sociability: 60, intention: "Summarizing archetypal concepts." },
+      { id: "mock-user-id-maslow", name: "Maslow", sociability: 50, intention: "Creating hierarchy of needs flashcards." },
+      { id: "mock-user-id-rogers", name: "Rogers", sociability: 55, intention: "Discussing humanistic approaches." },
+      { id: "mock-user-id-bandura", name: "Bandura", sociability: 65, intention: "Collaborating on social learning theory guide." },
+      { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 70, intention: "Peer teaching classical conditioning." },
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 25 },
@@ -235,7 +235,7 @@ const Index = () => {
     startStopNotifications, playSound, triggerVibration, areToastsEnabled
   });
 
-  const { profile, loading: profileLoading, localFirstName } = useProfile(); // Removed saveSession from here
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile } = useProfile(); // Removed saveSession from here
   const navigate = useNavigate();
   const { openProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme(); // NEW: Get isDarkMode from ThemeContext
@@ -698,12 +698,38 @@ const Index = () => {
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
 
-    // List of famous philosophers/scientists
-    const famousNames = [
-      "Aristotle", "Plato", "Socrates", "Descartes", "Kant", "Locke", "Hume", "Rousseau",
-      "Newton", "Einstein", "Curie", "Darwin", "Galileo", "Hawking", "Turing", "Hypatia",
-      "Copernicus", "Kepler", "Bohr", "Heisenberg", "Schrödinger", "Maxwell", "Faraday",
-      "Pascal", "Leibniz", "Pythagoras", "Euclid", "Archimedes", "Da Vinci", "Franklin"
+    // List of famous philosophers/scientists (using IDs from ProfileContext mockProfiles)
+    const famousNamesWithIds = [
+      { id: "mock-user-id-aristotle", name: "Aristotle" },
+      { id: "mock-user-id-plato", name: "Plato" },
+      { id: "mock-user-id-socrates", name: "Socrates" },
+      { id: "mock-user-id-descartes", name: "Descartes" },
+      { id: "mock-user-id-kant", name: "Kant" },
+      { id: "mock-user-id-locke", name: "Locke" },
+      { id: "mock-user-id-hume", name: "Hume" },
+      { id: "mock-user-id-rousseau", name: "Rousseau" },
+      { id: "mock-user-id-newton", name: "Newton" },
+      { id: "mock-user-id-einstein", name: "Einstein" },
+      { id: "mock-user-id-curie", name: "Curie" },
+      { id: "mock-user-id-darwin", name: "Darwin" },
+      { id: "mock-user-id-galileo", name: "Galileo" },
+      { id: "mock-user-id-hawking", name: "Hawking" },
+      { id: "mock-user-id-turing", name: "Turing" },
+      { id: "mock-user-id-hypatia", name: "Hypatia" },
+      { id: "mock-user-id-copernicus", name: "Copernicus" },
+      { id: "mock-user-id-kepler", name: "Kepler" },
+      { id: "mock-user-id-bohr", name: "Bohr" },
+      { id: "mock-user-id-heisenberg", name: "Heisenberg" },
+      { id: "mock-user-id-schrodinger", name: "Schrödinger" },
+      { id: "mock-user-id-maxwell", name: "Maxwell" },
+      { id: "mock-user-id-faraday", name: "Faraday" },
+      { id: "mock-user-id-pascal", name: "Pascal" },
+      { id: "mock-user-id-leibniz", name: "Leibniz" },
+      { id: "mock-user-id-pythagoras", name: "Pythagoras" },
+      { id: "mock-user-id-euclid", name: "Euclid" },
+      { id: "mock-user-id-archimedes", name: "Archimedes" },
+      { id: "mock-user-id-davinci", name: "Da Vinci" },
+      { id: "mock-user-id-franklin", name: "Franklin" }
     ];
 
     organizationNames.forEach((orgName) => {
@@ -729,25 +755,22 @@ const Index = () => {
       const participantNames: { id: string; name: string; sociability: number; intention?: string; bio?: string }[] = [];
       const usedIndices = new Set<number>();
 
-      // Do NOT add current user by default. They join by clicking 'Join'.
-      // participantNames.push({ id: currentUserId, name: currentUserName, sociability: profile.sociability || 50, intention: profile.intention || undefined, bio: profile.bio || undefined });
-
-      // Add 2-3 other mock participants
+      // Add 2-3 other mock participants from the famousNamesWithIds list
       const hostSociability = profile.sociability || 50; // Use current user's sociability as a base for host
       for (let i = 0; i < 3; i++) {
-        let randomIndex = (hashValue + i) % famousNames.length;
+        let randomIndex = (hashValue + i) % famousNamesWithIds.length;
         while (usedIndices.has(randomIndex)) {
-          randomIndex = (randomIndex + 1) % famousNames.length;
+          randomIndex = (randomIndex + 1) % famousNamesWithIds.length;
         }
         usedIndices.add(randomIndex);
-        const name = famousNames[randomIndex];
+        const { id, name } = famousNamesWithIds[randomIndex];
         
         // Vary sociability by up to 7 points from the host's sociability
         const sociabilityOffset = Math.floor(Math.random() * 15) - 7; // -7 to +7
         const variedSociability = Math.max(0, Math.min(100, hostSociability + sociabilityOffset));
 
         participantNames.push({ 
-          id: `org-coworker-${orgName}-${name.replace(/\s/g, '-')}`, 
+          id: id, // Use the ID from the mock profile
           name: name, 
           sociability: variedSociability,
           intention: `Deep work on ${name}'s theories.` 
@@ -786,15 +809,19 @@ const Index = () => {
     });
 
     if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName) {
-      const hostSociability = mockNearbySessions.concat(mockFriendsSessions)
-        .flatMap(s => s.participants)
-        .find(p => p.name === currentSessionHostName)?.sociability || 50;
+      // Fetch host profile details using getPublicProfile
+      const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName); // Assuming name can be used as ID for mock profiles
+      const hostSociability = hostProfile ? hostProfile.sociability || 50 : 50;
+      const hostIntention = hostProfile ? hostProfile.intention || undefined : undefined;
+      const hostBio = hostProfile ? hostProfile.bio || undefined : undefined;
 
       participants.push({
-        id: "host-id",
+        id: "host-id", // This ID is generic, but the name and other details are from the hostProfile
         name: currentSessionHostName,
         sociability: hostSociability,
         role: 'host',
+        intention: hostIntention,
+        bio: hostBio,
       });
     }
 
@@ -811,7 +838,7 @@ const Index = () => {
       if (a.role !== 'host' && b.role === 'host') return 1;
       return a.name.localeCompare(b.name);
     });
-  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, currentUserId, currentUserName, profile?.sociability, profile?.intention, profile?.bio]);
+  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, currentUserId, currentUserName, profile?.sociability, profile?.intention, profile?.bio, getPublicProfile]);
 
 
   const handleExtendSubmit = (minutes: number) => {
@@ -979,10 +1006,15 @@ const Index = () => {
     });
   }, [preparedSchedules, getEffectiveStartTime]);
 
-  const handleNameClick = useCallback((userId: string, userName: string, event: React.MouseEvent) => {
+  const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    openProfilePopUp(userId, userName, event.clientX, event.clientY);
-  }, [openProfilePopUp]);
+    const targetProfileData = await getPublicProfile(userId, userName);
+    if (targetProfileData) {
+      openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
+    } else {
+      openProfilePopUp(userId, userName, event.clientX, event.clientY);
+    }
+  }, [openProfilePopUp, getPublicProfile]);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) {

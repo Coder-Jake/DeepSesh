@@ -34,12 +34,18 @@ const Profile = () => {
   const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer();
   const { openProfilePopUp } = useProfilePopUp();
 
-  const [firstNameInput, setFirstNameInput] = useState("");
-  const [bio, setBio] = useState("");
-  const [intention, setIntention] = useState("");
-  const [sociability, setSociability] = useState([30]);
-  const [organization, setOrganization] = useState("");
-  const [linkedinUrl, setLinkedinUrl] = useState("");
+  // Use context state directly for inputs
+  const [bio, setBio] = useState(profile?.bio || "");
+  const [intention, setIntention] = useState(profile?.intention || "");
+  const [sociability, setSociability] = useState([profile?.sociability || 50]);
+  const [organization, setOrganization] = useState(profile?.organization || "");
+  const [linkedinUrl, setLinkedinUrl] = useState(() => {
+    const fullLinkedinUrl = profile?.linkedin_url || "";
+    return fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
+           ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
+           : "";
+  });
+
   const [isEditingHostCode, setIsEditingHostCode] = useState(false);
   const hostCodeInputRef = useRef<HTMLInputElement>(null);
   const [isCopied, setIsCopied] = useState(false);
@@ -99,10 +105,7 @@ const Profile = () => {
     currentIndex: number, 
     setter: React.Dispatch<React.SetStateAction<number>>,
     visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
-    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility',
-    currentBioVis: ('public' | 'friends' | 'organisation' | 'private')[], 
-    currentIntentionVis: ('public' | 'friends' | 'organisation' | 'private')[],
-    currentLinkedinVis: ('public' | 'friends' | 'organisation' | 'private')[]
+    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility'
   ) => {
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
     const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
@@ -117,13 +120,9 @@ const Profile = () => {
       });
     }
 
-    checkForChanges(
-      firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode,
-      visibilitySetter === setBioVisibility ? newVisibility : currentBioVis,
-      visibilitySetter === setIntentionVisibility ? newVisibility : currentIntentionVis,
-      visibilitySetter === setLinkedinVisibility ? newVisibility : currentLinkedinVis
-    );
-  }, [firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus]);
+    // Update profile context immediately
+    await updateProfile({ [fieldName]: newVisibility });
+  }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus, updateProfile]);
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
@@ -186,47 +185,77 @@ const Profile = () => {
     setLongPressedFriendId(null);
   }, [areToastsEnabled]);
 
+  // Effect to initialize and update local states from profile context
   useEffect(() => {
-    setFirstNameInput(profile?.first_name || localFirstName || "You");
-    setBio(profile?.bio || "");
-    setIntention(profile?.intention || "");
-    setSociability([profile?.sociability || 50]);
-    setOrganization(profile?.organization || "");
+    if (profile) {
+      setBio(profile.bio || "");
+      setIntention(profile.intention || "");
+      setSociability([profile.sociability || 50]);
+      setOrganization(profile.organization || "");
+      const fullLinkedinUrl = profile.linkedin_url || "";
+      setLinkedinUrl(fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
+                               ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
+                               : "");
+      setHostCode(profile.host_code || ""); // Ensure hostCode is updated from profile
+      setLocalFirstName(profile.first_name || "You"); // Ensure localFirstName is updated from profile
 
-    const fullLinkedinUrl = profile?.linkedin_url || "";
-    const linkedinUsername = fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
-                             ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
-                             : "";
-    setLinkedinUrl(linkedinUsername);
+      setBioVisibility(profile.bio_visibility || ['public']);
+      setIntentionVisibility(profile.intention_visibility || ['public']);
+      setLinkedinVisibility(profile.linkedin_visibility || ['public']);
 
-    setHostCode(hostCode);
+      setBioLabelColorIndex(getIndexFromVisibility(profile.bio_visibility || ['public']));
+      setIntentionLabelColorIndex(getIndexFromVisibility(profile.intention_visibility || ['public']));
+      setLinkedinLabelColorIndex(getIndexFromVisibility(profile.linkedin_visibility || ['public']));
 
-    const initialBioVisibility = (profile?.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
-    const initialIntentionVisibility = (profile?.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
-    const initialLinkedinVisibility = (profile?.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[];
+      setOriginalValues({
+        firstName: profile.first_name || "You",
+        bio: profile.bio || "",
+        intention: profile.intention || "",
+        sociability: [profile.sociability || 50],
+        organization: profile.organization || "",
+        linkedinUrl: fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
+                     ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
+                     : "",
+        hostCode: profile.host_code || "",
+        bioVisibility: (profile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        intentionVisibility: (profile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        linkedinVisibility: (profile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+      });
+      setHasChanges(false);
+    } else {
+      // Reset to default if profile is null (e.g., after logout)
+      setBio("");
+      setIntention("");
+      setSociability([50]);
+      setOrganization("");
+      setLinkedinUrl("");
+      setHostCode(localStorage.getItem('deepsesh_host_code') || "");
+      setLocalFirstName(localStorage.getItem('deepsesh_local_first_name') || "You");
 
-    setBioVisibility(initialBioVisibility);
-    setIntentionVisibility(initialIntentionVisibility);
-    setLinkedinVisibility(initialLinkedinVisibility);
+      const defaultBioVis = (JSON.parse(localStorage.getItem('deepsesh_bio_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+      const defaultIntentionVis = (JSON.parse(localStorage.getItem('deepsesh_intention_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+      const defaultLinkedinVis = (JSON.parse(localStorage.getItem('deepsesh_linkedin_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
 
-    setBioLabelColorIndex(getIndexFromVisibility(initialBioVisibility));
-    setIntentionLabelColorIndex(getIndexFromVisibility(initialIntentionVisibility));
-    setLinkedinLabelColorIndex(getIndexFromVisibility(initialLinkedinVisibility));
+      setBioVisibility(defaultBioVis);
+      setIntentionVisibility(defaultIntentionVis);
+      setLinkedinVisibility(defaultLinkedinVis);
 
-    setOriginalValues({
-      firstName: profile?.first_name || localFirstName || "You",
-      bio: profile?.bio || "",
-      intention: profile?.intention || "",
-      sociability: [profile?.sociability || 50],
-      organization: profile?.organization || "",
-      linkedinUrl: linkedinUsername,
-      hostCode: hostCode,
-      bioVisibility: initialBioVisibility,
-      intentionVisibility: initialIntentionVisibility,
-      linkedinVisibility: initialLinkedinVisibility,
-    });
-    setHasChanges(false);
-  }, [profile, localFirstName, hostCode, setHostCode, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
+      setBioLabelColorIndex(getIndexFromVisibility(defaultBioVis));
+      setIntentionLabelColorIndex(getIndexFromVisibility(defaultIntentionVis));
+      setLinkedinLabelColorIndex(getIndexFromVisibility(defaultLinkedinVis));
+
+      setOriginalValues({
+        firstName: localStorage.getItem('deepsesh_local_first_name') || "You",
+        bio: "", intention: "", sociability: [50], organization: "", linkedinUrl: "",
+        hostCode: localStorage.getItem('deepsesh_host_code') || "",
+        bioVisibility: defaultBioVis,
+        intentionVisibility: defaultIntentionVis,
+        linkedinVisibility: defaultLinkedinVis,
+      });
+      setHasChanges(false);
+    }
+  }, [profile, setHostCode, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
+
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -242,68 +271,60 @@ const Profile = () => {
     }
   }, [isEditingHostCode]);
 
-  const checkForChanges = useCallback((
-    newFirstName: string, 
-    newBio: string, 
-    newIntention: string, 
-    newSociability: number[], 
-    newOrganization: string,
-    newLinkedinUsername: string,
-    newHostCode: string,
-    newBioVisibility: ('public' | 'friends' | 'organisation' | 'private')[],
-    newIntentionVisibility: ('public' | 'friends' | 'organisation' | 'private')[],
-    newLinkedinVisibility: ('public' | 'friends' | 'organisation' | 'private')[],
-  ) => {
-    const changed = newFirstName !== originalValues.firstName ||
-                   newBio !== originalValues.bio || 
-                   newIntention !== originalValues.intention || 
-                   newSociability[0] !== originalValues.sociability[0] ||
-                   newOrganization !== originalValues.organization ||
-                   newLinkedinUsername !== originalValues.linkedinUrl ||
-                   newHostCode !== originalValues.hostCode ||
-                   JSON.stringify(newBioVisibility) !== JSON.stringify(originalValues.bioVisibility) ||
-                   JSON.stringify(newIntentionVisibility) !== JSON.stringify(originalValues.intentionVisibility) ||
-                   JSON.stringify(newLinkedinVisibility) !== JSON.stringify(originalValues.linkedinVisibility);
+  const checkForChanges = useCallback(() => {
+    const currentLinkedinUsername = linkedinUrl.startsWith("https://www.linkedin.com/in/") 
+                                    ? linkedinUrl.substring("https://www.linkedin.com/in/".length) 
+                                    : linkedinUrl;
+
+    const changed = localFirstName !== originalValues.firstName ||
+                   bio !== originalValues.bio || 
+                   intention !== originalValues.intention || 
+                   sociability[0] !== originalValues.sociability[0] ||
+                   organization !== originalValues.organization ||
+                   currentLinkedinUsername !== originalValues.linkedinUrl ||
+                   hostCode !== originalValues.hostCode ||
+                   JSON.stringify(bioVisibility) !== JSON.stringify(originalValues.bioVisibility) ||
+                   JSON.stringify(intentionVisibility) !== JSON.stringify(originalValues.intentionVisibility) ||
+                   JSON.stringify(linkedinVisibility) !== JSON.stringify(originalValues.linkedinVisibility);
     setHasChanges(changed);
   }, [
-    originalValues, 
-    firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode,
-    bioVisibility, intentionVisibility, linkedinVisibility
+    localFirstName, bio, intention, sociability, organization, linkedinUrl, hostCode,
+    bioVisibility, intentionVisibility, linkedinVisibility, originalValues
+  ]);
+
+  useEffect(() => {
+    checkForChanges();
+  }, [
+    localFirstName, bio, intention, sociability, organization, linkedinUrl, hostCode,
+    bioVisibility, intentionVisibility, linkedinVisibility, checkForChanges
   ]);
 
   const handleFirstNameChange = (value: string) => {
-    setFirstNameInput(value);
-    checkForChanges(value, bio, intention, sociability, organization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
+    setLocalFirstName(value);
   };
 
   const handleBioChange = (value: string) => {
     setBio(value);
-    checkForChanges(firstNameInput, value, intention, sociability, organization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
   };
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
-    checkForChanges(firstNameInput, bio, value, sociability, organization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
   };
 
   const handleSociabilityChange = (value: number[]) => {
     setSociability(value);
-    checkForChanges(firstNameInput, bio, intention, value, organization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
   };
 
   const handleOrganizationChange = (value: string) => {
     setOrganization(value);
-    checkForChanges(firstNameInput, bio, intention, sociability, value, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
   };
 
   const handleLinkedinUrlChange = (value: string) => {
     setLinkedinUrl(value);
-    checkForChanges(firstNameInput, bio, intention, sociability, organization, value, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
   };
 
   const handleHostCodeChange = (value: string) => {
     setHostCode(value);
-    checkForChanges(firstNameInput, bio, intention, sociability, organization, linkedinUrl, value, bioVisibility, intentionVisibility, linkedinVisibility);
   };
 
   const handleHostCodeClick = () => {
@@ -331,22 +352,10 @@ const Profile = () => {
           description: "Host code must be between 4 and 20 characters.",
         });
       }
-      setHostCode(originalValues.hostCode);
-      checkForChanges(firstNameInput, bio, intention, sociability, organization, linkedinUrl, originalValues.hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
+      setHostCode(originalValues.hostCode); // Revert to original
       return;
     }
-    setOriginalValues(prev => ({ ...prev, hostCode: trimmedCode }));
-    checkForChanges(firstNameInput, bio, intention, sociability, organization, linkedinUrl, trimmedCode, bioVisibility, intentionVisibility, linkedinVisibility);
-    if (user) {
-      await updateProfile({ host_code: trimmedCode });
-    } else {
-      if (areToastsEnabled) {
-        toast.success("Host Code Saved Locally", {
-          description: "Your host code has been saved to this browser.",
-        });
-      }
-      localStorage.setItem('deepsesh_host_code', trimmedCode);
-    }
+    await updateProfile({ host_code: trimmedCode }, "Host Code Saved!");
   };
 
   const handleFirstNameClick = () => {
@@ -357,53 +366,26 @@ const Profile = () => {
     if (e.key === 'Enter') {
       setIsEditingFirstName(false);
       e.currentTarget.blur();
-      const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
-      setFirstNameInput(nameToSave);
-      setLocalFirstName(nameToSave);
-      if (user) {
-        await updateProfile({ first_name: nameToSave });
-      }
-      setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-      checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
+      const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
+      await updateProfile({ first_name: nameToSave }, "First Name Saved!");
     }
   };
 
   const handleFirstNameInputBlur = async () => {
     setIsEditingFirstName(false);
-    const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
-    setFirstNameInput(nameToSave);
-    setLocalFirstName(nameToSave);
-    if (user) {
-      await updateProfile({ first_name: nameToSave });
-    }
-    setOriginalValues(prev => ({ ...prev, firstName: nameToSave }));
-    checkForChanges(nameToSave, bio, intention, sociability, organization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
+    const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
+    await updateProfile({ first_name: nameToSave }, "First Name Saved!");
   };
 
   const handleSaveOrganization = async () => {
     const trimmedOrganization = organization.trim();
-    if (user) {
-      await updateProfile({ organization: trimmedOrganization === "" ? null : trimmedOrganization });
-      setIsOrganizationDialogOpen(false);
-      setOriginalValues(prev => ({ ...prev, organization: trimmedOrganization === "" ? null : trimmedOrganization }));
-      checkForChanges(firstNameInput, bio, intention, sociability, trimmedOrganization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
-    } else {
-      localStorage.setItem('deepsesh_organization', trimmedOrganization);
-      setOriginalValues(prev => ({ ...prev, organization: trimmedOrganization }));
-      checkForChanges(firstNameInput, bio, intention, sociability, trimmedOrganization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
-      setIsOrganizationDialogOpen(false);
-      if (areToastsEnabled) {
-        toast.success("Organization Saved Locally", {
-          description: "Your organization name has been saved to this browser.",
-        });
-      }
-    }
+    await updateProfile({ organization: trimmedOrganization === "" ? null : trimmedOrganization }, "Organization Saved!");
+    setIsOrganizationDialogOpen(false);
   };
 
   const handleSave = async () => {
-    const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
-    setLocalFirstName(nameToSave);
-
+    const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
+    
     const trimmedHostCode = hostCode.trim();
     if (trimmedHostCode.length < 4 || trimmedHostCode.length > 20) {
       if (areToastsEnabled) {
@@ -428,32 +410,7 @@ const Profile = () => {
       updated_at: new Date().toISOString(),
     };
 
-    if (user) {
-      await updateProfile(dataToUpdate);
-    } else {
-      if (areToastsEnabled) {
-        toast.success("Profile Saved Locally", {
-          description: "Your profile changes have been saved to this browser.",
-        });
-      }
-      localStorage.setItem('deepsesh_host_code', trimmedHostCode);
-      localStorage.setItem('deepsesh_bio_visibility', JSON.stringify(bioVisibility));
-      localStorage.setItem('deepsesh_intention_visibility', JSON.stringify(intentionVisibility));
-      localStorage.setItem('deepsesh_linkedin_visibility', JSON.stringify(linkedinVisibility));
-      localStorage.setItem('deepsesh_organization', organization.trim());
-    }
-    setOriginalValues({ 
-      firstName: nameToSave, 
-      bio, 
-      intention, 
-      sociability: [sociability[0]],
-      organization: organization.trim() === "" ? "" : organization.trim(), 
-      linkedinUrl, 
-      hostCode: trimmedHostCode,
-      bioVisibility,
-      intentionVisibility,
-      linkedinVisibility,
-    }); 
+    await updateProfile(dataToUpdate);
     setHasChanges(false);
   };
 
@@ -488,29 +445,57 @@ const Profile = () => {
   }, [hostCode, areToastsEnabled]);
 
   const handleCancel = useCallback(() => {
-    setFirstNameInput(originalValues.firstName);
-    setLocalFirstName(originalValues.firstName);
-    setBio(originalValues.bio);
-    setIntention(originalValues.intention);
-    setSociability(originalValues.sociability);
-    setOrganization(originalValues.organization);
-    setLinkedinUrl(originalValues.linkedinUrl);
-    setHostCode(originalValues.hostCode);
+    if (profile) {
+      setLocalFirstName(profile.first_name || "You");
+      setBio(profile.bio || "");
+      setIntention(profile.intention || "");
+      setSociability([profile.sociability || 50]);
+      setOrganization(profile.organization || "");
+      const fullLinkedinUrl = profile.linkedin_url || "";
+      setLinkedinUrl(fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
+                               ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
+                               : "");
+      setHostCode(profile.host_code || "");
 
-    setBioVisibility(originalValues.bioVisibility);
-    setIntentionVisibility(originalValues.intentionVisibility);
-    setLinkedinVisibility(originalValues.linkedinVisibility);
+      setBioVisibility(profile.bio_visibility || ['public']);
+      setIntentionVisibility(profile.intention_visibility || ['public']);
+      setLinkedinVisibility(profile.linkedin_visibility || ['public']);
 
-    setBioLabelColorIndex(getIndexFromVisibility(originalValues.bioVisibility));
-    setIntentionLabelColorIndex(getIndexFromVisibility(originalValues.intentionVisibility));
-    setLinkedinLabelColorIndex(getIndexFromVisibility(originalValues.linkedinVisibility));
+      setBioLabelColorIndex(getIndexFromVisibility(profile.bio_visibility || ['public']));
+      setIntentionLabelColorIndex(getIndexFromVisibility(profile.intention_visibility || ['public']));
+      setLinkedinLabelColorIndex(getIndexFromVisibility(profile.linkedin_visibility || ['public']));
+    } else {
+      // Revert to local storage defaults if no profile
+      setLocalFirstName(localStorage.getItem('deepsesh_local_first_name') || "You");
+      setBio(localStorage.getItem('deepsesh_bio') || "");
+      setIntention(localStorage.getItem('deepsesh_intention') || "");
+      setSociability([parseInt(localStorage.getItem('deepsesh_sociability') || '50', 10)]);
+      setOrganization(localStorage.getItem('deepsesh_organization') || "");
+      const fullLinkedinUrl = localStorage.getItem('deepsesh_linkedin_url') || "";
+      setLinkedinUrl(fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
+                               ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
+                               : "");
+      setHostCode(localStorage.getItem('deepsesh_host_code') || "");
+
+      const defaultBioVis = (JSON.parse(localStorage.getItem('deepsesh_bio_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+      const defaultIntentionVis = (JSON.parse(localStorage.getItem('deepsesh_intention_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+      const defaultLinkedinVis = (JSON.parse(localStorage.getItem('deepsesh_linkedin_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+
+      setBioVisibility(defaultBioVis);
+      setIntentionVisibility(defaultIntentionVis);
+      setLinkedinVisibility(defaultLinkedinVis);
+
+      setBioLabelColorIndex(getIndexFromVisibility(defaultBioVis));
+      setIntentionLabelColorIndex(getIndexFromVisibility(defaultIntentionVis));
+      setLinkedinLabelColorIndex(getIndexFromVisibility(defaultLinkedinVis));
+    }
 
     setIsEditingFirstName(false);
     setIsEditingHostCode(false);
     setIsCopied(false);
     setHasChanges(false);
     setLongPressedFriendId(null);
-  }, [originalValues, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setHostCode]);
+  }, [profile, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setHostCode]);
 
   const friends = Object.entries(friendStatuses)
     .filter(([, status]) => status === 'friends')
@@ -562,7 +547,7 @@ const Profile = () => {
                 {isEditingFirstName ? (
                   <Input
                     ref={firstNameInputRef}
-                    value={firstNameInput}
+                    value={localFirstName}
                     onChange={(e) => handleFirstNameChange(e.target.value)}
                     onKeyDown={handleFirstNameInputKeyDown}
                     onBlur={handleFirstNameInputBlur}
@@ -574,7 +559,7 @@ const Profile = () => {
                     className="cursor-pointer select-none"
                     onClick={handleFirstNameClick}
                   >
-                    {firstNameInput || "You"}
+                    {localFirstName || "You"}
                   </span>
                 )}
               </CardTitle>
@@ -615,7 +600,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="bio" 
-                  onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex, setBioVisibility, 'bio_visibility', bioVisibility, intentionVisibility, linkedinVisibility)} 
+                  onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex, setBioVisibility, 'bio_visibility')} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(bioLabelColorIndex))}
                 >
                   Brief Bio
@@ -632,7 +617,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="intention" 
-                  onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex, setIntentionVisibility, 'intention_visibility', bioVisibility, intentionVisibility, linkedinVisibility)} 
+                  onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex, setIntentionVisibility, 'intention_visibility')} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(intentionLabelColorIndex))}
                 >
                   Statement of Intention
@@ -649,7 +634,7 @@ const Profile = () => {
               <div>
                 <Label 
                   htmlFor="linkedin-username" 
-                  onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex, setLinkedinVisibility, 'linkedin_visibility', bioVisibility, intentionVisibility, linkedinVisibility)} 
+                  onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex, setLinkedinVisibility, 'linkedin_visibility')} 
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(linkedinLabelColorIndex))}
                 >
                   LinkedIn Handle
