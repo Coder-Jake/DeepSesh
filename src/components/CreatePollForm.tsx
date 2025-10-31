@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DialogFooter } from "@/components/ui/dialog";
-import { toast } from 'sonner'; // MODIFIED: Import toast directly from sonner
+import { toast } from 'sonner';
 import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react";
-import { Switch } from "@/components/ui/switch"; // Still needed for the type, but not rendered
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
+import { useTimer } from '@/contexts/TimerContext';
 
 interface CreatePollFormProps {
   onClose: () => void;
@@ -22,8 +22,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const [pollType, setPollType] = useState<PollType>('closed');
   const [options, setOptions] = useState("");
   const [allowCustomResponses, setAllowCustomResponses] = useState(false);
-  // Removed: const { toast } = useToast();
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
+  const { areToastsEnabled } = useTimer();
 
   const getOptionsPlaceholderText = (type: PollType) => {
     switch (type) {
@@ -53,8 +52,8 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
 
   const handleSubmit = () => {
     if (!question.trim()) {
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.error("Missing Question", { // MODIFIED: Changed to toast.error for sonner
+      if (areToastsEnabled) {
+        toast.error("Missing Question", {
           description: "Please enter a question for your poll.",
         });
       }
@@ -65,10 +64,9 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
     if (pollType === 'choice' || pollType === 'selection') {
       pollOptionsArray = options.split(',').map(opt => opt.trim()).filter(opt => opt.length > 0);
       
-      // Only enforce minimum options if custom responses are NOT allowed
       if (!allowCustomResponses && pollOptionsArray.length < 2) {
-        if (areToastsEnabled) { // NEW: Conditional toast
-          toast.error("Insufficient Options", { // MODIFIED: Changed to toast.error for sonner
+        if (areToastsEnabled) {
+          toast.error("Insufficient Options", {
             description: "Please provide at least two comma-separated options for Choice/Selection polls, or enable custom responses.",
           });
         }
@@ -153,10 +151,10 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           variant="outline"
           onClick={() => setAllowCustomResponses(prev => !prev)}
           className={cn(
-            "ml-auto h-auto px-3 py-1 rounded-full text-sm", // Base styles for size and roundness
+            "ml-auto h-auto px-3 py-1 rounded-full text-sm",
             allowCustomResponses
-              ? "bg-lime-300 text-black hover:bg-lime-400 border-lime-300" // Active state: olive, black text, hover darker olive
-              : "" // No specific overrides for inactive state, let variant="outline" handle colors
+              ? "bg-public-bg text-black hover:bg-public-bg/80 border-public-bg"
+              : ""
           )}
         >
           Custom Responses
