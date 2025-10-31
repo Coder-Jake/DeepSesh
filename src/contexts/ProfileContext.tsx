@@ -1538,6 +1538,17 @@ const LOCAL_STORAGE_INTENTION_KEY = 'deepsesh_intention';
 const LOCAL_STORAGE_SOCIABILITY_KEY = 'deepsesh_sociability';
 const LOCAL_STORAGE_LINKEDIN_URL_KEY = 'deepsesh_linkedin_url';
 
+// Helper function to safely parse JSON from local storage
+const safeJSONParse = <T>(key: string, defaultValue: T): T => {
+  try {
+    const storedValue = localStorage.getItem(key);
+    return storedValue ? JSON.parse(storedValue) : defaultValue;
+  } catch (e) {
+    console.error(`Error parsing localStorage key "${key}":`, e);
+    localStorage.removeItem(key); // Clear bad data
+    return defaultValue;
+  }
+};
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user } = useAuth(); // Keep user from AuthContext to get the ID
@@ -1715,19 +1726,14 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
     if (storedHostCode) setHostCode(storedHostCode);
 
-    const storedBioVisibility = localStorage.getItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY);
-    if (storedBioVisibility) setBioVisibility(JSON.parse(storedBioVisibility));
-    const storedIntentionVisibility = localStorage.getItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY);
-    if (storedIntentionVisibility) setIntentionVisibility(JSON.parse(storedIntentionVisibility));
-    const storedLinkedinVisibility = localStorage.getItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY);
-    if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
-    const storedCanHelpWithVisibility = localStorage.getItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY);
-    if (storedCanHelpWithVisibility) setCanHelpWithVisibility(JSON.parse(storedCanHelpWithVisibility));
-    const storedNeedHelpWithVisibility = localStorage.getItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY);
-    if (storedNeedHelpWithVisibility) setNeedHelpWithVisibility(JSON.parse(storedNeedHelpWithVisibility));
+    // Use safeJSONParse for array-based visibility settings
+    setBioVisibility(safeJSONParse(LOCAL_STORAGE_BIO_VISIBILITY_KEY, ['public']));
+    setIntentionVisibility(safeJSONParse(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, ['public']));
+    setLinkedinVisibility(safeJSONParse(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, ['public']));
+    setCanHelpWithVisibility(safeJSONParse(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, ['public']));
+    setNeedHelpWithVisibility(safeJSONParse(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, ['public']));
     
-    const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
-    if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
+    setFriendStatuses(safeJSONParse(LOCAL_STORAGE_FRIEND_STATUSES_KEY, {}));
 
     // Construct the `profile` object from the individual states for backward compatibility
     if (user) { 
@@ -1743,13 +1749,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         linkedin_url: storedLinkedinUrl || null,
         updated_at: new Date().toISOString(),
         host_code: storedHostCode || generateRandomHostCode(),
-        bio_visibility: (storedBioVisibility ? JSON.parse(storedBioVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        intention_visibility: (storedIntentionVisibility ? JSON.parse(storedIntentionVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        linkedin_visibility: (storedLinkedinVisibility ? JSON.parse(storedLinkedinVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        bio_visibility: safeJSONParse(LOCAL_STORAGE_BIO_VISIBILITY_KEY, ['public']),
+        intention_visibility: safeJSONParse(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, ['public']),
+        linkedin_visibility: safeJSONParse(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, ['public']),
         can_help_with: storedCanHelpWith || null,
-        can_help_with_visibility: (storedCanHelpWithVisibility ? JSON.parse(storedCanHelpWithVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        can_help_with_visibility: safeJSONParse(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, ['public']),
         need_help_with: storedNeedHelpWith || null,
-        need_help_with_visibility: (storedNeedHelpWithVisibility ? JSON.parse(storedNeedHelpWithVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        need_help_with_visibility: safeJSONParse(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, ['public']),
         pronouns: storedPronouns || null,
       };
       setProfile(currentProfile);

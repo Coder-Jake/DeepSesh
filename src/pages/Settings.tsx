@@ -95,7 +95,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  timeoutRefs.current = useRef<Record<string, NodeJS.Timeout>>({});
+  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({}); // Moved useRef inside the component
 
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
