@@ -311,12 +311,10 @@ const ScheduleForm: React.FC = () => {
     return startTimes;
   }, [schedule, scheduleStartOption, commenceTime, commenceDay, getScheduleBaseStartTime, is24HourFormat]);
 
-  // NEW: Calculate total duration of the schedule
   const totalDurationMinutes = useMemo(() => {
     return schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
   }, [schedule]);
 
-  // NEW: Calculate the schedule end time
   const scheduleEndTime = useMemo(() => {
     if (totalDurationMinutes === 0) return null;
 
@@ -469,7 +467,7 @@ const ScheduleForm: React.FC = () => {
 
           {totalDurationMinutes > 0 && (scheduleStartOption === 'now' || scheduleStartOption === 'custom_time') && (
             <div className="text-center text-sm text-muted-foreground mt-2">
-              Total: {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
+              {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
             </div>
           )}
 
