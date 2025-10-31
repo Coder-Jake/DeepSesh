@@ -466,23 +466,23 @@ const ScheduleForm: React.FC = () => {
           </div>
 
           {totalDurationMinutes > 0 && (scheduleStartOption === 'now' || scheduleStartOption === 'custom_time') && (
-            <div className="flex items-center justify-between text-sm text-muted-foreground mt-2"> {/* Changed to justify-between */}
+            <div className="flex items-center justify-between text-sm text-muted-foreground mt-2">
               <Button
-                variant="ghost"
+                variant="ghost" // Changed to ghost variant
                 size="icon"
                 onClick={() => setIsRecurring(prev => !prev)}
                 className={cn(
                   "h-8 w-8 rounded-full",
-                  isRecurring ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-muted-foreground hover:bg-muted"
+                  isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground hover:bg-muted" // Apply specific color when active
                 )}
                 aria-label="Toggle schedule loop"
               >
                 <Repeat className="h-4 w-4" />
               </Button>
-              <span className="flex-grow text-center"> {/* Added flex-grow and text-center */}
+              <span className="flex-grow text-center">
                 {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
               </span>
-              <div className="w-8 h-8" /> {/* Spacer to balance the button */}
+              <div className="w-8 h-8" />
             </div>
           )}
 
