@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Play, X, Clock, Save, Repeat } from "lucide-react"; // NEW: Import Repeat icon
+import { Plus, Trash2, Play, X, Clock, Save, Repeat } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { toast } from 'sonner';
@@ -31,7 +31,7 @@ const ScheduleForm: React.FC = () => {
     setScheduleStartOption, 
     timerIncrement,
     isRecurring,
-    setIsRecurring, // NEW: Get setIsRecurring
+    setIsRecurring,
     recurrenceFrequency,
     setRecurrenceFrequency,
     isSchedulePending,
@@ -466,7 +466,7 @@ const ScheduleForm: React.FC = () => {
           </div>
 
           {totalDurationMinutes > 0 && (scheduleStartOption === 'now' || scheduleStartOption === 'custom_time') && (
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-2"> {/* NEW: Added flex container */}
+            <div className="flex items-center justify-between text-sm text-muted-foreground mt-2"> {/* Changed to justify-between */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -479,9 +479,10 @@ const ScheduleForm: React.FC = () => {
               >
                 <Repeat className="h-4 w-4" />
               </Button>
-              <span>
+              <span className="flex-grow text-center"> {/* Added flex-grow and text-center */}
                 {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
               </span>
+              <div className="w-8 h-8" /> {/* Spacer to balance the button */}
             </div>
           )}
 
