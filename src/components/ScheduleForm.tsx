@@ -340,12 +340,20 @@ const ScheduleForm: React.FC = () => {
   }, [scheduleStartOption, totalDurationMinutes, getScheduleBaseStartTime, is24HourFormat]);
 
   const formatDuration = (minutes: number): string => {
+    if (minutes === 0) return ""; // If total minutes are 0, return empty string
+
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
+
+    let parts: string[] = [];
     if (hours > 0) {
-      return `${hours}h ${remainingMinutes}m`;
+      parts.push(`${hours}h`);
     }
-    return `${remainingMinutes}m`;
+    if (remainingMinutes > 0) {
+      parts.push(`${remainingMinutes}m`);
+    }
+    
+    return parts.join(' ');
   };
 
   return (
