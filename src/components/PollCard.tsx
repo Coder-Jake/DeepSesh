@@ -5,10 +5,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { MessageSquarePlus, Users, ThumbsUp, ThumbsDown, Minus, Circle, CheckSquare, X } from "lucide-react";
-import { toast } from 'sonner'; // Changed to sonner toast
+import { toast } from 'sonner';
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
+import { useTimer } from '@/contexts/TimerContext';
 
 interface PollOption {
   id: string;
@@ -34,8 +34,7 @@ interface PollCardProps {
 }
 
 const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide }) => {
-  // Removed: const { toast } = useToast(); // Removed shadcn toast
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
+  const { areToastsEnabled } = useTimer();
   const [selectedOption, setSelectedOption] = useState<string | null>(() => {
     if (poll.type === 'closed' || poll.type === 'choice') {
       const votedOption = poll.options.find(option => option.votes.some(vote => vote.userId === currentUserId));
@@ -74,7 +73,6 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
     }
   }, [poll, currentUserId]);
 
-  // NEW: Effect to synchronize customResponse state with existing custom votes
   useEffect(() => {
     if (poll.allowCustomResponses) {
       const userCustomVoteOption = poll.options.find(
@@ -128,7 +126,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
       newVoteText = customTextToSend;
     }
 
-    if (!hasCurrentVote && areToastsEnabled) { // NEW: Conditional toast
+    if (!hasCurrentVote && areToastsEnabled) {
       toast.info("Vote Removed", {
         description: `Your vote for the poll has been removed.`,
       });
@@ -188,6 +186,21 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
   const yesVotes = getTotalVotes('closed-yes');
   const noVotes = getTotalVotes('closed-no');
   const neutralVotes = getTotalVotes('closed-dont-mind');
+
+  const filteredOptions = poll.options.filter(option => {
+    const isCustomOption = option.id.startsWith('custom-');
+    const hasVotes = getTotalVotes(option.id) > 0;
+    const isUserVotedCustomOption = isCustomOption && option.votes.some(vote => vote.userId === currentUserId);
+    
+    // Always show non-custom options
+    if (!isCustomOption) return true;
+    // Always show custom options that have votes
+    if (hasVotes) return true;
+    // Always show the current user's custom response, even if it has 0 votes (so they can edit/remove it)
+    if (isUserVotedCustomOption) return true;
+    
+    return false;
+  });
 
   return (
     <Card className="bg-card border-border relative">
@@ -263,7 +276,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
                 value={selectedOption || ''} 
                 onValueChange={handleChoiceChange}
               >
-                {poll.options.map(option => (
+                {filteredOptions.map(option => (
                   <div key={option.id} className="flex items-center justify-between space-x-2">
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value={option.id} id={`${poll.id}-${option.id}`} />
@@ -277,7 +290,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
 
             {poll.type === 'selection' && (
               <div className="space-y-2">
-                {poll.options.map(option => (
+                {filteredOptions.map(option => (
                   <div key={option.id} className="flex items-center justify-between space-x-2">
                     <div className="flex items-center space-x-2">
                       <Checkbox
