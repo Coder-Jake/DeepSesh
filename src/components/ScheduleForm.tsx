@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
-import { toast } from 'sonner'; // Changed to sonner toast
+import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
@@ -42,9 +42,10 @@ const ScheduleForm: React.FC = () => {
     saveCurrentScheduleAsTemplate,
     timerColors,
     setTimerColors,
-    areToastsEnabled, // NEW: Get areToastsEnabled
+    areToastsEnabled,
+    formatTime, // NEW: Import formatTime
+    is24HourFormat, // NEW: Import is24HourFormat
   } = useTimer();
-  // Removed: const { toast } = useToast(); // Removed shadcn toast
 
   useEffect(() => {
     if (schedule.length === 0) {
@@ -200,7 +201,7 @@ const ScheduleForm: React.FC = () => {
 
   const handleCommenceSchedule = () => {
     if (!scheduleTitle.trim()) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.error("Schedule Title Missing", {
           description: "Please enter a title for your schedule.",
         });
@@ -208,7 +209,7 @@ const ScheduleForm: React.FC = () => {
       return;
     }
     if (schedule.length === 0) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.error("No Timers in Schedule", {
           description: "Please add at least one timer to your schedule.",
         });
@@ -216,7 +217,7 @@ const ScheduleForm: React.FC = () => {
       return;
     }
     if (schedule.some(timer => timer.durationMinutes <= 0)) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.error("Invalid Duration", {
           description: "Timers must have a duration greater than 0 minutes.",
         });
@@ -266,6 +267,54 @@ const ScheduleForm: React.FC = () => {
 
   const buttonText =
       (scheduleStartOption === 'now' ? "Begin" : "Prepare");
+
+  // NEW: Function to get the base start date for the schedule
+  const getScheduleBaseStartTime = useCallback(() => {
+    if (scheduleStartOption !== 'custom_time' || !commenceTime) {
+      return null;
+    }
+
+    const now = new Date();
+    const [hours, minutes] = commenceTime.split(':').map(Number);
+    let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+    const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, etc.
+    const templateDay = commenceDay === null ? currentDay : commenceDay;
+    
+    // Calculate days to add to reach the target day of the week
+    let daysToAdd = (templateDay - currentDay + 7) % 7;
+    targetDate.setDate(now.getDate() + daysToAdd);
+
+    // If the target time is in the past for today, set it for next week
+    if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
+      targetDate.setDate(targetDate.getDate() + 7);
+    }
+    return targetDate;
+  }, [scheduleStartOption, commenceTime, commenceDay]);
+
+  // NEW: Memoized calculation of start times for each item
+  const itemStartTimes = useMemo(() => {
+    const startTimes: Record<string, string> = {};
+    if (scheduleStartOption !== 'custom_time' || !commenceTime) {
+      return startTimes;
+    }
+
+    const baseDate = getScheduleBaseStartTime();
+    if (!baseDate) return startTimes;
+
+    let accumulatedMinutes = 0;
+    schedule.forEach((item) => {
+      const itemStartDate = new Date(baseDate.getTime() + accumulatedMinutes * 60 * 1000);
+      startTimes[item.id] = itemStartDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: is24HourFormat ? 'h23' : 'h12'
+      });
+      accumulatedMinutes += item.durationMinutes;
+    });
+    return startTimes;
+  }, [schedule, scheduleStartOption, commenceTime, commenceDay, getScheduleBaseStartTime, is24HourFormat]);
+
 
   return (
     <Card className="px-0">
@@ -357,6 +406,13 @@ const ScheduleForm: React.FC = () => {
                   data-input-type="timer-duration"
                 />
                 
+                {/* NEW: Display calculated start time */}
+                {scheduleStartOption === 'custom_time' && itemStartTimes[timer.id] && (
+                  <span className="text-sm text-muted-foreground ml-2 flex-shrink-0 min-w-[60px] text-right">
+                    {itemStartTimes[timer.id]}
+                  </span>
+                )}
+
                 <Select
                   value={timer.type}
                   onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
