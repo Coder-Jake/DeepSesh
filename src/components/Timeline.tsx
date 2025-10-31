@@ -27,7 +27,7 @@ const Timeline: React.FC<TimelineProps> = ({
   onCountdownEnd,
   timerColors, // NEW: Destructure timerColors
 }) => {
-  const { formatTime, isScheduleActive, is24HourFormat, activeScheduleDisplayTitle, setActiveScheduleDisplayTitle, sessionStartTime, isSchedulePrepared } = useTimer(); // Added sessionStartTime and isSchedulePrepared
+  const { formatTime, isScheduleActive, is24HourFormat, activeScheduleDisplayTitle, setActiveScheduleDisplayTitle, sessionStartTime, isSchedulePrepared, isRecurring } = useTimer(); // Added isRecurring
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -251,7 +251,9 @@ const Timeline: React.FC<TimelineProps> = ({
         <div className="mt-8 pt-6 border-t border-border text-center space-y-1" data-name="Total Schedule Duration and Finish Time">
           <p className="text-sm text-muted-foreground">Total: {totalScheduleDuration} mins</p>
           {formattedFinishTime && (
-            <p className="text-sm text-muted-foreground">Finish: {formattedFinishTime}</p>
+            <p className="text-sm text-muted-foreground">
+              {isRecurring ? "Loops: " : "Finish: "} {formattedFinishTime}
+            </p>
           )}
         </div>
       </CardContent>
