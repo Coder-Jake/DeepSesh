@@ -3,7 +3,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import Navigation from "@/components/Navigation";
-import { useState } from "react"; // Changed '=' to 'from'
+import { useState } from "react";
+import { cn } from "@/lib/utils"; // Added import for cn
 
 const Header = () => {
   const location = useLocation();
@@ -49,9 +50,12 @@ const Header = () => {
             />
             <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
               DeepSesh
-              {isHomePage && (
-                <span className="ml-0.5 text-[0.6rem] text-gray-400 font-normal">(demo)</span>
-              )}
+              <span className={cn(
+                "ml-0.5 text-[0.6rem] text-gray-400 font-normal transition-opacity duration-200",
+                isHomePage ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}>
+                (demo)
+              </span>
             </h1>
           </Link>
           {showSecretTextDiv && (
