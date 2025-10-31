@@ -97,7 +97,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  timeoutRefs.current = useRef<Record<string, NodeJS.Timeout>>({});
+  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({}); // FIX: Declared timeoutRefs here
 
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
@@ -844,7 +844,7 @@ const Settings = () => {
                   </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground select-none">
                     {maxDistance <= 300 && "Very close proximity only"}
-                    {maxDistance > 300 && maxDistance <= 1000 && "Walking distance"} {/* Corrected condition */}
+                    {maxDistance > 300 && maxDistance <= 1000 && "Walking distance"}
                     {maxDistance > 1000 && maxDistance <= 2000 && "Short bike ride"}
                     {maxDistance > 2000 && "Wider area search"}
                   </div>
