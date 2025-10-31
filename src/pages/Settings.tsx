@@ -40,7 +40,7 @@ const Settings = () => {
     customBatchMinutes,
     setCustomBatchMinutes,
     lock,
-    setLock,
+        setLock,
     exemptionsEnabled,
     setExemptionsEnabled,
     phoneCalls,
@@ -86,7 +86,7 @@ const Settings = () => {
   const { user } = useAuth(); // MODIFIED: Removed logout
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile(); // NEW: Destructure recentCoworkers
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading } = useProfile(); // NEW: Destructure loading
 
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
   const [userNameToBlock, setUserNameToBlock] = useState("");
