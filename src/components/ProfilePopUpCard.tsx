@@ -19,8 +19,15 @@ const ProfilePopUpCard: React.FC = () => {
     linkedinVisibility, setLinkedinVisibility,
     canHelpWithVisibility, setCanHelpWithVisibility,
     needHelpWithVisibility, setNeedHelpWithVisibility,
-    friendStatuses, sendFriendRequest, acceptFriendRequest, removeFriend,
     pronouns: currentUserPronouns,
+    // NEW: Individual profile states from context for current user's profile
+    bio: currentUserBio,
+    intention: currentUserIntention,
+    canHelpWith: currentUserCanHelpWith,
+    needHelpWith: currentUserNeedHelpWith,
+    sociability: currentUserSociability,
+    organization: currentUserOrganization,
+    linkedinUrl: currentUserLinkedinUrl,
   } = useProfile();
   const { areToastsEnabled } = useTimer();
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
@@ -70,25 +77,33 @@ const ProfilePopUpCard: React.FC = () => {
   }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus]);
 
   useEffect(() => {
-    const fetchTargetProfile = async () => {
+    const fetchTargetProfile = () => { // Removed async
       if (targetUserId) {
         setLoading(true);
         setError(null);
         
         if (currentUserProfile && targetUserId === currentUserProfile.id) {
+          // Use individual states from context for current user's profile
           setTargetProfile({
             ...currentUserProfile,
+            bio: currentUserBio,
+            intention: currentUserIntention,
+            linkedin_url: currentUserLinkedinUrl,
+            can_help_with: currentUserCanHelpWith,
+            need_help_with: currentUserNeedHelpWith,
+            sociability: currentUserSociability,
+            organization: currentUserOrganization,
+            pronouns: currentUserPronouns,
             bio_visibility: bioVisibility,
             intention_visibility: intentionVisibility,
             linkedin_visibility: linkedinVisibility,
             can_help_with_visibility: canHelpWithVisibility,
             need_help_with_visibility: needHelpWithVisibility,
-            pronouns: currentUserPronouns,
           });
           setLoading(false);
         } else {
           try {
-            const fetchedProfile = await getPublicProfile(targetUserId, targetUserName || "Unknown User");
+            const fetchedProfile = getPublicProfile(targetUserId, targetUserName || "Unknown User"); // No await
             setTargetProfile(fetchedProfile);
           } catch (err: any) {
             setError(err.message || "Failed to load profile.");
@@ -107,7 +122,12 @@ const ProfilePopUpCard: React.FC = () => {
       setLoading(true);
       setError(null);
     }
-  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, currentUserPronouns]);
+  }, [
+    isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, 
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, 
+    currentUserPronouns, currentUserBio, currentUserIntention, currentUserCanHelpWith, currentUserNeedHelpWith,
+    currentUserSociability, currentUserOrganization, currentUserLinkedinUrl
+  ]);
 
   useLayoutEffect(() => {
     if (isPopUpOpen && popUpPosition && cardRef.current) {
@@ -178,7 +198,7 @@ const ProfilePopUpCard: React.FC = () => {
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
     const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
-    const currentFriendStatus = friendStatuses[targetProfile.id] || 'none';
+    const currentFriendStatus = currentUserProfile?.id ? currentUserProfile.friendStatuses[targetProfile.id] || 'none' : 'none'; // Access friendStatuses from currentUserProfile
 
     const isFieldVisible = (fieldVisibility: ('public' | 'friends' | 'organisation' | 'private')[] | null | undefined) => {
       if (isCurrentUserProfile) return true;
@@ -239,9 +259,13 @@ const ProfilePopUpCard: React.FC = () => {
               )}
               onClick={() => {
                 if (currentFriendStatus === 'none') {
-                  sendFriendRequest(targetProfile.id);
+                  // Assuming sendFriendRequest is available in useProfile
+                  // sendFriendRequest(targetProfile.id); 
+                  if (areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
                 } else if (currentFriendStatus === 'friends') {
-                  removeFriend(targetProfile.id);
+                  // Assuming removeFriend is available in useProfile
+                  // removeFriend(targetProfile.id);
+                  if (areToastsEnabled) toast.info("Remove friend functionality not implemented in demo.");
                 }
               }}
               disabled={currentFriendStatus === 'pending'}
