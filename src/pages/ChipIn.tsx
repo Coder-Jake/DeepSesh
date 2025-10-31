@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "lucide-react";
+import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb, Linkedin } from "lucide-react"; // Import Linkedin icon
 import { toast } from 'sonner'; // Import toast from sonner directly
 import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
@@ -208,10 +208,19 @@ const ChipIn = () => {
         </div>
       </div>
 
-      <div className="mt-8 text-center">
+      <div className="mt-8 flex justify-start items-center gap-4"> {/* Modified div for alignment */}
         <Link to="/credits" className="text-sm text-muted-foreground hover:underline">
           Credits
         </Link>
+        <a 
+          href="https://www.linkedin.com/company/deepsesh/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-muted-foreground hover:text-blue-600 transition-colors"
+          aria-label="DeepSesh LinkedIn Profile"
+        >
+          <Linkedin className="h-5 w-5" />
+        </a>
       </div>
     </main>
   );
