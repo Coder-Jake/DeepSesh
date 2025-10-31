@@ -3,12 +3,12 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 
 interface ProfilePopUpContextType {
-  isPopUpOpen: boolean; // Renamed for consistency
-  targetUserId: string | null; // Renamed for consistency
-  targetUserName: string | null; // Renamed for consistency
-  popUpPosition: { x: number; y: number } | null; // Renamed for consistency
+  isPopUpOpen: boolean;
+  targetUserId: string | null;
+  targetUserName: string | null;
+  popUpPosition: { x: number; y: number } | null;
   toggleProfilePopUp: (id: string, name: string, x: number, y: number) => void;
-  closeProfilePopUp: () => void; // Added dedicated close function
+  closeProfilePopUp: () => void;
 }
 
 const ProfilePopUpContext = createContext<ProfilePopUpContextType | undefined>(undefined);
@@ -27,11 +27,22 @@ export const ProfilePopUpProvider: React.FC<{ children: ReactNode }> = ({ childr
   }, []);
 
   const toggleProfilePopUp = useCallback((id: string, name: string, x: number, y: number) => {
-    // If the same profile is clicked AND it's currently open, close it.
     if (isPopUpOpen && targetUserId === id) {
+      // Clicked the same profile, close it
       closeProfilePopUp();
+    } else if (isPopUpOpen && targetUserId !== id) {
+      // Clicked a different profile while one is open
+      // Close the current one first to trigger the closing animation
+      closeProfilePopUp(); 
+      // Then, after a short delay, open the new one
+      setTimeout(() => {
+        setIsPopUpOpen(true);
+        setTargetUserId(id);
+        setTargetUserName(name);
+        setPopUpPosition({ x, y });
+      }, 100); // 100ms delay to allow closing animation to start
     } else {
-      // Otherwise, open it for the new (or different) profile
+      // No profile is open, open the new one
       setIsPopUpOpen(true);
       setTargetUserId(id);
       setTargetUserName(name);
