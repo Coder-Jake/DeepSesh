@@ -37,7 +37,7 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
+import { useTheme } '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 interface ExtendSuggestion {
   id: string;
@@ -1175,13 +1175,17 @@ const Index = () => {
                         className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
                         data-name="Public/Private Toggle Button"
                       >
-                        {!isGlobalPrivate ? <>
-                            <Globe size={16} />
-                            <span className="text-sm font-medium">Public</span>
-                          </> : <>
-                            <Lock size={16} />
-                            <span className="text-sm font-medium">Private</span>
-                          >}
+                        {!isGlobalPrivate ? (
+                            <>
+                              <Globe size={16} />
+                              <span className="text-sm font-medium">Public</span>
+                            </>
+                          ) : (
+                            <>
+                              <Lock size={16} />
+                              <span className="text-sm font-medium">Private</span>
+                            </>
+                          )}
                       </button>
                       
                       {isActiveTimer ? (
