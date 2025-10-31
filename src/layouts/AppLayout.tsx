@@ -47,6 +47,12 @@ const AppLayout = () => {
           event.preventDefault();
           navigate('/chip-in');
           break;
+        case '5': // NEW: Added '5' for Vibes
+        case 'v': // NEW: Added 'v' for Vibes
+        case 'V': // NEW: Added 'V' for Vibes
+          event.preventDefault();
+          navigate('/vibes');
+          break;
         case 'd': // NEW: Toggle dark mode with 'd' key
         case 'D':
           event.preventDefault();

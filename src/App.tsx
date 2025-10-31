@@ -21,6 +21,7 @@ import Feedback from './pages/Feedback';
 import Credits from './pages/Credits';
 import UpcomingFeatures from './pages/UpcomingFeatures';
 import NotFound from './pages/NotFound'; // Import NotFound
+import Vibes from './pages/Vibes'; // NEW: Import Vibes
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
                       <Route path="feedback" element={<Feedback />} />
                       <Route path="credits" element={<Credits />} />
                       <Route path="upcoming-features" element={<UpcomingFeatures />} />
+                      <Route path="vibes" element={<Vibes />} /> {/* NEW: Add Vibes route */}
                       <Route path="login" element={<Login />} /> {/* Moved login here */}
                       <Route path="register" element={<Register />} />
                       <Route path="forgot-password" element={<ForgotPassword />} />

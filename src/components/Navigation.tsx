@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, User, Settings, Heart } from "lucide-react"; // Removed Home icon
+import { Menu, X, User, Settings, Heart, Sparkles } from "lucide-react"; // Added Sparkles icon
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
@@ -12,6 +12,7 @@ const Navigation = () => {
   const navigationItems = [
     { name: "Settings", href: "/settings", icon: Settings }, // Settings moved to top
     { name: localFirstName, href: "/profile", icon: User }, // Profile changed to localFirstName
+    { name: "Vibes", href: "/vibes", icon: Sparkles }, // NEW: Added Vibes page
     { name: "Chip In", href: "/chip-in", icon: Heart },
   ];
 
