@@ -9,6 +9,7 @@ import { MessageSquarePlus, CheckSquare, ThumbsUp, Circle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useTimer } from '@/contexts/TimerContext';
+import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 interface CreatePollFormProps {
   onClose: () => void;
@@ -23,6 +24,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
   const [options, setOptions] = useState("");
   const [allowCustomResponses, setAllowCustomResponses] = useState(false);
   const { areToastsEnabled } = useTimer();
+  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode
 
   const getOptionsPlaceholderText = (type: PollType) => {
     switch (type) {
@@ -152,9 +154,9 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           onClick={() => setAllowCustomResponses(prev => !prev)}
           className={cn(
             "ml-auto h-auto px-3 py-1 rounded-full text-sm",
-            allowCustomResponses
-              ? "bg-public-bg text-black hover:bg-public-bg/80 border-public-bg"
-              : ""
+            allowCustomResponses && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))] text-foreground border-public-bg",
+            allowCustomResponses && !isDarkMode && "bg-[hsl(var(--public-bg))] text-black border-public-bg",
+            !allowCustomResponses && "text-muted-foreground hover:bg-muted"
           )}
         >
           Custom Responses
