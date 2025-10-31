@@ -548,32 +548,49 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setIsFlashing(false);
           setCurrentPhaseStartTime(Date.now());
         } else {
-          if (shouldShowEndToast && areToastsEnabled) {
-            toast("Schedule Completed!", {
-              description: `"${scheduleTitle}" has finished.`,
-            });
+          // Schedule has reached its end
+          if (isRecurring && activeSchedule.length > 0) {
+            // Loop the schedule
+            setCurrentScheduleIndex(0);
+            setTimerType(activeSchedule[0].type);
+            setTimeLeft(activeSchedule[0].durationMinutes * 60);
+            setIsRunning(true);
+            setIsFlashing(false);
+            setCurrentPhaseStartTime(Date.now());
+            if (shouldShowEndToast && areToastsEnabled) {
+              toast("Schedule Looping!", {
+                description: `"${scheduleTitle}" is restarting.`,
+              });
+            }
+          } else {
+            // Schedule completed, stop and save
+            if (shouldShowEndToast && areToastsEnabled) {
+              toast("Schedule Completed!", {
+                description: `"${scheduleTitle}" has finished.`,
+              });
+            }
+            
+            const finalFocusSeconds = accumulatedFocusSeconds;
+            const finalBreakSeconds = accumulatedBreakSeconds;
+            const totalSession = finalFocusSeconds + finalBreakSeconds;
+
+            console.log("TimerContext: activeAsks before saving (schedule completion):", activeAsks);
+            saveSessionToDatabase( // Use the new utility function
+              user?.id, // Pass user ID
+              _seshTitle,
+              notes,
+              finalFocusSeconds,
+              finalBreakSeconds,
+              totalSession,
+              activeJoinedSessionCoworkerCount,
+              sessionStartTime || Date.now(),
+              activeAsks,
+              allParticipantsToDisplay,
+              areToastsEnabled // Pass areToastsEnabled
+            );
+
+            resetSchedule();
           }
-          
-          const finalFocusSeconds = accumulatedFocusSeconds;
-          const finalBreakSeconds = accumulatedBreakSeconds;
-          const totalSession = finalFocusSeconds + finalBreakSeconds;
-
-          console.log("TimerContext: activeAsks before saving (schedule completion):", activeAsks);
-          saveSessionToDatabase( // Use the new utility function
-            user?.id, // Pass user ID
-            _seshTitle,
-            notes,
-            finalFocusSeconds,
-            finalBreakSeconds,
-            totalSession,
-            activeJoinedSessionCoworkerCount,
-            sessionStartTime || Date.now(),
-            activeAsks,
-            allParticipantsToDisplay,
-            areToastsEnabled // Pass areToastsEnabled
-          );
-
-          resetSchedule();
         }
       } else {
         if (shouldShowEndToast && areToastsEnabled) {
@@ -607,7 +624,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, user?.id, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration]);
+  }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, user?.id, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration, isRecurring]);
 
   useEffect(() => {
     if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
@@ -768,7 +785,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setLocationSharing(data.locationSharing ?? false);
       setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
       setTimerColors(data.timerColors ?? {});
-      setActiveSchedule(data.activeSchedule ?? []);
+      setActiveSchedule(data.activeSchedule ?? {});
       setActiveTimerColors(data.activeTimerColors ?? {});
       setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? "My Focus Sesh");
       setIs24HourFormat(data.is24HourFormat ?? true);
@@ -810,7 +827,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       timerIncrement,
       areToastsEnabled,
       startStopNotifications,
-      hasWonPrize, // NEW: Save hasWonPrize to local storage
+      hasWonPrize, // NEW: Add hasWonPrize to dependencies
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
@@ -837,6 +854,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     startStopNotifications,
     hasWonPrize, // NEW: Add hasWonPrize to dependencies
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
+    isRecurring, // ADDED: isRecurring to dependencies
   ]);
 
   const value: TimerContextType = {
