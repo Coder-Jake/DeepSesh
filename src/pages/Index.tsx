@@ -1242,6 +1242,7 @@ const Index = () => {
                           onClick={stopTimer}
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-transparent",
+                            isRunning && "opacity-50", // NEW: Add opacity-50 when running
                             isPaused ? "text-red-500" : "text-secondary-foreground"
                           )}
                           data-name="Stop Timer Button"
