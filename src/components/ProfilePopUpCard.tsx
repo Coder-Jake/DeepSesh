@@ -169,10 +169,17 @@ const ProfilePopUpCard: React.FC = () => {
   }, [isPopUpOpen, popUpPosition, targetProfile, loading, error, isMobile]);
 
   useEffect(() => {
+    const handleTemporaryClick = (event: MouseEvent) => {
+      event.stopPropagation();
+      event.preventDefault(); // Prevent default action for the click event
+      document.removeEventListener('click', handleTemporaryClick, true); // Remove itself after one use
+    };
+
     const handleClickOutside = (event: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
         closeProfilePopUp();
-        event.stopPropagation(); // Stop propagation to prevent underlying elements from reacting
+        // After closing, prevent the subsequent click event from triggering on the underlying element
+        document.addEventListener('click', handleTemporaryClick, true); // Use capture phase to catch it early
       }
     };
 
@@ -180,10 +187,13 @@ const ProfilePopUpCard: React.FC = () => {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
-    };
+      // Also ensure any lingering temporary click listeners are removed if the pop-up closes by other means
+      document.removeEventListener('click', handleTemporaryClick, true);
+    }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleTemporaryClick, true); // Cleanup on unmount
     };
   }, [isPopUpOpen, closeProfilePopUp]);
 
