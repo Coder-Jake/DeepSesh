@@ -1201,7 +1201,33 @@ const Index = () => {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col items-center mb-4">
+                  <div 
+                    className="relative flex flex-col items-center mb-4"
+                    onClick={(e) => {
+                      if (!isActiveTimer) {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const clickX = e.clientX - rect.left; // X position relative to the element
+                        const middle = rect.width / 2;
+
+                        if (clickX < middle) {
+                          // Left side clicked - decrease time
+                          if (timerType === 'focus') {
+                            setHomepageFocusMinutes(prev => Math.max(timerIncrement, prev - timerIncrement));
+                          } else {
+                            setHomepageBreakMinutes(prev => Math.max(timerIncrement, prev - timerIncrement));
+                          }
+                        } else {
+                          // Right side clicked - increase time
+                          if (timerType === 'focus') {
+                            setHomepageFocusMinutes(prev => prev + timerIncrement);
+                          } else {
+                            setHomepageBreakMinutes(prev => prev + timerIncrement);
+                          }
+                        }
+                      }
+                    }}
+                    style={{ cursor: !isActiveTimer ? 'ew-resize' : 'default' }}
+                  >
                     <CircularProgress
                       size={280}
                       strokeWidth={12}
