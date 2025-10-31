@@ -913,7 +913,7 @@ const Index = () => {
     });
   };
 
-  const handleVotePoll = (pollId: string, selectedOptionIdsFromCard: string[], customOptionText?: string) => {
+  const handleVotePoll = (pollId: string, selectedOptionIdsFromCard: string[], customOptionText?: string, isCustomOptionSelected?: boolean) => {
     const currentAsk = activeAsks.find(ask => ask.id === pollId);
     if (!currentAsk || !('options' in currentAsk)) return;
 
@@ -922,15 +922,15 @@ const Index = () => {
 
     // --- Handle custom response text and its corresponding option ---
     const trimmedCustomText = customOptionText?.trim();
-    let customOptionIdForUser: string | null = null;
+    let userCustomOptionId: string | null = null;
 
     // Find the custom option previously created by this user, if any
     const existingUserCustomOption = currentPoll.options.find(
       opt => opt.id.startsWith('custom-') && opt.votes.some(vote => vote.userId === currentUserId)
     );
 
-    if (trimmedCustomText) {
-      // User has provided a custom response
+    if (trimmedCustomText && isCustomOptionSelected) {
+      // User has provided a custom response AND it's selected
       if (existingUserCustomOption) {
         // Update existing custom option's text if it changed
         if (existingUserCustomOption.text !== trimmedCustomText) {
@@ -941,23 +941,23 @@ const Index = () => {
             )
           };
         }
-        customOptionIdForUser = existingUserCustomOption.id;
+        userCustomOptionId = existingUserCustomOption.id;
       } else {
         // Create a new custom option
         const newCustomOption: PollOption = {
           id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
           text: trimmedCustomText,
-          votes: [], // Will be populated below
+          votes: [],
         };
         currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
-        customOptionIdForUser = newCustomOption.id;
+        userCustomOptionId = newCustomOption.id;
       }
       // Ensure the custom option is in the list of options to be voted for
-      if (customOptionIdForUser && !finalOptionIdsToVote.includes(customOptionIdForUser)) {
-        finalOptionIdsToVote.push(customOptionIdForUser);
+      if (userCustomOptionId && !finalOptionIdsToVote.includes(userCustomOptionId)) {
+        finalOptionIdsToVote.push(userCustomOptionId);
       }
     } else {
-      // User cleared the custom response input.
+      // User cleared the custom response input OR unchecked the custom option.
       // If there was an existing custom option by this user, ensure its vote is removed.
       if (existingUserCustomOption) {
         finalOptionIdsToVote = finalOptionIdsToVote.filter(id => id !== existingUserCustomOption.id);

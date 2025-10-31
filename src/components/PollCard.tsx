@@ -28,7 +28,8 @@ interface Poll {
 
 interface PollCardProps {
   poll: Poll;
-  onVote: (pollId: string, optionIds: string[], customOptionText?: string) => void;
+  // Modified onVote signature to explicitly pass custom option state
+  onVote: (pollId: string, optionIds: string[], customOptionText?: string, isCustomOptionSelected?: boolean) => void;
   currentUserId: string;
   onHide: (id: string) => void;
 }
@@ -51,7 +52,23 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
     return [];
   });
   const [customResponse, setCustomResponse] = useState("");
+  const [isCustomOptionChecked, setIsCustomOptionChecked] = useState(false); // State for custom option checkbox
 
+  // Effect to initialize customResponse and isCustomOptionChecked from poll data
+  useEffect(() => {
+    if (poll.allowCustomResponses) {
+      const userCustomVoteOption = poll.options.find(
+        option => option.id.startsWith('custom-') && option.votes.some(vote => vote.userId === currentUserId)
+      );
+      setCustomResponse(userCustomVoteOption ? userCustomVoteOption.text : "");
+      setIsCustomOptionChecked(!!userCustomVoteOption); // Check if user has a custom option with a vote
+    } else {
+      setCustomResponse("");
+      setIsCustomOptionChecked(false);
+    }
+  }, [poll, currentUserId]);
+
+  // Update selectedOption for closed/choice polls
   useEffect(() => {
     if (poll.type === 'closed' || poll.type === 'choice') {
       const votedOption = poll.options.find(option => option.votes.some(vote => vote.userId === currentUserId));
@@ -61,6 +78,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
     }
   }, [poll, currentUserId]);
 
+  // Update selectedOptions for selection polls
   useEffect(() => {
     if (poll.type === 'selection') {
       setSelectedOptions(
@@ -73,78 +91,38 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
     }
   }, [poll, currentUserId]);
 
-  useEffect(() => {
-    if (poll.allowCustomResponses) {
-      const userCustomVoteOption = poll.options.find(
-        option => option.id.startsWith('custom-') && option.votes.some(vote => vote.userId === currentUserId)
-      );
-      setCustomResponse(userCustomVoteOption ? userCustomVoteOption.text : "");
-    } else {
-      setCustomResponse("");
-    }
-  }, [poll, currentUserId]);
-
   const submitVote = (
     newSelectedOption: string | null,
     newSelectedOptions: string[],
-    newCustomResponse: string
+    newCustomResponseText: string,
+    customOptionIsChecked: boolean
   ) => {
     let votesToSend: string[] = [];
-    let customTextToSend: string | undefined;
-
+    
     if (poll.type === 'closed' || poll.type === 'choice') {
       if (newSelectedOption) {
         votesToSend = [newSelectedOption];
       }
     } else if (poll.type === 'selection') {
-      votesToSend = newSelectedOptions;
+      votesToSend = [...newSelectedOptions];
     }
 
-    if (poll.allowCustomResponses && newCustomResponse.trim()) {
-      customTextToSend = newCustomResponse.trim();
-    }
-
-    const hadPreviousVote = (selectedOption !== null || selectedOptions.length > 0 || customResponse.trim() !== '');
-    const hasCurrentVote = (votesToSend.length > 0 || customTextToSend);
-
-    if (!hasCurrentVote && !hadPreviousVote) {
-      return;
-    }
-
-    onVote(poll.id, votesToSend, customTextToSend);
-
-    let newVoteText = "";
-    if (poll.type === 'closed' && newSelectedOption) {
-      if (newSelectedOption === 'closed-yes') newVoteText = 'yes';
-      else if (newSelectedOption === 'closed-no') newVoteText = 'no';
-      else if (newSelectedOption === 'closed-dont-mind') newVoteText = 'neutral';
-    } else if (poll.type === 'choice' && newSelectedOption) {
-      newVoteText = poll.options.find(opt => opt.id === newSelectedOption)?.text || "";
-    } else if (poll.type === 'selection' && votesToSend.length > 0) {
-      newVoteText = votesToSend.map(id => poll.options.find(opt => opt.id === id)?.text || "").join(', ');
-    } else if (customTextToSend) {
-      newVoteText = customTextToSend;
-    }
-
-    if (!hasCurrentVote && areToastsEnabled) {
-      toast.info("Vote Removed", {
-        description: `Your vote for the poll has been removed.`,
-      });
-    } 
+    // Pass all necessary info to parent, let parent handle custom option ID generation/management
+    onVote(poll.id, votesToSend, newCustomResponseText.trim() || undefined, customOptionIsChecked);
   };
 
   const handleClosedPollVote = (optionId: string) => {
     let newVoteId: string | null = optionId;
     if (selectedOption === optionId) {
-      newVoteId = null;
+      newVoteId = null; // Unselect if already selected
     }
     setSelectedOption(newVoteId);
-    submitVote(newVoteId, selectedOptions, customResponse);
+    submitVote(newVoteId, selectedOptions, customResponse, isCustomOptionChecked);
   };
 
   const handleChoiceChange = (newOptionId: string) => {
     setSelectedOption(newOptionId);
-    submitVote(newOptionId, selectedOptions, customResponse);
+    submitVote(newOptionId, selectedOptions, customResponse, isCustomOptionChecked);
   };
 
   const handleSelectionChange = (optionId: string, checked: boolean | 'indeterminate') => {
@@ -153,15 +131,38 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
       ? [...selectedOptions, optionId]
       : selectedOptions.filter(id => id !== optionId);
     setSelectedOptions(newSelectedOptions);
-    submitVote(selectedOption, newSelectedOptions, customResponse);
+    submitVote(selectedOption, newSelectedOptions, customResponse, isCustomOptionChecked);
   };
 
   const handleCustomResponseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomResponse(e.target.value);
+    const newCustomResponse = e.target.value;
+    setCustomResponse(newCustomResponse);
+    // If custom response is cleared, uncheck it automatically
+    if (!newCustomResponse.trim()) {
+      setIsCustomOptionChecked(false);
+      // Also submit vote to clear it
+      submitVote(selectedOption, selectedOptions, newCustomResponse, false);
+    } else if (isCustomOptionChecked) {
+      // If it's checked and text is being typed, submit vote to update text
+      submitVote(selectedOption, selectedOptions, newCustomResponse, true);
+    }
+  };
+
+  const handleCustomOptionCheckboxChange = (checked: boolean | 'indeterminate') => {
+    const isChecked = !!checked;
+    setIsCustomOptionChecked(isChecked);
+    // If unchecked, clear custom response text as well
+    if (!isChecked) {
+      setCustomResponse("");
+    }
+    submitVote(selectedOption, selectedOptions, customResponse, isChecked);
   };
 
   const handleCustomResponseBlur = () => {
-    submitVote(selectedOption, selectedOptions, customResponse);
+    // Only submit if custom response is checked or has text (to clear it)
+    if (isCustomOptionChecked || customResponse.trim()) {
+      submitVote(selectedOption, selectedOptions, customResponse, isCustomOptionChecked);
+    }
   };
 
   const handleCustomResponseKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -259,15 +260,26 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
             {poll.allowCustomResponses && (poll.type === 'choice' || poll.type === 'selection') && (
               <div className="space-y-2">
                 <Label htmlFor={`${poll.id}-custom-response`}>Your Custom Response</Label>
-                <Input
-                  id={`${poll.id}-custom-response`}
-                  placeholder="Type your own option..."
-                  value={customResponse}
-                  onChange={handleCustomResponseChange}
-                  onBlur={handleCustomResponseBlur}
-                  onKeyDown={handleCustomResponseKeyDown}
-                  onFocus={(e) => e.target.select()}
-                />
+                <div className="flex items-center gap-2"> {/* NEW: Flex container for input and checkbox */}
+                  {(poll.type === 'selection') && ( // Only show checkbox for selection type
+                    <Checkbox
+                      id={`${poll.id}-custom-response-checkbox`}
+                      checked={isCustomOptionChecked}
+                      onCheckedChange={handleCustomOptionCheckboxChange}
+                      disabled={!customResponse.trim()} // Disable checkbox if no text
+                    />
+                  )}
+                  <Input
+                    id={`${poll.id}-custom-response`}
+                    placeholder="Type your own option..."
+                    value={customResponse}
+                    onChange={handleCustomResponseChange}
+                    onBlur={handleCustomResponseBlur}
+                    onKeyDown={handleCustomResponseKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    className="flex-grow"
+                  />
+                </div>
               </div>
             )}
 
