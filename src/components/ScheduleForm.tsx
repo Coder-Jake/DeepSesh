@@ -480,11 +480,7 @@ const ScheduleForm: React.FC = () => {
                 <Repeat 
                   className={cn(
                     "h-4 w-4",
-                    isRecurring 
-                      ? (isDarkMode 
-                          ? "text-[hsl(var(--public-gradient-start-dark))]" 
-                          : "text-[hsl(var(--public-bg))]") 
-                      : ""
+                    isRecurring ? "text-[hsl(var(--public-gradient-start-dark))]" : "" // Apply dark mode public-bg color
                   )} 
                 />
               </Button>
