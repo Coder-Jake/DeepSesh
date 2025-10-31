@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
 import ColorPicker from './ColorPicker';
 import { DAYS_OF_WEEK } from "@/lib/constants";
-import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -47,8 +46,6 @@ const ScheduleForm: React.FC = () => {
     formatTime, 
     is24HourFormat, 
   } = useTimer();
-
-  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode from ThemeContext
 
   useEffect(() => {
     if (schedule.length === 0) {
@@ -469,27 +466,23 @@ const ScheduleForm: React.FC = () => {
           </div>
 
           {totalDurationMinutes > 0 && (scheduleStartOption === 'now' || scheduleStartOption === 'custom_time') && (
-            <div className="flex items-center justify-between text-sm text-muted-foreground mt-2">
+            <div className="flex items-center justify-between text-sm text-muted-foreground mt-2"> {/* Changed to justify-between */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsRecurring(prev => !prev)}
                 className={cn(
                   "h-8 w-8 rounded-full",
-                  isRecurring
-                    ? isDarkMode
-                      ? "bg-[hsl(var(--public-gradient-start-dark))] text-white hover:bg-[hsl(var(--public-gradient-end-dark))]"
-                      : "bg-[hsl(var(--public-bg))] text-foreground hover:bg-[hsl(var(--public-bg))]/80"
-                    : "text-muted-foreground hover:bg-muted"
+                  isRecurring ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-muted-foreground hover:bg-muted"
                 )}
                 aria-label="Toggle schedule loop"
               >
                 <Repeat className="h-4 w-4" />
               </Button>
-              <span className="flex-grow text-center">
+              <span className="flex-grow text-center"> {/* Added flex-grow and text-center */}
                 {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
               </span>
-              <div className="w-8 h-8" />
+              <div className="w-8 h-8" /> {/* Spacer to balance the button */}
             </div>
           )}
 
