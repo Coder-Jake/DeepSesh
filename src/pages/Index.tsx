@@ -1006,67 +1006,44 @@ const Index = () => {
 
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
-      return -Infinity; 
-    } else if (template.scheduleStartOption === 'custom_time') {
-      const [hours, minutes] = template.commenceTime.split(':').map(Number);
-      let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
-
-      const currentDay = now.getDay();
-      const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
-      const daysToAdd = (templateDay - currentDay + 7) % 7;
-      targetDate.setDate(now.getDate() + daysToAdd);
-
-      if (targetDate.getTime() < now.getTime()) {
-        if (!template.isRecurring) {
-          discardPreparedSchedule(template.id);
-          continue;
-        } else {
-          if (template.recurrenceFrequency === 'daily') {
-            targetDate.setDate(targetDate.getDate() + 1);
-          } else if (template.recurrenceFrequency === 'weekly') {
-            targetDate.setDate(targetDate.getDate() + 7);
-          } else if (template.recurrenceFrequency === 'monthly') {
-            targetDate.setMonth(targetDate.getMonth() + 1);
-          }
-          while (targetDate.getTime() < now.getTime()) {
-            if (template.recurrenceFrequency === 'daily') {
-              targetDate.setDate(targetDate.getDate() + 1);
-            } else if (template.recurrenceFrequency === 'weekly') {
-              targetDate.setDate(targetDate.getDate() + 7);
-            } else if (template.recurrenceFrequency === 'monthly') {
-              targetDate.setMonth(targetDate.getMonth() + 1);
-            }
-          }
-        }
-      }
-
-      const timeDifference = targetDate.getTime() - now.getTime();
-      if (timeDifference <= 60 * 1000 && timeDifference >= -1000) {
-        if (!isScheduleActive && !isSchedulePending) {
-          commenceSpecificPreparedSchedule(template.id);
-          if (template.isRecurring) {
-            const nextCommenceDate = new Date(targetDate);
-            if (template.recurrenceFrequency === 'daily') {
-              nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
-            } else if (template.recurrenceFrequency === 'weekly') {
-              nextCommenceDate.setDate(nextCommenceDate.getDate() + 7);
-            } else if (template.recurrenceFrequency === 'monthly') {
-              nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
-            }
-            setPreparedSchedules(prev => prev.map(p => 
-              p.id === template.id ? { 
-                ...p, 
-                commenceTime: nextCommenceDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
-                commenceDay: nextCommenceDate.getDay()
-              } : p
-            ));
-          }
-          return;
-        }
-      }
+      return Infinity; // Manual schedules sort to the end if not explicitly started
     }
-    return Infinity;
-  }, [isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, setPreparedSchedules]);
+
+    const [hours, minutes] = template.commenceTime.split(':').map(Number);
+    let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+    const currentDay = now.getDay();
+    const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
+    const daysToAdd = (templateDay - currentDay + 7) % 7;
+    targetDate.setDate(now.getDate() + daysToAdd);
+
+    // If the target time is in the past for today, and it's not recurring, sort it to the end.
+    // The actual discarding will happen in TimerContext's useEffect.
+    if (targetDate.getTime() < now.getTime() && !template.isRecurring) {
+      return Infinity;
+    }
+    
+    // If it's recurring and in the past, calculate the next occurrence for sorting purposes.
+    // The actual update to preparedSchedules happens in TimerContext's useEffect.
+    if (targetDate.getTime() < now.getTime() && template.isRecurring) {
+      let nextCommenceDate = new Date(targetDate);
+      while (nextCommenceDate.getTime() < now.getTime()) {
+        if (template.recurrenceFrequency === 'daily') {
+          nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
+        } else if (template.recurrenceFrequency === 'weekly') {
+          nextCommenceDate.setDate(nextCommenceDate.getDate() + 7);
+        } else if (template.recurrenceFrequency === 'monthly') {
+          nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
+        } else {
+          // Fallback for unknown recurrence, treat as non-recurring past
+          return Infinity;
+        }
+      }
+      return nextCommenceDate.getTime();
+    }
+
+    return targetDate.getTime();
+  }, []); // Dependencies should only be constants or props that affect the calculation, not state setters
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
