@@ -37,7 +37,7 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } '@/contexts/ThemeContext'; // NEW: Import useTheme
+import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 interface ExtendSuggestion {
   id: string;
@@ -1286,7 +1286,7 @@ const Index = () => {
                               setHomepageFocusMinutes(defaultFocusMinutes);
                             }
                           }}
-                          className="w-16 h-8 text-center number-input-with-custom-arrows pr-[2.5rem]" // ADDED pr-[2.5rem]
+                          className="w-16 h-8 text-center" 
                           min={timerIncrement} 
                           max="120" 
                           step={timerIncrement}
@@ -1321,7 +1321,7 @@ const Index = () => {
                               setHomepageBreakMinutes(defaultBreakMinutes);
                             }
                           }}
-                          className="w-16 h-8 text-center number-input-with-custom-arrows pr-[2.5rem]" // ADDED pr-[2.5rem]
+                          className="w-16 h-8 text-center" 
                           min={timerIncrement} 
                           max="60" 
                           step={timerIncrement}
