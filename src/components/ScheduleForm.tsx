@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Play, X, Clock, Save } from "lucide-react";
+import { Plus, Trash2, Play, X, Clock, Save, Repeat } from "lucide-react"; // NEW: Import Repeat icon
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { toast } from 'sonner';
@@ -31,7 +31,7 @@ const ScheduleForm: React.FC = () => {
     setScheduleStartOption, 
     timerIncrement,
     isRecurring,
-    setIsRecurring,
+    setIsRecurring, // NEW: Get setIsRecurring
     recurrenceFrequency,
     setRecurrenceFrequency,
     isSchedulePending,
@@ -466,8 +466,22 @@ const ScheduleForm: React.FC = () => {
           </div>
 
           {totalDurationMinutes > 0 && (scheduleStartOption === 'now' || scheduleStartOption === 'custom_time') && (
-            <div className="text-center text-sm text-muted-foreground mt-2">
-              {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-2"> {/* NEW: Added flex container */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsRecurring(prev => !prev)}
+                className={cn(
+                  "h-8 w-8 rounded-full",
+                  isRecurring ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-muted-foreground hover:bg-muted"
+                )}
+                aria-label="Toggle schedule loop"
+              >
+                <Repeat className="h-4 w-4" />
+              </Button>
+              <span>
+                {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
+              </span>
             </div>
           )}
 
