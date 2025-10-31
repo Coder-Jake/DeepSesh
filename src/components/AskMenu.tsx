@@ -35,7 +35,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
           Ask
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[425px] max-h-[90vh] overflow-y-auto top-[5%] translate-y-0 flex flex-col"> {/* Adjusted classes here */}        
+      <DialogContent className="w-[425px] max-h-[90vh] overflow-y-auto top-[5%] translate-y-0 flex flex-col">
         {/* Persistent tab-like buttons */}
         <div className="flex border-b">
           <Button
@@ -57,7 +57,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
         </div>
 
         {/* Form content, taking remaining space */}
-        <div className="flex-grow p-4 overflow-auto">
+        <div className="flex-grow p-2 overflow-auto">
           {currentAskOption === 'extend' && (
             <ExtendTimerForm onClose={handleCloseDialog} onSubmit={onExtendSubmit} />
           )}
