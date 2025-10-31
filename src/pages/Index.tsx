@@ -1288,7 +1288,7 @@ const Index = () => {
                           }}
                           className="w-16 h-8 text-center pr-0" 
                           min={timerIncrement} 
-                          max="120" 
+                          max={69 * 60} // 69 hours in minutes
                           step={timerIncrement}
                           onFocus={(e) => e.target.select()}
                           data-name="Focus Duration Input"
@@ -1323,7 +1323,7 @@ const Index = () => {
                           }}
                           className="w-16 h-8 text-center pr-0" 
                           min={timerIncrement} 
-                          max="60" 
+                          max={420} // 420 minutes
                           step={timerIncrement}
                           onFocus={(e) => e.target.select()}
                           data-name="Break Duration Input"
