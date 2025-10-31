@@ -2,11 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings } from '@/types/timer';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
-// Removed: import { useProfile } from './ProfileContext'; // No longer needed
 import { DAYS_OF_WEEK } from '@/lib/constants';
-import { saveSessionToDatabase } from '@/utils/session-utils'; // NEW: Import the utility function
+import { saveSessionToDatabase } from '@/utils/session-utils';
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -14,8 +12,6 @@ const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context';
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  // Removed: const { saveSession, localFirstName } = useProfile(); // No longer using useProfile directly
-  // localFirstName will be derived from user or a default for host name display
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
@@ -74,7 +70,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const participants: string[] = [];
     const uniqueNames = new Set<string>();
 
-    const currentUserName = user?.user_metadata?.first_name || "You"; // Derive localFirstName from user or default
+    const currentUserName = user?.user_metadata?.first_name || "You";
 
     if (user?.id) {
       uniqueNames.add(currentUserName);
@@ -121,7 +117,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [is24HourFormat, setIs24HourFormat] = useState(true);
   const [areToastsEnabled, setAreToastsEnabled] = useState(false);
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
-  const [hasWonPrize, setHasWonPrize] = useState(false); // NEW: Added hasWonPrize state
+  const [hasWonPrize, setHasWonPrize] = useState(false);
 
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
@@ -256,7 +252,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
     setIsTimeLeftManagedBySession(false);
-    setHasWonPrize(false); // NEW: Reset hasWonPrize on schedule reset
+    setHasWonPrize(false);
   }, [_defaultFocusMinutes, _defaultBreakMinutes]);
 
   const startSchedule = useCallback(() => {
@@ -322,7 +318,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsSeshTitleCustomized(false);
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during schedule start. activeAsks cleared.");
-            setHasWonPrize(false); // NEW: Reset hasWonPrize on manual timer reset
+            setHasWonPrize(false);
         }
     }
 
@@ -353,7 +349,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     triggerVibration();
 
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(user?.user_metadata?.first_name || "Host"); // Use user's first name or default
+    setCurrentSessionHostName(user?.user_metadata?.first_name || "Host");
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 }, [
@@ -400,7 +396,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsSchedulePending(false);
             setActiveAsks([]);
             console.log("TimerContext: Existing schedule reset during prepared schedule start. activeAsks cleared.");
-            setHasWonPrize(false); // NEW: Reset hasWonPrize on existing schedule reset
+            setHasWonPrize(false);
         }
         if (shouldResetManualTimer) {
             setIsRunning(false);
@@ -411,7 +407,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsSeshTitleCustomized(false);
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during prepared schedule start. activeAsks cleared.");
-            setHasWonPrize(false); // NEW: Reset hasWonPrize on manual timer reset
+            setHasWonPrize(false);
         }
     }
 
@@ -444,7 +440,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     triggerVibration();
 
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(user?.user_metadata?.first_name || "Host"); // Use user's first name or default
+    setCurrentSessionHostName(user?.user_metadata?.first_name || "Host");
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
   }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession]);
@@ -463,7 +459,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (areToastsEnabled) {
         toast("Cannot save schedule", {
           description: "Please provide a title and add timers to your schedule.",
-          // Removed variant: "destructive" as sonner toast doesn't have this directly
         });
       }
       return;
@@ -575,8 +570,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const totalSession = finalFocusSeconds + finalBreakSeconds;
 
             console.log("TimerContext: activeAsks before saving (schedule completion):", activeAsks);
-            saveSessionToDatabase( // Use the new utility function
-              user?.id, // Pass user ID
+            saveSessionToDatabase(
+              user?.id,
               _seshTitle,
               notes,
               finalFocusSeconds,
@@ -586,7 +581,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               sessionStartTime || Date.now(),
               activeAsks,
               allParticipantsToDisplay,
-              areToastsEnabled // Pass areToastsEnabled
+              areToastsEnabled
             );
 
             resetSchedule();
@@ -720,7 +715,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const intervalId = setInterval(checkAndCommenceSchedules, 60 * 1000);
     checkAndCommenceSchedules();
 
-    return () => clearInterval(intervalId);
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule]);
 
 
@@ -791,7 +790,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIs24HourFormat(data.is24HourFormat ?? true);
       setAreToastsEnabled(data.areToastsEnabled ?? false);
       setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false });
-      setHasWonPrize(data.hasWonPrize ?? false); // NEW: Load hasWonPrize from local storage
+      setHasWonPrize(data.hasWonPrize ?? false);
 
       setCurrentSessionRole(data.currentSessionRole ?? null);
       setCurrentSessionHostName(data.currentSessionHostName ?? null);
@@ -827,7 +826,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       timerIncrement,
       areToastsEnabled,
       startStopNotifications,
-      hasWonPrize, // NEW: Add hasWonPrize to dependencies
+      hasWonPrize,
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
@@ -852,9 +851,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     timerIncrement,
     areToastsEnabled,
     startStopNotifications,
-    hasWonPrize, // NEW: Add hasWonPrize to dependencies
+    hasWonPrize,
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
-    isRecurring, // ADDED: isRecurring to dependencies
+    isRecurring,
   ]);
 
   const value: TimerContextType = {
@@ -1017,8 +1016,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setStartStopNotifications,
     playSound,
     triggerVibration,
-    hasWonPrize, // NEW: Expose hasWonPrize
-    setHasWonPrize, // NEW: Expose setHasWonPrize
+    hasWonPrize,
+    setHasWonPrize,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
@@ -1029,6 +1028,5 @@ export const useTimer = () => {
   if (context === undefined) {
     throw new Error('useTimer must be used within a TimerProvider');
   }
-  // Removed: console.log("TimerContext: Value provided by useTimer hook:", context);
   return context;
 };

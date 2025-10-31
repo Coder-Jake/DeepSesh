@@ -9,8 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
+import { useTimer } from '@/contexts/TimerContext';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),
@@ -21,7 +20,7 @@ const formSchema = z.object({
 type CollaborateFormValues = z.infer<typeof formSchema>;
 
 const CollaborateForm = () => {
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
+  const { areToastsEnabled } = useTimer();
   const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<CollaborateFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,34 +31,15 @@ const CollaborateForm = () => {
   });
 
   const onSubmit = async (values: CollaborateFormValues) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('send-email', {
-        body: {
-          name: values.name,
-          email: values.email || undefined,
-          message: values.message,
-          type: 'collaborate',
-        },
+    // Simulate sending collaboration offer locally
+    console.log("Collaboration offer submitted locally:", values);
+
+    if (areToastsEnabled) {
+      toast.success('Collaboration offer received locally!', {
+        description: 'We will get back to you soon. Email sending is currently disabled.',
       });
-
-      if (error) {
-        throw error;
-      }
-
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.success('Collaboration offer sent!', {
-          description: 'We will get back to you soon.',
-        });
-      }
-      reset();
-    } catch (error: any) {
-      console.error('Error sending collaboration offer:', error);
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.error('Failed to send collaboration offer.', {
-          description: error.message || 'Please try again later.',
-        });
-      }
     }
+    reset();
   };
 
   return (

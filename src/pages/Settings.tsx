@@ -15,8 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from 'sonner'; // Changed to sonner toast
+import { toast } from 'sonner';
 import { useTheme } from "@/contexts/ThemeContext";
 import { useProfile } from "@/contexts/ProfileContext";
 
@@ -78,17 +77,16 @@ const Settings = () => {
     setOpenSettingsAccordions,
     is24HourFormat,
     setIs24HourFormat,
-    areToastsEnabled, // NEW: Get areToastsEnabled
+    areToastsEnabled,
     setAreToastsEnabled,
     startStopNotifications,
     setStartStopNotifications,
   } = useTimer();
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // Added logout from AuthContext
   const navigate = useNavigate();
-  // Removed: const { toast } = useToast(); // Removed shadcn toast
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile();
+  const { blockedUsers, blockUser, unblockUser } = useProfile();
 
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
   const [userNameToBlock, setUserNameToBlock] = useState("");
@@ -97,7 +95,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({}); // FIX: Declared timeoutRefs here
+  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
@@ -434,22 +432,14 @@ const Settings = () => {
     setHasChanges(false);
   };
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.error("Logout Error", {
-          description: error.message,
-        });
-      }
-    } else {
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.success("Logged Out", {
-          description: "You have been successfully logged out.",
-        });
-      }
-      navigate('/');
+  const handleLogout = () => {
+    logout(); // Use local logout
+    if (areToastsEnabled) {
+      toast.success("Logged Out", {
+        description: "You have been successfully logged out.",
+      });
     }
+    navigate('/');
   };
 
   const cycleSessionVisibility = () => {
@@ -719,7 +709,7 @@ const Settings = () => {
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)}
                   className={cn(
                     "px-3 py-1 rounded-full transition-colors select-none text-foreground",
-                    !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))] hover:from-[hsl(var(--public-gradient-start-dark))]/80 hover:to-[hsl(var(--public-gradient-end-dark))]/80",
+                    !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
                     !isGlobalPrivate && !isDarkMode && "bg-[hsl(var(--public-bg))] hover:bg-[hsl(var(--public-bg))]/80",
                     isGlobalPrivate && "bg-[hsl(var(--private-bg))] hover:bg-[hsl(var(--private-bg))]/80"
                   )}

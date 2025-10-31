@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
-  }
   public: {
     Tables: {
       profiles: {
@@ -27,9 +22,9 @@ export type Database = {
           sociability: number | null
           updated_at: string | null
           host_code: string | null
-          bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW
-          intention_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW
-          linkedin_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null
+          intention_visibility: ("public" | "friends" | "organisation" | "private")[] | null
+          linkedin_visibility: ("public" | "friends" | "organisation" | "private")[] | null
         }
         Insert: {
           avatar_url?: string | null
@@ -43,9 +38,9 @@ export type Database = {
           sociability?: number | null
           updated_at?: string | null
           host_code?: string | null
-          bio_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
-          intention_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
-          linkedin_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          bio_visibility?: ("public" | "friends" | "organisation" | "private")[] | null
+          intention_visibility?: ("public" | "friends" | "organisation" | "private")[] | null
+          linkedin_visibility?: ("public" | "friends" | "organisation" | "private")[] | null
         }
         Update: {
           avatar_url?: string | null
@@ -59,9 +54,9 @@ export type Database = {
           sociability?: number | null
           updated_at?: string | null
           host_code?: string | null
-          bio_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
-          intention_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
-          linkedin_visibility?: ("public" | "friends" | "organisation" | "private")[] | null // NEW
+          bio_visibility?: ("public" | "friends" | "organisation" | "private")[] | null
+          intention_visibility?: ("public" | "friends" | "organisation" | "private")[] | null
+          linkedin_visibility?: ("public" | "friends" | "organisation" | "private")[] | null
         }
         Relationships: [
           {
@@ -75,7 +70,7 @@ export type Database = {
       }
       sessions: {
         Row: {
-          active_asks: Json | null // NEW: Added active_asks column
+          active_asks: Json | null
           break_duration_seconds: number
           coworker_count: number
           created_at: string | null
@@ -89,7 +84,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          active_asks?: Json | null // NEW: Added active_asks column
+          active_asks?: Json | null
           break_duration_seconds?: number
           coworker_count?: number
           created_at?: string | null
@@ -103,7 +98,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          active_asks?: Json | null // NEW: Added active_asks column
+          active_asks?: Json | null
           break_duration_seconds?: number
           coworker_count?: number
           created_at?: string | null
@@ -145,46 +140,44 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type PublicSchema = DatabaseWithoutInternals['public']
+type PublicSchema = Database['public']
 
 export type Tables<
-  SchemaName extends keyof DatabaseWithoutInternals = 'public',
-  TableName extends keyof (DatabaseWithoutInternals[SchemaName]['Tables'] & DatabaseWithoutInternals[SchemaName]['Views']) = keyof (DatabaseWithoutInternals[SchemaName]['Tables'] & DatabaseWithoutInternals[SchemaName]['Views']),
-> = (DatabaseWithoutInternals[SchemaName]['Tables'] & DatabaseWithoutInternals[SchemaName]['Views'])[TableName] extends {
+  SchemaName extends keyof Database = 'public',
+  TableName extends keyof (Database[SchemaName]['Tables'] & Database[SchemaName]['Views']) = keyof (Database[SchemaName]['Tables'] & Database[SchemaName]['Views']),
+> = (Database[SchemaName]['Tables'] & Database[SchemaName]['Views'])[TableName] extends {
   Row: infer R
 }
   ? R
   : never
 
 export type TablesInsert<
-  SchemaName extends keyof DatabaseWithoutInternals = 'public',
-  TableName extends keyof DatabaseWithoutInternals[SchemaName]['Tables'] = keyof DatabaseWithoutInternals[SchemaName]['Tables'],
-> = DatabaseWithoutInternals[SchemaName]['Tables'][TableName] extends {
+  SchemaName extends keyof Database = 'public',
+  TableName extends keyof Database[SchemaName]['Tables'] = keyof Database[SchemaName]['Tables'],
+> = Database[SchemaName]['Tables'][TableName] extends {
   Insert: infer I
 }
   ? I
   : never
 
 export type TablesUpdate<
-  SchemaName extends keyof DatabaseWithoutInternals = 'public',
-  TableName extends keyof DatabaseWithoutInternals[SchemaName]['Tables'] = keyof DatabaseWithoutInternals[SchemaName]['Tables'],
-> = DatabaseWithoutInternals[SchemaName]['Tables'][TableName] extends {
+  SchemaName extends keyof Database = 'public',
+  TableName extends keyof Database[SchemaName]['Tables'] = keyof Database[SchemaName]['Tables'],
+> = Database[SchemaName]['Tables'][TableName] extends {
   Update: infer U
 }
   ? U
   : never
 
 export type Enums<
-  SchemaName extends keyof DatabaseWithoutInternals = 'public',
-  EnumName extends keyof DatabaseWithoutInternals[SchemaName]['Enums'] = keyof DatabaseWithoutInternals[SchemaName]['Enums'],
-> = DatabaseWithoutInternals[SchemaName]['Enums'][EnumName]
+  SchemaName extends keyof Database = 'public',
+  EnumName extends keyof Database[SchemaName]['Enums'] = keyof Database[SchemaName]['Enums'],
+> = Database[SchemaName]['Enums'][EnumName]
 
 export type CompositeTypes<
-  SchemaName extends keyof DatabaseWithoutInternals = 'public',
-  CompositeTypeName extends keyof DatabaseWithoutInternals[SchemaName]['CompositeTypes'] = keyof DatabaseWithoutInternals[SchemaName]['CompositeTypes'],
-> = DatabaseWithoutInternals[SchemaName]['CompositeTypes'][CompositeTypeName]
+  SchemaName extends keyof Database = 'public',
+  CompositeTypeName extends keyof Database[SchemaName]['CompositeTypes'] = keyof Database[SchemaName]['CompositeTypes'],
+> = Database[SchemaName]['CompositeTypes'][CompositeTypeName]
 
 export const Constants = {
   public: {

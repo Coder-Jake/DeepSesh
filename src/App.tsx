@@ -8,7 +8,6 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
-import AuthLayout from './layouts/AuthLayout';
 import AppLayout from './layouts/AppLayout';
 import { AuthProvider } from './contexts/AuthContext';
 import { TimerProvider } from './contexts/TimerContext';
@@ -20,14 +19,15 @@ import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 import ChipIn from './pages/ChipIn';
 import Feedback from './pages/Feedback';
 import Credits from './pages/Credits';
-import UpcomingFeatures from './pages/UpcomingFeatures'; // NEW: Import UpcomingFeatures
+import UpcomingFeatures from './pages/UpcomingFeatures';
+import NotFound from './pages/NotFound'; // Import NotFound
 
 function App() {
   return (
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <TimerProvider> {/* Moved TimerProvider here */}
+          <TimerProvider>
             <ProfileProvider>
               <ProfilePopUpProvider>
                 <TooltipProvider>
@@ -41,14 +41,13 @@ function App() {
                       <Route path="chip-in" element={<ChipIn />} />
                       <Route path="feedback" element={<Feedback />} />
                       <Route path="credits" element={<Credits />} />
-                      <Route path="upcoming-features" element={<UpcomingFeatures />} /> {/* NEW: Add route */}
-                    </Route>
-                    <Route path="/" element={<AuthLayout />}>
-                      <Route path="login" element={<Login />} />
+                      <Route path="upcoming-features" element={<UpcomingFeatures />} />
+                      <Route path="login" element={<Login />} /> {/* Moved login here */}
                       <Route path="register" element={<Register />} />
                       <Route path="forgot-password" element={<ForgotPassword />} />
                       <Route path="reset-password" element={<ResetPassword />} />
                       <Route path="verify-email" element={<VerifyEmail />} />
+                      <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
                     </Route>
                   </Routes>
                 </TooltipProvider>

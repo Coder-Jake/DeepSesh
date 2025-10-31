@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useProfile } from "@/contexts/ProfileContext";
-import { toast } from 'sonner'; // Changed to sonner toast
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Linkedin, Clipboard, Key, Users, UserMinus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from "@/lib/utils";
@@ -28,11 +27,11 @@ const Profile = () => {
   const { 
     profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
-    friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser // NEW: Get blockedUsers, blockUser, unblockUser
+    friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser
   } = useProfile();
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // Added logout from AuthContext
   const navigate = useNavigate();
-  const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
+  const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer();
   const { openProfilePopUp } = useProfilePopUp();
 
   const [firstNameInput, setFirstNameInput] = useState("");
@@ -111,7 +110,7 @@ const Profile = () => {
     setter(nextIndex);
     visibilitySetter(newVisibility);
 
-    if (areToastsEnabled) { // NEW: Conditional toast
+    if (areToastsEnabled) {
       const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
       toast.success("Privacy Setting Changed", {
         description: successMessage,
@@ -179,7 +178,7 @@ const Profile = () => {
 
   const handleUnfriend = useCallback((friendId: string) => {
     // TODO: Implement actual unfriend logic here
-    if (areToastsEnabled) { // NEW: Conditional toast
+    if (areToastsEnabled) {
       toast.info("Unfriend Action", {
         description: `Unfriending user with ID: ${friendId}`,
       });
@@ -327,7 +326,7 @@ const Profile = () => {
   const validateAndSaveHostCode = async (code: string) => {
     const trimmedCode = code.trim();
     if (trimmedCode.length < 4 || trimmedCode.length > 20) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.error("Invalid Host Code", {
           description: "Host code must be between 4 and 20 characters.",
         });
@@ -341,7 +340,7 @@ const Profile = () => {
     if (user) {
       await updateProfile({ host_code: trimmedCode });
     } else {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.success("Host Code Saved Locally", {
           description: "Your host code has been saved to this browser.",
         });
@@ -389,7 +388,6 @@ const Profile = () => {
       setOriginalValues(prev => ({ ...prev, organization: trimmedOrganization === "" ? null : trimmedOrganization }));
       checkForChanges(firstNameInput, bio, intention, sociability, trimmedOrganization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
     } else {
-      // Save locally if not logged in
       localStorage.setItem('deepsesh_organization', trimmedOrganization);
       setOriginalValues(prev => ({ ...prev, organization: trimmedOrganization }));
       checkForChanges(firstNameInput, bio, intention, sociability, trimmedOrganization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
@@ -408,7 +406,7 @@ const Profile = () => {
 
     const trimmedHostCode = hostCode.trim();
     if (trimmedHostCode.length < 4 || trimmedHostCode.length > 20) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.error("Invalid Host Code", {
           description: "Host code must be between 4 and 20 characters. Please correct it before saving.",
         });
@@ -433,7 +431,7 @@ const Profile = () => {
     if (user) {
       await updateProfile(dataToUpdate);
     } else {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.success("Profile Saved Locally", {
           description: "Your profile changes have been saved to this browser.",
         });
@@ -442,7 +440,7 @@ const Profile = () => {
       localStorage.setItem('deepsesh_bio_visibility', JSON.stringify(bioVisibility));
       localStorage.setItem('deepsesh_intention_visibility', JSON.stringify(intentionVisibility));
       localStorage.setItem('deepsesh_linkedin_visibility', JSON.stringify(linkedinVisibility));
-      localStorage.setItem('deepsesh_organization', organization.trim()); // Save organization locally
+      localStorage.setItem('deepsesh_organization', organization.trim());
     }
     setOriginalValues({ 
       firstName: nameToSave, 
@@ -460,21 +458,13 @@ const Profile = () => {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.error("Logout Error", {
-          description: error.message,
-        });
-      }
-    } else {
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.success("Logged Out", {
-          description: "You have been successfully logged out.",
-        });
-      }
-      navigate('/');
+    logout(); // Use local logout
+    if (areToastsEnabled) {
+      toast.success("Logged Out", {
+        description: "You have been successfully logged out.",
+      });
     }
+    navigate('/');
   };
 
   const handleCopyHostCode = useCallback(async () => {
@@ -482,14 +472,14 @@ const Profile = () => {
       await navigator.clipboard.writeText(hostCode);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 3000);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.success("Copied to clipboard!", {
           description: "Your host code has been copied.",
         });
       }
     } catch (err) {
       console.error('Failed to copy host code: ', err);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.error("Copy Failed", {
           description: "Could not copy host code. Please try again.",
         });
@@ -880,7 +870,7 @@ const Profile = () => {
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
-          </DialogHeader>
+          </DialogDescription>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="organization-name">Organisation Name</Label>

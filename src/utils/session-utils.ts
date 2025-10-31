@@ -1,10 +1,10 @@
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { TablesInsert, Json } from "@/integrations/supabase/types";
 import { ActiveAskItem } from "@/types/timer";
 
+const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions';
+
 export const saveSessionToDatabase = async (
-  userId: string | undefined,
+  userId: string | undefined, // userId is now optional as we might not have a logged-in user
   seshTitle: string,
   notes: string,
   finalAccumulatedFocusSeconds: number,
@@ -13,8 +13,8 @@ export const saveSessionToDatabase = async (
   activeJoinedSessionCoworkerCount: number,
   sessionStartTime: number,
   activeAsks: ActiveAskItem[] | undefined,
-  allParticipantNames: string[] | undefined, // This is not used in the DB insert, but was passed to saveSession
-  areToastsEnabled: boolean // Pass this as an argument
+  allParticipantNames: string[] | undefined,
+  areToastsEnabled: boolean
 ) => {
   console.log("saveSessionToDatabase: received activeAsks:", activeAsks);
 
@@ -24,18 +24,9 @@ export const saveSessionToDatabase = async (
   const currentActiveAsks = activeAsks ?? [];
   console.log("saveSessionToDatabase: currentActiveAsks for new session:", currentActiveAsks);
 
-  if (!userId) {
-    if (areToastsEnabled) {
-      toast.success("Session saved locally!", {
-        description: "Your session has been recorded in this browser.",
-      });
-    }
-    return;
-  }
-
-  const sessionData: TablesInsert<'public', 'sessions'> = {
+  const sessionData = {
     id: crypto.randomUUID(),
-    user_id: userId,
+    user_id: userId, // Will be undefined if not logged in
     title: seshTitle,
     focus_duration_seconds: Math.round(finalAccumulatedFocusSeconds),
     break_duration_seconds: Math.round(finalAccumulatedBreakSeconds),
@@ -43,28 +34,27 @@ export const saveSessionToDatabase = async (
     coworker_count: activeJoinedSessionCoworkerCount,
     session_start_time: newSessionDate.toISOString(),
     session_end_time: sessionEndTime.toISOString(),
-    active_asks: currentActiveAsks as unknown as Json,
+    active_asks: currentActiveAsks,
     notes: notes,
   };
 
-  const { data, error: insertError } = await supabase
-    .from('sessions')
-    .insert(sessionData)
-    .select('id')
-    .single();
+  try {
+    const storedSessions = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
+    const sessions = storedSessions ? JSON.parse(storedSessions) : [];
+    sessions.push(sessionData);
+    localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(sessions));
 
-  if (insertError) {
-    console.error("Error saving session to Supabase:", insertError);
+    console.log("Session data saved to local storage:", sessionData);
     if (areToastsEnabled) {
-      toast.error("Error saving session", {
-        description: `Failed to save core session data to cloud. Notes and asks are saved locally. ${insertError.message}`,
+      toast.success("Session saved locally!", {
+        description: "Your session has been successfully recorded in this browser.",
       });
     }
-  } else if (data) {
-    console.log("Core session data saved to Supabase:", data);
+  } catch (error) {
+    console.error("Error saving session to local storage:", error);
     if (areToastsEnabled) {
-      toast.success("Session saved!", {
-        description: "Your session has been successfully recorded.",
+      toast.error("Error saving session locally", {
+        description: `Failed to save session data to local storage. ${error instanceof Error ? error.message : String(error)}`,
       });
     }
   }

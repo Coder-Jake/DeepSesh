@@ -1,27 +1,44 @@
-import React, { useEffect } from 'react';
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner'; // Changed to sonner toast
-import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
+import { toast } from 'sonner';
+import { useTimer } from '@/contexts/TimerContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
+  const { user, loading, login } = useAuth();
+  const { areToastsEnabled } = useTimer();
+
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
 
   useEffect(() => {
     if (!loading && user) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.success("Logged in successfully!", {
-          description: `Welcome back, ${user.email}.`,
+          description: `Welcome back, ${user.user_metadata.first_name || user.email}.`,
         });
       }
       navigate('/');
     }
-  }, [user, loading, navigate, areToastsEnabled]); // Added areToastsEnabled to dependencies
+  }, [user, loading, navigate, areToastsEnabled]);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) {
+      login(email.trim(), firstName.trim() || undefined);
+    } else {
+      if (areToastsEnabled) {
+        toast.error("Login Failed", {
+          description: "Please enter an email address.",
+        });
+      }
+    }
+  };
 
   if (loading || user) {
     return (
@@ -33,45 +50,39 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background pt-16 lg:pt-20">
-      <div className="w-full max-w-md p-8 space-y-6 bg-card rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-foreground">Welcome!</h1>
-        <Auth
-          supabaseClient={supabase}
-          providers={[]}
-          appearance={{
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: 'hsl(var(--primary))',
-                  brandAccent: 'hsl(var(--primary-foreground))',
-                },
-              },
-            },
-          }}
-          theme="light"
-          redirectTo={window.location.origin + '/'}
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: ' ',
-                password_label: ' ',
-                email_input_placeholder: 'Email',
-                password_input_placeholder: 'Password',
-              },
-              sign_up: {
-                email_label: ' ',
-                password_label: ' ',
-                email_input_placeholder: 'Email',
-                password_input_placeholder: 'Password',
-              },
-              forgotten_password: {
-                email_label: 'Email',
-              },
-            },
-          }}
-        />
-      </div>
+      <Card className="w-full max-w-md p-8 space-y-6 text-center">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-foreground">Welcome!</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name (optional)</Label>
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

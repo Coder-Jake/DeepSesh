@@ -1,18 +1,28 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables, TablesUpdate, Json, TablesInsert } from "@/integrations/supabase/types";
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext";
-// Removed: import { useTimer } from "./TimerContext"; // This import is no longer needed
 
-export type Profile = Tables<'public', 'profiles'> & {
-  bio_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
-  intention_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
-  linkedin_visibility: ('public' | 'friends' | 'organisation' | 'private')[];
+// Define a simplified Profile type for local storage
+export type Profile = {
+  avatar_url: string | null
+  bio: string | null
+  first_name: string | null
+  id: string
+  intention: string | null
+  last_name: string | null
+  linkedin_url: string | null
+  organization: string | null
+  sociability: number | null
+  updated_at: string | null
+  host_code: string | null
+  bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null
+  intention_visibility: ("public" | "friends" | "organisation" | "private")[] | null
+  linkedin_visibility: ("public" | "friends" | "organisation" | "private")[] | null
 };
-type ProfileInsert = TablesInsert<'public', 'profiles'>;
-type ProfileUpdate = TablesUpdate<'public', 'profiles'>;
+
+// Simplified ProfileUpdate type for local storage
+export type ProfileUpdate = Partial<Omit<Profile, 'id'>>;
 
 export type TimePeriod = 'week' | 'month' | 'all';
 
@@ -140,7 +150,7 @@ const dummyLeaderboardCoworkers = {
     { id: "heidi-id-4", name: "Heidi", coworkers: 4 }, 
   ],
   month: [
-    { id: "angie-id-5", name: "Angie", coworkers: 25 },
+    { id: "angie-id-5", name: "Angie", coworkers: 25 }, 
     { id: "liam-id-5", name: "Liam", coworkers: 22 }, 
     { id: "mia-id-5", name: "Mia", coworkers: 17 }, 
     { id: "noah-id-5", name: "Noah", coworkers: 15 }, 
@@ -487,8 +497,6 @@ interface ProfileContextType {
   localFirstName: string;
   setLocalFirstName: React.Dispatch<React.SetStateAction<string>>;
 
-  // Removed saveSession from here
-
   blockedUsers: string[];
   blockUser: (userName: string) => void;
   unblockUser: (userName: string) => void;
@@ -534,10 +542,10 @@ const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility';
 const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility';
 const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility';
 const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses';
+const LOCAL_STORAGE_ORGANIZATION_KEY = 'deepsesh_organization'; // NEW: Local storage key for organization
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
-  const { user } = useAuth();
-  // Removed: const { areToastsEnabled } = useTimer(); // This import is no longer needed here
+  const { user, login } = useAuth(); // Added login from AuthContext
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -591,46 +599,42 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const trimmedName = userName.trim();
     if (trimmedName && !blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => [...prev, trimmedName]);
-      // Removed conditional toast here, as areToastsEnabled is not available
       toast.success(`'${trimmedName}' has been blocked.`, {
         description: "They will no longer see your sessions.",
       });
     } else if (trimmedName && blockedUsers.includes(trimmedName)) {
-      // Removed conditional toast here
       toast.info(`'${trimmedName}' is already blocked.`, {
         description: "No changes made.",
       });
     }
-  }, [blockedUsers, toast]);
+  }, [blockedUsers]);
 
   const unblockUser = useCallback((userName: string) => {
     const trimmedName = userName.trim();
     if (trimmedName && blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => prev.filter(name => name !== trimmedName));
-      // Removed conditional toast here
       toast.success(`'${trimmedName}' has been unblocked.`, {
         description: "They can now see your sessions again.",
       });
     } else if (trimmedName && !blockedUsers.includes(trimmedName)) {
-      // Removed conditional toast here
       toast.info(`'${trimmedName}' is not in your blocked list.`, {
         description: "No changes made.",
       });
     }
-  }, [blockedUsers, toast]);
+  }, [blockedUsers]);
 
   const sendFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'pending' }));
-    // toast.success("Friend request sent!", {
-    //   description: "They will be notified of your request.",
-    // });
+    toast.success("Friend request sent!", {
+      description: "They will be notified of your request.",
+    });
 
     const timeoutId = setTimeout(() => {
       setFriendStatuses(prev => {
         if (prev[targetUserId] === 'pending') {
-          // toast.success(`Friend request from ${targetUserId} accepted!`, {
-          //   description: "You are now friends!",
-          // });
+          toast.success(`Friend request from ${targetUserId} accepted!`, {
+            description: "You are now friends!",
+          });
           return { ...prev, [targetUserId]: 'friends' };
         }
         return prev;
@@ -643,9 +647,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'friends' }));
-    // toast.success("Friend request accepted!", {
-    //   description: "You are now friends!",
-    // });
+    toast.success("Friend request accepted!", {
+      description: "You are now friends!",
+    });
     if (friendRequestTimeouts.current.has(targetUserId)) {
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
@@ -654,9 +658,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const removeFriend = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'none' }));
-    // toast.info("Friend removed.", {
-    //   description: "You are no longer friends.",
-    // });
+    toast.info("Friend removed.", {
+      description: "You are no longer friends.",
+    });
     if (friendRequestTimeouts.current.has(targetUserId)) {
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
@@ -667,7 +671,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const fetchProfile = async () => {
     setLoading(true);
     setError(null);
-    const { data: { user } } = await supabase.auth.getUser();
 
     const storedBioVisibility = localStorage.getItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY);
     if (storedBioVisibility) setBioVisibility(JSON.parse(storedBioVisibility));
@@ -679,201 +682,100 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
     if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
 
+    const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
+    const storedOrganization = localStorage.getItem(LOCAL_STORAGE_ORGANIZATION_KEY); // NEW: Load organization
 
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
-      if (storedHostCode) {
-        setHostCode(storedHostCode);
-      } else {
-        const newHostCode = generateRandomHostCode();
-        setHostCode(newHostCode);
-        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-      }
-      return;
-    }
+    let currentProfile: Profile | null = null;
 
-    const { data: existingProfile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error("Error fetching profile:", fetchError);
-      setError(fetchError.message);
-      // Removed conditional toast here
-      toast.error("Error fetching profile", {
-        description: fetchError.message,
-      });
-      setProfile(null);
-      setLoading(false);
-      const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
-      if (storedHostCode) {
-        setHostCode(storedHostCode);
-      } else {
-        const newHostCode = generateRandomHostCode();
-        setHostCode(newHostCode);
-        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-      }
-      return;
-    }
-
-    if (existingProfile) {
-      setProfile({ 
-        ...existingProfile, 
-        first_name: existingProfile.first_name || "",
-        bio_visibility: (existingProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        intention_visibility: (existingProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        linkedin_visibility: (existingProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-      });
-      if (existingProfile.host_code) {
-        setHostCode(existingProfile.host_code);
-        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, existingProfile.host_code);
-      } else {
-        const newHostCode = generateRandomHostCode();
-        setHostCode(newHostCode);
-        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-        await updateProfile({ id: user.id, host_code: newHostCode });
-      }
-      setBioVisibility((existingProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
-      setIntentionVisibility((existingProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
-      setLinkedinVisibility((existingProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
-
-      console.log("Profile fetched from Supabase:", { ...existingProfile, first_name: existingProfile.first_name || "" });
+    if (user) {
+      // If a user is "logged in" locally, create a profile for them
+      currentProfile = {
+        id: user.id,
+        first_name: user.user_metadata.first_name || user.email.split('@')[0],
+        last_name: user.user_metadata.last_name || null,
+        avatar_url: null,
+        bio: localStorage.getItem('deepsesh_bio') || null,
+        intention: localStorage.getItem('deepsesh_intention') || null,
+        sociability: parseInt(localStorage.getItem('deepsesh_sociability') || '50', 10),
+        organization: storedOrganization || null, // Use loaded organization
+        linkedin_url: localStorage.getItem('deepsesh_linkedin_url') || null,
+        updated_at: new Date().toISOString(),
+        host_code: storedHostCode || generateRandomHostCode(),
+        bio_visibility: (storedBioVisibility ? JSON.parse(storedBioVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        intention_visibility: (storedIntentionVisibility ? JSON.parse(storedIntentionVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        linkedin_visibility: (storedLinkedinVisibility ? JSON.parse(storedLinkedinVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+      };
+      setProfile(currentProfile);
+      setHostCode(currentProfile.host_code || generateRandomHostCode());
+      setBioVisibility(currentProfile.bio_visibility || ['public']);
+      setIntentionVisibility(currentProfile.intention_visibility || ['public']);
+      setLinkedinVisibility(currentProfile.linkedin_visibility || ['public']);
+      console.log("Profile fetched from local storage for logged-in user:", currentProfile.first_name);
     } else {
-      console.log("No existing profile found for user, attempting to create one.");
-      const newHostCode = generateRandomHostCode();
-      const { data: newProfile, error: insertError } = await supabase
-        .from('profiles')
-        .insert({ 
-          id: user.id, 
-          first_name: user.user_metadata.first_name, 
-          last_name: user.user_metadata.last_name,
-          host_code: newHostCode,
-          bio_visibility: ['public'],
-          intention_visibility: ['public'],
-          linkedin_visibility: ['public'],
-        } as ProfileInsert)
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error("Error creating profile:", insertError);
-        setError(insertError.message);
-        // Removed conditional toast here
-        toast.error("Error creating profile", {
-          description: insertError.message,
-        });
-        setProfile(null);
-        setHostCode(newHostCode);
-        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-      } else if (newProfile) {
-        setProfile({ 
-          ...newProfile, 
-          first_name: newProfile.first_name || "",
-          bio_visibility: (newProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-          intention_visibility: (newProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-          linkedin_visibility: (newProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        });
-        setHostCode(newProfile.host_code || newHostCode);
-        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newProfile.host_code || newHostCode);
-        setBioVisibility((newProfile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
-        setIntentionVisibility((newProfile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
-        setLinkedinVisibility((newProfile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
-        console.log("New profile created in Supabase:", { ...newProfile, first_name: newProfile.first_name || "" });
-      }
+      setProfile(null);
+      setHostCode(storedHostCode || generateRandomHostCode());
+      console.log("No user logged in, using default/local host code.");
     }
-
     setLoading(false);
   };
 
   const updateProfile = async (data: ProfileUpdate, successMessage?: string) => {
     setLoading(true);
     setError(null);
-    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("User not authenticated.");
+      setError("User not authenticated locally.");
       setLoading(false);
-      // Removed conditional toast here
       toast.error("Authentication required", {
         description: "Please log in to update your profile.",
       });
       return;
     }
 
-    const { data: updatedData, error } = await supabase
-      .from('profiles')
-      .update(data)
-      .eq('id', user.id)
-      .select()
-      .single();
+    // Update local storage for each field
+    if (data.first_name !== undefined) localStorage.setItem('deepsesh_local_first_name', data.first_name);
+    if (data.bio !== undefined) localStorage.setItem('deepsesh_bio', data.bio || '');
+    if (data.intention !== undefined) localStorage.setItem('deepsesh_intention', data.intention || '');
+    if (data.sociability !== undefined) localStorage.setItem('deepsesh_sociability', String(data.sociability));
+    if (data.organization !== undefined) localStorage.setItem(LOCAL_STORAGE_ORGANIZATION_KEY, data.organization || ''); // NEW: Save organization
+    if (data.linkedin_url !== undefined) localStorage.setItem('deepsesh_linkedin_url', data.linkedin_url || '');
+    if (data.host_code !== undefined) localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, data.host_code);
+    if (data.bio_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY, JSON.stringify(data.bio_visibility));
+    if (data.intention_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, JSON.stringify(data.intention_visibility));
+    if (data.linkedin_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(data.linkedin_visibility));
 
-    if (error) {
-      console.error("Error updating profile:", error);
-      setError(error.message);
-      // Removed conditional toast here
-      toast.error("Error updating profile", {
-        description: error.message,
-      });
-    } else if (updatedData) {
-      setProfile({ 
-        ...updatedData, 
-        first_name: updatedData.first_name || "",
-        bio_visibility: (updatedData.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        intention_visibility: (updatedData.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        linkedin_visibility: (updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-      });
-      if (updatedData.host_code) {
-        setHostCode(updatedData.host_code);
-        localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, updatedData.host_code);
-      }
-      setBioVisibility((updatedData.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
-      setIntentionVisibility((updatedData.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
-      setLinkedinVisibility((updatedData.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[]);
+    // Update the local profile state
+    setProfile(prevProfile => {
+      if (!prevProfile) return null;
+      const updatedProfile = {
+        ...prevProfile,
+        ...data,
+        updated_at: new Date().toISOString(),
+      };
+      return updatedProfile;
+    });
 
-      console.log("Profile updated in Supabase and context:", { ...updatedData, first_name: updatedData.first_name || "" });
-      // Removed conditional toast here
-      toast.success(successMessage || "Profile updated!", {
-        description: "Your profile has been successfully saved.",
-      });
+    if (data.host_code) {
+      setHostCode(data.host_code);
     }
+    if (data.bio_visibility) setBioVisibility(data.bio_visibility);
+    if (data.intention_visibility) setIntentionVisibility(data.intention_visibility);
+    if (data.linkedin_visibility) setLinkedinVisibility(data.linkedin_visibility);
+
+    console.log("Profile updated in local storage and context:", data);
+    toast.success(successMessage || "Profile updated!", {
+      description: "Your profile has been successfully saved locally.",
+    });
     setLoading(false);
   };
-
-  // Removed saveSession function from here
 
   const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
     const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
     if (mockProfile) {
       return mockProfile;
     }
-
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (currentUser) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error("Error fetching public profile from Supabase:", error);
-        throw new Error("Failed to fetch profile.");
-      }
-      if (data) {
-        return { 
-          ...data, 
-          first_name: data.first_name || "",
-          bio_visibility: (data.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-          intention_visibility: (data.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-          linkedin_visibility: (data.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        };
-      }
-    }
     
+    // For non-logged-in users or mock users, return a basic profile
     return {
       id: userId,
       first_name: userName,
@@ -913,31 +815,18 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     
     fetchProfile();
     
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        fetchProfile();
-      } else {
-        setProfile(null);
-        const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
-        if (storedHostCode) {
-          setHostCode(storedHostCode);
-        } else {
-          const newHostCode = generateRandomHostCode();
-          setHostCode(newHostCode);
-          localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
-        }
-        setBioVisibility(['public']);
-        setIntentionVisibility(['public']);
-        setLinkedinVisibility(['public']);
-      }
-    });
+    // Listen for local user changes
+    const handleUserChange = () => {
+      fetchProfile();
+    };
+    window.addEventListener('storage', handleUserChange); // Listen for changes in other tabs
 
     return () => {
-      authListener.subscription.unsubscribe();
+      window.removeEventListener('storage', handleUserChange);
       friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
       friendRequestTimeouts.current.clear();
     };
-  }, []); // Removed areToastsEnabled from useEffect dependencies
+  }, [user]); // Depend on user from AuthContext
 
   useEffect(() => {
     const dataToSave = {
@@ -987,7 +876,6 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     fetchProfile,
     localFirstName,
     setLocalFirstName,
-    // Removed saveSession from here
     blockedUsers,
     blockUser,
     unblockUser,

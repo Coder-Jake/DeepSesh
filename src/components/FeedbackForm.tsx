@@ -6,11 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea } '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
+import { useTimer } from '@/contexts/TimerContext';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),
@@ -21,7 +20,7 @@ const formSchema = z.object({
 type FeedbackFormValues = z.infer<typeof formSchema>;
 
 const FeedbackForm = () => {
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
+  const { areToastsEnabled } = useTimer();
   const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<FeedbackFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,34 +31,15 @@ const FeedbackForm = () => {
   });
 
   const onSubmit = async (values: FeedbackFormValues) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('send-email', {
-        body: {
-          name: values.name,
-          email: values.email || undefined,
-          message: values.message,
-          type: 'feedback',
-        },
+    // Simulate sending email locally
+    console.log("Feedback submitted locally:", values);
+    
+    if (areToastsEnabled) {
+      toast.success('Feedback received locally!', {
+        description: 'Thank you for your valuable input. Email sending is currently disabled.',
       });
-
-      if (error) {
-        throw error;
-      }
-
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.success('Feedback sent!', {
-          description: 'Thank you for your valuable input.',
-        });
-      }
-      reset();
-    } catch (error: any) {
-      console.error('Error sending feedback:', error);
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.error('Failed to send feedback.', {
-          description: error.message || 'Please try again later.',
-        });
-      }
     }
+    reset();
   };
 
   return (
