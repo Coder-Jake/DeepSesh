@@ -8,7 +8,7 @@ import { Profile } from '@/contexts/ProfileContext';
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
-import { useIsMobile } from '@/hooks/use-mobile'; // NEW: Import useIsMobile
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
@@ -36,7 +36,7 @@ const ProfilePopUpCard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile(); // NEW: Use the hook
+  const isMobile = useIsMobile();
 
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
 
@@ -137,7 +137,7 @@ const ProfilePopUpCard: React.FC = () => {
       const cardRect = cardRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const margin = 15;
+      const margin = 5; // Reduced margin to 5px
 
       let newX;
       if (isMobile) {
@@ -164,7 +164,7 @@ const ProfilePopUpCard: React.FC = () => {
 
       setAdjustedPosition({ x: newX, y: newY });
     }
-  }, [isPopUpOpen, popUpPosition, targetProfile, loading, error, isMobile]); // NEW: Add isMobile to dependencies
+  }, [isPopUpOpen, popUpPosition, targetProfile, loading, error, isMobile]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
