@@ -96,6 +96,10 @@ const Profile = () => {
   const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
   const friendLongPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // State and ref for the Key icon tooltip
+  const [isKeyTooltipOpen, setIsKeyTooltipOpen] = useState(false);
+  const keyTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[] | null): string => {
     if (!visibility || visibility.length === 0) return 'public';
     if (visibility.includes('private')) return 'private';
@@ -607,6 +611,19 @@ const Profile = () => {
     unblockUser(userName);
   };
 
+  // Handler for the Key icon tooltip click
+  const handleKeyTooltipClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent parent clicks
+    setIsKeyTooltipOpen(true);
+    if (keyTooltipTimeoutRef.current) {
+      clearTimeout(keyTooltipTimeoutRef.current);
+    }
+    keyTooltipTimeoutRef.current = setTimeout(() => {
+      setIsKeyTooltipOpen(false);
+      keyTooltipTimeoutRef.current = null; // Clear the ref after closing
+    }, 2000); // 2 seconds
+  };
+
   if (loading) {
     return (
       <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6 text-center text-muted-foreground">
@@ -662,9 +679,22 @@ const Profile = () => {
                 )}
               </CardTitle>
               {/* Removed the dedicated pronoun selector div */}
-                <Tooltip>
+                <Tooltip
+                  open={isKeyTooltipOpen}
+                  onOpenChange={(openState) => {
+                    // Only allow closing if our click-timer is not active
+                    if (!openState && keyTooltipTimeoutRef.current) {
+                      return;
+                    }
+                    setIsKeyTooltipOpen(openState);
+                  }}
+                  delayDuration={0} // No delay on hover
+                >
                   <TooltipTrigger asChild>
-                    <Key className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" />
+                    <Key 
+                      className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" 
+                      onClick={handleKeyTooltipClick} // Attach click handler
+                    />
                   </TooltipTrigger>
                   <TooltipContent className="p-2 select-none">
                     <p className="font-semibold mb-1">Visibility Settings:</p>
