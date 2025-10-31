@@ -237,8 +237,8 @@ export type TimerContextType = {
   setStartStopNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   playSound: () => void;
   triggerVibration: () => void;
-  showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'yes'; // MODIFIED: Changed to string literal union
-  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'yes'>>; // MODIFIED: Changed to string literal union
+  showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'all'; // MODIFIED: Changed 'yes' to 'all'
+  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'all'>>; // MODIFIED: Changed 'yes' to 'all'
   hasWonPrize: boolean; // NEW: Added hasWonPrize
   setHasWonPrize: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setHasWonPrize
 };

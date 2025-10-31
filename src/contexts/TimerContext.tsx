@@ -29,7 +29,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [notes, setNotes] = useState("");
   const [_seshTitle, _setSeshTitle] = useState("Notes");
   const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'yes'>('hidden');
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('hidden'); // MODIFIED: Changed 'yes' to 'all' and set default to 'hidden'
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
@@ -735,7 +735,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
       setNotes(data.notes ?? "");
       setTimerIncrementInternal(data.timerIncrement ?? 5);
-      setShowSessionsWhileActive(data.showSessionsWhileActive ?? 'hidden');
+      
+      // MODIFIED: Handle 'yes' to 'all' conversion for showSessionsWhileActive
+      let loadedShowSessionsWhileActive = data.showSessionsWhileActive ?? 'hidden';
+      if (loadedShowSessionsWhileActive === 'yes') {
+        loadedShowSessionsWhileActive = 'all';
+      }
+      setShowSessionsWhileActive(loadedShowSessionsWhileActive);
+
       setIsGlobalPrivate(data.isGlobalPrivate ?? false);
       setTimerType(data.timerType ?? 'focus');
       setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? (data.focusMinutes ?? data._defaultFocusMinutes ?? 25) * 60 : (data.breakMinutes ?? data._defaultBreakMinutes ?? 5) * 60));
@@ -828,6 +835,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       startStopNotifications,
       hasWonPrize,
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
+      isRecurring,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
