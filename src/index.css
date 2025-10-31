@@ -76,7 +76,9 @@
 
     --ring: 217.2 32.6% 17.5%;
 
-    --public-bg: 120 30% 45%; /* Darker green for public (updated) */
+    /* Removed --public-bg from dark mode as it's replaced by gradient variables */
+    --public-gradient-start-dark: 120 30% 45%; /* Start of the public gradient in dark mode */
+    --public-gradient-end-dark: 120 30% 40%;   /* End of the public gradient in dark mode */
     --private-bg: 270 30% 45%; /* Darker purple for private (updated) */
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */

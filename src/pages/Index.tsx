@@ -37,6 +37,7 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 interface ExtendSuggestion {
   id: string;
@@ -237,6 +238,7 @@ const Index = () => {
   const { profile, loading: profileLoading, localFirstName } = useProfile(); // Removed saveSession from here
   const navigate = useNavigate();
   const { openProfilePopUp } = useProfilePopUp();
+  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode from ThemeContext
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
@@ -1093,7 +1095,12 @@ const Index = () => {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <div className={`relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors ${!isGlobalPrivate ? 'bg-[hsl(var(--public-bg))]' : 'bg-[hsl(var(--private-bg))]'}`}>
+            <div className={cn(
+              "relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors",
+              !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
+              !isGlobalPrivate && !isDarkMode && "bg-[hsl(var(--public-bg))]",
+              isGlobalPrivate && "bg-[hsl(var(--private-bg))]"
+            )}>
               {isSchedulingMode ? (
                 <ScheduleForm />
               ) : (

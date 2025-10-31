@@ -719,7 +719,9 @@ const Settings = () => {
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)}
                   className={cn(
                     "px-3 py-1 rounded-full transition-colors select-none text-foreground",
-                    !isGlobalPrivate ? "bg-[hsl(var(--public-bg))] hover:bg-[hsl(var(--public-bg))]/80" : "bg-[hsl(var(--private-bg))] hover:bg-[hsl(var(--private-bg))]/80"
+                    !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))] hover:from-[hsl(var(--public-gradient-start-dark))]/80 hover:to-[hsl(var(--public-gradient-end-dark))]/80",
+                    !isGlobalPrivate && !isDarkMode && "bg-[hsl(var(--public-bg))] hover:bg-[hsl(var(--public-bg))]/80",
+                    isGlobalPrivate && "bg-[hsl(var(--private-bg))] hover:bg-[hsl(var(--private-bg))]/80"
                   )}
                 >
                   {!isGlobalPrivate ? "Public" : "Private"}
@@ -1146,8 +1148,7 @@ const Settings = () => {
           <Button variant="outline" onClick={handleLogout}>
             Logout
           </Button>
-        </div>
-      )}
+        )}
     </main>
   );
 };
