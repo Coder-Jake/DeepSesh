@@ -88,6 +88,9 @@ const ScheduleForm: React.FC = () => {
   const [visibleTrashId, setVisibleTrashId] = useState<string | null>(null);
   const trashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // NEW: State to control visibility of total duration
+  const [showTotalDuration, setShowTotalDuration] = useState(false);
+
   const daysOfWeekDisplayOrder = [
     "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
   ];
@@ -468,19 +471,29 @@ const ScheduleForm: React.FC = () => {
           {totalDurationMinutes > 0 && (scheduleStartOption === 'now' || scheduleStartOption === 'custom_time') && (
             <div className="flex items-center justify-between text-sm text-muted-foreground mt-2">
               <Button
-                variant="ghost" // Changed to ghost variant
+                variant="ghost"
                 size="icon"
                 onClick={() => setIsRecurring(prev => !prev)}
                 className={cn(
                   "h-8 w-8 rounded-full",
-                  isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground hover:bg-muted" // Apply specific color when active
+                  isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground hover:bg-muted"
                 )}
                 aria-label="Toggle schedule loop"
               >
                 <Repeat className="h-4 w-4" />
               </Button>
               <span className="flex-grow text-center">
-                {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
+                {showTotalDuration && totalDurationMinutes > 0 && (
+                  <span className="mr-1">{formatDuration(totalDurationMinutes)} - </span>
+                )}
+                {scheduleEndTime && (
+                  <span
+                    className="cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => setShowTotalDuration(prev => !prev)}
+                  >
+                    Ends: {scheduleEndTime}
+                  </span>
+                )}
               </span>
               <div className="w-8 h-8" />
             </div>
