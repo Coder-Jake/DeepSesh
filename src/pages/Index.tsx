@@ -37,7 +37,7 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } '@/contexts/ThemeContext'; // NEW: Import useTheme
+import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 interface ExtendSuggestion {
   id: string;
