@@ -1230,7 +1230,12 @@ const Index = () => {
 
                   {(isPaused || isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending) && (
                     <div className="absolute bottom-4 left-4 flex flex-col gap-1">
-                      <div className="shape-octagon w-10 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
+                      <div className={cn(
+                        "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
+                        (isRunning || isPaused) && "opacity-75", // Apply opacity to the octagon when timer is active
+                        "hover:opacity-100", // Make it fully opaque on hover
+                        isPaused && "text-red-500" // Icon color when paused
+                      )}>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -1242,7 +1247,7 @@ const Index = () => {
                           onClick={stopTimer}
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-transparent",
-                            isRunning && "opacity-75", // NEW: Changed opacity to 75%
+                            // Removed isRunning && "opacity-75" from here as parent handles it
                             isPaused ? "text-red-500" : "text-secondary-foreground"
                           )}
                           data-name="Stop Timer Button"
