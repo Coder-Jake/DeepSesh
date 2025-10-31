@@ -39,6 +39,7 @@ import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from "@/hooks/use-mobile"; // NEW: Import useIsMobile
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // NEW: Import Popover components
 
 interface ExtendSuggestion {
   id: string;
@@ -268,19 +269,13 @@ const Index = () => {
     ['nearby', 'friends', 'organization']
   );
 
-  // NEW: Mobile tooltip state and refs
-  const isMobile = useIsMobile();
-  const [mobileTooltipStates, setMobileTooltipStates] = useState<Record<string, boolean>>({});
-  const mobileTooltipTimeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
+  // Removed mobileTooltipStates and mobileTooltipTimeoutRefs
+  // const isMobile = useIsMobile(); // Keep useIsMobile if needed elsewhere, but not for this popover
 
-  // NEW: Cleanup for mobile tooltip timeouts
-  useEffect(() => {
-    return () => {
-      for (const key in mobileTooltipTimeoutRefs.current) {
-        clearTimeout(mobileTooltipTimeoutRefs.current[key]);
-      }
-    };
-  }, []);
+  // NEW: State to manage which coworker popover is open
+  const [openCoworkerPopoverId, setOpenCoworkerPopoverId] = useState<string | null>(null);
+
+  // Removed cleanup for mobile tooltip timeouts
 
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
@@ -1083,34 +1078,7 @@ const Index = () => {
     }
   }, [openProfilePopUp, getPublicProfile]);
 
-  // NEW: Mobile tap handler for tooltips
-  const handleMobileTap = useCallback((personId: string, personName: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event from bubbling up and closing other popups/tooltips
-
-    if (mobileTooltipStates[personId]) {
-      // Second tap: open ProfilePopUpCard
-      handleNameClick(personId, personName, e);
-      setMobileTooltipStates(prev => ({ ...prev, [personId]: false })); // Close tooltip
-      if (mobileTooltipTimeoutRefs.current[personId]) {
-        clearTimeout(mobileTooltipTimeoutRefs.current[personId]);
-        delete mobileTooltipTimeoutRefs.current[personId];
-      }
-    } else {
-      // First tap: open tooltip
-      // Close any other open tooltips first
-      setMobileTooltipStates({});
-      for (const key in mobileTooltipTimeoutRefs.current) {
-        clearTimeout(mobileTooltipTimeoutRefs.current[key]);
-        delete mobileTooltipTimeoutRefs.current[key];
-      }
-
-      setMobileTooltipStates(prev => ({ ...prev, [personId]: true }));
-      mobileTooltipTimeoutRefs.current[personId] = setTimeout(() => {
-        setMobileTooltipStates(prev => ({ ...prev, [personId]: false }));
-        delete mobileTooltipTimeoutRefs.current[personId];
-      }, 3000); // Close after 3 seconds if no second tap
-    }
-  }, [mobileTooltipStates, handleNameClick]);
+  // Removed mobile tap handler for tooltips as Popover handles it natively.
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) {
@@ -1578,13 +1546,12 @@ const Index = () => {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {allParticipantsToDisplayInCard.map(person => (
-                    <Tooltip 
+                    <Popover
                       key={person.id}
-                      open={isMobile ? mobileTooltipStates[person.id] : undefined}
-                      onOpenChange={isMobile ? (open) => setMobileTooltipStates(prev => ({ ...prev, [person.id]: open })) : undefined}
-                      delayDuration={isMobile ? 0 : 700} // No delay on mobile tap, default for desktop hover
+                      open={openCoworkerPopoverId === person.id}
+                      onOpenChange={(open) => setOpenCoworkerPopoverId(open ? person.id : null)}
                     >
-                      <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
                         <div 
                           className={cn(
                             "flex items-center justify-between p-2 rounded-md select-none",
@@ -1593,15 +1560,14 @@ const Index = () => {
                             "hover:bg-muted cursor-pointer"
                           )} 
                           data-name={`Coworker: ${person.name}`}
-                          onClick={isMobile ? (e) => handleMobileTap(person.id, person.name, e) : (e) => handleNameClick(person.id, person.name, e)}
                         >
                           <span className="font-medium text-foreground">
                             {person.id === currentUserId ? "You" : person.name}
                           </span>
                           <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
                         </div>
-                      </TooltipTrigger>
-                      <TooltipContent className="select-none">
+                      </PopoverTrigger>
+                      <PopoverContent className="select-none">
                         <div className="text-center max-w-xs">
                           <p className="font-medium mb-1">
                             {person.id === currentUserId ? "You" : person.name}
@@ -1617,21 +1583,15 @@ const Index = () => {
                             </>
                           )}
                         </div>
-                        {isMobile && (
-                          <Button size="sm" className="mt-2 w-full" onClick={(e) => {
-                            e.stopPropagation(); // Prevent tooltip from closing immediately
-                            handleNameClick(person.id, person.name, e);
-                            setMobileTooltipStates(prev => ({ ...prev, [person.id]: false })); // Close tooltip
-                            if (mobileTooltipTimeoutRefs.current[person.id]) {
-                              clearTimeout(mobileTooltipTimeoutRefs.current[person.id]);
-                              delete mobileTooltipTimeoutRefs.current[person.id];
-                            }
-                          }}>
-                            View Profile
-                          </Button>
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
+                        <Button size="sm" className="mt-2 w-full" onClick={(e) => {
+                          e.stopPropagation(); // Prevent popover from closing immediately
+                          handleNameClick(person.id, person.name, e);
+                          setOpenCoworkerPopoverId(null); // Close popover
+                        }}>
+                          View Profile
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
                   ))}
                 </CardContent>
               </Card>
