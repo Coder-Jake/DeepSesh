@@ -121,6 +121,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [is24HourFormat, setIs24HourFormat] = useState(true);
   const [areToastsEnabled, setAreToastsEnabled] = useState(false);
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
+  const [hasWonPrize, setHasWonPrize] = useState(false); // NEW: Added hasWonPrize state
 
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
@@ -255,6 +256,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
     setIsTimeLeftManagedBySession(false);
+    setHasWonPrize(false); // NEW: Reset hasWonPrize on schedule reset
   }, [_defaultFocusMinutes, _defaultBreakMinutes]);
 
   const startSchedule = useCallback(() => {
@@ -320,6 +322,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsSeshTitleCustomized(false);
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during schedule start. activeAsks cleared.");
+            setHasWonPrize(false); // NEW: Reset hasWonPrize on manual timer reset
         }
     }
 
@@ -397,6 +400,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsSchedulePending(false);
             setActiveAsks([]);
             console.log("TimerContext: Existing schedule reset during prepared schedule start. activeAsks cleared.");
+            setHasWonPrize(false); // NEW: Reset hasWonPrize on existing schedule reset
         }
         if (shouldResetManualTimer) {
             setIsRunning(false);
@@ -407,6 +411,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsSeshTitleCustomized(false);
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during prepared schedule start. activeAsks cleared.");
+            setHasWonPrize(false); // NEW: Reset hasWonPrize on manual timer reset
         }
     }
 
@@ -769,6 +774,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIs24HourFormat(data.is24HourFormat ?? true);
       setAreToastsEnabled(data.areToastsEnabled ?? false);
       setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false });
+      setHasWonPrize(data.hasWonPrize ?? false); // NEW: Load hasWonPrize from local storage
 
       setCurrentSessionRole(data.currentSessionRole ?? null);
       setCurrentSessionHostName(data.currentSessionHostName ?? null);
@@ -804,6 +810,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       timerIncrement,
       areToastsEnabled,
       startStopNotifications,
+      hasWonPrize, // NEW: Save hasWonPrize to local storage
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
@@ -828,6 +835,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     timerIncrement,
     areToastsEnabled,
     startStopNotifications,
+    hasWonPrize, // NEW: Add hasWonPrize to dependencies
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
   ]);
 
@@ -991,6 +999,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setStartStopNotifications,
     playSound,
     triggerVibration,
+    hasWonPrize, // NEW: Expose hasWonPrize
+    setHasWonPrize, // NEW: Expose setHasWonPrize
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

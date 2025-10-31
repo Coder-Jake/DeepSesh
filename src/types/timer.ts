@@ -239,6 +239,8 @@ export type TimerContextType = {
   triggerVibration: () => void;
   showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'yes'; // MODIFIED: Changed to string literal union
   setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'yes'>>; // MODIFIED: Changed to string literal union
+  hasWonPrize: boolean; // NEW: Added hasWonPrize
+  setHasWonPrize: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setHasWonPrize
 };
 
 // Define the structure for a saved session

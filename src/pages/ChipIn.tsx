@@ -7,11 +7,13 @@ import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "l
 import { toast } from 'sonner'; // Import toast from sonner directly
 import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
+import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
   // Removed message state as it's no longer a text input
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const { setHasWonPrize } = useTimer(); // NEW: Get setHasWonPrize from TimerContext
 
   const quickAmounts = [5, 10, 25, 50];
 
@@ -40,6 +42,7 @@ const ChipIn = () => {
       toast.success("Congratulations! 🎉", {
         description: "Please speak to the dev to collect your prize!",
       });
+      setHasWonPrize(true); // NEW: Set hasWonPrize to true
     } else {
       toast.info("Is that really all you've got? 💜", {
         description: `Please donate a larger amount!`,
@@ -138,8 +141,8 @@ const ChipIn = () => {
                 <DollarSign className="h-5 w-5" />
                 Financial Background
               </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm text-muted-foreground">
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-5 w-5 text-primary" />
                 <div>
