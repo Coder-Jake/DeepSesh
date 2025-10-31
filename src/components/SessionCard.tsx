@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { useTimer } from "@/contexts/TimerContext";
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover components
 
 interface DemoSession {
   id: string;
@@ -172,11 +172,11 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
       <CardContent className="p-4 pt-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <Tooltip>
-              <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
+            <Popover>
+              <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
                 ~{totalDurationMinutes}m
-              </TooltipTrigger>
-              <TooltipContent className="select-none">
+              </PopoverTrigger>
+              <PopoverContent className="select-none">
                 <div className="text-center">
                   <p className="mb-2 font-medium">{session.location}</p>
                   <img 
@@ -186,13 +186,13 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
                   />
                   <p className="text-xs text-muted-foreground mt-1">{session.workspaceDescription}</p>
                 </div>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer select-none">
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer select-none">
                 {session.participants.length} {session.participants.length === 1 ? 'coworker' : 'coworkers'}
-              </TooltipTrigger>
-              <TooltipContent className="select-none">
+              </PopoverTrigger>
+              <PopoverContent className="select-none">
                 <div className="space-y-3">
                   {session.participants.map(p => (
                     <div key={p.id} className="flex items-center justify-between gap-4">
@@ -213,8 +213,8 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
                     </div>
                   ))}
                 </div>
-              </TooltipContent>
-            </Tooltip>
+              </PopoverContent>
+            </Popover>
             <div className="flex items-center gap-2">
               <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
                 <div className="h-full bg-primary rounded-full" style={{width: `${averageSociability}%`}}></div>
