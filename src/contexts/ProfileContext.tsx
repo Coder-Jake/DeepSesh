@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext";
+import { useTimer } from "./TimerContext"; // NEW: Import useTimer
 
 // Define a simplified Profile type for local storage
 export type Profile = {
@@ -1519,6 +1520,7 @@ const LOCAL_STORAGE_PRONOUNS_KEY = 'deepsesh_pronouns';
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user } = useAuth(); // Keep user from AuthContext to get the ID
+  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1572,42 +1574,54 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const trimmedName = userName.trim();
     if (trimmedName && !blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => [...prev, trimmedName]);
-      toast.success(`'${trimmedName}' has been blocked.`, {
-        description: "They will no longer see your sessions.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success(`'${trimmedName}' has been blocked.`, {
+          description: "They will no longer see your sessions.",
+        });
+      }
     } else if (trimmedName && blockedUsers.includes(trimmedName)) {
-      toast.info(`'${trimmedName}' is already blocked.`, {
-        description: "No changes made.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.info(`'${trimmedName}' is already blocked.`, {
+          description: "No changes made.",
+        });
+      }
     }
-  }, [blockedUsers]);
+  }, [blockedUsers, areToastsEnabled]);
 
   const unblockUser = useCallback((userName: string) => {
     const trimmedName = userName.trim();
     if (trimmedName && blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => prev.filter(name => name !== trimmedName));
-      toast.success(`'${trimmedName}' has been unblocked.`, {
-        description: "They can now see your sessions again.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.success(`'${trimmedName}' has been unblocked.`, {
+          description: "They can now see your sessions again.",
+        });
+      }
     } else if (trimmedName && !blockedUsers.includes(trimmedName)) {
-      toast.info(`'${trimmedName}' is not in your blocked list.`, {
-        description: "No changes made.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.info(`'${trimmedName}' is not in your blocked list.`, {
+          description: "No changes made.",
+        });
+      }
     }
-  }, [blockedUsers]);
+  }, [blockedUsers, areToastsEnabled]);
 
   const sendFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'pending' }));
-    toast.success("Friend request sent!", {
-      description: "They will be notified of your request.",
-    });
+    if (areToastsEnabled) { // NEW: Conditional toast
+      toast.success("Friend request sent!", {
+        description: "They will be notified of your request.",
+      });
+    }
 
     const timeoutId = setTimeout(() => {
       setFriendStatuses(prev => {
         if (prev[targetUserId] === 'pending') {
-          toast.success(`Friend request from ${targetUserId} accepted!`, {
-            description: "You are now friends!",
-          });
+          if (areToastsEnabled) { // NEW: Conditional toast
+            toast.success(`Friend request from ${targetUserId} accepted!`, {
+              description: "You are now friends!",
+            });
+          }
           return { ...prev, [targetUserId]: 'friends' };
         }
         return prev;
@@ -1616,29 +1630,33 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     }, 3000);
 
     friendRequestTimeouts.current.set(targetUserId, timeoutId);
-  }, []);
+  }, [areToastsEnabled]);
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'friends' }));
-    toast.success("Friend request accepted!", {
-      description: "You are now friends!",
-    });
+    if (areToastsEnabled) { // NEW: Conditional toast
+      toast.success("Friend request accepted!", {
+        description: "You are now friends!",
+      });
+    }
     if (friendRequestTimeouts.current.has(targetUserId)) {
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
     }
-  }, []);
+  }, [areToastsEnabled]);
 
   const removeFriend = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'none' }));
-    toast.info("Friend removed.", {
-      description: "You are no longer friends.",
-    });
+    if (areToastsEnabled) { // NEW: Conditional toast
+      toast.info("Friend removed.", {
+        description: "You are no longer friends.",
+      });
+    }
     if (friendRequestTimeouts.current.has(targetUserId)) {
       clearTimeout(friendRequestTimeouts.current.get(targetUserId)!);
       friendRequestTimeouts.current.delete(targetUserId);
     }
-  }, []);
+  }, [areToastsEnabled]);
 
 
   const fetchProfile = async () => {
@@ -1717,9 +1735,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (!user) { // `user` will always be present, so this check is mostly for type safety
       setError("Local user not found. Cannot update profile.");
       setLoading(false);
-      toast.error("Profile Update Failed", {
-        description: "A local user profile is required to save changes.",
-      });
+      if (areToastsEnabled) { // NEW: Conditional toast
+        toast.error("Profile Update Failed", {
+          description: "A local user profile is required to save changes.",
+        });
+      }
       return;
     }
 
@@ -1761,9 +1781,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (data.pronouns !== undefined) setPronouns(data.pronouns);
 
     console.log("Profile updated in local storage and context:", data);
-    toast.success(successMessage || "Profile updated!", {
-      description: "Your profile has been successfully saved locally.",
-    });
+    if (areToastsEnabled) { // NEW: Conditional toast
+      toast.success(successMessage || "Profile updated!", {
+        description: "Your profile has been successfully saved locally.",
+      });
+    }
     setLoading(false);
   };
 
