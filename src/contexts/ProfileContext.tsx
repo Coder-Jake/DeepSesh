@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext";
-import { useTimer } from "./TimerContext"; // NEW: Import useTimer
+import { useTimer } from "./TimerContext";
 
 // Define a simplified Profile type for local storage
 export type Profile = {
@@ -24,7 +24,7 @@ export type Profile = {
   can_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null
   need_help_with: string | null
   need_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null
-  pronouns: string | null; // NEW: Added pronouns
+  pronouns: string | null;
 };
 
 // Simplified ProfileUpdate type for local storage
@@ -42,7 +42,7 @@ export interface SessionHistory {
   notes: string;
   asks?: ActiveAskItem[];
   session_start_time: string;
-  session_end_time:   string;
+  session_end_time: string;
   participantNames?: string[];
 }
 
@@ -153,19 +153,19 @@ const dummyLeaderboardCoworkers = {
     { id: "angie-id-4", name: "Angie", coworkers: 8 },
     { id: "frank-id-4", name: "Frank", coworkers: 7 },
     { id: "grace-id-4", name: "Grace", coworkers: 6 },
-    { id: "heidi-id-4", name: "Heidi", coworkers: 4 }, 
+    { id: "heidi-id-4", name: "Heidi", coworkers: 4 },
   ],
   month: [
-    { id: "angie-id-5", name: "Angie", coworkers: 25 }, 
-    { id: "liam-id-5", name: "Liam", coworkers: 22 }, 
-    { id: "mia-id-5", name: "Mia", coworkers: 17 }, 
-    { id: "noah-id-5", name: "Noah", coworkers: 15 }, 
+    { id: "angie-id-5", name: "Angie", coworkers: 25 },
+    { id: "liam-id-5", name: "Liam", coworkers: 22 },
+    { id: "mia-id-5", name: "Mia", coworkers: 17 },
+    { id: "noah-id-5", name: "Noah", coworkers: 15 },
   ],
   all: [
     { id: "angie-id-6", name: "Angie", coworkers: 100 },
-    { id: "peter-id-6", name: "Peter", coworkers: 90 }, 
-    { id: "quinn-id-6", name: "Quinn", coworkers: 80 }, 
-    { id: "rachel-id-6", name: "Rachel", coworkers: 70 }, 
+    { id: "peter-id-6", name: "Peter", coworkers: 90 },
+    { id: "quinn-id-6", name: "Quinn", coworkers: 80 },
+    { id: "rachel-id-6", name: "Rachel", coworkers: 70 },
   ],
 };
 
@@ -349,7 +349,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Advanced AI algorithms, Quantum Computing",
     need_help_with_visibility: ['friends', 'organisation'],
     host_code: "redfox",
-    pronouns: "She/Her", // NEW
+    pronouns: "She/Her",
   },
   {
     id: "mock-user-id-2",
@@ -370,7 +370,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Backend integration, Database optimization",
     need_help_with_visibility: ['organisation'],
     host_code: "bluebear",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-3",
@@ -391,7 +391,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Frontend frameworks, Mobile development",
     need_help_with_visibility: ['friends'],
     host_code: "greencat",
-    pronouns: "They/Them", // NEW
+    pronouns: "They/Them",
   },
   {
     id: "mock-user-id-4",
@@ -412,7 +412,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Technical deep dives, Coding assistance",
     need_help_with_visibility: ['private'],
     host_code: "yellowdog",
-    pronouns: "She/Her", // NEW
+    pronouns: "She/Her",
   },
   {
     id: "mock-user-id-5",
@@ -433,7 +433,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Statistical analysis, Data visualization",
     need_help_with_visibility: ['private'],
     host_code: "purplelion",
-    pronouns: null, // NEW
+    pronouns: null,
   },
   {
     id: "mock-user-id-6",
@@ -454,7 +454,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Deployment strategies, Real-time data processing",
     need_help_with_visibility: ['public'],
     host_code: "orangetiger",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-7",
@@ -475,7 +475,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Video editing, Graphic design",
     need_help_with_visibility: ['friends'],
     host_code: "pinkwolf",
-    pronouns: "She/Her", // NEW
+    pronouns: "She/Her",
   },
   {
     id: "mock-user-id-8",
@@ -496,7 +496,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Advanced threat intelligence, Blockchain security",
     need_help_with_visibility: ['organisation'],
     host_code: "browndeer",
-    pronouns: "She/Her", // NEW
+    pronouns: "She/Her",
   },
   {
     id: "mock-user-id-9",
@@ -517,7 +517,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Cost optimization, Serverless architecture best practices",
     need_help_with_visibility: ['public'],
     host_code: "greyzebra",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-10",
@@ -538,7 +538,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Frontend development, Accessibility standards",
     need_help_with_visibility: ['friends', 'organisation'],
     host_code: "blackpanda",
-    pronouns: "She/Her", // NEW
+    pronouns: "She/Her",
   },
   // NEW: Mock profiles for participants in mockNearbySessions
   {
@@ -560,7 +560,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Retail innovation, Space exploration",
     need_help_with_visibility: ['private'],
     host_code: "goldfish",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-musk",
@@ -581,7 +581,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Neuralink research, Mars colonization logistics",
     need_help_with_visibility: ['private'],
     host_code: "silverfalcon",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-zuckerberg",
@@ -602,7 +602,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Privacy regulations, Content moderation strategies",
     need_help_with_visibility: ['private'],
     host_code: "bronzeowl",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-gates",
@@ -623,7 +623,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Climate change solutions, Education reform",
     need_help_with_visibility: ['private'],
     host_code: "indigoduck",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-jobs",
@@ -644,7 +644,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Supply chain management, Software engineering",
     need_help_with_visibility: ['private'],
     host_code: "violetswan",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   // NEW: Mock profiles for participants in mockFriendsSessions
   {
@@ -666,7 +666,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern neuroscience, Cognitive psychology",
     need_help_with_visibility: ['friends'],
     host_code: "tealshark",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-skinner",
@@ -687,7 +687,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Humanistic psychology, Free will debates",
     need_help_with_visibility: ['friends'],
     host_code: "cyanwhale",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-piaget",
@@ -708,7 +708,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Adolescent psychology, Educational technology",
     need_help_with_visibility: ['friends'],
     host_code: "magentadolphin",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-jung",
@@ -729,7 +729,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Behavioral economics, Social psychology",
     need_help_with_visibility: ['friends'],
     host_code: "limeoctopus",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-maslow",
@@ -750,7 +750,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Positive psychology interventions, Organizational behavior",
     need_help_with_visibility: ['friends'],
     host_code: "marooncrab",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-rogers",
@@ -771,7 +771,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Group therapy dynamics, Cross-cultural counseling",
     need_help_with_visibility: ['friends'],
     host_code: "navysquid",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-bandura",
@@ -792,7 +792,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Cognitive neuroscience, Developmental psychology",
     need_help_with_visibility: ['friends'],
     host_code: "olivejellyfish",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-pavlov",
@@ -813,7 +813,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Neurophysiology, Animal behavior studies",
     need_help_with_visibility: ['friends'],
     host_code: "aquastarfish",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   // NEW: Mock profiles for organization members (famous philosophers/scientists)
   {
@@ -835,7 +835,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern science, Empirical research methods",
     need_help_with_visibility: ['organisation'],
     host_code: "redphilosopher",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-plato",
@@ -856,7 +856,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Practical applications, Democratic theory",
     need_help_with_visibility: ['organisation'],
     host_code: "bluephilosopher",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-socrates",
@@ -877,7 +877,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Formal logic, Scientific method",
     need_help_with_visibility: ['organisation'],
     host_code: "greensocrates",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-descartes",
@@ -898,7 +898,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Empiricism, Modern physics",
     need_help_with_visibility: ['organisation'],
     host_code: "yellowdescartes",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-kant",
@@ -919,7 +919,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Post-Kantian philosophy, Existentialism",
     need_help_with_visibility: ['organisation'],
     host_code: "purplekant",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-locke",
@@ -940,7 +940,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Rationalism, Modern constitutional law",
     need_help_with_visibility: ['organisation'],
     host_code: "orangelocke",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-hume",
@@ -961,7 +961,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Moral philosophy, Metaphysics",
     need_help_with_visibility: ['organisation'],
     host_code: "pinkhume",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-rousseau",
@@ -982,7 +982,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern political science, Environmental ethics",
     need_help_with_visibility: ['organisation'],
     host_code: "brownrousseau",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-newton",
@@ -1003,7 +1003,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Quantum physics, Relativity",
     need_help_with_visibility: ['organisation'],
     host_code: "greynewton",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-einstein",
@@ -1024,7 +1024,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Unified field theory, Cosmology",
     need_help_with_visibility: ['organisation'],
     host_code: "blackeinstein",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-curie",
@@ -1045,7 +1045,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Nuclear physics, Medical applications of isotopes",
     need_help_with_visibility: ['organisation'],
     host_code: "whitecurie",
-    pronouns: "She/Her", // NEW
+    pronouns: "She/Her",
   },
   {
     id: "mock-user-id-darwin",
@@ -1066,7 +1066,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Genetics, Molecular biology",
     need_help_with_visibility: ['organisation'],
     host_code: "golddarwin",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-galileo",
@@ -1087,7 +1087,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Quantum physics, Astrophysics",
     need_help_with_visibility: ['organisation'],
     host_code: "silvergalileo",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-hawking",
@@ -1108,7 +1108,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "String theory, Observational astronomy",
     need_help_with_visibility: ['organisation'],
     host_code: "bronzehawking",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-turing",
@@ -1129,7 +1129,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Machine learning, Quantum computing",
     need_help_with_visibility: ['organisation'],
     host_code: "indigoturing",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-hypatia",
@@ -1150,7 +1150,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern scientific notation, Telescope technology",
     need_help_with_visibility: ['organisation'],
     host_code: "violethypatia",
-    pronouns: "She/Her", // NEW
+    pronouns: "She/Her",
   },
   {
     id: "mock-user-id-copernicus",
@@ -1171,7 +1171,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Orbital mechanics, Gravitational theory",
     need_help_with_visibility: ['organisation'],
     host_code: "tealcopernicus",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-kepler",
@@ -1192,7 +1192,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Spacecraft trajectory, Exoplanet detection",
     need_help_with_visibility: ['organisation'],
     host_code: "cyankepler",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-bohr",
@@ -1213,7 +1213,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Particle physics, Quantum field theory",
     need_help_with_visibility: ['organisation'],
     host_code: "magentabohr",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-heisenberg",
@@ -1234,7 +1234,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Quantum entanglement, Quantum computing",
     need_help_with_visibility: ['organisation'],
     host_code: "limeheisenberg",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-schrodinger",
@@ -1255,7 +1255,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Quantum measurement problem, Decoherence",
     need_help_with_visibility: ['organisation'],
     host_code: "maroonschrodinger",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-maxwell",
@@ -1276,7 +1276,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Quantum electrodynamics, Plasma physics",
     need_help_with_visibility: ['organisation'],
     host_code: "navymaxwell",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-faraday",
@@ -1297,7 +1297,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Superconductivity, Magnetohydrodynamics",
     need_help_with_visibility: ['organisation'],
     host_code: "olivefaraday",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-pascal",
@@ -1318,7 +1318,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Stochastic processes, Quantum field theory",
     need_help_with_visibility: ['organisation'],
     host_code: "aquapascal",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-leibniz",
@@ -1339,7 +1339,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern logic, Philosophy of language",
     need_help_with_visibility: ['organisation'],
     host_code: "fuchsialeibniz",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-pythagoras",
@@ -1360,7 +1360,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern algebra, Abstract mathematics",
     need_help_with_visibility: ['organisation'],
     host_code: "azurepythagoras",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-euclid",
@@ -1381,7 +1381,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Non-Euclidean geometry, Topology",
     need_help_with_visibility: ['organisation'],
     host_code: "beigeuclid",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-archimedes",
@@ -1402,7 +1402,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern engineering, Materials science",
     need_help_with_visibility: ['organisation'],
     host_code: "coralarchimedes",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-davinci",
@@ -1423,7 +1423,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern art techniques, Digital fabrication",
     need_help_with_visibility: ['organisation'],
     host_code: "crimsondavinci",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
   {
     id: "mock-user-id-franklin",
@@ -1444,7 +1444,7 @@ const mockProfiles: Profile[] = [
     need_help_with: "Modern energy systems, Digital media",
     need_help_with_visibility: ['organisation'],
     host_code: "lavenderfranklin",
-    pronouns: "He/Him", // NEW
+    pronouns: "He/Him",
   },
 ];
 
@@ -1455,7 +1455,7 @@ interface ProfileContextType {
   error: string | null;
   updateProfile: (data: ProfileUpdate, successMessage?: string) => Promise<void>;
   fetchProfile: () => Promise<void>;
-  
+
   localFirstName: string;
   setLocalFirstName: React.Dispatch<React.SetStateAction<string>>;
 
@@ -1467,7 +1467,7 @@ interface ProfileContextType {
   hostCode: string;
   setHostCode: React.Dispatch<React.SetStateAction<string>>;
 
-  getPublicProfile: (userId: string, userName: string) => Profile | null; // MODIFIED: Removed Promise
+  getPublicProfile: (userId: string, userName: string) => Profile | null;
 
   bioVisibility: ('public' | 'friends' | 'organisation' | 'private')[]
   setBioVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
@@ -1539,7 +1539,7 @@ const LOCAL_STORAGE_SOCIABILITY_KEY = 'deepsesh_sociability';
 const LOCAL_STORAGE_LINKEDIN_URL_KEY = 'deepsesh_linkedin_url';
 
 // Helper function to safely parse JSON from local storage
-const safeJSONParse = <T>(key: string, defaultValue: T): T => {
+const safeJSONParse = <T extends unknown>(key: string, defaultValue: T): T => {
   try {
     const storedValue = localStorage.getItem(key);
     return storedValue ? JSON.parse(storedValue) : defaultValue;
@@ -1551,12 +1551,12 @@ const safeJSONParse = <T>(key: string, defaultValue: T): T => {
 };
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
-  const { user } = useAuth(); // Keep user from AuthContext to get the ID
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
+  const { user } = useAuth();
+  const { areToastsEnabled } = useTimer();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // NEW: Individual profile states
   const [localFirstName, setLocalFirstName] = useState("You");
   const [bio, setBio] = useState<string | null>(null);
@@ -1582,7 +1582,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [canHelpWithVisibility, setCanHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [needHelpWithVisibility, setNeedHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
-  
+
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
   const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
@@ -1607,7 +1607,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     ];
 
     [...mockNearbyParticipants, ...mockFriendsParticipants].forEach(p => uniqueNames.add(p.name));
-    
+
     return Array.from(uniqueNames).sort();
   }, []);
 
@@ -1615,13 +1615,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const trimmedName = userName.trim();
     if (trimmedName && !blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => [...prev, trimmedName]);
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.success(`'${trimmedName}' has been blocked.`, {
           description: "They will no longer see your sessions.",
         });
       }
     } else if (trimmedName && blockedUsers.includes(trimmedName)) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.info(`'${trimmedName}' is already blocked.`, {
           description: "No changes made.",
         });
@@ -1633,13 +1633,13 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const trimmedName = userName.trim();
     if (trimmedName && blockedUsers.includes(trimmedName)) {
       setBlockedUsers(prev => prev.filter(name => name !== trimmedName));
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.success(`'${trimmedName}' has been unblocked.`, {
           description: "They can now see your sessions again.",
         });
       }
     } else if (trimmedName && !blockedUsers.includes(trimmedName)) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.info(`'${trimmedName}' is not in your blocked list.`, {
           description: "No changes made.",
         });
@@ -1649,7 +1649,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const sendFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'pending' }));
-    if (areToastsEnabled) { // NEW: Conditional toast
+    if (areToastsEnabled) {
       toast.success("Friend request sent!", {
         description: "They will be notified of your request.",
       });
@@ -1658,7 +1658,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     const timeoutId = setTimeout(() => {
       setFriendStatuses(prev => {
         if (prev[targetUserId] === 'pending') {
-          if (areToastsEnabled) { // NEW: Conditional toast
+          if (areToastsEnabled) {
             toast.success(`Friend request from ${targetUserId} accepted!`, {
               description: "You are now friends!",
             });
@@ -1675,7 +1675,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const acceptFriendRequest = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'friends' }));
-    if (areToastsEnabled) { // NEW: Conditional toast
+    if (areToastsEnabled) {
       toast.success("Friend request accepted!", {
         description: "You are now friends!",
       });
@@ -1688,7 +1688,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   const removeFriend = useCallback((targetUserId: string) => {
     setFriendStatuses(prev => ({ ...prev, [targetUserId]: 'none' }));
-    if (areToastsEnabled) { // NEW: Conditional toast
+    if (areToastsEnabled) {
       toast.info("Friend removed.", {
         description: "You are no longer friends.",
       });
@@ -1732,11 +1732,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLinkedinVisibility(safeJSONParse(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, ['public']));
     setCanHelpWithVisibility(safeJSONParse(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, ['public']));
     setNeedHelpWithVisibility(safeJSONParse(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, ['public']));
-    
+
     setFriendStatuses(safeJSONParse(LOCAL_STORAGE_FRIEND_STATUSES_KEY, {}));
 
     // Construct the `profile` object from the individual states for backward compatibility
-    if (user) { 
+    if (user) {
       const currentProfile: Profile = {
         id: user.id,
         first_name: storedLocalFirstName || user.user_metadata.first_name || user.email.split('@')[0],
@@ -1771,10 +1771,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(true);
     setError(null);
 
-    if (!user) { 
+    if (!user) {
       setError("Local user not found. Cannot update profile.");
       setLoading(false);
-      if (areToastsEnabled) { 
+      if (areToastsEnabled) {
         toast.error("Profile Update Failed", {
           description: "A local user profile is required to save changes.",
         });
@@ -1825,7 +1825,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     });
 
     console.log("Profile updated in local storage and context:", data);
-    if (areToastsEnabled) { 
+    if (areToastsEnabled) {
       toast.success(successMessage || "Profile updated!", {
         description: "Your profile has been successfully saved locally.",
       });
@@ -1833,12 +1833,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
-  const getPublicProfile = useCallback((userId: string, userName: string): Profile | null => { 
+  const getPublicProfile = useCallback((userId: string, userName: string): Profile | null => {
     const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
     if (mockProfile) {
       return mockProfile;
     }
-    
+
     // For non-logged-in users or mock users, return a basic profile
     return {
       id: userId,
@@ -1866,20 +1866,20 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
 
   useEffect(() => {
     fetchProfile();
-    
+
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === LOCAL_STORAGE_KEY || event.key === LOCAL_FIRST_NAME_KEY || event.key === BLOCKED_USERS_KEY) {
         fetchProfile();
       }
     };
-    window.addEventListener('storage', handleStorageChange); 
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
       friendRequestTimeouts.current.clear();
     };
-  }, [user]); // Depend on user from AuthContext
+  }, [user]);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
