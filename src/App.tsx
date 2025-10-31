@@ -23,15 +23,17 @@ import NotFound from './pages/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProfileProvider } from './contexts/ProfileContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
+import { ProfilePopUpProvider, useProfilePopUp } from './contexts/ProfilePopUpContext'; // Import useProfilePopUp
 
 function App() {
+  const { isPopUpOpen, targetUserId } = useProfilePopUp(); // Get state from context
+
   return (
     <TooltipProvider>
       <Router>
         <ThemeProvider>
           <AuthProvider>
-            <TimerProvider> {/* TimerProvider now wraps ProfileProvider */}
+            <TimerProvider>
               <ProfileProvider>
                 <ProfilePopUpProvider>
                   <Routes>
@@ -52,6 +54,8 @@ function App() {
                     <Route path="/verify-email" element={<VerifyEmail />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  {/* Add a dynamic key to force ProfilePopUpCard to re-mount */}
+                  <ProfilePopUpCard key={isPopUpOpen ? targetUserId : 'closed'} />
                 </ProfilePopUpProvider>
               </ProfileProvider>
             </TimerProvider>
