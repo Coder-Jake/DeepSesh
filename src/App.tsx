@@ -5,25 +5,25 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Index from './pages/Index';
 import './index.css';
-import { TimerProvider } from './contexts/TimerContext'; // Import TimerProvider
-import AppLayout from './layouts/AppLayout'; // Import AppLayout
-import Settings from './pages/Settings'; // Import Settings
-import Profile from './pages/Profile'; // Import Profile
-import ChipIn from './pages/ChipIn'; // Import ChipIn
-import Feedback from './pages/Feedback'; // Import Feedback
-import UpcomingFeatures from './pages/UpcomingFeatures'; // Import UpcomingFeatures
-import Credits from './pages/Credits'; // Import Credits
-import Vibes from './pages/Vibes'; // Import Vibes
-import Login from './pages/Login'; // Import Login
-import Register from './pages/Register'; // Import Register
-import ForgotPassword from './pages/ForgotPassword'; // Import ForgotPassword
-import ResetPassword from './pages/ResetPassword'; // Import ResetPassword
-import VerifyEmail from './pages/VerifyEmail'; // Import VerifyEmail
-import NotFound from './pages/NotFound'; // Import NotFound
-import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
-import { ProfileProvider } from './contexts/ProfileContext'; // Import ProfileProvider
-import { ThemeProvider } from './contexts/ThemeContext'; // Import ThemeProvider
-import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext'; // Import ProfilePopUpProvider
+import { TimerProvider } from './contexts/TimerContext';
+import AppLayout from './layouts/AppLayout';
+import Settings from './pages/Settings';
+import Profile from './pages/Profile';
+import ChipIn from './pages/ChipIn';
+import Feedback from './pages/Feedback';
+import UpcomingFeatures from './pages/UpcomingFeatures';
+import Credits from './pages/Credits';
+import Vibes from './pages/Vibes';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
+import NotFound from './pages/NotFound';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProfileProvider } from './contexts/ProfileContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 
 function App() {
   return (
@@ -31,8 +31,8 @@ function App() {
       <Router>
         <ThemeProvider>
           <AuthProvider>
-            <ProfileProvider>
-              <TimerProvider>
+            <TimerProvider> {/* TimerProvider now wraps ProfileProvider */}
+              <ProfileProvider>
                 <ProfilePopUpProvider>
                   <Routes>
                     <Route path="/" element={<AppLayout />}>
@@ -53,8 +53,8 @@ function App() {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </ProfilePopUpProvider>
-              </TimerProvider>
-            </ProfileProvider>
+              </ProfileProvider>
+            </TimerProvider>
           </AuthProvider>
         </ThemeProvider>
       </Router>
