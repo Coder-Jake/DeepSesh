@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
 import ColorPicker from './ColorPicker';
 import { DAYS_OF_WEEK } from "@/lib/constants";
-import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
+import { useTheme } from '@/contexts/ThemeContext';
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -48,7 +48,7 @@ const ScheduleForm: React.FC = () => {
     is24HourFormat, 
   } = useTimer();
 
-  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     if (schedule.length === 0) {
@@ -474,17 +474,15 @@ const ScheduleForm: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsRecurring(prev => !prev)}
-                className={cn(
-                  "h-8 w-8 rounded-full",
-                  isRecurring 
-                    ? (isDarkMode 
-                        ? "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))] text-foreground hover:from-[hsl(var(--public-gradient-start-dark))]/80 hover:to-[hsl(var(--public-gradient-end-dark))]/80" 
-                        : "bg-[hsl(var(--public-bg))] text-foreground hover:bg-[hsl(var(--public-bg))]/80") 
-                    : "text-muted-foreground hover:bg-muted"
-                )}
+                className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted" // Keep button ghost
                 aria-label="Toggle schedule loop"
               >
-                <Repeat className="h-4 w-4" />
+                <Repeat 
+                  className={cn(
+                    "h-4 w-4",
+                    isRecurring ? "text-foreground" : "" // Change icon color to foreground when active
+                  )} 
+                />
               </Button>
               <span className="flex-grow text-center">
                 {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
