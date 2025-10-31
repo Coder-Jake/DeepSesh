@@ -38,8 +38,8 @@ import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordio
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useIsMobile } from "@/hooks/use-mobile"; // NEW: Import useIsMobile
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // NEW: Import Popover components
+// Removed useIsMobile import as it's no longer needed for this interaction
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 
 interface ExtendSuggestion {
   id: string;
@@ -270,10 +270,9 @@ const Index = () => {
   );
 
   // Removed mobileTooltipStates and mobileTooltipTimeoutRefs
-  // const isMobile = useIsMobile(); // Keep useIsMobile if needed elsewhere, but not for this popover
+  // Removed useIsMobile as it's no longer needed for this interaction
 
-  // NEW: State to manage which coworker popover is open
-  const [openCoworkerPopoverId, setOpenCoworkerPopoverId] = useState<string | null>(null);
+  // Removed state to manage which coworker popover is open as popover is removed
 
   // Removed cleanup for mobile tooltip timeouts
 
@@ -614,7 +613,7 @@ const Index = () => {
         const phaseDurationSeconds = phase.durationMinutes * 60;
 
         if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
-          currentPhaseType = phase.type;
+          // Current effective time falls within this phase
           const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle; // Declare timeIntoPhase
           remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
           currentPhaseDurationMinutes = phase.durationMinutes;
@@ -1546,52 +1545,22 @@ const Index = () => {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {allParticipantsToDisplayInCard.map(person => (
-                    <Popover
+                    <div 
                       key={person.id}
-                      open={openCoworkerPopoverId === person.id}
-                      onOpenChange={(open) => setOpenCoworkerPopoverId(open ? person.id : null)}
+                      className={cn(
+                        "flex items-center justify-between p-2 rounded-md select-none",
+                        person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
+                        person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
+                        "hover:bg-muted cursor-pointer"
+                      )} 
+                      data-name={`Coworker: ${person.name}`}
+                      onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
-                      <PopoverTrigger asChild>
-                        <div 
-                          className={cn(
-                            "flex items-center justify-between p-2 rounded-md select-none",
-                            person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
-                            person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
-                            "hover:bg-muted cursor-pointer"
-                          )} 
-                          data-name={`Coworker: ${person.name}`}
-                        >
-                          <span className="font-medium text-foreground">
-                            {person.id === currentUserId ? "You" : person.name}
-                          </span>
-                          <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
-                        </div>
-                      </PopoverTrigger>
-                      <PopoverContent className="select-none">
-                        <div className="text-center max-w-xs">
-                          <p className="font-medium mb-1">
-                            {person.id === currentUserId ? "You" : person.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">Sociability: {person.sociability}%</p>
-                          {person.role === 'host' && <p className="text-xs text-muted-foreground mt-1">Host</p>}
-                          {person.intention && (
-                            <p className="text-xs text-muted-foreground mt-1">Intention: {person.intention}</p>
-                          )}
-                          {timerType === 'break' && person.bio && (
-                            <>
-                              <p className="text-xs text-muted-foreground mt-2">Bio: {person.bio}</p>
-                            </>
-                          )}
-                        </div>
-                        <Button size="sm" className="mt-2 w-full" onClick={(e) => {
-                          e.stopPropagation(); // Prevent popover from closing immediately
-                          handleNameClick(person.id, person.name, e);
-                          setOpenCoworkerPopoverId(null); // Close popover
-                        }}>
-                          View Profile
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
+                      <span className="font-medium text-foreground">
+                        {person.id === currentUserId ? "You" : person.name}
+                      </span>
+                      <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
+                    </div>
                   ))}
                 </CardContent>
               </Card>
