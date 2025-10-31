@@ -122,7 +122,7 @@
   /* For Firefox, ensure the spin buttons are visible */
   .number-input-with-custom-arrows[type="number"] {
     -moz-appearance: textfield !important; /* Ensure spin buttons are visible */
-    padding-right: 3rem !important; /* Add more padding to make space for Firefox's native arrows */
+    padding-right: 0 !important; /* Remove padding for Firefox */
   }
 }
 
