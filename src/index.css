@@ -99,30 +99,6 @@
   body {
     @apply bg-background text-foreground select-none; /* Added select-none here */
   }
-
-  /* Custom styles for number input spinner buttons */
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none; /* Remove default appearance */
-    margin: 0; /* Remove default margin */
-    width: 1.5rem; /* Adjust width for better click target */
-    height: 100%; /* Make it fill the input height */
-    background-color: transparent; /* Keep background transparent */
-    cursor: pointer;
-    border-left: 1px solid hsl(var(--border)); /* Subtle separator */
-    opacity: 0.7; /* Slightly less prominent */
-    transition: opacity 0.2s ease-in-out;
-  }
-
-  input[type="number"]::-webkit-inner-spin-button:hover,
-  input[type="number"]::-webkit-outer-spin-button:hover {
-    opacity: 1;
-  }
-
-  /* For Firefox, hide default spinners */
-  input[type="number"] {
-    -moz-appearance: textfield;
-  }
 }
 
 /* Custom class for octagonal shape */
