@@ -74,6 +74,18 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
     }
   }, [poll, currentUserId]);
 
+  // NEW: Effect to synchronize customResponse state with existing custom votes
+  useEffect(() => {
+    if (poll.allowCustomResponses) {
+      const userCustomVoteOption = poll.options.find(
+        option => option.id.startsWith('custom-') && option.votes.some(vote => vote.userId === currentUserId)
+      );
+      setCustomResponse(userCustomVoteOption ? userCustomVoteOption.text : "");
+    } else {
+      setCustomResponse("");
+    }
+  }, [poll, currentUserId]);
+
   const submitVote = (
     newSelectedOption: string | null,
     newSelectedOptions: string[],
