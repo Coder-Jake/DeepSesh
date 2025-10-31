@@ -7,13 +7,13 @@ import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb } from "l
 import { toast } from 'sonner'; // Import toast from sonner directly
 import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
-import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
+import { useTimer } from '@/contexts/TimerContext';
 
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
-  // Removed message state as it's no longer a text input
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const { setHasWonPrize } = useTimer(); // NEW: Get setHasWonPrize from TimerContext
+  const [isBTCMode, setIsBTCMode] = useState(false); // NEW: State to toggle between $ and BTC
+  const { setHasWonPrize } = useTimer();
 
   const quickAmounts = [5, 10, 25, 50];
 
@@ -27,6 +27,10 @@ const ChipIn = () => {
     setAmount(value);
   };
 
+  const toggleCurrencyMode = () => { // NEW: Function to toggle currency
+    setIsBTCMode(prev => !prev);
+  };
+
   const handleDonate = () => {
     const donationAmount = parseFloat(amount);
 
@@ -38,11 +42,13 @@ const ChipIn = () => {
     }
 
     // In a real app, this would integrate with a payment processor
+    // For simplicity, the prize condition remains based on the numerical value,
+    // assuming it's still a USD equivalent for the prize logic.
     if (donationAmount > 50) {
       toast.success("Congratulations! 🎉", {
         description: "Please speak to the dev to collect your prize!",
       });
-      setHasWonPrize(true); // NEW: Set hasWonPrize to true
+      setHasWonPrize(true);
     } else {
       toast.info("Is that really all you've got? 💜", {
         description: `Please donate a larger amount!`,
@@ -50,7 +56,6 @@ const ChipIn = () => {
     }
     
     setAmount("");
-    // Removed setMessage as it's no longer a text input
     setSelectedAmount(null);
   };
 
@@ -70,7 +75,7 @@ const ChipIn = () => {
       {/* New Feedback and Collaborate Section */}
       <FeedbackAndCollaborateSection />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8"> {/* Added mt-8 for spacing */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         {/* Donation Form */}
         <Card>
           <CardHeader>
@@ -90,14 +95,16 @@ const ChipIn = () => {
                     onClick={() => handleQuickAmount(value)}
                     className="h-12"
                   >
-                    ${value}
+                    {isBTCMode ? value : `$${value}`} {/* MODIFIED: Conditional display */}
                   </Button>
                 ))}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="custom-amount">Custom amount ($)</Label>
+              <Label htmlFor="custom-amount" onClick={toggleCurrencyMode} className="cursor-pointer select-none"> {/* MODIFIED: Added onClick and cursor style */}
+                Custom amount ({isBTCMode ? "BTC" : "$"}) {/* MODIFIED: Conditional display */}
+              </Label>
               <Input
                 id="custom-amount"
                 type="number"
@@ -112,10 +119,9 @@ const ChipIn = () => {
 
             <div className="space-y-2">
               <Label htmlFor="message">Message (optional)</Label>
-              {/* Changed Textarea to Link, styled to look like a textarea */}
               <Link
                 to="/feedback"
-                id="message" // Kept id for label association
+                id="message"
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-muted-foreground items-start"
               >
                 Leave a message for the developers...
@@ -128,7 +134,7 @@ const ChipIn = () => {
               disabled={!amount || parseFloat(amount) <= 0}
             >
               <Heart className="h-4 w-4 mr-2" />
-              Donate ${amount || "0"}
+              Donate {isBTCMode ? `${amount || "0"} BTC` : `$${amount || "0"}`} {/* MODIFIED: Conditional display */}
             </Button>
           </CardContent>
         </Card>
