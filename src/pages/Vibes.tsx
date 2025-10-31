@@ -29,7 +29,7 @@ const Vibes = () => {
               DeepSesh is built on the principle of respecting individual focus and boundaries. We encourage you to work independently, knowing that others are doing the same.
             </p>
             <p>
-              The <Link to="/profile" className="text-blue-500 hover:underline">Social Preferences</Link> on your profile helps set expectations. A higher score indicates a preference for deep focus with minimal interaction, even during breaks. A lower score suggests you're more open to collaboration and banter.
+              The <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> on your profile helps set expectations. A higher score indicates a preference for deep focus with minimal interaction, even during breaks. A lower score suggests you're more open to collaboration and banter.
             </p>
             <p>
               Use the <Link to="/settings" className="text-blue-500 hover:underline">Privacy settings</Link> to control who sees your profile details, ensuring you share only what you're comfortable with.
