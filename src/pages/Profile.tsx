@@ -881,7 +881,7 @@ const Profile = () => {
                 id="organization-name"
                 value={organization}
                 onChange={(e) => handleOrganizationChange(e.target.value)}
-                placeholder="e.g., Acme Corp"
+                placeholder="e.g., StartSpace"
               />
             </div>
           </div>
