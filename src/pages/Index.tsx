@@ -1286,7 +1286,7 @@ const Index = () => {
                               setHomepageFocusMinutes(defaultFocusMinutes);
                             }
                           }}
-                          className="w-16 h-8 text-center" 
+                          className="w-16 h-8 text-center number-input-with-custom-arrows" 
                           min={timerIncrement} 
                           max="120" 
                           step={timerIncrement}
@@ -1321,7 +1321,7 @@ const Index = () => {
                               setHomepageBreakMinutes(defaultBreakMinutes);
                             }
                           }}
-                          className="w-16 h-8 text-center" 
+                          className="w-16 h-8 text-center number-input-with-custom-arrows" 
                           min={timerIncrement} 
                           max="60" 
                           step={timerIncrement}

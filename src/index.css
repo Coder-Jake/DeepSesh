@@ -99,6 +99,29 @@
   body {
     @apply bg-background text-foreground select-none; /* Added select-none here */
   }
+
+  /* Custom styling for number input spin buttons */
+  .number-input-with-custom-arrows::-webkit-inner-spin-button {
+    -webkit-appearance: auto; /* Re-enable default appearance */
+    height: 100%; /* Take full vertical space */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    width: 2rem; /* Give it a distinct width */
+    background-color: var(--muted); /* Add a background to make it prominent */
+    border-left: 1px solid var(--border); /* Add a visual separator */
+    cursor: pointer;
+  }
+
+  .number-input-with-custom-arrows::-webkit-outer-spin-button {
+    -webkit-appearance: none; /* Keep the outer one hidden if it's just a wrapper */
+    margin: 0;
+  }
+
+  /* For Firefox, ensure the spin buttons are visible */
+  .number-input-with-custom-arrows[type="number"] {
+    -moz-appearance: textfield; /* Ensure spin buttons are visible */
+    padding-right: 2.5rem; /* Add padding to make space for Firefox's native arrows */
+  }
 }
 
 /* Custom class for octagonal shape */
