@@ -57,7 +57,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
         </div>
 
         {/* Form content, taking remaining space */}
-        <div className="flex-grow p-2 overflow-auto">
+        <div className="flex-grow p-0 overflow-auto">
           {currentAskOption === 'extend' && (
             <ExtendTimerForm onClose={handleCloseDialog} onSubmit={onExtendSubmit} />
           )}
