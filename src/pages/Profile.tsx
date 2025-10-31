@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Linkedin, Clipboard, Key, Users, UserMinus } from "lucide-react";
+import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake } from "lucide-react"; // NEW: Import HelpCircle and Handshake
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
@@ -27,6 +27,7 @@ const Profile = () => {
   const { 
     profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
+    canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility, // NEW
     friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser
   } = useProfile();
   const { user, logout } = useAuth();
@@ -37,6 +38,8 @@ const Profile = () => {
   // Use context state directly for inputs
   const [bio, setBio] = useState(profile?.bio || "");
   const [intention, setIntention] = useState(profile?.intention || "");
+  const [canHelpWith, setCanHelpWith] = useState(profile?.can_help_with || ""); // NEW
+  const [needHelpWith, setNeedHelpWith] = useState(profile?.need_help_with || ""); // NEW
   const [sociability, setSociability] = useState([profile?.sociability || 50]);
   const [organization, setOrganization] = useState(profile?.organization || "");
   const [linkedinUrl, setLinkedinUrl] = useState(() => {
@@ -56,6 +59,8 @@ const Profile = () => {
     firstName: "",
     bio: "",
     intention: "",
+    canHelpWith: "", // NEW
+    needHelpWith: "", // NEW
     sociability: [30],
     organization: "",
     linkedinUrl: "",
@@ -63,6 +68,8 @@ const Profile = () => {
     bioVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
     intentionVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
     linkedinVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
+    canHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
+    needHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
   });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
@@ -77,6 +84,8 @@ const Profile = () => {
 
   const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
   const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
+  const [canHelpWithLabelColorIndex, setCanHelpWithLabelColorIndex] = useState(0); // NEW
+  const [needHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex] = useState(0); // NEW
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
 
   const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
@@ -92,11 +101,13 @@ const Profile = () => {
     return 'public';
   }, []);
 
-  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility'): string => {
+  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'): string => { // NEW: Added new field names
     switch (fieldName) {
       case 'bio_visibility': return 'Bio';
       case 'intention_visibility': return 'Intention';
       case 'linkedin_visibility': return 'LinkedIn';
+      case 'can_help_with_visibility': return 'Can Help With'; // NEW
+      case 'need_help_with_visibility': return 'Need Help With'; // NEW
       default: return '';
     }
   }, []);
@@ -105,7 +116,7 @@ const Profile = () => {
     currentIndex: number, 
     setter: React.Dispatch<React.SetStateAction<number>>,
     visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
-    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility'
+    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility' // NEW
   ) => {
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
     const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
@@ -190,6 +201,8 @@ const Profile = () => {
     if (profile) {
       setBio(profile.bio || "");
       setIntention(profile.intention || "");
+      setCanHelpWith(profile.can_help_with || ""); // NEW
+      setNeedHelpWith(profile.need_help_with || ""); // NEW
       setSociability([profile.sociability || 50]);
       setOrganization(profile.organization || "");
       const fullLinkedinUrl = profile.linkedin_url || "";
@@ -202,15 +215,21 @@ const Profile = () => {
       setBioVisibility(profile.bio_visibility || ['public']);
       setIntentionVisibility(profile.intention_visibility || ['public']);
       setLinkedinVisibility(profile.linkedin_visibility || ['public']);
+      setCanHelpWithVisibility(profile.can_help_with_visibility || ['public']); // NEW
+      setNeedHelpWithVisibility(profile.need_help_with_visibility || ['public']); // NEW
 
       setBioLabelColorIndex(getIndexFromVisibility(profile.bio_visibility || ['public']));
       setIntentionLabelColorIndex(getIndexFromVisibility(profile.intention_visibility || ['public']));
       setLinkedinLabelColorIndex(getIndexFromVisibility(profile.linkedin_visibility || ['public']));
+      setCanHelpWithLabelColorIndex(getIndexFromVisibility(profile.can_help_with_visibility || ['public'])); // NEW
+      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(profile.need_help_with_visibility || ['public'])); // NEW
 
       setOriginalValues({
         firstName: profile.first_name || "You",
         bio: profile.bio || "",
         intention: profile.intention || "",
+        canHelpWith: profile.can_help_with || "", // NEW
+        needHelpWith: profile.need_help_with || "", // NEW
         sociability: [profile.sociability || 50],
         organization: profile.organization || "",
         linkedinUrl: fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
@@ -220,12 +239,16 @@ const Profile = () => {
         bioVisibility: (profile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         intentionVisibility: (profile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         linkedinVisibility: (profile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        canHelpWithVisibility: (profile.can_help_with_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
+        needHelpWithVisibility: (profile.need_help_with_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
       });
       setHasChanges(false);
     } else {
       // Reset to default if profile is null (e.g., after logout)
       setBio("");
       setIntention("");
+      setCanHelpWith(""); // NEW
+      setNeedHelpWith(""); // NEW
       setSociability([50]);
       setOrganization("");
       setLinkedinUrl("");
@@ -235,26 +258,34 @@ const Profile = () => {
       const defaultBioVis = (JSON.parse(localStorage.getItem('deepsesh_bio_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultIntentionVis = (JSON.parse(localStorage.getItem('deepsesh_intention_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultLinkedinVis = (JSON.parse(localStorage.getItem('deepsesh_linkedin_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+      const defaultCanHelpVis = (JSON.parse(localStorage.getItem('deepsesh_can_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]); // NEW
+      const defaultNeedHelpVis = (JSON.parse(localStorage.getItem('deepsesh_need_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]); // NEW
 
       setBioVisibility(defaultBioVis);
       setIntentionVisibility(defaultIntentionVis);
       setLinkedinVisibility(defaultLinkedinVis);
+      setCanHelpWithVisibility(defaultCanHelpVis); // NEW
+      setNeedHelpWithVisibility(defaultNeedHelpVis); // NEW
 
       setBioLabelColorIndex(getIndexFromVisibility(defaultBioVis));
       setIntentionLabelColorIndex(getIndexFromVisibility(defaultIntentionVis));
       setLinkedinLabelColorIndex(getIndexFromVisibility(defaultLinkedinVis));
+      setCanHelpWithLabelColorIndex(getIndexFromVisibility(defaultCanHelpVis)); // NEW
+      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(defaultNeedHelpVis)); // NEW
 
       setOriginalValues({
         firstName: localStorage.getItem('deepsesh_local_first_name') || "You",
-        bio: "", intention: "", sociability: [50], organization: "", linkedinUrl: "",
+        bio: "", intention: "", canHelpWith: "", needHelpWith: "", sociability: [50], organization: "", linkedinUrl: "", // NEW
         hostCode: localStorage.getItem('deepsesh_host_code') || "",
         bioVisibility: defaultBioVis,
         intentionVisibility: defaultIntentionVis,
         linkedinVisibility: defaultLinkedinVis,
+        canHelpWithVisibility: defaultCanHelpVis, // NEW
+        needHelpWithVisibility: defaultNeedHelpVis, // NEW
       });
       setHasChanges(false);
     }
-  }, [profile, setHostCode, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility]);
+  }, [profile, setHostCode, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility]); // NEW dependencies
 
 
   useEffect(() => {
@@ -279,24 +310,30 @@ const Profile = () => {
     const changed = localFirstName !== originalValues.firstName ||
                    bio !== originalValues.bio || 
                    intention !== originalValues.intention || 
+                   canHelpWith !== originalValues.canHelpWith || // NEW
+                   needHelpWith !== originalValues.needHelpWith || // NEW
                    sociability[0] !== originalValues.sociability[0] ||
                    organization !== originalValues.organization ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
                    hostCode !== originalValues.hostCode ||
                    JSON.stringify(bioVisibility) !== JSON.stringify(originalValues.bioVisibility) ||
                    JSON.stringify(intentionVisibility) !== JSON.stringify(originalValues.intentionVisibility) ||
-                   JSON.stringify(linkedinVisibility) !== JSON.stringify(originalValues.linkedinVisibility);
+                   JSON.stringify(linkedinVisibility) !== JSON.stringify(originalValues.linkedinVisibility) ||
+                   JSON.stringify(canHelpWithVisibility) !== JSON.stringify(originalValues.canHelpWithVisibility) || // NEW
+                   JSON.stringify(needHelpWithVisibility) !== JSON.stringify(originalValues.needHelpWithVisibility); // NEW
     setHasChanges(changed);
   }, [
-    localFirstName, bio, intention, sociability, organization, linkedinUrl, hostCode,
-    bioVisibility, intentionVisibility, linkedinVisibility, originalValues
+    localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode, // NEW
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, // NEW
+    originalValues
   ]);
 
   useEffect(() => {
     checkForChanges();
   }, [
-    localFirstName, bio, intention, sociability, organization, linkedinUrl, hostCode,
-    bioVisibility, intentionVisibility, linkedinVisibility, checkForChanges
+    localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode, // NEW
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, // NEW
+    checkForChanges
   ]);
 
   const handleFirstNameChange = (value: string) => {
@@ -309,6 +346,14 @@ const Profile = () => {
 
   const handleIntentionChange = (value: string) => {
     setIntention(value);
+  };
+
+  const handleCanHelpWithChange = (value: string) => { // NEW
+    setCanHelpWith(value);
+  };
+
+  const handleNeedHelpWithChange = (value: string) => { // NEW
+    setNeedHelpWith(value);
   };
 
   const handleSociabilityChange = (value: number[]) => {
@@ -400,6 +445,8 @@ const Profile = () => {
       first_name: nameToSave,
       bio,
       intention,
+      can_help_with: canHelpWith, // NEW
+      need_help_with: needHelpWith, // NEW
       sociability: sociability[0],
       organization: organization.trim() === "" ? null : organization.trim(),
       linkedin_url: linkedinUrl.trim() === "" ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`,
@@ -407,6 +454,8 @@ const Profile = () => {
       bio_visibility: bioVisibility,
       intention_visibility: intentionVisibility,
       linkedin_visibility: linkedinVisibility,
+      can_help_with_visibility: canHelpWithVisibility, // NEW
+      need_help_with_visibility: needHelpWithVisibility, // NEW
       updated_at: new Date().toISOString(),
     };
 
@@ -449,6 +498,8 @@ const Profile = () => {
       setLocalFirstName(profile.first_name || "You");
       setBio(profile.bio || "");
       setIntention(profile.intention || "");
+      setCanHelpWith(profile.can_help_with || ""); // NEW
+      setNeedHelpWith(profile.need_help_with || ""); // NEW
       setSociability([profile.sociability || 50]);
       setOrganization(profile.organization || "");
       const fullLinkedinUrl = profile.linkedin_url || "";
@@ -460,15 +511,21 @@ const Profile = () => {
       setBioVisibility(profile.bio_visibility || ['public']);
       setIntentionVisibility(profile.intention_visibility || ['public']);
       setLinkedinVisibility(profile.linkedin_visibility || ['public']);
+      setCanHelpWithVisibility(profile.can_help_with_visibility || ['public']); // NEW
+      setNeedHelpWithVisibility(profile.need_help_with_visibility || ['public']); // NEW
 
       setBioLabelColorIndex(getIndexFromVisibility(profile.bio_visibility || ['public']));
       setIntentionLabelColorIndex(getIndexFromVisibility(profile.intention_visibility || ['public']));
       setLinkedinLabelColorIndex(getIndexFromVisibility(profile.linkedin_visibility || ['public']));
+      setCanHelpWithLabelColorIndex(getIndexFromVisibility(profile.can_help_with_visibility || ['public'])); // NEW
+      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(profile.need_help_with_visibility || ['public'])); // NEW
     } else {
       // Revert to local storage defaults if no profile
       setLocalFirstName(localStorage.getItem('deepsesh_local_first_name') || "You");
       setBio(localStorage.getItem('deepsesh_bio') || "");
       setIntention(localStorage.getItem('deepsesh_intention') || "");
+      setCanHelpWith(localStorage.getItem('deepsesh_can_help_with') || ""); // NEW
+      setNeedHelpWith(localStorage.getItem('deepsesh_need_help_with') || ""); // NEW
       setSociability([parseInt(localStorage.getItem('deepsesh_sociability') || '50', 10)]);
       setOrganization(localStorage.getItem('deepsesh_organization') || "");
       const fullLinkedinUrl = localStorage.getItem('deepsesh_linkedin_url') || "";
@@ -480,14 +537,20 @@ const Profile = () => {
       const defaultBioVis = (JSON.parse(localStorage.getItem('deepsesh_bio_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultIntentionVis = (JSON.parse(localStorage.getItem('deepsesh_intention_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultLinkedinVis = (JSON.parse(localStorage.getItem('deepsesh_linkedin_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+      const defaultCanHelpVis = (JSON.parse(localStorage.getItem('deepsesh_can_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]); // NEW
+      const defaultNeedHelpVis = (JSON.parse(localStorage.getItem('deepsesh_need_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]); // NEW
 
       setBioVisibility(defaultBioVis);
       setIntentionVisibility(defaultIntentionVis);
       setLinkedinVisibility(defaultLinkedinVis);
+      setCanHelpWithVisibility(defaultCanHelpVis); // NEW
+      setNeedHelpWithVisibility(defaultNeedHelpVis); // NEW
 
       setBioLabelColorIndex(getIndexFromVisibility(defaultBioVis));
       setIntentionLabelColorIndex(getIndexFromVisibility(defaultIntentionVis));
       setLinkedinLabelColorIndex(getIndexFromVisibility(defaultLinkedinVis));
+      setCanHelpWithLabelColorIndex(getIndexFromVisibility(defaultCanHelpVis)); // NEW
+      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(defaultNeedHelpVis)); // NEW
     }
 
     setIsEditingFirstName(false);
@@ -495,7 +558,7 @@ const Profile = () => {
     setIsCopied(false);
     setHasChanges(false);
     setLongPressedFriendId(null);
-  }, [profile, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setHostCode]);
+  }, [profile, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility, setHostCode]); // NEW dependencies
 
   const friends = Object.entries(friendStatuses)
     .filter(([, status]) => status === 'friends')
@@ -631,6 +694,42 @@ const Profile = () => {
                 />
               </div>
 
+              {/* NEW: I can help with */}
+              <div>
+                <Label 
+                  htmlFor="can-help-with" 
+                  onClick={() => handleLabelClick(canHelpWithLabelColorIndex, setCanHelpWithLabelColorIndex, setCanHelpWithVisibility, 'can_help_with_visibility')} 
+                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(canHelpWithLabelColorIndex))}
+                >
+                  <Handshake size={16} className="inline-block mr-1" /> I can help with
+                </Label>
+                <Textarea
+                  id="can-help-with"
+                  placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
+                  value={canHelpWith}
+                  onChange={(e) => handleCanHelpWithChange(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+
+              {/* NEW: I need help with */}
+              <div>
+                <Label 
+                  htmlFor="need-help-with" 
+                  onClick={() => handleLabelClick(needHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex, setNeedHelpWithVisibility, 'need_help_with_visibility')} 
+                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(needHelpWithLabelColorIndex))}
+                >
+                  <HelpCircle size={16} className="inline-block mr-1" /> I need help with
+                </Label>
+                <Textarea
+                  id="need-help-with"
+                  placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
+                  value={needHelpWith}
+                  onChange={(e) => handleNeedHelpWithChange(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+
               <div>
                 <Label 
                   htmlFor="linkedin-username" 
@@ -719,7 +818,7 @@ const Profile = () => {
                         <p>Others can use this code to join your sessions.</p>
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
+                  </TooltipTrigger>
                 </h3>
                 <div className="flex items-center gap-2">
                   {isEditingHostCode ? (

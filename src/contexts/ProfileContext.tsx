@@ -19,6 +19,10 @@ export type Profile = {
   bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null
   intention_visibility: ("public" | "friends" | "organisation" | "private")[] | null
   linkedin_visibility: ("public" | "friends" | "organisation" | "private")[] | null
+  can_help_with: string | null // NEW: Added can_help_with
+  can_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW: Added can_help_with_visibility
+  need_help_with: string | null // NEW: Added need_help_with
+  need_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW: Added need_help_with_visibility
 };
 
 // Simplified ProfileUpdate type for local storage
@@ -338,6 +342,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "React, TypeScript, Cloud Architecture", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Advanced AI algorithms, Quantum Computing", // NEW
+    need_help_with_visibility: ['friends', 'organisation'], // NEW
     host_code: "redfox",
   },
   {
@@ -354,6 +362,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "CSS, HTML, JavaScript, UI/UX Design", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Backend integration, Database optimization", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "bluebear",
   },
   {
@@ -370,6 +382,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['friends', 'organisation'],
     intention_visibility: ['friends', 'organisation'],
     linkedin_visibility: ['friends', 'organisation'],
+    can_help_with: "Node.js, Python, AWS, Docker", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Frontend frameworks, Mobile development", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "greencat",
   },
   {
@@ -386,6 +402,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public', 'organisation'],
     intention_visibility: ['public', 'organisation'],
     linkedin_visibility: ['public', 'organisation'],
+    can_help_with: "Agile coaching, Project planning, Team management", // NEW
+    can_help_with_visibility: ['public', 'organisation'], // NEW
+    need_help_with: "Technical deep dives, Coding assistance", // NEW
+    need_help_with_visibility: ['private'], // NEW
     host_code: "yellowdog",
   },
   {
@@ -402,6 +422,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['private'],
     intention_visibility: ['private'],
     linkedin_visibility: ['private'],
+    can_help_with: "User research, Wireframing, Prototyping", // NEW
+    can_help_with_visibility: ['private'], // NEW
+    need_help_with: "Statistical analysis, Data visualization", // NEW
+    need_help_with_visibility: ['private'], // NEW
     host_code: "purplelion",
   },
   {
@@ -418,6 +442,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Machine Learning, Data Cleaning, SQL", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Deployment strategies, Real-time data processing", // NEW
+    need_help_with_visibility: ['public'], // NEW
     host_code: "orangetiger",
   },
   {
@@ -434,6 +462,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "SEO, Content Strategy, Social Media Marketing", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Video editing, Graphic design", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "pinkwolf",
   },
   {
@@ -450,6 +482,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Network security, Incident response, Compliance", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Advanced threat intelligence, Blockchain security", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "browndeer",
   },
   {
@@ -466,6 +502,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "CI/CD, Kubernetes, Terraform, Azure", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Cost optimization, Serverless architecture best practices", // NEW
+    need_help_with_visibility: ['public'], // NEW
     host_code: "greyzebra",
   },
   {
@@ -482,6 +522,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Figma, User flows, Interaction design", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Frontend development, Accessibility standards", // NEW
+    need_help_with_visibility: ['friends', 'organisation'], // NEW
     host_code: "blackpanda",
   },
   // NEW: Mock profiles for participants in mockNearbySessions
@@ -499,6 +543,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Cloud strategy, E-commerce platforms", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Retail innovation, Space exploration", // NEW
+    need_help_with_visibility: ['private'], // NEW
     host_code: "goldfish",
   },
   {
@@ -515,6 +563,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Rocket engineering, EV design, AI ethics", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Neuralink research, Mars colonization logistics", // NEW
+    need_help_with_visibility: ['private'], // NEW
     host_code: "silverfalcon",
   },
   {
@@ -531,6 +583,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Social network architecture, VR/AR development", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Privacy regulations, Content moderation strategies", // NEW
+    need_help_with_visibility: ['private'], // NEW
     host_code: "bronzeowl",
   },
   {
@@ -547,6 +603,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Software development, Philanthropy, Global health", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Climate change solutions, Education reform", // NEW
+    need_help_with_visibility: ['private'], // NEW
     host_code: "indigoduck",
   },
   {
@@ -563,6 +623,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Product design, Marketing, Entrepreneurship", // NEW
+    can_help_with_visibility: ['public'], // NEW
+    need_help_with: "Supply chain management, Software engineering", // NEW
+    need_help_with_visibility: ['private'], // NEW
     host_code: "violetswan",
   },
   // NEW: Mock profiles for participants in mockFriendsSessions
@@ -580,6 +644,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Psychoanalysis, Dream interpretation", // NEW
+    can_help_with_visibility: ['friends'], // NEW
+    need_help_with: "Modern neuroscience, Cognitive psychology", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "tealshark",
   },
   {
@@ -596,6 +664,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Behavioral analysis, Operant conditioning", // NEW
+    can_help_with_visibility: ['friends'], // NEW
+    need_help_with: "Humanistic psychology, Free will debates", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "cyanwhale",
   },
   {
@@ -612,6 +684,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Child development, Cognitive stages", // NEW
+    can_help_with_visibility: ['friends'], // NEW
+    need_help_with: "Adolescent psychology, Educational technology", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "magentadolphin",
   },
   {
@@ -628,6 +704,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Archetypes, Collective unconscious, Dream analysis", // NEW
+    can_help_with_visibility: ['friends'], // NEW
+    need_help_with: "Behavioral economics, Social psychology", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "limeoctopus",
   },
   {
@@ -644,6 +724,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Hierarchy of needs, Self-actualization", // NEW
+    can_help_with_visibility: ['friends'], // NEW
+    need_help_with: "Positive psychology interventions, Organizational behavior", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "marooncrab",
   },
   {
@@ -660,6 +744,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Client-centered therapy, Empathy training", // NEW
+    can_help_with_visibility: ['friends'], // NEW
+    need_help_with: "Group therapy dynamics, Cross-cultural counseling", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "navysquid",
   },
   {
@@ -676,6 +764,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Social learning theory, Self-efficacy", // NEW
+    can_help_with_visibility: ['friends'], // NEW
+    need_help_with: "Cognitive neuroscience, Developmental psychology", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "olivejellyfish",
   },
   {
@@ -692,6 +784,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Classical conditioning, Reflexology", // NEW
+    can_help_with_visibility: ['friends'], // NEW
+    need_help_with: "Neurophysiology, Animal behavior studies", // NEW
+    need_help_with_visibility: ['friends'], // NEW
     host_code: "aquastarfish",
   },
   // NEW: Mock profiles for organization members (famous philosophers/scientists)
@@ -709,6 +805,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Logic, Ethics, Political theory", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Modern science, Empirical research methods", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "redphilosopher",
   },
   {
@@ -725,6 +825,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Metaphysics, Epistemology, Political philosophy", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Practical applications, Democratic theory", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "bluephilosopher",
   },
   {
@@ -741,6 +845,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Socratic method, Ethical reasoning", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Formal logic, Scientific method", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "greensocrates",
   },
   {
@@ -757,6 +865,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Rationalism, Metaphysics, Analytic geometry", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Empiricism, Modern physics", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "yellowdescartes",
   },
   {
@@ -773,6 +885,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Categorical imperative, Epistemology", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Post-Kantian philosophy, Existentialism", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "purplekant",
   },
   {
@@ -789,6 +905,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Empiricism, Political philosophy, Natural rights", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Rationalism, Modern constitutional law", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "orangelocke",
   },
   {
@@ -805,6 +925,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Skepticism, Empiricism, Philosophy of mind", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Moral philosophy, Metaphysics", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "pinkhume",
   },
   {
@@ -821,6 +945,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Social contract theory, Education philosophy", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Modern political science, Environmental ethics", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "brownrousseau",
   },
   {
@@ -837,6 +965,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Classical mechanics, Optics, Calculus", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Quantum physics, Relativity", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "greynewton",
   },
   {
@@ -853,6 +985,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Relativity, Quantum theory, Theoretical physics", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Unified field theory, Cosmology", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "blackeinstein",
   },
   {
@@ -869,6 +1005,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Radioactivity, Analytical chemistry", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Nuclear physics, Medical applications of isotopes", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "whitecurie",
   },
   {
@@ -885,6 +1025,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Evolutionary biology, Natural selection", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Genetics, Molecular biology", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "golddarwin",
   },
   {
@@ -901,6 +1045,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Astronomy, Physics, Scientific method", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Quantum mechanics, Astrophysics", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "silvergalileo",
   },
   {
@@ -917,6 +1065,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Black holes, Cosmology, Quantum gravity", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "String theory, Observational astronomy", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "bronzehawking",
   },
   {
@@ -933,6 +1085,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Theoretical computer science, AI, Cryptography", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Machine learning, Quantum computing", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "indigoturing",
   },
   {
@@ -949,6 +1105,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Ancient philosophy, Mathematics, Astronomy", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Modern scientific notation, Telescope technology", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "violethypatia",
   },
   {
@@ -965,6 +1125,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Heliocentric model, Observational astronomy", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Orbital mechanics, Gravitational theory", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "tealcopernicus",
   },
   {
@@ -981,6 +1145,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Planetary motion, Celestial mechanics", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Spacecraft trajectory, Exoplanet detection", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "cyankepler",
   },
   {
@@ -997,6 +1165,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Atomic structure, Quantum mechanics", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Particle physics, Quantum field theory", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "magentabohr",
   },
   {
@@ -1013,6 +1185,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Uncertainty principle, Matrix mechanics", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Quantum entanglement, Quantum computing", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "limeheisenberg",
   },
   {
@@ -1029,6 +1205,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Wave mechanics, Quantum states", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Quantum measurement problem, Decoherence", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "maroonschrodinger",
   },
   {
@@ -1045,6 +1225,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Electromagnetism, Classical field theory", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Quantum electrodynamics, Plasma physics", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "navymaxwell",
   },
   {
@@ -1061,6 +1245,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Electromagnetic induction, Electrochemistry", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Superconductivity, Magnetohydrodynamics", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "olivefaraday",
   },
   {
@@ -1077,6 +1265,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Probability, Fluid mechanics, Number theory", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Stochastic processes, Quantum field theory", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "aquapascal",
   },
   {
@@ -1093,6 +1285,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Calculus, Metaphysics, Logic", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Modern logic, Philosophy of language", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "fuchsialeibniz",
   },
   {
@@ -1109,6 +1305,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Geometry, Number theory, Music theory", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Modern algebra, Abstract mathematics", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "azurepythagoras",
   },
   {
@@ -1125,6 +1325,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Euclidean geometry, Axiomatic systems", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Non-Euclidean geometry, Topology", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "beigeuclid",
   },
   {
@@ -1141,6 +1345,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Mechanics, Hydrostatics, Geometry", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Modern engineering, Materials science", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "coralarchimedes",
   },
   {
@@ -1157,6 +1365,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Art, Anatomy, Engineering design", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Modern art techniques, Digital fabrication", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "crimsondavinci",
   },
   {
@@ -1173,6 +1385,10 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
+    can_help_with: "Electricity, Political science, Journalism", // NEW
+    can_help_with_visibility: ['organisation'], // NEW
+    need_help_with: "Modern energy systems, Digital media", // NEW
+    need_help_with_visibility: ['organisation'], // NEW
     host_code: "lavenderfranklin",
   },
 ];
@@ -1198,12 +1414,16 @@ interface ProfileContextType {
 
   getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>;
 
-  bioVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  bioVisibility: ('public' | 'friends' | 'organisation' | 'private')[]
   setBioVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
-  intentionVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  intentionVisibility: ('public' | 'friends' | 'organisation' | 'private')[]
   setIntentionVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
-  linkedinVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
+  linkedinVisibility: ('public' | 'friends' | 'organisation' | 'private')[]
   setLinkedinVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
+  canHelpWithVisibility: ('public' | 'friends' | 'organisation' | 'private')[] // NEW
+  setCanHelpWithVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>; // NEW
+  needHelpWithVisibility: ('public' | 'friends' | 'organisation' | 'private')[] // NEW
+  setNeedHelpWithVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>; // NEW
 
   friendStatuses: Record<string, 'none' | 'pending' | 'friends'>;
   sendFriendRequest: (targetUserId: string) => void;
@@ -1232,8 +1452,12 @@ const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
 const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility';
 const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility';
 const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility';
+const LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY = 'deepsesh_can_help_with_visibility'; // NEW
+const LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY = 'deepsesh_need_help_with_visibility'; // NEW
 const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses';
 const LOCAL_STORAGE_ORGANIZATION_KEY = 'deepsesh_organization';
+const LOCAL_STORAGE_CAN_HELP_WITH_KEY = 'deepsesh_can_help_with'; // NEW
+const LOCAL_STORAGE_NEED_HELP_WITH_KEY = 'deepsesh_need_help_with'; // NEW
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user, login } = useAuth();
@@ -1254,6 +1478,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
+  const [canHelpWithVisibility, setCanHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // NEW
+  const [needHelpWithVisibility, setNeedHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // NEW
 
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
   const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -1366,6 +1592,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (storedIntentionVisibility) setIntentionVisibility(JSON.parse(storedIntentionVisibility));
     const storedLinkedinVisibility = localStorage.getItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY);
     if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
+    const storedCanHelpWithVisibility = localStorage.getItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY); // NEW
+    if (storedCanHelpWithVisibility) setCanHelpWithVisibility(JSON.parse(storedCanHelpWithVisibility)); // NEW
+    const storedNeedHelpWithVisibility = localStorage.getItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY); // NEW
+    if (storedNeedHelpWithVisibility) setNeedHelpWithVisibility(JSON.parse(storedNeedHelpWithVisibility)); // NEW
 
     const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
     if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
@@ -1392,12 +1622,18 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         bio_visibility: (storedBioVisibility ? JSON.parse(storedBioVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         intention_visibility: (storedIntentionVisibility ? JSON.parse(storedIntentionVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         linkedin_visibility: (storedLinkedinVisibility ? JSON.parse(storedLinkedinVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        can_help_with: localStorage.getItem(LOCAL_STORAGE_CAN_HELP_WITH_KEY) || null, // NEW
+        can_help_with_visibility: (storedCanHelpWithVisibility ? JSON.parse(storedCanHelpWithVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
+        need_help_with: localStorage.getItem(LOCAL_STORAGE_NEED_HELP_WITH_KEY) || null, // NEW
+        need_help_with_visibility: (storedNeedHelpWithVisibility ? JSON.parse(storedNeedHelpWithVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
       };
       setProfile(currentProfile);
       setHostCode(currentProfile.host_code || generateRandomHostCode());
       setBioVisibility(currentProfile.bio_visibility || ['public']);
       setIntentionVisibility(currentProfile.intention_visibility || ['public']);
       setLinkedinVisibility(currentProfile.linkedin_visibility || ['public']);
+      setCanHelpWithVisibility(currentProfile.can_help_with_visibility || ['public']); // NEW
+      setNeedHelpWithVisibility(currentProfile.need_help_with_visibility || ['public']); // NEW
       console.log("Profile fetched from local storage for logged-in user:", currentProfile.first_name);
     } else {
       setProfile(null);
@@ -1431,6 +1667,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (data.bio_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY, JSON.stringify(data.bio_visibility));
     if (data.intention_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, JSON.stringify(data.intention_visibility));
     if (data.linkedin_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(data.linkedin_visibility));
+    if (data.can_help_with !== undefined) localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_KEY, data.can_help_with || ''); // NEW
+    if (data.can_help_with_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, JSON.stringify(data.can_help_with_visibility)); // NEW
+    if (data.need_help_with !== undefined) localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_KEY, data.need_help_with || ''); // NEW
+    if (data.need_help_with_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, JSON.stringify(data.need_help_with_visibility)); // NEW
 
     // Update the local profile state
     setProfile(prevProfile => {
@@ -1449,6 +1689,8 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (data.bio_visibility) setBioVisibility(data.bio_visibility);
     if (data.intention_visibility) setIntentionVisibility(data.intention_visibility);
     if (data.linkedin_visibility) setLinkedinVisibility(data.linkedin_visibility);
+    if (data.can_help_with_visibility) setCanHelpWithVisibility(data.can_help_with_visibility); // NEW
+    if (data.need_help_with_visibility) setNeedHelpWithVisibility(data.need_help_with_visibility); // NEW
 
     console.log("Profile updated in local storage and context:", data);
     toast.success(successMessage || "Profile updated!", {
@@ -1479,6 +1721,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       bio_visibility: ['public'],
       intention_visibility: ['public'],
       linkedin_visibility: ['public'],
+      can_help_with: null, // NEW
+      can_help_with_visibility: ['public'], // NEW
+      need_help_with: null, // NEW
+      need_help_with_visibility: ['public'], // NEW
     };
   }, []);
 
@@ -1552,6 +1798,14 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(linkedinVisibility));
   }, [linkedinVisibility]);
 
+  useEffect(() => { // NEW
+    localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, JSON.stringify(canHelpWithVisibility));
+  }, [canHelpWithVisibility]);
+
+  useEffect(() => { // NEW
+    localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, JSON.stringify(needHelpWithVisibility));
+  }, [needHelpWithVisibility]);
+
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
   }, [friendStatuses]);
@@ -1577,6 +1831,10 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setIntentionVisibility,
     linkedinVisibility,
     setLinkedinVisibility,
+    canHelpWithVisibility, // NEW
+    setCanHelpWithVisibility, // NEW
+    needHelpWithVisibility, // NEW
+    setNeedHelpWithVisibility, // NEW
     friendStatuses,
     sendFriendRequest,
     acceptFriendRequest,
