@@ -137,25 +137,41 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
   const handleCustomResponseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newCustomResponse = e.target.value;
     setCustomResponse(newCustomResponse);
-    // If custom response is cleared, uncheck it automatically
-    if (!newCustomResponse.trim()) {
-      setIsCustomOptionChecked(false);
-      // Also submit vote to clear it
-      submitVote(selectedOption, selectedOptions, newCustomResponse, false);
-    } else if (isCustomOptionChecked) {
-      // If it's checked and text is being typed, submit vote to update text
-      submitVote(selectedOption, selectedOptions, newCustomResponse, true);
+
+    const hasText = newCustomResponse.trim().length > 0;
+
+    if (poll.type === 'selection') {
+      // For selection polls, if text is present, automatically check the box and submit vote
+      // If text is cleared, uncheck the box and submit vote
+      setIsCustomOptionChecked(hasText);
+      submitVote(selectedOption, selectedOptions, newCustomResponse, hasText);
+    } else if (poll.type === 'choice') {
+      // For choice polls, typing a custom response should implicitly select it
+      // and deselect any other radio option.
+      // If text is cleared, it should deselect itself.
+      if (hasText) {
+        setSelectedOption(null); // Deselect other radio options
+        submitVote(null, selectedOptions, newCustomResponse, true); // Treat as selected
+      } else {
+        submitVote(null, selectedOptions, newCustomResponse, false); // Treat as unselected
+      }
     }
   };
 
   const handleCustomOptionCheckboxChange = (checked: boolean | 'indeterminate') => {
     const isChecked = !!checked;
     setIsCustomOptionChecked(isChecked);
-    // If unchecked, clear custom response text as well
+    // If unchecked, clear custom response text as well and submit vote to remove it
     if (!isChecked) {
       setCustomResponse("");
+      submitVote(selectedOption, selectedOptions, "", false);
+    } else {
+      // If checked, and there's text, submit vote to ensure it's registered
+      // If checked, but no text, don't submit a vote for an empty custom option
+      if (customResponse.trim()) {
+        submitVote(selectedOption, selectedOptions, customResponse, true);
+      }
     }
-    submitVote(selectedOption, selectedOptions, customResponse, isChecked);
   };
 
   const handleCustomResponseBlur = () => {
