@@ -13,7 +13,7 @@ import { useTimer } from '@/contexts/TimerContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const ProfilePopUpCard: React.FC = () => {
-  const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, toggleProfilePopUp, closeProfilePopUp } = useProfilePopUp();
+  const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, toggleProfilePopUp, closeProfilePopUp, setIsBlockingClicks } = useProfilePopUp();
   const { 
     getPublicProfile, 
     profile: currentUserProfile, 
@@ -169,17 +169,13 @@ const ProfilePopUpCard: React.FC = () => {
   }, [isPopUpOpen, popUpPosition, targetProfile, loading, error, isMobile]);
 
   useEffect(() => {
-    const handleTemporaryClick = (event: MouseEvent) => {
-      event.stopPropagation();
-      event.preventDefault(); // Prevent default action for the click event
-      document.removeEventListener('click', handleTemporaryClick, true); // Remove itself after one use
-    };
-
     const handleClickOutside = (event: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
         closeProfilePopUp();
-        // After closing, prevent the subsequent click event from triggering on the underlying element
-        document.addEventListener('click', handleTemporaryClick, true); // Use capture phase to catch it early
+        setIsBlockingClicks(true); // Start blocking clicks
+        setTimeout(() => {
+          setIsBlockingClicks(false); // Stop blocking clicks after a short delay
+        }, 100); 
       }
     };
 
@@ -187,15 +183,12 @@ const ProfilePopUpCard: React.FC = () => {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
-      // Also ensure any lingering temporary click listeners are removed if the pop-up closes by other means
-      document.removeEventListener('click', handleTemporaryClick, true);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('click', handleTemporaryClick, true); // Cleanup on unmount
     };
-  }, [isPopUpOpen, closeProfilePopUp]);
+  }, [isPopUpOpen, closeProfilePopUp, setIsBlockingClicks]);
 
   if (!isPopUpOpen || !popUpPosition) {
     return null;

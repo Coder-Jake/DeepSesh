@@ -3,10 +3,12 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import ProfilePopUpCard from '@/components/ProfilePopUpCard';
 import { useTheme } from '@/contexts/ThemeContext'; // Import useTheme
+import { useProfilePopUp } from '@/contexts/ProfilePopUpContext'; // NEW: Import useProfilePopUp
 
 const AppLayout = () => {
   const navigate = useNavigate();
   const { toggleDarkMode } = useTheme(); // Use the toggleDarkMode function
+  const { isBlockingClicks } = useProfilePopUp(); // NEW: Get isBlockingClicks from context
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -70,6 +72,15 @@ const AppLayout = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [navigate, toggleDarkMode]); // Add toggleDarkMode to dependencies
+
+  // NEW: Effect to apply/remove class to body based on isBlockingClicks
+  useEffect(() => {
+    if (isBlockingClicks) {
+      document.body.classList.add('block-pointer-events');
+    } else {
+      document.body.classList.remove('block-pointer-events');
+    }
+  }, [isBlockingClicks]);
 
   return (
     <div className="min-h-screen flex flex-col">

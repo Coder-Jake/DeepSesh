@@ -9,6 +9,8 @@ interface ProfilePopUpContextType {
   popUpPosition: { x: number; y: number } | null;
   toggleProfilePopUp: (id: string, name: string, x: number, y: number) => void;
   closeProfilePopUp: () => void;
+  isBlockingClicks: boolean; // NEW: State to temporarily block clicks
+  setIsBlockingClicks: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Setter for click blocking state
 }
 
 const ProfilePopUpContext = createContext<ProfilePopUpContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ export const ProfilePopUpProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
   const [targetUserName, setTargetUserName] = useState<string | null>(null);
   const [popUpPosition, setPopUpPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isBlockingClicks, setIsBlockingClicks] = useState(false); // NEW: Initialize click blocking state
 
   const closeProfilePopUp = useCallback(() => {
     setIsPopUpOpen(false);
@@ -58,6 +61,8 @@ export const ProfilePopUpProvider: React.FC<{ children: ReactNode }> = ({ childr
       popUpPosition,
       toggleProfilePopUp,
       closeProfilePopUp,
+      isBlockingClicks, // NEW: Provide state
+      setIsBlockingClicks, // NEW: Provide setter
     }}>
       {children}
     </ProfilePopUpContext.Provider>
