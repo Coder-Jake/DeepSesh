@@ -626,7 +626,7 @@ const Profile = () => {
                   </span>
                 )}
               </CardTitle>
-              <TooltipProvider delayDuration={0}>
+              {/* Removed TooltipProvider here */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Key className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" />
@@ -657,7 +657,6 @@ const Profile = () => {
                     </div>
                   </TooltipContent>
                 </Tooltip>
-              </TooltipProvider>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -809,7 +808,7 @@ const Profile = () => {
 
               <div className="border-t border-border pt-6 mt-6">
                 <h3 className="text-lg font-semibold mb-2">
-                  <TooltipProvider delayDuration={0}>
+                  {/* Removed TooltipProvider here */}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-help">Hosting Code</span>
@@ -818,7 +817,6 @@ const Profile = () => {
                         <p>Others can use this code to join your sessions.</p>
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipTrigger>
                 </h3>
                 <div className="flex items-center gap-2">
                   {isEditingHostCode ? (
