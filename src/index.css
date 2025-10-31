@@ -32,6 +32,8 @@
 
     --ring: 215 20.2% 65.1%;
 
+    --radius: 0.5rem;
+
     --public-bg: 120 90% 85%; /* Light green for public */
     --private-bg: 270 100% 90%; /* Light purple for private */
     --olive: 80 40% 50%; /* Olive green */
@@ -46,18 +48,18 @@
   }
 
   .dark {
-    --background: 222.2 84% 10%; /* Changed from 4.9% to 10% */
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --popover: 222.2 84% 10%; /* Changed from 4.9% to 10% */
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --card: 222.2 84% 10%; /* Changed from 4.9% to 10% */
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
     --primary: 210 40% 98%;
@@ -83,7 +85,7 @@
 
     --focus-background: 210 40% 25%; /* Dark mode pastel blue for focus */
     --break-background: 60 40% 25%; /* Dark mode pastel yellow for break */
-    --neutral-background: 210 20% 15%; /* Changed from 15% to 15% (already >= 10%) */
+    --neutral-background: 210 20% 15%; /* Darker gray for neutral */
 
     --cancel: 0 60% 20%; /* Darker light red for dark mode */
     --cancel-foreground: 0 80% 80%; /* Lighter red for text in dark mode */
