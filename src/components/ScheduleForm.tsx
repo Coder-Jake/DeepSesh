@@ -43,8 +43,8 @@ const ScheduleForm: React.FC = () => {
     timerColors,
     setTimerColors,
     areToastsEnabled,
-    formatTime, // NEW: Import formatTime
-    is24HourFormat, // NEW: Import is24HourFormat
+    formatTime, 
+    is24HourFormat, 
   } = useTimer();
 
   useEffect(() => {
@@ -268,7 +268,6 @@ const ScheduleForm: React.FC = () => {
   const buttonText =
       (scheduleStartOption === 'now' ? "Begin" : "Prepare");
 
-  // NEW: Function to get the base start date for the schedule
   const getScheduleBaseStartTime = useCallback(() => {
     if (scheduleStartOption !== 'custom_time' || !commenceTime) {
       return null;
@@ -281,18 +280,15 @@ const ScheduleForm: React.FC = () => {
     const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, etc.
     const templateDay = commenceDay === null ? currentDay : commenceDay;
     
-    // Calculate days to add to reach the target day of the week
     let daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
 
-    // If the target time is in the past for today, set it for next week
     if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
       targetDate.setDate(targetDate.getDate() + 7);
     }
     return targetDate;
   }, [scheduleStartOption, commenceTime, commenceDay]);
 
-  // NEW: Memoized calculation of start times for each item
   const itemStartTimes = useMemo(() => {
     const startTimes: Record<string, string> = {};
     if (scheduleStartOption !== 'custom_time' || !commenceTime) {
@@ -315,6 +311,41 @@ const ScheduleForm: React.FC = () => {
     return startTimes;
   }, [schedule, scheduleStartOption, commenceTime, commenceDay, getScheduleBaseStartTime, is24HourFormat]);
 
+  // NEW: Calculate total duration of the schedule
+  const totalDurationMinutes = useMemo(() => {
+    return schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
+  }, [schedule]);
+
+  // NEW: Calculate the schedule end time
+  const scheduleEndTime = useMemo(() => {
+    if (totalDurationMinutes === 0) return null;
+
+    let baseDate: Date | null = null;
+
+    if (scheduleStartOption === 'custom_time') {
+      baseDate = getScheduleBaseStartTime();
+    } else if (scheduleStartOption === 'now') {
+      baseDate = new Date();
+    }
+
+    if (!baseDate) return null;
+
+    const endDate = new Date(baseDate.getTime() + totalDurationMinutes * 60 * 1000);
+    return endDate.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: is24HourFormat ? 'h23' : 'h12'
+    });
+  }, [scheduleStartOption, totalDurationMinutes, getScheduleBaseStartTime, is24HourFormat]);
+
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (hours > 0) {
+      return `${hours}h ${remainingMinutes}m`;
+    }
+    return `${remainingMinutes}m`;
+  };
 
   return (
     <Card className="px-0">
@@ -406,7 +437,6 @@ const ScheduleForm: React.FC = () => {
                   data-input-type="timer-duration"
                 />
                 
-                {/* NEW: Display calculated start time */}
                 {scheduleStartOption === 'custom_time' && itemStartTimes[timer.id] && (
                   <span className="text-sm text-muted-foreground flex-shrink-0 text-right">
                     {itemStartTimes[timer.id]}
@@ -436,6 +466,12 @@ const ScheduleForm: React.FC = () => {
               </div>
             ))}
           </div>
+
+          {totalDurationMinutes > 0 && (scheduleStartOption === 'now' || scheduleStartOption === 'custom_time') && (
+            <div className="text-center text-sm text-muted-foreground mt-2">
+              Total: {formatDuration(totalDurationMinutes)} {scheduleEndTime && ` - Ends: ${scheduleEndTime}`}
+            </div>
+          )}
 
           <Button onClick={handleAddTimer} variant="outline" className="w-full mt-0" onKeyDown={handleEnterKeyNavigation} data-input-type="add-timer-button">
             <Plus className="mr-2 h-4 w-4" /> Add Timer
