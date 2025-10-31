@@ -23,10 +23,10 @@ import NotFound from './pages/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProfileProvider } from './contexts/ProfileContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { ProfilePopUpProvider, useProfilePopUp } from './contexts/ProfilePopUpContext'; // Import useProfilePopUp
+import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext'; // Removed useProfilePopUp import
 
 function App() {
-  const { isPopUpOpen, targetUserId } = useProfilePopUp(); // Get state from context
+  // Removed: const { isPopUpOpen, targetUserId } = useProfilePopUp(); // This line caused the error
 
   return (
     <TooltipProvider>
@@ -54,8 +54,7 @@ function App() {
                     <Route path="/verify-email" element={<VerifyEmail />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                  {/* Add a dynamic key to force ProfilePopUpCard to re-mount */}
-                  <ProfilePopUpCard key={isPopUpOpen ? targetUserId : 'closed'} />
+                  {/* Removed: <ProfilePopUpCard key={isPopUpOpen ? targetUserId : 'closed'} /> */}
                 </ProfilePopUpProvider>
               </ProfileProvider>
             </TimerProvider>
