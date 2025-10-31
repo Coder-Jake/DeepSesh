@@ -1467,7 +1467,7 @@ interface ProfileContextType {
   hostCode: string;
   setHostCode: React.Dispatch<React.SetStateAction<string>>;
 
-  getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>;
+  getPublicProfile: (userId: string, userName: string) => Profile | null; // MODIFIED: Removed Promise
 
   bioVisibility: ('public' | 'friends' | 'organisation' | 'private')[]
   setBioVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
@@ -1789,7 +1789,7 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setLoading(false);
   };
 
-  const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
+  const getPublicProfile = useCallback((userId: string, userName: string): Profile | null => { // MODIFIED: Removed async and Promise
     const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
     if (mockProfile) {
       return mockProfile;

@@ -83,7 +83,7 @@ const Settings = () => {
     setStartStopNotifications,
   } = useTimer();
 
-  const { user, logout } = useAuth();
+  const { user } = useAuth(); // MODIFIED: Removed logout
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile(); // NEW: Destructure recentCoworkers
@@ -433,7 +433,7 @@ const Settings = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    // Removed logout functionality as AuthContext no longer provides it
     if (areToastsEnabled) {
       toast.success("Logged Out", {
         description: "You have been successfully logged out.",
@@ -1126,7 +1126,7 @@ const Settings = () => {
       )}>
         <Button 
           onClick={handleSave}
-          disabled={!hasChanges}
+          disabled={loading}
           className="shadow-lg"
         >
           Save Settings

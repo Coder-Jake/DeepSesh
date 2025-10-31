@@ -10,11 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { user, loading, login } = useAuth();
+  const { user, loading } = useAuth(); // MODIFIED: Removed login
   const { areToastsEnabled } = useTimer();
 
-  const [email, setEmail] = useState('');
-  const [firstName, setFirstName] = useState('');
+  // Removed email and firstName states as they are no longer needed for explicit login
+  // Removed handleLogin function as it is no longer needed
 
   useEffect(() => {
     if (!loading && user) {
@@ -26,19 +26,6 @@ const Login = () => {
       navigate('/');
     }
   }, [user, loading, navigate, areToastsEnabled]);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim()) {
-      login(email.trim(), firstName.trim() || undefined);
-    } else {
-      if (areToastsEnabled) {
-        toast.error("Login Failed", {
-          description: "Please enter an email address.",
-        });
-      }
-    }
-  };
 
   if (loading || user) {
     return (
@@ -55,32 +42,13 @@ const Login = () => {
           <CardTitle className="text-2xl font-bold text-foreground">Welcome!</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name (optional)</Label>
-              <Input
-                id="firstName"
-                type="text"
-                placeholder="John"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
-          </form>
+          <p className="text-muted-foreground mb-4">
+            You are automatically logged in with a local user profile.
+            You can customize your profile in the settings.
+          </p>
+          <Button onClick={() => navigate('/')} className="w-full">
+            Go to Home
+          </Button>
         </CardContent>
       </Card>
     </div>
