@@ -1,139 +1,80 @@
-import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus, Handshake, HelpCircle } from 'lucide-react'; // NEW: Import Handshake and HelpCircle
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
-import { Profile } from '@/contexts/ProfileContext';
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils';
-import { toast } from 'sonner'; // Changed to sonner toast
-import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { X, UserPlus, UserMinus, MessageSquare, Linkedin, HelpCircle, Handshake, Globe, Users, Building2, Lock } from 'lucide-react';
+import { cn, getPrivacyColorClassFromIndex, getIndexFromVisibility } from '@/lib/utils';
+import { toast } from 'sonner';
 
-const ProfilePopUpCard: React.FC = () => {
-  const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
+const ProfilePopUpCard = () => {
   const { 
-    getPublicProfile, 
+    isOpen, 
+    closeProfilePopUp, 
+    profileId: targetProfileId, 
+    profileName: targetProfileName, 
+    position 
+  } = useProfilePopUp();
+  const { 
     profile: currentUserProfile, 
-    bioVisibility, setBioVisibility, 
-    intentionVisibility, setIntentionVisibility, 
-    linkedinVisibility, setLinkedinVisibility,
-    canHelpWithVisibility, setCanHelpWithVisibility, // NEW
-    needHelpWithVisibility, setNeedHelpWithVisibility, // NEW
-    friendStatuses, sendFriendRequest, acceptFriendRequest, removeFriend
+    getPublicProfile, 
+    friendStatuses, 
+    blockUser, 
+    unblockUser 
   } = useProfile();
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
-  const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
 
-  const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
+  const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
+  const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
+  const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
+  const [canHelpWithLabelColorIndex, setCanHelpWithLabelColorIndex] = useState(0);
+  const [needHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex] = useState(0);
+  const [pronounsLabelColorIndex, setPronounsLabelColorIndex] = useState(0); // NEW
 
-  const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[]): string => {
-    if (visibility.includes('private')) return 'private';
-    if (visibility.includes('public')) return 'public';
-    if (visibility.includes('friends') && visibility.includes('organisation')) return 'friends & organisation only';
-    if (visibility.includes('friends')) return 'friends only';
-    if (visibility.includes('organisation')) return 'organisation only';
-    return 'public';
-  }, []);
+  const friendStatus = targetProfileId ? friendStatuses[targetProfileId] : 'none';
 
-  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'): string => { // NEW
-    switch (fieldName) {
-      case 'bio_visibility': return 'Bio';
-      case 'intention_visibility': return 'Intention';
-      case 'linkedin_visibility': return 'LinkedIn';
-      case 'can_help_with_visibility': return 'Can Help With'; // NEW
-      case 'need_help_with_visibility': return 'Need Help With'; // NEW
-      default: return '';
+  const fetchTargetProfile = useCallback(async () => {
+    if (!targetProfileId) {
+      setProfileData(null);
+      setLoading(false);
+      return;
     }
-  }, []);
 
-  const handleLabelClick = useCallback(async (
-    currentVisibility: ('public' | 'friends' | 'organisation' | 'private')[], 
-    visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
-    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility' // NEW
-  ) => {
-    const currentIndex = getIndexFromVisibility(currentVisibility);
-    const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
-    const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
-    
-    visibilitySetter(newVisibility);
-    
-    if (areToastsEnabled) { // NEW: Conditional toast
-      const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
-      toast.success("Privacy Setting Changed", {
-        description: successMessage,
-      });
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getPublicProfile(targetProfileId, targetProfileName || 'Unknown User');
+      setProfileData(data);
+      if (data) {
+        setBioLabelColorIndex(getIndexFromVisibility(data.bio_visibility || ['public']));
+        setIntentionLabelColorIndex(getIndexFromVisibility(data.intention_visibility || ['public']));
+        setLinkedinLabelColorIndex(getIndexFromVisibility(data.linkedin_visibility || ['public']));
+        setCanHelpWithLabelColorIndex(getIndexFromVisibility(data.can_help_with_visibility || ['public']));
+        setNeedHelpWithLabelColorIndex(getIndexFromVisibility(data.need_help_with_visibility || ['public']));
+        setPronounsLabelColorIndex(getIndexFromVisibility(data.pronouns_visibility || ['public'])); // NEW
+      }
+    } catch (err) {
+      setError("Failed to load profile data.");
+      console.error("Failed to fetch public profile:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus]);
+  }, [targetProfileId, targetProfileName, getPublicProfile]);
 
   useEffect(() => {
-    const fetchTargetProfile = async () => {
-      if (targetUserId) {
-        setLoading(true);
-        setError(null);
-        
-        if (currentUserProfile && targetUserId === currentUserProfile.id) {
-          setTargetProfile({
-            ...currentUserProfile,
-            bio_visibility: bioVisibility,
-            intention_visibility: intentionVisibility,
-            linkedin_visibility: linkedinVisibility,
-            can_help_with_visibility: canHelpWithVisibility, // NEW
-            need_help_with_visibility: needHelpWithVisibility, // NEW
-          });
-          setLoading(false);
-        } else {
-          try {
-            const fetchedProfile = await getPublicProfile(targetUserId, targetUserName || "Unknown User");
-            setTargetProfile(fetchedProfile);
-          } catch (err: any) {
-            setError(err.message || "Failed to load profile.");
-            setTargetProfile(null);
-          } finally {
-            setLoading(false);
-          }
-        }
-      }
-    };
-
-    if (isPopUpOpen) {
+    if (isOpen) {
       fetchTargetProfile();
     } else {
-      setTargetProfile(null);
+      setProfileData(null);
       setLoading(true);
       setError(null);
     }
-  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility]); // NEW dependencies
+  }, [isOpen, fetchTargetProfile]);
 
-  useLayoutEffect(() => {
-    if (isPopUpOpen && popUpPosition && cardRef.current) {
-      const cardRect = cardRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const margin = 15;
-
-      let newX = popUpPosition.x + 10;
-      let newY = popUpPosition.y + 10;
-
-      if (newX + cardRect.width + margin > viewportWidth) {
-        newX = viewportWidth - cardRect.width - margin;
-      }
-      if (newY + cardRect.height + margin > viewportHeight) {
-        newY = viewportHeight - cardRect.height - margin;
-      }
-      if (newX < margin) {
-        newX = margin;
-      }
-      if (newY < margin) {
-        newY = margin;
-      }
-
-      setAdjustedPosition({ x: newX, y: newY });
-    }
-  }, [isPopUpOpen, popUpPosition, targetProfile, loading, error]);
-
+  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
@@ -141,256 +82,168 @@ const ProfilePopUpCard: React.FC = () => {
       }
     };
 
-    if (isPopUpOpen) {
+    if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-
+    }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isPopUpOpen, closeProfilePopUp]);
+  }, [isOpen, closeProfilePopUp]);
 
-  if (!isPopUpOpen || !popUpPosition) {
-    return null;
-  }
+  if (!isOpen) return null;
 
-  const style: React.CSSProperties = {
+  const cardStyle: React.CSSProperties = {
     position: 'fixed',
-    left: adjustedPosition?.x,
-    top: adjustedPosition?.y,
-    zIndex: 10000,
+    left: position.x,
+    top: position.y,
+    transform: 'translate(-50%, -50%)', // Center the card on the click position
+    zIndex: 1000,
+    maxWidth: '400px',
+    width: '90vw',
   };
 
-  const renderContent = () => {
-    if (loading) {
-      return <p className="text-center text-muted-foreground">Loading profile...</p>;
+  const handleAddFriend = () => {
+    if (targetProfileId) {
+      toast.info("Friend Request Sent (Simulated)", {
+        description: `A friend request has been sent to ${targetProfileName || 'this user'}.`,
+      });
+      // In a real app, you'd call an API to send a friend request
     }
-    if (error) {
-      return <p className="text-center text-destructive">{error}</p>;
+  };
+
+  const handleRemoveFriend = () => {
+    if (targetProfileId) {
+      toast.info("Friend Removed (Simulated)", {
+        description: `${targetProfileName || 'This user'} has been removed from your friends.`,
+      });
+      // In a real app, you'd call an API to remove a friend
     }
-    if (!targetProfile) {
-      return <p className="text-center text-muted-foreground">Profile not found.</p>;
+  };
+
+  const handleBlock = () => {
+    if (targetProfileName) {
+      blockUser(targetProfileName);
+      closeProfilePopUp();
     }
+  };
 
-    const displayName = targetProfile.first_name || targetUserName || "Unknown User";
-    const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
-    const currentFriendStatus = friendStatuses[targetProfile.id] || 'none';
-
-    const isFieldVisible = (fieldVisibility: ('public' | 'friends' | 'organisation' | 'private')[] | null | undefined) => {
-      if (isCurrentUserProfile) return true;
-      if (!fieldVisibility || fieldVisibility.includes('private')) return false;
-      
-      const isFriend = currentFriendStatus === 'friends';
-      const isOrgMember = currentUserProfile?.organization && targetProfile.organization && currentUserProfile.organization === targetProfile.organization;
-
-      return (
-        fieldVisibility.includes('public') ||
-        (fieldVisibility.includes('friends') && isFriend) ||
-        (fieldVisibility.includes('organisation') && isOrgMember)
-      );
-    };
-
-    // Check if all fields are private for non-current user
-    const allFieldsPrivate = 
-      (!targetProfile.bio || !isFieldVisible(targetProfile.bio_visibility)) &&
-      (!targetProfile.intention || !isFieldVisible(targetProfile.intention_visibility)) &&
-      (!targetProfile.can_help_with || !isFieldVisible(targetProfile.can_help_with_visibility)) && // NEW
-      (!targetProfile.need_help_with || !isFieldVisible(targetProfile.need_help_with_visibility)) && // NEW
-      (!targetProfile.linkedin_url || !isFieldVisible(targetProfile.linkedin_visibility));
-
-    if (!isCurrentUserProfile && allFieldsPrivate) {
-      return (
-        <div className="text-center space-y-2">
-          <User className="h-8 w-8 text-muted-foreground mx-auto" />
-          <p className="font-bold text-lg">{displayName}</p>
-          <p className="text-sm text-muted-foreground">This profile is private.</p>
-        </div>
-      );
+  const handleUnblock = () => {
+    if (targetProfileName) {
+      unblockUser(targetProfileName);
+      closeProfilePopUp();
     }
+  };
 
-    const currentBioVisibility = isCurrentUserProfile ? bioVisibility : (targetProfile.bio_visibility || ['public']);
-    const currentIntentionVisibility = isCurrentUserProfile ? intentionVisibility : (targetProfile.intention_visibility || ['public']);
-    const currentCanHelpWithVisibility = isCurrentUserProfile ? canHelpWithVisibility : (targetProfile.can_help_with_visibility || ['public']); // NEW
-    const currentNeedHelpWithVisibility = isCurrentUserProfile ? needHelpWithVisibility : (targetProfile.need_help_with_visibility || ['public']); // NEW
-    const currentLinkedinVisibility = isCurrentUserProfile ? linkedinVisibility : (targetProfile.linkedin_visibility || ['public']);
-
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <User className="h-6 w-6 text-primary" />
-          <h3 className="font-bold text-xl">{displayName}</h3>
-          
-          {!isCurrentUserProfile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "ml-auto h-8 w-8",
-                currentFriendStatus === 'none' && "text-foreground hover:text-primary",
-                currentFriendStatus === 'pending' && "text-gray-500 cursor-default",
-                currentFriendStatus === 'friends' && "text-green-500 hover:text-green-600"
-              )}
-              onClick={() => {
-                if (currentFriendStatus === 'none') {
-                  sendFriendRequest(targetProfile.id);
-                } else if (currentFriendStatus === 'friends') {
-                  removeFriend(targetProfile.id);
-                }
-              }}
-              disabled={currentFriendStatus === 'pending'}
-            >
-              {currentFriendStatus === 'none' && (
-                <UserPlus size={18} />
-              )}
-              {currentFriendStatus === 'pending' && (
-                <UserPlus size={18} className="opacity-50" />
-              )}
-              {currentFriendStatus === 'friends' && (
-                <UserCheck size={18} />
-              )}
-            </Button>
-          )}
-        </div>
-
-        {targetProfile.bio && isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
-          <div>
-            <h4 
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentBioVisibility))
-              )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentBioVisibility, setBioVisibility, 'bio_visibility') : undefined}
-            >
-              <MessageSquare size={16} /> Bio
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.bio}</p>
-          </div>
-        )}
-
-        {targetProfile.intention && isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
-          <div>
-            <h4 
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentIntentionVisibility))
-              )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentIntentionVisibility, setIntentionVisibility, 'intention_visibility') : undefined}
-            >
-              <Lightbulb size={16} /> Intention
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.intention}</p>
-          </div>
-        )}
-
-        {/* NEW: Can Help With */}
-        {targetProfile.can_help_with && isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
-          <div>
-            <h4 
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentCanHelpWithVisibility))
-              )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentCanHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with_visibility') : undefined}
-            >
-              <Handshake size={16} /> Can Help With
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.can_help_with}</p>
-          </div>
-        )}
-
-        {/* NEW: Need Help With */}
-        {targetProfile.need_help_with && isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
-          <div>
-            <h4 
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentNeedHelpWithVisibility))
-              )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentNeedHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with_visibility') : undefined}
-            >
-              <HelpCircle size={16} /> Need Help With
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.need_help_with}</p>
-          </div>
-        )}
-
-        {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && ( // NEW
-          <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
-              <Users size={16} /> Sociability
-            </h4>
-            <div className="w-full bg-secondary rounded-full h-2 mt-1">
-              <div
-                className="bg-primary h-2 rounded-full"
-                style={{ width: `${targetProfile.sociability}%` }}
-              ></div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1 text-right">{targetProfile.sociability}%</p>
-          </div>
-        )}
-
-        {targetProfile.organization && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && ( // NEW
-          <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
-              <Building2 size={16} /> Organization
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.organization}</p>
-          </div>
-        )}
-
-        {targetProfile.linkedin_url && isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
-          <div>
-            <h4 
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentLinkedinVisibility))
-              )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentLinkedinVisibility, setLinkedinVisibility, 'linkedin_visibility') : undefined}
-            >
-              <Linkedin size={16} /> LinkedIn
-            </h4>
-            <a
-              href={targetProfile.linkedin_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:underline text-sm mt-1 block"
-            >
-              {targetProfile.linkedin_url.replace('https://www.linkedin.com/in/', '')}
-            </a>
-          </div>
-        )}
-      </div>
-    );
+  const renderVisibilityIcon = (visibility: ('public' | 'friends' | 'organisation' | 'private')[] | null) => {
+    if (!visibility || visibility.includes('private')) return <Lock size={14} className="text-gray-500 ml-1" />;
+    if (visibility.includes('public')) return <Globe size={14} className="text-green-600 ml-1" />;
+    if (visibility.includes('friends') && visibility.includes('organisation')) return <Users size={14} className="text-purple-500 ml-1" />;
+    if (visibility.includes('friends')) return <Users size={14} className="text-blue-500 ml-1" />;
+    if (visibility.includes('organisation')) return <Building2 size={14} className="text-red-500 ml-1" />;
+    return null;
   };
 
   return (
-    <Card
-      ref={cardRef}
-      className={cn(
-        "absolute w-80 max-w-xs bg-popover border border-border shadow-lg rounded-lg p-4",
-        "transition-all duration-200 ease-out",
-        isPopUpOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
-      )}
-      style={style}
-    >
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={closeProfilePopUp}
-        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-foreground"
-        aria-label="Close profile pop-up"
-      >
-        <X className="h-4 w-4" />
-      </Button>
-      <CardContent className="p-0 pt-6">
-        {renderContent()}
+    <Card ref={cardRef} style={cardStyle} className="p-4 shadow-2xl border-primary/20">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-xl font-bold flex items-center gap-2">
+          {targetProfileName || "Loading..."}
+          {profileData?.pronouns && ( // NEW: Display pronouns if available
+            <span className="text-sm text-muted-foreground font-normal">({profileData.pronouns})</span>
+          )}
+        </CardTitle>
+        <Button variant="ghost" size="icon" onClick={closeProfilePopUp} className="text-muted-foreground">
+          <X className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm">
+        {loading ? (
+          <p className="text-muted-foreground">Loading profile details...</p>
+        ) : error ? (
+          <p className="text-destructive">{error}</p>
+        ) : profileData ? (
+          <>
+            {profileData.bio && (
+              <div>
+                <p className={cn("font-semibold flex items-center", getPrivacyColorClassFromIndex(bioLabelColorIndex))}>
+                  Bio {renderVisibilityIcon(profileData.bio_visibility)}
+                </p>
+                <p className="text-muted-foreground">{profileData.bio}</p>
+              </div>
+            )}
+
+            {profileData.intention && (
+              <div>
+                <p className={cn("font-semibold flex items-center", getPrivacyColorClassFromIndex(intentionLabelColorIndex))}>
+                  Intention {renderVisibilityIcon(profileData.intention_visibility)}
+                </p>
+                <p className="text-muted-foreground">{profileData.intention}</p>
+              </div>
+            )}
+
+            {profileData.can_help_with && (
+              <div>
+                <p className={cn("font-semibold flex items-center", getPrivacyColorClassFromIndex(canHelpWithLabelColorIndex))}>
+                  <Handshake size={14} className="inline-block mr-1" /> Can Help With {renderVisibilityIcon(profileData.can_help_with_visibility)}
+                </p>
+                <p className="text-muted-foreground">{profileData.can_help_with}</p>
+              </div>
+            )}
+
+            {profileData.need_help_with && (
+              <div>
+                <p className={cn("font-semibold flex items-center", getPrivacyColorClassFromIndex(needHelpWithLabelColorIndex))}>
+                  <HelpCircle size={14} className="inline-block mr-1" /> Need Help With {renderVisibilityIcon(profileData.need_help_with_visibility)}
+                </p>
+                <p className="text-muted-foreground">{profileData.need_help_with}</p>
+              </div>
+            )}
+
+            {profileData.linkedin_url && (
+              <div>
+                <p className={cn("font-semibold flex items-center", getPrivacyColorClassFromIndex(linkedinLabelColorIndex))}>
+                  LinkedIn {renderVisibilityIcon(profileData.linkedin_visibility)}
+                </p>
+                <a 
+                  href={profileData.linkedin_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <Linkedin size={16} /> {profileData.linkedin_url.replace('https://www.linkedin.com/in/', '')}
+                </a>
+              </div>
+            )}
+
+            {profileData.organization && (
+              <div>
+                <p className="font-semibold">Organization</p>
+                <p className="text-muted-foreground">{profileData.organization}</p>
+              </div>
+            )}
+
+            <div className="flex justify-around pt-4 border-t border-border mt-4">
+              {targetProfileId !== currentUserProfile?.id && ( // Don't show friend/block options for self
+                <>
+                  {friendStatus === 'friends' ? (
+                    <Button variant="outline" onClick={handleRemoveFriend} className="flex items-center gap-2">
+                      <UserMinus size={16} /> Unfriend
+                    </Button>
+                  ) : (
+                    <Button onClick={handleAddFriend} className="flex items-center gap-2">
+                      <UserPlus size={16} /> Add Friend
+                    </Button>
+                  )}
+                  <Button variant="outline" onClick={() => toast.info("Message (Simulated)", { description: `Opening chat with ${targetProfileName}.` })} className="flex items-center gap-2">
+                    <MessageSquare size={16} /> Message
+                  </Button>
+                </>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className="text-muted-foreground">No profile data available.</p>
+        )}
       </CardContent>
     </Card>
   );
