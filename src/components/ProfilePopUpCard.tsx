@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -170,6 +172,7 @@ const ProfilePopUpCard: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
         closeProfilePopUp();
+        event.stopPropagation(); // Stop propagation to prevent underlying elements from reacting
       }
     };
 
