@@ -408,7 +408,7 @@ const ScheduleForm: React.FC = () => {
                 
                 {/* NEW: Display calculated start time */}
                 {scheduleStartOption === 'custom_time' && itemStartTimes[timer.id] && (
-                  <span className="text-sm text-muted-foreground flex-shrink-0 min-w-[60px] text-right">
+                  <span className="text-sm text-muted-foreground flex-shrink-0 text-right">
                     {itemStartTimes[timer.id]}
                   </span>
                 )}
