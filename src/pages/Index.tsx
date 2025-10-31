@@ -913,37 +913,53 @@ const Index = () => {
     });
   };
 
-  const handleVotePoll = (pollId: string, optionIds: string[], customOptionText?: string) => {
+  const handleVotePoll = (pollId: string, selectedOptionIdsFromCard: string[], customOptionText?: string) => {
     const currentAsk = activeAsks.find(ask => ask.id === pollId);
     if (!currentAsk || !('options' in currentAsk)) return;
 
     let currentPoll = currentAsk as Poll;
+    let finalOptionIdsToVote: string[] = [...selectedOptionIdsFromCard]; // Start with options from checkboxes/radios
 
+    // Handle custom response logic
     if (customOptionText && customOptionText.trim()) {
+      const trimmedCustomText = customOptionText.trim();
+      let customOptionId: string;
+
       const existingCustomOption = currentPoll.options.find(
-        opt => opt.text.toLowerCase() === customOptionText.toLowerCase() && opt.id.startsWith('custom-')
+        opt => opt.text.toLowerCase() === trimmedCustomText.toLowerCase() && opt.id.startsWith('custom-')
       );
 
       if (!existingCustomOption) {
+        // Create new custom option
         const newCustomOption: PollOption = {
           id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-          text: customOptionText.trim(),
+          text: trimmedCustomText,
           votes: [],
         };
         currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
-        optionIds = [...optionIds, newCustomOption.id];
+        customOptionId = newCustomOption.id;
       } else {
-        if (!optionIds.includes(existingCustomOption.id)) {
-          optionIds = [...optionIds, existingCustomOption.id];
-        }
+        customOptionId = existingCustomOption.id;
       }
+      // Add the custom option's ID to the list of options to be voted for
+      if (!finalOptionIdsToVote.includes(customOptionId)) {
+        finalOptionIdsToVote.push(customOptionId);
+      }
+    } else {
+      // If custom response text is cleared, ensure any existing custom vote is removed from finalOptionIdsToVote
+      currentPoll.options.forEach(option => {
+        if (option.id.startsWith('custom-') && option.votes.some(v => v.userId === currentUserId)) {
+          finalOptionIdsToVote = finalOptionIdsToVote.filter(id => id !== option.id);
+        }
+      });
     }
 
+    // Now, update votes for all options based on finalOptionIdsToVote
     const updatedOptions = currentPoll.options.map(option => {
-      let newVotes = option.votes.filter(v => v.userId !== currentUserId);
+      let newVotes = option.votes.filter(v => v.userId !== currentUserId); // Remove current user's vote
 
-      if (optionIds.includes(option.id)) {
-        newVotes.push({ userId: currentUserId });
+      if (finalOptionIdsToVote.includes(option.id)) {
+        newVotes.push({ userId: currentUserId }); // Add vote if it's in the final list
       }
 
       return { ...option, votes: newVotes };
@@ -1165,7 +1181,7 @@ const Index = () => {
                           </> : <>
                             <Lock size={16} />
                             <span className="text-sm font-medium">Private</span>
-                          </>}
+                          >}
                       </button>
                       
                       {isActiveTimer ? (
