@@ -1232,7 +1232,7 @@ const Index = () => {
                     <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
-                        isRunning && "opacity-75", // Only apply opacity when running
+                        isRunning && "opacity-50", // Changed to opacity-50
                         "hover:opacity-100", 
                         isPaused && "text-red-500" 
                       )}>
