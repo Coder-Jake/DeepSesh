@@ -20,7 +20,7 @@ const ProfilePopUpCard: React.FC = () => {
     canHelpWithVisibility, setCanHelpWithVisibility,
     needHelpWithVisibility, setNeedHelpWithVisibility,
     friendStatuses, sendFriendRequest, acceptFriendRequest, removeFriend,
-    pronouns: currentUserPronouns, // NEW: Get current user's pronouns
+    pronouns: currentUserPronouns,
   } = useProfile();
   const { areToastsEnabled } = useTimer();
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
@@ -83,7 +83,7 @@ const ProfilePopUpCard: React.FC = () => {
             linkedin_visibility: linkedinVisibility,
             can_help_with_visibility: canHelpWithVisibility,
             need_help_with_visibility: needHelpWithVisibility,
-            pronouns: currentUserPronouns, // NEW: Pass current user's pronouns
+            pronouns: currentUserPronouns,
           });
           setLoading(false);
         } else {
@@ -223,7 +223,7 @@ const ProfilePopUpCard: React.FC = () => {
         <div className="flex items-center gap-3">
           <User className="h-6 w-6 text-primary" />
           <h3 className="font-bold text-xl">{displayName}</h3>
-          {targetProfile.pronouns && ( // NEW: Display pronouns if available
+          {targetProfile.pronouns && ( // Display pronouns if available
             <span className="text-sm text-muted-foreground ml-1">({targetProfile.pronouns})</span>
           )}
           

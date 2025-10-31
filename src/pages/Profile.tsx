@@ -30,7 +30,7 @@ const Profile = () => {
     profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
     canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility,
-    pronouns, setPronouns, // NEW: Get pronouns and setPronouns from context
+    pronouns, setPronouns,
     friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser
   } = useProfile();
   const { user, logout } = useAuth();
@@ -51,7 +51,7 @@ const Profile = () => {
            ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
            : "";
   });
-  const [currentPronounIndex, setCurrentPronounIndex] = useState(0); // NEW: State for pronoun index
+  const [currentPronounIndex, setCurrentPronounIndex] = useState(0);
 
   const [isEditingHostCode, setIsEditingHostCode] = useState(false);
   const hostCodeInputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +74,7 @@ const Profile = () => {
     linkedinVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
     canHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
     needHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
-    pronouns: null as string | null, // NEW
+    pronouns: null as string | null,
   });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
@@ -231,8 +231,8 @@ const Profile = () => {
                                : "");
       setHostCode(profile.host_code || ""); // Ensure hostCode is updated from profile
       setLocalFirstName(profile.first_name || "You"); // Ensure localFirstName is updated from profile
-      setPronouns(profile.pronouns || null); // NEW: Initialize pronouns from profile
-      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.pronouns || "")); // NEW: Initialize index
+      setPronouns(profile.pronouns || null);
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.pronouns || ""));
 
       setBioVisibility(profile.bio_visibility || ['public']);
       setIntentionVisibility(profile.intention_visibility || ['public']);
@@ -263,7 +263,7 @@ const Profile = () => {
         linkedinVisibility: (profile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         canHelpWithVisibility: (profile.can_help_with_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         needHelpWithVisibility: (profile.need_help_with_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        pronouns: profile.pronouns || null, // NEW
+        pronouns: profile.pronouns || null,
       });
       setHasChanges(false);
     } else {
@@ -277,8 +277,8 @@ const Profile = () => {
       setLinkedinUrl("");
       setHostCode(localStorage.getItem('deepsesh_host_code') || "");
       setLocalFirstName(localStorage.getItem('deepsesh_local_first_name') || "You");
-      setPronouns(localStorage.getItem('deepsesh_pronouns') || null); // NEW
-      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(localStorage.getItem('deepsesh_pronouns') || "")); // NEW
+      setPronouns(localStorage.getItem('deepsesh_pronouns') || null);
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(localStorage.getItem('deepsesh_pronouns') || ""));
 
       const defaultBioVis = (JSON.parse(localStorage.getItem('deepsesh_bio_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultIntentionVis = (JSON.parse(localStorage.getItem('deepsesh_intention_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
@@ -307,7 +307,7 @@ const Profile = () => {
         linkedinVisibility: defaultLinkedinVis,
         canHelpWithVisibility: defaultCanHelpVis,
         needHelpWithVisibility: defaultNeedHelpVis,
-        pronouns: localStorage.getItem('deepsesh_pronouns') || null, // NEW
+        pronouns: localStorage.getItem('deepsesh_pronouns') || null,
       });
       setHasChanges(false);
     }
@@ -347,12 +347,12 @@ const Profile = () => {
                    JSON.stringify(linkedinVisibility) !== JSON.stringify(originalValues.linkedinVisibility) ||
                    JSON.stringify(canHelpWithVisibility) !== JSON.stringify(originalValues.canHelpWithVisibility) ||
                    JSON.stringify(needHelpWithVisibility) !== JSON.stringify(originalValues.needHelpWithVisibility) ||
-                   pronouns !== originalValues.pronouns; // NEW
+                   pronouns !== originalValues.pronouns;
     setHasChanges(changed);
   }, [
     localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    pronouns, // NEW
+    pronouns,
     originalValues
   ]);
 
@@ -361,7 +361,7 @@ const Profile = () => {
   }, [
     localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    pronouns, // NEW
+    pronouns,
     checkForChanges
   ]);
 
@@ -485,7 +485,7 @@ const Profile = () => {
       linkedin_visibility: linkedinVisibility,
       can_help_with_visibility: canHelpWithVisibility,
       need_help_with_visibility: needHelpWithVisibility,
-      pronouns: pronouns, // NEW
+      pronouns: pronouns,
       updated_at: new Date().toISOString(),
     };
 
@@ -537,8 +537,8 @@ const Profile = () => {
                                ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
                                : "");
       setHostCode(profile.host_code || "");
-      setPronouns(profile.pronouns || null); // NEW
-      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.pronouns || "")); // NEW
+      setPronouns(profile.pronouns || null);
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.pronouns || ""));
 
       setBioVisibility(profile.bio_visibility || ['public']);
       setIntentionVisibility(profile.intention_visibility || ['public']);
@@ -565,8 +565,8 @@ const Profile = () => {
                                ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
                                : "");
       setHostCode(localStorage.getItem('deepsesh_host_code') || "");
-      setPronouns(localStorage.getItem('deepsesh_pronouns') || null); // NEW
-      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(localStorage.getItem('deepsesh_pronouns') || "")); // NEW
+      setPronouns(localStorage.getItem('deepsesh_pronouns') || null);
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(localStorage.getItem('deepsesh_pronouns') || ""));
 
       const defaultBioVis = (JSON.parse(localStorage.getItem('deepsesh_bio_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultIntentionVis = (JSON.parse(localStorage.getItem('deepsesh_intention_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
@@ -639,7 +639,10 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
             <CardHeader className="relative">
-              <CardTitle className="flex items-center gap-1">
+              <CardTitle 
+                className="flex items-center gap-1 cursor-pointer select-none"
+                onClick={handlePronounCycle} // Trigger pronoun cycle on About click
+              >
                 <span>About</span>
                 {isEditingFirstName ? (
                   <Input
@@ -654,30 +657,16 @@ const Profile = () => {
                 ) : (
                   <span
                     className="cursor-pointer select-none"
-                    onClick={handleFirstNameClick}
+                    onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }} // Prevent pronoun cycle when editing name
                   >
                     {localFirstName || "You"}
                   </span>
                 )}
+                {pronouns && ( // Display pronouns if not blank
+                  <span className="text-sm text-muted-foreground ml-1">({pronouns})</span>
+                )}
               </CardTitle>
-              {/* NEW: Pronoun Selector */}
-              <div className="flex items-center gap-2 mt-2">
-                <Label htmlFor="pronoun-selector" className="text-muted-foreground text-sm">Pronouns:</Label>
-                <Button
-                  id="pronoun-selector"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handlePronounCycle}
-                  className={cn(
-                    "px-3 py-1 h-auto rounded-full text-sm transition-colors",
-                    pronouns ? "bg-muted text-foreground hover:bg-muted/80" : "text-muted-foreground hover:bg-muted/50"
-                  )}
-                >
-                  {pronouns || "Blank"}
-                  {pronouns ? <ChevronUp className="ml-1 h-3 w-3 text-muted-foreground" /> : <ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />}
-                </Button>
-              </div>
-              {/* Removed TooltipProvider here */}
+              {/* Removed the dedicated pronoun selector div */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Key className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" />
