@@ -80,6 +80,14 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
     onClose();
   };
 
+  const handleCustomResponsesClick = () => {
+    if (areToastsEnabled) {
+      toast.info("Under Construction", {
+        description: "This feature is currently being developed.",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4 flex flex-col flex-grow">
       <div className="space-y-2">
@@ -151,7 +159,8 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
       {(pollType === 'choice' || pollType === 'selection') && (
         <Button
           variant="outline"
-          onClick={() => setAllowCustomResponses(prev => !prev)}
+          onClick={handleCustomResponsesClick} // Changed onClick handler
+          disabled={true} // Disabled the button
           className={cn(
             "ml-auto h-auto px-3 py-1 rounded-full text-sm",
             allowCustomResponses && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))] text-foreground border-public-bg",
