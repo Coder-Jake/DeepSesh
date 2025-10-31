@@ -76,8 +76,8 @@
 
     --ring: 217.2 32.6% 17.5%;
 
-    --public-bg: 120 60% 20%; /* Darker green for public */
-    --private-bg: 200 60% 20%; /* Darker blue for private */
+    --public-bg: 120 30% 45%; /* Darker green for public (updated) */
+    --private-bg: 270 30% 45%; /* Darker purple for private (updated) */
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */
 
