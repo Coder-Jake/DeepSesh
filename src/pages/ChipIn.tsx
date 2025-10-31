@@ -208,10 +208,7 @@ const ChipIn = () => {
         </div>
       </div>
 
-      <div className="mt-8 flex justify-start items-center gap-4"> {/* Modified div for alignment */}
-        <Link to="/credits" className="text-sm text-muted-foreground hover:underline">
-          Credits
-        </Link>
+      <div className="mt-8 flex justify-between items-center">
         <a 
           href="https://www.linkedin.com/company/deepsesh/" 
           target="_blank" 
@@ -221,6 +218,11 @@ const ChipIn = () => {
         >
           <Linkedin className="h-5 w-5" />
         </a>
+        <Link to="/credits" className="text-sm text-muted-foreground hover:underline">
+          Credits
+        </Link>
+        {/* Empty div for balance */}
+        <div className="w-5 h-5" /> 
       </div>
     </main>
   );
