@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock } from 'lucide-react';
+import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2 } from 'lucide-react';
 
 const Vibes = () => {
   return (
