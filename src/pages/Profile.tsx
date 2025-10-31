@@ -380,7 +380,7 @@ const Profile = () => {
       need_help_with: needHelpWith,
       sociability,
       organization: organization?.trim() === "" ? null : organization?.trim(),
-      linkedin_url: linkedinUrl?.trim() === "" ? null : `https://www.linkedin.com/in/${linkedinUrl?.trim()}`,
+      linkedin_url: (linkedinUrl === null || linkedinUrl.trim() === "") ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`,
       host_code: trimmedHostCode,
       bio_visibility: bioVisibility,
       intention_visibility: intentionVisibility,
