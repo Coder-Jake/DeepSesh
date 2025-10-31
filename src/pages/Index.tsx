@@ -37,7 +37,8 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
+import { useTheme } from '@/contexts/ThemeContext';
+import { useIsMobile } from "@/hooks/use-mobile"; // NEW: Import useIsMobile
 
 interface ExtendSuggestion {
   id: string;
@@ -215,7 +216,7 @@ const Index = () => {
     startStopNotifications,
     playSound,
     triggerVibration,
-    areToastsEnabled, // NEW: Get areToastsEnabled
+    areToastsEnabled,
   } = useTimer();
   
   console.log("Index.tsx: Value from useTimer hook:", {
@@ -235,10 +236,10 @@ const Index = () => {
     startStopNotifications, playSound, triggerVibration, areToastsEnabled
   });
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile } = useProfile(); // Removed saveSession from here
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile } = useProfile();
   const navigate = useNavigate();
   const { openProfilePopUp } = useProfilePopUp();
-  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode from ThemeContext
+  const { isDarkMode } = useTheme();
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
@@ -266,6 +267,20 @@ const Index = () => {
   const [sectionOrder, setSectionOrder] = useState<('nearby' | 'friends' | 'organization')[]>(
     ['nearby', 'friends', 'organization']
   );
+
+  // NEW: Mobile tooltip state and refs
+  const isMobile = useIsMobile();
+  const [mobileTooltipStates, setMobileTooltipStates] = useState<Record<string, boolean>>({});
+  const mobileTooltipTimeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
+
+  // NEW: Cleanup for mobile tooltip timeouts
+  useEffect(() => {
+    return () => {
+      for (const key in mobileTooltipTimeoutRefs.current) {
+        clearTimeout(mobileTooltipTimeoutRefs.current[key]);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
@@ -384,7 +399,7 @@ const Index = () => {
     if (isScheduleActive && isSchedulePending) {
       setIsSchedulePending(false);
       setCurrentPhaseStartTime(Date.now());
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.success("Schedule Resumed!", {
           description: `"${activeScheduleDisplayTitle}" has resumed.`,
         });
@@ -633,7 +648,7 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now());
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    if (areToastsEnabled) { // NEW: Conditional toast
+    if (areToastsEnabled) {
       toast.success("Sesh Joined!", {
         description: `You've joined "${session.title}".`,
       });
@@ -648,7 +663,7 @@ const Index = () => {
 
   const handleJoinCodeSubmit = () => {
     if (joinSessionCode.trim()) {
-      if (areToastsEnabled) { // NEW: Conditional toast
+      if (areToastsEnabled) {
         toast.info("Joining Sesh", {
           description: `Attempting to join sesh with code: ${joinSessionCode.trim()}`,
         });
@@ -989,7 +1004,7 @@ const Index = () => {
     setIsRunning(true);
     setIsPaused(false);
     setCurrentPhaseStartTime(Date.now());
-    if (areToastsEnabled) { // NEW: Conditional toast
+    if (areToastsEnabled) {
       toast.success("Schedule Commenced!", {
         description: `Your scheduled sesh has now begun.`,
       });
@@ -1060,13 +1075,42 @@ const Index = () => {
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    const targetProfileData = getPublicProfile(userId, userName); // MODIFIED: Removed await
+    const targetProfileData = getPublicProfile(userId, userName);
     if (targetProfileData) {
       openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
     } else {
       openProfilePopUp(userId, userName, event.clientX, event.clientY);
     }
   }, [openProfilePopUp, getPublicProfile]);
+
+  // NEW: Mobile tap handler for tooltips
+  const handleMobileTap = useCallback((personId: string, personName: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling up and closing other popups/tooltips
+
+    if (mobileTooltipStates[personId]) {
+      // Second tap: open ProfilePopUpCard
+      handleNameClick(personId, personName, e);
+      setMobileTooltipStates(prev => ({ ...prev, [personId]: false })); // Close tooltip
+      if (mobileTooltipTimeoutRefs.current[personId]) {
+        clearTimeout(mobileTooltipTimeoutRefs.current[personId]);
+        delete mobileTooltipTimeoutRefs.current[personId];
+      }
+    } else {
+      // First tap: open tooltip
+      // Close any other open tooltips first
+      setMobileTooltipStates({});
+      for (const key in mobileTooltipTimeoutRefs.current) {
+        clearTimeout(mobileTooltipTimeoutRefs.current[key]);
+        delete mobileTooltipTimeoutRefs.current[key];
+      }
+
+      setMobileTooltipStates(prev => ({ ...prev, [personId]: true }));
+      mobileTooltipTimeoutRefs.current[personId] = setTimeout(() => {
+        setMobileTooltipStates(prev => ({ ...prev, [personId]: false }));
+        delete mobileTooltipTimeoutRefs.current[personId];
+      }, 3000); // Close after 3 seconds if no second tap
+    }
+  }, [mobileTooltipStates, handleNameClick]);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) {
@@ -1346,7 +1390,7 @@ const Index = () => {
                     <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
-                        isRunning && "opacity-50", // Changed to opacity-50
+                        isRunning && "opacity-50",
                         "hover:opacity-100", 
                         isPaused && "text-red-500" 
                       )}>
@@ -1534,7 +1578,12 @@ const Index = () => {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {allParticipantsToDisplayInCard.map(person => (
-                    <Tooltip key={person.id}>
+                    <Tooltip 
+                      key={person.id}
+                      open={isMobile ? mobileTooltipStates[person.id] : undefined}
+                      onOpenChange={isMobile ? (open) => setMobileTooltipStates(prev => ({ ...prev, [person.id]: open })) : undefined}
+                      delayDuration={isMobile ? 0 : 700} // No delay on mobile tap, default for desktop hover
+                    >
                       <TooltipTrigger asChild>
                         <div 
                           className={cn(
@@ -1544,7 +1593,7 @@ const Index = () => {
                             "hover:bg-muted cursor-pointer"
                           )} 
                           data-name={`Coworker: ${person.name}`}
-                          onClick={(e) => handleNameClick(person.id, person.name, e)}
+                          onClick={isMobile ? (e) => handleMobileTap(person.id, person.name, e) : (e) => handleNameClick(person.id, person.name, e)}
                         >
                           <span className="font-medium text-foreground">
                             {person.id === currentUserId ? "You" : person.name}
@@ -1568,6 +1617,19 @@ const Index = () => {
                             </>
                           )}
                         </div>
+                        {isMobile && (
+                          <Button size="sm" className="mt-2 w-full" onClick={(e) => {
+                            e.stopPropagation(); // Prevent tooltip from closing immediately
+                            handleNameClick(person.id, person.name, e);
+                            setMobileTooltipStates(prev => ({ ...prev, [person.id]: false })); // Close tooltip
+                            if (mobileTooltipTimeoutRefs.current[person.id]) {
+                              clearTimeout(mobileTooltipTimeoutRefs.current[person.id]);
+                              delete mobileTooltipTimeoutRefs.current[person.id];
+                            }
+                          }}>
+                            View Profile
+                          </Button>
+                        )}
                       </TooltipContent>
                     </Tooltip>
                   ))}
