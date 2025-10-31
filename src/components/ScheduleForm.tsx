@@ -499,7 +499,7 @@ const ScheduleForm: React.FC = () => {
                     className="cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => setShowTotalDuration(prev => !prev)}
                   >
-                    Ends: {scheduleEndTime}
+                    {isRecurring ? "Loops: " : "End: "} {scheduleEndTime}
                   </span>
                 )}
               </span>
