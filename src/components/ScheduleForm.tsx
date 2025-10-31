@@ -483,12 +483,12 @@ const ScheduleForm: React.FC = () => {
                 size="icon"
                 onClick={() => setIsRecurring(prev => !prev)}
                 className={cn(
-                  "h-8 w-8 rounded-full",
-                  isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground hover:bg-muted"
+                  "h-8 w-8 rounded-full hover:bg-transparent focus:bg-transparent active:bg-transparent", // Removed hover:bg-muted and added transparent backgrounds
+                  isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground" // Removed hover:bg-muted
                 )}
                 aria-label="Toggle schedule loop"
               >
-                <Repeat className="h-4 w-4" />
+                <Repeat className="h-4 w-4" strokeWidth={isRecurring ? 3 : 2} /> {/* Added conditional strokeWidth */}
               </Button>
               <span className="flex-grow text-center">
                 {showTotalDuration && totalDurationMinutes > 0 && (
