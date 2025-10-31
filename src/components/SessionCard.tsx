@@ -190,7 +190,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
             </Tooltip>
             <Tooltip>
               <TooltipTrigger className="text-sm text-muted-foreground cursor-pointer select-none">
-                {session.participants.length} participants
+                {session.participants.length} {session.participants.length === 1 ? 'coworker' : 'coworkers'}
               </TooltipTrigger>
               <TooltipContent className="select-none">
                 <div className="space-y-3">
