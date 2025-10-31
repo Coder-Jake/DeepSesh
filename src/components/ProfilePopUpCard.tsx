@@ -8,6 +8,7 @@ import { Profile } from '@/contexts/ProfileContext';
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
+import { useIsMobile } from '@/hooks/use-mobile'; // NEW: Import useIsMobile
 
 const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
@@ -35,6 +36,7 @@ const ProfilePopUpCard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile(); // NEW: Use the hook
 
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
 
@@ -137,9 +139,16 @@ const ProfilePopUpCard: React.FC = () => {
       const viewportHeight = window.innerHeight;
       const margin = 15;
 
-      let newX = popUpPosition.x + 30; // Increased offset to move it further right
+      let newX;
+      if (isMobile) {
+        newX = viewportWidth - cardRect.width - margin; // Flush right on mobile
+      } else {
+        newX = popUpPosition.x + 30; // Increased offset to move it further right on desktop
+      }
+      
       let newY = popUpPosition.y + 10;
 
+      // Ensure it doesn't go off-screen
       if (newX + cardRect.width + margin > viewportWidth) {
         newX = viewportWidth - cardRect.width - margin;
       }
@@ -155,7 +164,7 @@ const ProfilePopUpCard: React.FC = () => {
 
       setAdjustedPosition({ x: newX, y: newY });
     }
-  }, [isPopUpOpen, popUpPosition, targetProfile, loading, error]);
+  }, [isPopUpOpen, popUpPosition, targetProfile, loading, error, isMobile]); // NEW: Add isMobile to dependencies
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
