@@ -480,7 +480,11 @@ const ScheduleForm: React.FC = () => {
                 <Repeat 
                   className={cn(
                     "h-4 w-4",
-                    isRecurring ? "text-foreground" : "" // Change icon color to foreground when active
+                    isRecurring 
+                      ? (isDarkMode 
+                          ? "text-[hsl(var(--public-gradient-start-dark))]" 
+                          : "text-[hsl(var(--public-bg))]") 
+                      : ""
                   )} 
                 />
               </Button>
