@@ -37,7 +37,7 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } '@/contexts/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 // Removed useIsMobile import as it's no longer needed for this interaction
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 
@@ -1551,15 +1551,7 @@ const Index = () => {
                         "hover:bg-muted cursor-pointer"
                       )} 
                       data-name={`Coworker: ${person.name}`}
-                      onClick={(e) => { // Direct handling of profile pop-up
-                        e.stopPropagation();
-                        const targetProfileData = getPublicProfile(person.id, person.name);
-                        if (targetProfileData) {
-                          toggleProfilePopUp(targetProfileData.id, targetProfileData.first_name || person.name, e.clientX, e.clientY);
-                        } else {
-                          toggleProfilePopUp(person.id, person.name, e.clientX, e.clientY);
-                        }
-                      }}
+                      onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
                       <span className="font-medium text-foreground">
                         {person.id === currentUserId ? "You" : person.name}
