@@ -95,7 +95,7 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
+  timeoutRefs.current = useRef<Record<string, NodeJS.Timeout>>({});
 
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
@@ -443,7 +443,7 @@ const Settings = () => {
   };
 
   const cycleSessionVisibility = () => {
-    const modes: ('hidden' | 'nearby' | 'friends' | 'yes')[] = ['hidden', 'nearby', 'friends', 'yes'];
+    const modes: ('hidden' | 'nearby' | 'friends' | 'all')[] = ['hidden', 'nearby', 'friends', 'all'];
     const currentIndex = modes.indexOf(showSessionsWhileActive);
     const nextIndex = (currentIndex + 1) % modes.length;
     setShowSessionsWhileActive(modes[nextIndex]);
@@ -491,7 +491,7 @@ const Settings = () => {
                   {showSessionsWhileActive === 'hidden' && "Hidden"}
                   {showSessionsWhileActive === 'nearby' && "Nearby"}
                   {showSessionsWhileActive === 'friends' && "Friends"}
-                  {showSessionsWhileActive === 'yes' && "Yes"}
+                  {showSessionsWhileActive === 'all' && "All"}
                 </Button>
               </div>
               <div className="flex items-center justify-between">
