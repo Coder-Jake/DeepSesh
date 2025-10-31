@@ -239,7 +239,7 @@ const Index = () => {
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile } = useProfile();
   const navigate = useNavigate();
-  const { openProfilePopUp } = useProfilePopUp();
+  const { isPopUpOpen, targetUserId, openProfilePopUp, closeProfilePopUp } = useProfilePopUp(); // NEW: Get isPopUpOpen and targetUserId
   const { isDarkMode } = useTheme();
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
@@ -1069,13 +1069,17 @@ const Index = () => {
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    const targetProfileData = getPublicProfile(userId, userName);
-    if (targetProfileData) {
-      openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
+    if (isPopUpOpen && targetUserId === userId) {
+      closeProfilePopUp();
     } else {
-      openProfilePopUp(userId, userName, event.clientX, event.clientY);
+      const targetProfileData = getPublicProfile(userId, userName);
+      if (targetProfileData) {
+        openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
+      } else {
+        openProfilePopUp(userId, userName, event.clientX, event.clientY);
+      }
     }
-  }, [openProfilePopUp, getPublicProfile]);
+  }, [isPopUpOpen, targetUserId, openProfilePopUp, closeProfilePopUp, getPublicProfile]);
 
   // Removed mobile tap handler for tooltips as Popover handles it natively.
 
