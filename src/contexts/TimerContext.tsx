@@ -835,7 +835,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       startStopNotifications,
       hasWonPrize,
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
-      isRecurring,
+      // Removed duplicate 'isRecurring' here
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -861,7 +861,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     startStopNotifications,
     hasWonPrize,
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
-    isRecurring,
   ]);
 
   const value: TimerContextType = {
