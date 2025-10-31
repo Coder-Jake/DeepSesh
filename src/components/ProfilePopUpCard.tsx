@@ -11,7 +11,7 @@ import { useTimer } from '@/contexts/TimerContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const ProfilePopUpCard: React.FC = () => {
-  const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, toggleProfilePopUp, closeProfilePopUp } = useProfilePopUp(); // Use toggleProfilePopUp
+  const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, toggleProfilePopUp, closeProfilePopUp } = useProfilePopUp();
   const { 
     getPublicProfile, 
     profile: currentUserProfile, 
@@ -80,7 +80,7 @@ const ProfilePopUpCard: React.FC = () => {
   }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus]);
 
   useEffect(() => {
-    const fetchTargetProfile = () => { // Removed async
+    const fetchTargetProfile = () => {
       if (targetUserId) {
         setLoading(true);
         setError(null);
@@ -106,7 +106,7 @@ const ProfilePopUpCard: React.FC = () => {
           setLoading(false);
         } else {
           try {
-            const fetchedProfile = getPublicProfile(targetUserId, targetUserName || "Unknown User"); // No await
+            const fetchedProfile = getPublicProfile(targetUserId, targetUserName || "Unknown User");
             setTargetProfile(fetchedProfile);
           } catch (err: any) {
             setError(err.message || "Failed to load profile.");
