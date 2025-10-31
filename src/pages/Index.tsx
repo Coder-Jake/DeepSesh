@@ -668,7 +668,7 @@ const Index = () => {
     if (showSessionsWhileActive === 'hidden') {
       return false;
     }
-    if (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'yes') {
+    if (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all') {
       return !isGlobalPrivate;
     }
     return false;
@@ -682,7 +682,7 @@ const Index = () => {
     if (showSessionsWhileActive === 'hidden') {
       return false;
     }
-    if (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'yes') {
+    if (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all') {
       return true;
     }
     return false;
@@ -1016,13 +1016,57 @@ const Index = () => {
       const daysToAdd = (templateDay - currentDay + 7) % 7;
       targetDate.setDate(now.getDate() + daysToAdd);
 
-      if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
-        targetDate.setDate(targetDate.getDate() + 7);
+      if (targetDate.getTime() < now.getTime()) {
+        if (!template.isRecurring) {
+          discardPreparedSchedule(template.id);
+          continue;
+        } else {
+          if (template.recurrenceFrequency === 'daily') {
+            targetDate.setDate(targetDate.getDate() + 1);
+          } else if (template.recurrenceFrequency === 'weekly') {
+            targetDate.setDate(targetDate.getDate() + 7);
+          } else if (template.recurrenceFrequency === 'monthly') {
+            targetDate.setMonth(targetDate.getMonth() + 1);
+          }
+          while (targetDate.getTime() < now.getTime()) {
+            if (template.recurrenceFrequency === 'daily') {
+              targetDate.setDate(targetDate.getDate() + 1);
+            } else if (template.recurrenceFrequency === 'weekly') {
+              targetDate.setDate(targetDate.getDate() + 7);
+            } else if (template.recurrenceFrequency === 'monthly') {
+              targetDate.setMonth(targetDate.getMonth() + 1);
+            }
+          }
+        }
       }
-      return targetDate.getTime();
+
+      const timeDifference = targetDate.getTime() - now.getTime();
+      if (timeDifference <= 60 * 1000 && timeDifference >= -1000) {
+        if (!isScheduleActive && !isSchedulePending) {
+          commenceSpecificPreparedSchedule(template.id);
+          if (template.isRecurring) {
+            const nextCommenceDate = new Date(targetDate);
+            if (template.recurrenceFrequency === 'daily') {
+              nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
+            } else if (template.recurrenceFrequency === 'weekly') {
+              nextCommenceDate.setDate(nextCommenceDate.getDate() + 7);
+            } else if (template.recurrenceFrequency === 'monthly') {
+              nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
+            }
+            setPreparedSchedules(prev => prev.map(p => 
+              p.id === template.id ? { 
+                ...p, 
+                commenceTime: nextCommenceDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+                commenceDay: nextCommenceDate.getDay()
+              } : p
+            ));
+          }
+          return;
+        }
+      }
     }
     return Infinity;
-  }, []);
+  }, [isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, setPreparedSchedules]);
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();

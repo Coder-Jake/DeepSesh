@@ -28,6 +28,7 @@ const ProfilePopUpCard: React.FC = () => {
     sociability: currentUserSociability,
     organization: currentUserOrganization,
     linkedinUrl: currentUserLinkedinUrl,
+    friendStatuses, // NEW: Import friendStatuses directly
   } = useProfile();
   const { areToastsEnabled } = useTimer();
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
@@ -198,7 +199,8 @@ const ProfilePopUpCard: React.FC = () => {
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
     const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
-    const currentFriendStatus = currentUserProfile?.id ? currentUserProfile.friendStatuses[targetProfile.id] || 'none' : 'none'; // Access friendStatuses from currentUserProfile
+    // Use the directly imported friendStatuses
+    const currentFriendStatus = currentUserProfile?.id && friendStatuses[targetProfile.id] ? friendStatuses[targetProfile.id] : 'none';
 
     const isFieldVisible = (fieldVisibility: ('public' | 'friends' | 'organisation' | 'private')[] | null | undefined) => {
       if (isCurrentUserProfile) return true;
