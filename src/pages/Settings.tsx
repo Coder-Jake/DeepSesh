@@ -1148,7 +1148,8 @@ const Settings = () => {
           <Button variant="outline" onClick={handleLogout}>
             Logout
           </Button>
-        )}
+        </div>
+      )}
     </main>
   );
 };
