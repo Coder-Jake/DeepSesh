@@ -44,7 +44,7 @@ const Profile = () => {
   const { user } = useAuth(); // Keep user for ID, but not for login/logout UI
   const navigate = useNavigate();
   const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer();
-  const { openProfilePopUp } = useProfilePopUp();
+  const { toggleProfilePopUp } = useProfilePopUp(); // <-- FIX: Changed openProfilePopUp to toggleProfilePopUp
 
   // Use context state directly for inputs
   // Removed local state declarations for bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl
@@ -166,11 +166,11 @@ const Profile = () => {
     event.stopPropagation();
     const targetProfileData = getPublicProfile(userId, userName);
     if (targetProfileData) {
-      openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
+      toggleProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
     } else {
-      openProfilePopUp(userId, userName, event.clientX, event.clientY);
+      toggleProfilePopUp(userId, userName, event.clientX, event.clientY);
     }
-  }, [openProfilePopUp, getPublicProfile]);
+  }, [toggleProfilePopUp, getPublicProfile]);
 
   const handleFriendLongPressStart = useCallback((friendId: string) => {
     friendLongPressTimerRef.current = setTimeout(() => {
