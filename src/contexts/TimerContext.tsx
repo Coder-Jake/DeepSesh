@@ -808,7 +808,32 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       
       setPreparedSchedules(data.preparedSchedules ?? []);
     } else {
-      setSavedSchedules(DEFAULT_SCHEDULE_TEMPLATES);
+      // Set "School Timetable" as the default schedule if no data is in local storage
+      const schoolTimetableTemplate = DEFAULT_SCHEDULE_TEMPLATES.find(
+        (template) => template.title === "School Timetable"
+      );
+
+      if (schoolTimetableTemplate) {
+        setSchedule(schoolTimetableTemplate.schedule);
+        setScheduleTitle(schoolTimetableTemplate.title);
+        setCommenceTime(schoolTimetableTemplate.commenceTime);
+        setCommenceDay(schoolTimetableTemplate.commenceDay);
+        setScheduleStartOption(schoolTimetableTemplate.scheduleStartOption);
+        setIsRecurring(schoolTimetableTemplate.isRecurring);
+        setRecurrenceFrequency(schoolTimetableTemplate.recurrenceFrequency);
+        setTimerColors(schoolTimetableTemplate.timerColors || {});
+        // Also set the initial timer values based on the first item of the default schedule
+        if (schoolTimetableTemplate.schedule.length > 0) {
+          const firstItem = schoolTimetableTemplate.schedule[0];
+          _setFocusMinutes(firstItem.type === 'focus' ? firstItem.durationMinutes : _defaultFocusMinutes);
+          _setBreakMinutes(firstItem.type === 'break' ? firstItem.durationMinutes : _defaultBreakMinutes);
+          setTimerType(firstItem.type);
+          setTimeLeft(firstItem.durationMinutes * 60);
+        }
+      } else {
+        // Fallback to default if "School Timetable" is not found
+        setSavedSchedules(DEFAULT_SCHEDULE_TEMPLATES);
+      }
     }
   }, []);
 
