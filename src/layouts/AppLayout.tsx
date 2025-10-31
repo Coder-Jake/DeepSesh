@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import ProfilePopUpCard from '@/components/ProfilePopUpCard';
+import { useTheme } from '@/contexts/ThemeContext'; // Import useTheme
 
 const AppLayout = () => {
   const navigate = useNavigate();
+  const { toggleDarkMode } = useTheme(); // Use the toggleDarkMode function
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -45,6 +47,11 @@ const AppLayout = () => {
           event.preventDefault();
           navigate('/chip-in');
           break;
+        case 'd': // NEW: Toggle dark mode with 'd' key
+        case 'D':
+          event.preventDefault();
+          toggleDarkMode();
+          break;
         default:
           // Do nothing for other keys
           break;
@@ -56,7 +63,7 @@ const AppLayout = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [navigate]);
+  }, [navigate, toggleDarkMode]); // Add toggleDarkMode to dependencies
 
   return (
     <div className="min-h-screen flex flex-col">
