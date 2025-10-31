@@ -1,54 +1,47 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+"use client";
+
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface ProfilePopUpContextType {
-  isPopUpOpen: boolean;
-  targetUserId: string | null;
-  targetUserName: string | null;
-  popUpPosition: { x: number; y: number } | null;
-  toggleProfilePopUp: (userId: string, userName: string, x: number, y: number) => void; // Renamed and modified
-  closeProfilePopUp: () => void;
+  isProfilePopUpOpen: boolean;
+  currentProfileId: string | null;
+  currentProfileName: string | null;
+  position: { x: number; y: number } | null;
+  toggleProfilePopUp: (id: string, name: string, x: number, y: number) => void;
 }
 
 const ProfilePopUpContext = createContext<ProfilePopUpContextType | undefined>(undefined);
 
-export const ProfilePopUpProvider = ({ children }: { children: ReactNode }) => {
-  const [isPopUpOpen, setIsPopUpOpen] = useState(false);
-  const [targetUserId, setTargetUserId] = useState<string | null>(null);
-  const [targetUserName, setTargetUserName] = useState<string | null>(null);
-  const [popUpPosition, setPopUpPosition] = useState<{ x: number; y: number } | null>(null);
+export const ProfilePopUpProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [isProfilePopUpOpen, setIsProfilePopUpOpen] = useState(false);
+  const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
+  const [currentProfileName, setCurrentProfileName] = useState<string | null>(null);
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const closeProfilePopUp = useCallback(() => {
-    setIsPopUpOpen(false);
-    setTargetUserId(null);
-    setTargetUserName(null);
-    setPopUpPosition(null);
-  }, []);
-
-  // Renamed from openProfilePopUp to toggleProfilePopUp
-  const toggleProfilePopUp = useCallback((userId: string, userName: string, x: number, y: number) => {
-    if (isPopUpOpen && targetUserId === userId) {
-      // If the same user's pop-up is already open, close it.
-      closeProfilePopUp();
+  const toggleProfilePopUp = (id: string, name: string, x: number, y: number) => {
+    // If the same profile is clicked AND it's currently open, close it.
+    if (isProfilePopUpOpen && currentProfileId === id) {
+      setIsProfilePopUpOpen(false);
+      setCurrentProfileId(null); // Clear the ID when closing
+      setCurrentProfileName(null);
+      setPosition(null);
     } else {
-      // Otherwise, open it for the new user (or reopen if it was closed).
-      setTargetUserId(userId);
-      setTargetUserName(userName);
-      setPopUpPosition({ x, y });
-      setIsPopUpOpen(true);
+      // Otherwise, open it for the new (or different) profile
+      setIsProfilePopUpOpen(true);
+      setCurrentProfileId(id); // Set the ID when opening
+      setCurrentProfileName(name);
+      setPosition({ x, y });
     }
-  }, [isPopUpOpen, targetUserId, closeProfilePopUp]); // Dependencies are crucial here
+  };
 
   return (
-    <ProfilePopUpContext.Provider
-      value={{
-        isPopUpOpen,
-        targetUserId,
-        targetUserName,
-        popUpPosition,
-        toggleProfilePopUp, // Renamed
-        closeProfilePopUp,
-      }}
-    >
+    <ProfilePopUpContext.Provider value={{
+      isProfilePopUpOpen,
+      currentProfileId,
+      currentProfileName,
+      position,
+      toggleProfilePopUp,
+    }}>
       {children}
     </ProfilePopUpContext.Provider>
   );
