@@ -382,15 +382,21 @@ const Profile = () => {
   };
 
   const handleSaveOrganization = async () => {
+    const trimmedOrganization = organization.trim();
     if (user) {
-      await updateProfile({ organization: organization.trim() === "" ? null : organization.trim() });
+      await updateProfile({ organization: trimmedOrganization === "" ? null : trimmedOrganization });
       setIsOrganizationDialogOpen(false);
-      setOriginalValues(prev => ({ ...prev, organization: organization.trim() === "" ? null : organization.trim() }));
-      checkForChanges(firstNameInput, bio, intention, sociability, organization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
+      setOriginalValues(prev => ({ ...prev, organization: trimmedOrganization === "" ? null : trimmedOrganization }));
+      checkForChanges(firstNameInput, bio, intention, sociability, trimmedOrganization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
     } else {
-      if (areToastsEnabled) { // NEW: Conditional toast
-        toast.error("Not Logged In", {
-          description: "Please log in to save your organisation.",
+      // Save locally if not logged in
+      localStorage.setItem('deepsesh_organization', trimmedOrganization);
+      setOriginalValues(prev => ({ ...prev, organization: trimmedOrganization }));
+      checkForChanges(firstNameInput, bio, intention, sociability, trimmedOrganization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility);
+      setIsOrganizationDialogOpen(false);
+      if (areToastsEnabled) {
+        toast.success("Organization Saved Locally", {
+          description: "Your organization name has been saved to this browser.",
         });
       }
     }
@@ -436,6 +442,7 @@ const Profile = () => {
       localStorage.setItem('deepsesh_bio_visibility', JSON.stringify(bioVisibility));
       localStorage.setItem('deepsesh_intention_visibility', JSON.stringify(intentionVisibility));
       localStorage.setItem('deepsesh_linkedin_visibility', JSON.stringify(linkedinVisibility));
+      localStorage.setItem('deepsesh_organization', organization.trim()); // Save organization locally
     }
     setOriginalValues({ 
       firstName: nameToSave, 
@@ -486,7 +493,7 @@ const Profile = () => {
         toast.error("Copy Failed", {
           description: "Could not copy host code. Please try again.",
         });
-      }
+    }
     }
   }, [hostCode, areToastsEnabled]);
 
@@ -784,9 +791,9 @@ const Profile = () => {
               <CardTitle>Organisation</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {profile?.organization ? (
+              {profile?.organization || localStorage.getItem('deepsesh_organization') ? (
                 <p className="text-sm text-muted-foreground">
-                  Currently affiliated with: <span className="font-medium text-foreground">{profile.organization}</span>
+                  Currently affiliated with: <span className="font-medium text-foreground">{profile?.organization || localStorage.getItem('deepsesh_organization')}</span>
                 </p>
               ) : (
                 <p className="text-sm text-muted-foreground">
@@ -794,7 +801,7 @@ const Profile = () => {
                 </p>
               )}
               <Button onClick={() => setIsOrganizationDialogOpen(true)}>
-                {profile?.organization ? "Edit Organisation" : "Add Organisation"}
+                {profile?.organization || localStorage.getItem('deepsesh_organization') ? "Edit Organisation" : "Add Organisation"}
               </Button>
             </CardContent>
           </Card>
@@ -869,7 +876,7 @@ const Profile = () => {
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{profile?.organization ? "Edit Organisation Name" : "Add Organisation Name"}</DialogTitle>
+            <DialogTitle>{profile?.organization || localStorage.getItem('deepsesh_organization') ? "Edit Organisation Name" : "Add Organisation Name"}</DialogTitle>
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
