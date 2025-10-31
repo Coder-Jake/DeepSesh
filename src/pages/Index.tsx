@@ -918,52 +918,67 @@ const Index = () => {
     if (!currentAsk || !('options' in currentAsk)) return;
 
     let currentPoll = currentAsk as Poll;
-    let finalOptionIdsToVote: string[] = [...selectedOptionIdsFromCard]; // Start with options from checkboxes/radios
+    let finalOptionIdsToVote: string[] = [...selectedOptionIdsFromCard];
 
-    // Handle custom response logic
-    if (customOptionText && customOptionText.trim()) {
-      const trimmedCustomText = customOptionText.trim();
-      let customOptionId: string;
+    // --- Handle custom response text and its corresponding option ---
+    const trimmedCustomText = customOptionText?.trim();
+    let customOptionIdForUser: string | null = null;
 
-      const existingCustomOption = currentPoll.options.find(
-        opt => opt.text.toLowerCase() === trimmedCustomText.toLowerCase() && opt.id.startsWith('custom-')
-      );
+    // Find the custom option previously created by this user, if any
+    const existingUserCustomOption = currentPoll.options.find(
+      opt => opt.id.startsWith('custom-') && opt.votes.some(vote => vote.userId === currentUserId)
+    );
 
-      if (!existingCustomOption) {
-        // Create new custom option
+    if (trimmedCustomText) {
+      // User has provided a custom response
+      if (existingUserCustomOption) {
+        // Update existing custom option's text if it changed
+        if (existingUserCustomOption.text !== trimmedCustomText) {
+          currentPoll = {
+            ...currentPoll,
+            options: currentPoll.options.map(opt =>
+              opt.id === existingUserCustomOption.id ? { ...opt, text: trimmedCustomText } : opt
+            )
+          };
+        }
+        customOptionIdForUser = existingUserCustomOption.id;
+      } else {
+        // Create a new custom option
         const newCustomOption: PollOption = {
           id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
           text: trimmedCustomText,
-          votes: [],
+          votes: [], // Will be populated below
         };
         currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
-        customOptionId = newCustomOption.id;
-      } else {
-        customOptionId = existingCustomOption.id;
+        customOptionIdForUser = newCustomOption.id;
       }
-      // Add the custom option's ID to the list of options to be voted for
-      if (!finalOptionIdsToVote.includes(customOptionId)) {
-        finalOptionIdsToVote.push(customOptionId);
+      // Ensure the custom option is in the list of options to be voted for
+      if (customOptionIdForUser && !finalOptionIdsToVote.includes(customOptionIdForUser)) {
+        finalOptionIdsToVote.push(customOptionIdForUser);
       }
     } else {
-      // If custom response text is cleared, ensure any existing custom vote is removed from finalOptionIdsToVote
-      currentPoll.options.forEach(option => {
-        if (option.id.startsWith('custom-') && option.votes.some(v => v.userId === currentUserId)) {
-          finalOptionIdsToVote = finalOptionIdsToVote.filter(id => id !== option.id);
-        }
-      });
+      // User cleared the custom response input.
+      // If there was an existing custom option by this user, ensure its vote is removed.
+      if (existingUserCustomOption) {
+        finalOptionIdsToVote = finalOptionIdsToVote.filter(id => id !== existingUserCustomOption.id);
+      }
     }
 
-    // Now, update votes for all options based on finalOptionIdsToVote
-    const updatedOptions = currentPoll.options.map(option => {
-      let newVotes = option.votes.filter(v => v.userId !== currentUserId); // Remove current user's vote
+    // --- Update votes for all options ---
+    let updatedOptions = currentPoll.options.map(option => {
+      let newVotes = option.votes.filter(v => v.userId !== currentUserId); // Remove current user's previous vote
 
       if (finalOptionIdsToVote.includes(option.id)) {
         newVotes.push({ userId: currentUserId }); // Add vote if it's in the final list
       }
-
       return { ...option, votes: newVotes };
     });
+
+    // --- Clean up voteless custom options ---
+    // Filter out custom options that now have no votes from any user
+    updatedOptions = updatedOptions.filter(option =>
+      !option.id.startsWith('custom-') || option.votes.length > 0
+    );
 
     updateAsk({ ...currentPoll, options: updatedOptions });
   };
