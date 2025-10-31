@@ -32,6 +32,9 @@ const hexToHsl = (hex: string) => {
   const min = Math.min(r, g, b);
   let h = 0, s = 0, l = (max + min) / 2;
 
+  // Enforce minimum lightness of 7% (0.07 in 0-1 range)
+  l = Math.max(l, 0.07);
+
   if (max === min) {
     h = s = 0; // achromatic
   } else {
