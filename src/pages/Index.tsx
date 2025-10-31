@@ -242,7 +242,7 @@ const Index = () => {
   const { isPopUpOpen, targetUserId, openProfilePopUp, closeProfilePopUp } = useProfilePopUp(); // NEW: Get isPopUpOpen and targetUserId
   const { isDarkMode } = useTheme();
 
-  const longPressRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressRef = useRef<NodeJS.Timeout | null>(longPressRef);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   const [isHoveringTimer, setIsHoveringTimer] = useState(false);
@@ -667,7 +667,7 @@ const Index = () => {
     }
   };
 
-  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
+  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePrepared || isSchedulePending;
 
   const shouldShowNearbySessions = useMemo(() => {
     if (!isActiveTimer) {
@@ -1067,19 +1067,7 @@ const Index = () => {
     });
   }, [preparedSchedules, getEffectiveStartTime]);
 
-  const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (isPopUpOpen && targetUserId === userId) {
-      closeProfilePopUp();
-    } else {
-      const targetProfileData = getPublicProfile(userId, userName);
-      if (targetProfileData) {
-        openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
-      } else {
-        openProfilePopUp(userId, userName, event.clientX, event.clientY);
-      }
-    }
-  }, [isPopUpOpen, targetUserId, openProfilePopUp, closeProfilePopUp, getPublicProfile]);
+  // Removed handleNameClick as it's now handled directly in SessionCard
 
   // Removed mobile tap handler for tooltips as Popover handles it natively.
 
@@ -1119,7 +1107,7 @@ const Index = () => {
                     key={session.id} 
                     session={session} 
                     onJoinSession={handleJoinSession} 
-                    onNameClick={handleNameClick}
+                    // onNameClick={handleNameClick} // Removed
                   />
                 ))}
               </div>
@@ -1148,7 +1136,7 @@ const Index = () => {
                     key={session.id} 
                     session={session} 
                     onJoinSession={handleJoinSession} 
-                    onNameClick={handleNameClick}
+                    // onNameClick={handleNameClick} // Removed
                   />
                 ))}
               </div>
@@ -1174,7 +1162,7 @@ const Index = () => {
                     key={session.id} 
                     session={session} 
                     onJoinSession={handleJoinSession} 
-                    onNameClick={handleNameClick}
+                    // onNameClick={handleNameClick} // Removed
                   />
                 ))}
               </div>
@@ -1558,7 +1546,19 @@ const Index = () => {
                         "hover:bg-muted cursor-pointer"
                       )} 
                       data-name={`Coworker: ${person.name}`}
-                      onClick={(e) => handleNameClick(person.id, person.name, e)}
+                      onClick={(e) => { // Direct handling of profile pop-up
+                        e.stopPropagation();
+                        if (isPopUpOpen && targetUserId === person.id) {
+                          closeProfilePopUp();
+                        } else {
+                          const targetProfileData = getPublicProfile(person.id, person.name);
+                          if (targetProfileData) {
+                            openProfilePopUp(targetProfileData.id, targetProfileData.first_name || person.name, e.clientX, e.clientY);
+                          } else {
+                            openProfilePopUp(person.id, person.name, e.clientX, e.clientY);
+                          }
+                        }
+                      }}
                     >
                       <span className="font-medium text-foreground">
                         {person.id === currentUserId ? "You" : person.name}

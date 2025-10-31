@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTimer } from "@/contexts/TimerContext";
 import { cn } from '@/lib/utils';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover components
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useProfilePopUp } from '@/contexts/ProfilePopUpContext'; // Import useProfilePopUp
+import { useProfile } from '@/contexts/ProfileContext'; // Import useProfile to get getPublicProfile
 
 interface DemoSession {
   id: string;
@@ -19,11 +21,13 @@ interface DemoSession {
 interface SessionCardProps {
   session: DemoSession;
   onJoinSession: (session: DemoSession) => void;
-  onNameClick: (userId: string, userName: string, event: React.MouseEvent) => void;
+  // onNameClick: (userId: string, userName: string, event: React.MouseEvent) => void; // Removed
 }
 
-const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNameClick }) => {
+const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => { // Removed onNameClick
   const { formatTime } = useTimer();
+  const { isPopUpOpen, targetUserId, openProfilePopUp, closeProfilePopUp } = useProfilePopUp(); // Consume ProfilePopUpContext
+  const { getPublicProfile } = useProfile(); // Consume ProfileContext to get getPublicProfile
   
   // Calculate total duration from fullSchedule
   const totalDurationMinutes = useMemo(() => {
@@ -141,6 +145,22 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
     return null; // Don't render ended sessions
   }
 
+  const handleParticipantNameClick = (userId: string, userName: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent event from bubbling up and potentially closing the parent Popover
+
+    if (isPopUpOpen && targetUserId === userId) {
+      closeProfilePopUp(); // Close if the same user's pop-up is already open
+    } else {
+      // Open for a new user, or reopen for the same user if it was closed
+      const targetProfileData = getPublicProfile(userId, userName);
+      if (targetProfileData) {
+        openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
+      } else {
+        openProfilePopUp(userId, userName, event.clientX, event.clientY);
+      }
+    }
+  };
+
   return (
     <Card key={session.id}>
       <CardHeader className="p-4 pb-2">
@@ -201,7 +221,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession, onNam
                           "min-w-0",
                           p.id !== "mock-user-id-123" && "cursor-pointer hover:text-primary"
                         )}
-                        onClick={(e) => onNameClick(p.id, p.name, e)}
+                        onClick={(e) => handleParticipantNameClick(p.id, p.name, e)} // Use local handler
                       >
                         {p.name}
                       </span>
