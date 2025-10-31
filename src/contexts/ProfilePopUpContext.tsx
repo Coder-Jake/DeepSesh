@@ -5,7 +5,7 @@ interface ProfilePopUpContextType {
   targetUserId: string | null;
   targetUserName: string | null;
   popUpPosition: { x: number; y: number } | null;
-  openProfilePopUp: (userId: string, userName: string, x: number, y: number) => void;
+  toggleProfilePopUp: (userId: string, userName: string, x: number, y: number) => void; // Renamed and modified
   closeProfilePopUp: () => void;
 }
 
@@ -17,19 +17,26 @@ export const ProfilePopUpProvider = ({ children }: { children: ReactNode }) => {
   const [targetUserName, setTargetUserName] = useState<string | null>(null);
   const [popUpPosition, setPopUpPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const openProfilePopUp = useCallback((userId: string, userName: string, x: number, y: number) => {
-    setTargetUserId(userId);
-    setTargetUserName(userName);
-    setPopUpPosition({ x, y });
-    setIsPopUpOpen(true);
-  }, []);
-
   const closeProfilePopUp = useCallback(() => {
     setIsPopUpOpen(false);
     setTargetUserId(null);
     setTargetUserName(null);
     setPopUpPosition(null);
   }, []);
+
+  // Renamed from openProfilePopUp to toggleProfilePopUp
+  const toggleProfilePopUp = useCallback((userId: string, userName: string, x: number, y: number) => {
+    if (isPopUpOpen && targetUserId === userId) {
+      // If the same user's pop-up is already open, close it.
+      closeProfilePopUp();
+    } else {
+      // Otherwise, open it for the new user (or reopen if it was closed).
+      setTargetUserId(userId);
+      setTargetUserName(userName);
+      setPopUpPosition({ x, y });
+      setIsPopUpOpen(true);
+    }
+  }, [isPopUpOpen, targetUserId, closeProfilePopUp]); // Dependencies are crucial here
 
   return (
     <ProfilePopUpContext.Provider
@@ -38,7 +45,7 @@ export const ProfilePopUpProvider = ({ children }: { children: ReactNode }) => {
         targetUserId,
         targetUserName,
         popUpPosition,
-        openProfilePopUp,
+        toggleProfilePopUp, // Renamed
         closeProfilePopUp,
       }}
     >

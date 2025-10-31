@@ -37,7 +37,7 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } '@/contexts/ThemeContext';
 // Removed useIsMobile import as it's no longer needed for this interaction
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 
@@ -239,10 +239,10 @@ const Index = () => {
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile } = useProfile();
   const navigate = useNavigate();
-  const { isPopUpOpen, targetUserId, openProfilePopUp, closeProfilePopUp } = useProfilePopUp(); // NEW: Get isPopUpOpen and targetUserId
+  const { toggleProfilePopUp } = useProfilePopUp(); // Use toggleProfilePopUp
   const { isDarkMode } = useTheme();
 
-  const longPressRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
+  const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   const [isHoveringTimer, setIsHoveringTimer] = useState(false);
@@ -1069,17 +1069,13 @@ const Index = () => {
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    if (isPopUpOpen && targetUserId === userId) {
-      closeProfilePopUp();
+    const targetProfileData = getPublicProfile(userId, userName);
+    if (targetProfileData) {
+      toggleProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
     } else {
-      const targetProfileData = getPublicProfile(userId, userName);
-      if (targetProfileData) {
-        openProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
-      } else {
-        openProfilePopUp(userId, userName, event.clientX, event.clientY);
-      }
+      toggleProfilePopUp(userId, userName, event.clientX, event.clientY);
     }
-  }, [isPopUpOpen, targetUserId, openProfilePopUp, closeProfilePopUp, getPublicProfile]);
+  }, [toggleProfilePopUp, getPublicProfile]);
 
   // Removed mobile tap handler for tooltips as Popover handles it natively.
 
@@ -1119,7 +1115,6 @@ const Index = () => {
                     key={session.id} 
                     session={session} 
                     onJoinSession={handleJoinSession} 
-                    // onNameClick={handleNameClick} // Removed
                   />
                 ))}
               </div>
@@ -1148,7 +1143,6 @@ const Index = () => {
                     key={session.id} 
                     session={session} 
                     onJoinSession={handleJoinSession} 
-                    // onNameClick={handleNameClick} // Removed
                   />
                 ))}
               </div>
@@ -1174,7 +1168,6 @@ const Index = () => {
                     key={session.id} 
                     session={session} 
                     onJoinSession={handleJoinSession} 
-                    // onNameClick={handleNameClick} // Removed
                   />
                 ))}
               </div>
@@ -1558,7 +1551,15 @@ const Index = () => {
                         "hover:bg-muted cursor-pointer"
                       )} 
                       data-name={`Coworker: ${person.name}`}
-                      onClick={(e) => handleNameClick(person.id, person.name, e)}
+                      onClick={(e) => { // Direct handling of profile pop-up
+                        e.stopPropagation();
+                        const targetProfileData = getPublicProfile(person.id, person.name);
+                        if (targetProfileData) {
+                          toggleProfilePopUp(targetProfileData.id, targetProfileData.first_name || person.name, e.clientX, e.clientY);
+                        } else {
+                          toggleProfilePopUp(person.id, person.name, e.clientX, e.clientY);
+                        }
+                      }}
                     >
                       <span className="font-medium text-foreground">
                         {person.id === currentUserId ? "You" : person.name}

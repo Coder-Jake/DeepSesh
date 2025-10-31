@@ -11,7 +11,7 @@ import { useTimer } from '@/contexts/TimerContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const ProfilePopUpCard: React.FC = () => {
-  const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
+  const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, toggleProfilePopUp, closeProfilePopUp } = useProfilePopUp(); // Use toggleProfilePopUp
   const { 
     getPublicProfile, 
     profile: currentUserProfile, 
