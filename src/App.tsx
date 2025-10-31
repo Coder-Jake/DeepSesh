@@ -43,12 +43,13 @@ function App() {
                       <Route path="feedback" element={<Feedback />} />
                       <Route path="credits" element={<Credits />} />
                       <Route path="upcoming-features" element={<UpcomingFeatures />} />
-                      <Route path="vibes" element={<Vibes />} /> {/* NEW: Add Vibes route */}
-                      <Route path="login" element={<Login />} /> {/* Moved login here */}
-                      <Route path="register" element={<Register />} />
-                      <Route path="forgot-password" element={<ForgotPassword />} />
-                      <Route path="reset-password" element={<ResetPassword />} />
-                      <Route path="verify-email" element={<VerifyEmail />} />
+                      <Route path="vibes" element={<Vibes />} />
+                      {/* Removed explicit login/register routes */}
+                      {/* <Route path="login" element={<Login />} /> */}
+                      {/* <Route path="register" element={<Register />} /> */}
+                      {/* <Route path="forgot-password" element={<ForgotPassword />} /> */}
+                      {/* <Route path="reset-password" element={<ResetPassword />} /> */}
+                      {/* <Route path="verify-email" element={<VerifyEmail />} /> */}
                       <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
                     </Route>
                   </Routes>

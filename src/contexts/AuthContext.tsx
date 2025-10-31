@@ -13,8 +13,7 @@ interface AuthContextType {
   user: LocalUser | null;
   session: null; // No session concept with local auth
   loading: boolean;
-  login: (email: string, firstName?: string, lastName?: string) => void;
-  logout: () => void;
+  // Removed login and logout functions as they will no longer be explicitly called
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,31 +32,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (e) {
         console.error("Failed to parse stored user from local storage", e);
         localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+        // If parsing fails, create a new user
+        createDefaultLocalUser();
       }
+    } else {
+      // If no user is stored, create a default one
+      createDefaultLocalUser();
     }
     setLoading(false);
   }, []);
 
-  const login = useCallback((email: string, firstName?: string, lastName?: string) => {
-    const newUser: LocalUser = {
+  const createDefaultLocalUser = () => {
+    const defaultUser: LocalUser = {
       id: `local-user-${Date.now()}`, // Simple unique ID
-      email,
+      email: `localuser-${Date.now()}@example.com`, // Default email
       user_metadata: {
-        first_name: firstName,
-        last_name: lastName,
+        first_name: "You", // Default first name
       },
     };
-    setUser(newUser);
-    localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(newUser));
-  }, []);
+    setUser(defaultUser);
+    localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(defaultUser));
+  };
 
-  const logout = useCallback(() => {
-    setUser(null);
-    localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-  }, []);
+  // Removed login and logout functions
+  // const login = useCallback((email: string, firstName?: string, lastName?: string) => {
+  //   const newUser: LocalUser = {
+  //     id: `local-user-${Date.now()}`, // Simple unique ID
+  //     email,
+  //     user_metadata: {
+  //       first_name: firstName,
+  //       last_name: lastName,
+  //     },
+  //   };
+  //   setUser(newUser);
+  //   localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(newUser));
+  // }, []);
+
+  // const logout = useCallback(() => {
+  //   setUser(null);
+  //   localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+  // }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session: null, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, session: null, loading }}>
       {children}
     </AuthContext.Provider>
   );

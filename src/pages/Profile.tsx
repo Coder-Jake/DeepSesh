@@ -33,7 +33,7 @@ const Profile = () => {
     pronouns, setPronouns,
     friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser
   } = useProfile();
-  const { user, logout } = useAuth();
+  const { user } = useAuth(); // Keep user for ID, but not for login/logout UI
   const navigate = useNavigate();
   const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer();
   const { openProfilePopUp } = useProfilePopUp();
@@ -493,15 +493,16 @@ const Profile = () => {
     setHasChanges(false);
   };
 
-  const handleLogout = async () => {
-    logout(); // Use local logout
-    if (areToastsEnabled) {
-      toast.success("Logged Out", {
-        description: "You have been successfully logged out.",
-      });
-    }
-    navigate('/');
-  };
+  // Removed handleLogout as there's no explicit logout anymore
+  // const handleLogout = async () => {
+  //   logout();
+  //   if (areToastsEnabled) {
+  //     toast.success("Logged Out", {
+  //       description: "You have been successfully logged out.",
+  //     });
+  //   }
+  //   navigate('/');
+  // };
 
   const handleCopyHostCode = useCallback(async () => {
     try {
@@ -618,7 +619,7 @@ const Profile = () => {
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
       <div className="mb-6 flex justify-between items-center relative">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-        {hasChanges ? (
+        {hasChanges && (
           <div className="absolute right-0">
             <Button 
               onClick={handleSave}
@@ -628,12 +629,6 @@ const Profile = () => {
               {loading ? "Saving..." : "Save Profile"}
             </Button>
           </div>
-        ) : (
-          !user && (
-            <Button variant="outline" onClick={() => navigate('/login')}>
-              Login
-            </Button>
-          )
         )}
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1010,14 +1005,6 @@ const Profile = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {user && (
-        <div className="fixed bottom-4 left-4 z-50">
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
-          </Button>
-        </div>
-      )}
     </main>
   );
 };
