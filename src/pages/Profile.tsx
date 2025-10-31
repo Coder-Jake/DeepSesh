@@ -29,7 +29,7 @@ const Profile = () => {
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
     friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser
   } = useProfile();
-  const { user, logout } = useAuth(); // Added logout from AuthContext
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer();
   const { openProfilePopUp } = useProfilePopUp();
@@ -870,7 +870,7 @@ const Profile = () => {
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
-          </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="organization-name">Organisation Name</Label>

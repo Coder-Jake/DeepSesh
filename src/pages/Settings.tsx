@@ -83,7 +83,7 @@ const Settings = () => {
     setStartStopNotifications,
   } = useTimer();
 
-  const { user, logout } = useAuth(); // Added logout from AuthContext
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { blockedUsers, blockUser, unblockUser } = useProfile();
