@@ -86,7 +86,7 @@ const Settings = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser } = useProfile();
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers } = useProfile(); // NEW: Destructure recentCoworkers
 
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
   const [userNameToBlock, setUserNameToBlock] = useState("");
@@ -433,7 +433,7 @@ const Settings = () => {
   };
 
   const handleLogout = () => {
-    logout(); // Use local logout
+    logout();
     if (areToastsEnabled) {
       toast.success("Logged Out", {
         description: "You have been successfully logged out.",
