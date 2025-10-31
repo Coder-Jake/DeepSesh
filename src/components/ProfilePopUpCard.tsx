@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus, Handshake, HelpCircle } from 'lucide-react'; // NEW: Import Handshake and HelpCircle
+import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus, Handshake, HelpCircle } from 'lucide-react';
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { Profile } from '@/contexts/ProfileContext';
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils';
-import { toast } from 'sonner'; // Changed to sonner toast
-import { useTimer } from '@/contexts/TimerContext'; // NEW: Import useTimer
+import { toast } from 'sonner';
+import { useTimer } from '@/contexts/TimerContext';
 
 const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, closeProfilePopUp } = useProfilePopUp();
@@ -17,11 +17,12 @@ const ProfilePopUpCard: React.FC = () => {
     bioVisibility, setBioVisibility, 
     intentionVisibility, setIntentionVisibility, 
     linkedinVisibility, setLinkedinVisibility,
-    canHelpWithVisibility, setCanHelpWithVisibility, // NEW
-    needHelpWithVisibility, setNeedHelpWithVisibility, // NEW
-    friendStatuses, sendFriendRequest, acceptFriendRequest, removeFriend
+    canHelpWithVisibility, setCanHelpWithVisibility,
+    needHelpWithVisibility, setNeedHelpWithVisibility,
+    friendStatuses, sendFriendRequest, acceptFriendRequest, removeFriend,
+    pronouns: currentUserPronouns, // NEW: Get current user's pronouns
   } = useProfile();
-  const { areToastsEnabled } = useTimer(); // NEW: Get areToastsEnabled
+  const { areToastsEnabled } = useTimer();
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,13 +39,13 @@ const ProfilePopUpCard: React.FC = () => {
     return 'public';
   }, []);
 
-  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'): string => { // NEW
+  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'): string => {
     switch (fieldName) {
       case 'bio_visibility': return 'Bio';
       case 'intention_visibility': return 'Intention';
       case 'linkedin_visibility': return 'LinkedIn';
-      case 'can_help_with_visibility': return 'Can Help With'; // NEW
-      case 'need_help_with_visibility': return 'Need Help With'; // NEW
+      case 'can_help_with_visibility': return 'Can Help With';
+      case 'need_help_with_visibility': return 'Need Help With';
       default: return '';
     }
   }, []);
@@ -52,7 +53,7 @@ const ProfilePopUpCard: React.FC = () => {
   const handleLabelClick = useCallback(async (
     currentVisibility: ('public' | 'friends' | 'organisation' | 'private')[], 
     visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
-    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility' // NEW
+    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'
   ) => {
     const currentIndex = getIndexFromVisibility(currentVisibility);
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
@@ -60,7 +61,7 @@ const ProfilePopUpCard: React.FC = () => {
     
     visibilitySetter(newVisibility);
     
-    if (areToastsEnabled) { // NEW: Conditional toast
+    if (areToastsEnabled) {
       const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
       toast.success("Privacy Setting Changed", {
         description: successMessage,
@@ -80,8 +81,9 @@ const ProfilePopUpCard: React.FC = () => {
             bio_visibility: bioVisibility,
             intention_visibility: intentionVisibility,
             linkedin_visibility: linkedinVisibility,
-            can_help_with_visibility: canHelpWithVisibility, // NEW
-            need_help_with_visibility: needHelpWithVisibility, // NEW
+            can_help_with_visibility: canHelpWithVisibility,
+            need_help_with_visibility: needHelpWithVisibility,
+            pronouns: currentUserPronouns, // NEW: Pass current user's pronouns
           });
           setLoading(false);
         } else {
@@ -105,7 +107,7 @@ const ProfilePopUpCard: React.FC = () => {
       setLoading(true);
       setError(null);
     }
-  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility]); // NEW dependencies
+  }, [isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, currentUserPronouns]);
 
   useLayoutEffect(() => {
     if (isPopUpOpen && popUpPosition && cardRef.current) {
@@ -196,8 +198,8 @@ const ProfilePopUpCard: React.FC = () => {
     const allFieldsPrivate = 
       (!targetProfile.bio || !isFieldVisible(targetProfile.bio_visibility)) &&
       (!targetProfile.intention || !isFieldVisible(targetProfile.intention_visibility)) &&
-      (!targetProfile.can_help_with || !isFieldVisible(targetProfile.can_help_with_visibility)) && // NEW
-      (!targetProfile.need_help_with || !isFieldVisible(targetProfile.need_help_with_visibility)) && // NEW
+      (!targetProfile.can_help_with || !isFieldVisible(targetProfile.can_help_with_visibility)) &&
+      (!targetProfile.need_help_with || !isFieldVisible(targetProfile.need_help_with_visibility)) &&
       (!targetProfile.linkedin_url || !isFieldVisible(targetProfile.linkedin_visibility));
 
     if (!isCurrentUserProfile && allFieldsPrivate) {
@@ -212,8 +214,8 @@ const ProfilePopUpCard: React.FC = () => {
 
     const currentBioVisibility = isCurrentUserProfile ? bioVisibility : (targetProfile.bio_visibility || ['public']);
     const currentIntentionVisibility = isCurrentUserProfile ? intentionVisibility : (targetProfile.intention_visibility || ['public']);
-    const currentCanHelpWithVisibility = isCurrentUserProfile ? canHelpWithVisibility : (targetProfile.can_help_with_visibility || ['public']); // NEW
-    const currentNeedHelpWithVisibility = isCurrentUserProfile ? needHelpWithVisibility : (targetProfile.need_help_with_visibility || ['public']); // NEW
+    const currentCanHelpWithVisibility = isCurrentUserProfile ? canHelpWithVisibility : (targetProfile.can_help_with_visibility || ['public']);
+    const currentNeedHelpWithVisibility = isCurrentUserProfile ? needHelpWithVisibility : (targetProfile.need_help_with_visibility || ['public']);
     const currentLinkedinVisibility = isCurrentUserProfile ? linkedinVisibility : (targetProfile.linkedin_visibility || ['public']);
 
     return (
@@ -221,6 +223,9 @@ const ProfilePopUpCard: React.FC = () => {
         <div className="flex items-center gap-3">
           <User className="h-6 w-6 text-primary" />
           <h3 className="font-bold text-xl">{displayName}</h3>
+          {targetProfile.pronouns && ( // NEW: Display pronouns if available
+            <span className="text-sm text-muted-foreground ml-1">({targetProfile.pronouns})</span>
+          )}
           
           {!isCurrentUserProfile && (
             <Button
@@ -320,7 +325,7 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && ( // NEW
+        {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Users size={16} /> Sociability
@@ -335,7 +340,7 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.organization && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && ( // NEW
+        {targetProfile.organization && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 size={16} /> Organization

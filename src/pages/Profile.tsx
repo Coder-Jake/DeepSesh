@@ -17,17 +17,20 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake } from "lucide-react"; // NEW: Import HelpCircle and Handshake
+import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 
+const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"]; // Blank, They/Them, She/Her, He/Him
+
 const Profile = () => {
   const { 
     profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
-    canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility, // NEW
+    canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility,
+    pronouns, setPronouns, // NEW: Get pronouns and setPronouns from context
     friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser
   } = useProfile();
   const { user, logout } = useAuth();
@@ -38,8 +41,8 @@ const Profile = () => {
   // Use context state directly for inputs
   const [bio, setBio] = useState(profile?.bio || "");
   const [intention, setIntention] = useState(profile?.intention || "");
-  const [canHelpWith, setCanHelpWith] = useState(profile?.can_help_with || ""); // NEW
-  const [needHelpWith, setNeedHelpWith] = useState(profile?.need_help_with || ""); // NEW
+  const [canHelpWith, setCanHelpWith] = useState(profile?.can_help_with || "");
+  const [needHelpWith, setNeedHelpWith] = useState(profile?.need_help_with || "");
   const [sociability, setSociability] = useState([profile?.sociability || 50]);
   const [organization, setOrganization] = useState(profile?.organization || "");
   const [linkedinUrl, setLinkedinUrl] = useState(() => {
@@ -48,6 +51,7 @@ const Profile = () => {
            ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
            : "";
   });
+  const [currentPronounIndex, setCurrentPronounIndex] = useState(0); // NEW: State for pronoun index
 
   const [isEditingHostCode, setIsEditingHostCode] = useState(false);
   const hostCodeInputRef = useRef<HTMLInputElement>(null);
@@ -59,8 +63,8 @@ const Profile = () => {
     firstName: "",
     bio: "",
     intention: "",
-    canHelpWith: "", // NEW
-    needHelpWith: "", // NEW
+    canHelpWith: "",
+    needHelpWith: "",
     sociability: [30],
     organization: "",
     linkedinUrl: "",
@@ -68,8 +72,9 @@ const Profile = () => {
     bioVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
     intentionVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
     linkedinVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
-    canHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
-    needHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
+    canHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
+    needHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
+    pronouns: null as string | null, // NEW
   });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
@@ -84,8 +89,8 @@ const Profile = () => {
 
   const [bioLabelColorIndex, setBioLabelColorIndex] = useState(0);
   const [intentionLabelColorIndex, setIntentionLabelColorIndex] = useState(0);
-  const [canHelpWithLabelColorIndex, setCanHelpWithLabelColorIndex] = useState(0); // NEW
-  const [needHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex] = useState(0); // NEW
+  const [canHelpWithLabelColorIndex, setCanHelpWithLabelColorIndex] = useState(0);
+  const [needHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex] = useState(0);
   const [linkedinLabelColorIndex, setLinkedinLabelColorIndex] = useState(0);
 
   const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
@@ -101,13 +106,13 @@ const Profile = () => {
     return 'public';
   }, []);
 
-  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'): string => { // NEW: Added new field names
+  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'): string => {
     switch (fieldName) {
       case 'bio_visibility': return 'Bio';
       case 'intention_visibility': return 'Intention';
       case 'linkedin_visibility': return 'LinkedIn';
-      case 'can_help_with_visibility': return 'Can Help With'; // NEW
-      case 'need_help_with_visibility': return 'Need Help With'; // NEW
+      case 'can_help_with_visibility': return 'Can Help With';
+      case 'need_help_with_visibility': return 'Need Help With';
       default: return '';
     }
   }, []);
@@ -116,7 +121,7 @@ const Profile = () => {
     currentIndex: number, 
     setter: React.Dispatch<React.SetStateAction<number>>,
     visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
-    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility' // NEW
+    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'
   ) => {
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
     const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
@@ -196,13 +201,28 @@ const Profile = () => {
     setLongPressedFriendId(null);
   }, [areToastsEnabled]);
 
+  // NEW: Handle pronoun cycling
+  const handlePronounCycle = useCallback(async () => {
+    const nextIndex = (currentPronounIndex + 1) % PRONOUN_OPTIONS.length;
+    const newPronoun = PRONOUN_OPTIONS[nextIndex];
+    setCurrentPronounIndex(nextIndex);
+    setPronouns(newPronoun === "" ? null : newPronoun); // Set to null if blank
+
+    if (areToastsEnabled) {
+      toast.info("Pronouns Updated", {
+        description: newPronoun === "" ? "Your pronouns are now hidden." : `Your pronouns are set to '${newPronoun}'.`,
+      });
+    }
+    await updateProfile({ pronouns: newPronoun === "" ? null : newPronoun });
+  }, [currentPronounIndex, setPronouns, areToastsEnabled, updateProfile]);
+
   // Effect to initialize and update local states from profile context
   useEffect(() => {
     if (profile) {
       setBio(profile.bio || "");
       setIntention(profile.intention || "");
-      setCanHelpWith(profile.can_help_with || ""); // NEW
-      setNeedHelpWith(profile.need_help_with || ""); // NEW
+      setCanHelpWith(profile.can_help_with || "");
+      setNeedHelpWith(profile.need_help_with || "");
       setSociability([profile.sociability || 50]);
       setOrganization(profile.organization || "");
       const fullLinkedinUrl = profile.linkedin_url || "";
@@ -211,25 +231,27 @@ const Profile = () => {
                                : "");
       setHostCode(profile.host_code || ""); // Ensure hostCode is updated from profile
       setLocalFirstName(profile.first_name || "You"); // Ensure localFirstName is updated from profile
+      setPronouns(profile.pronouns || null); // NEW: Initialize pronouns from profile
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.pronouns || "")); // NEW: Initialize index
 
       setBioVisibility(profile.bio_visibility || ['public']);
       setIntentionVisibility(profile.intention_visibility || ['public']);
       setLinkedinVisibility(profile.linkedin_visibility || ['public']);
-      setCanHelpWithVisibility(profile.can_help_with_visibility || ['public']); // NEW
-      setNeedHelpWithVisibility(profile.need_help_with_visibility || ['public']); // NEW
+      setCanHelpWithVisibility(profile.can_help_with_visibility || ['public']);
+      setNeedHelpWithVisibility(profile.need_help_with_visibility || ['public']);
 
       setBioLabelColorIndex(getIndexFromVisibility(profile.bio_visibility || ['public']));
       setIntentionLabelColorIndex(getIndexFromVisibility(profile.intention_visibility || ['public']));
       setLinkedinLabelColorIndex(getIndexFromVisibility(profile.linkedin_visibility || ['public']));
-      setCanHelpWithLabelColorIndex(getIndexFromVisibility(profile.can_help_with_visibility || ['public'])); // NEW
-      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(profile.need_help_with_visibility || ['public'])); // NEW
+      setCanHelpWithLabelColorIndex(getIndexFromVisibility(profile.can_help_with_visibility || ['public']));
+      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(profile.need_help_with_visibility || ['public']));
 
       setOriginalValues({
         firstName: profile.first_name || "You",
         bio: profile.bio || "",
         intention: profile.intention || "",
-        canHelpWith: profile.can_help_with || "", // NEW
-        needHelpWith: profile.need_help_with || "", // NEW
+        canHelpWith: profile.can_help_with || "",
+        needHelpWith: profile.need_help_with || "",
         sociability: [profile.sociability || 50],
         organization: profile.organization || "",
         linkedinUrl: fullLinkedinUrl.startsWith("https://www.linkedin.com/in/") 
@@ -239,53 +261,57 @@ const Profile = () => {
         bioVisibility: (profile.bio_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         intentionVisibility: (profile.intention_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         linkedinVisibility: (profile.linkedin_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        canHelpWithVisibility: (profile.can_help_with_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
-        needHelpWithVisibility: (profile.need_help_with_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
+        canHelpWithVisibility: (profile.can_help_with_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        needHelpWithVisibility: (profile.need_help_with_visibility || ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        pronouns: profile.pronouns || null, // NEW
       });
       setHasChanges(false);
     } else {
       // Reset to default if profile is null (e.g., after logout)
       setBio("");
       setIntention("");
-      setCanHelpWith(""); // NEW
-      setNeedHelpWith(""); // NEW
+      setCanHelpWith("");
+      setNeedHelpWith("");
       setSociability([50]);
       setOrganization("");
       setLinkedinUrl("");
       setHostCode(localStorage.getItem('deepsesh_host_code') || "");
       setLocalFirstName(localStorage.getItem('deepsesh_local_first_name') || "You");
+      setPronouns(localStorage.getItem('deepsesh_pronouns') || null); // NEW
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(localStorage.getItem('deepsesh_pronouns') || "")); // NEW
 
       const defaultBioVis = (JSON.parse(localStorage.getItem('deepsesh_bio_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultIntentionVis = (JSON.parse(localStorage.getItem('deepsesh_intention_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultLinkedinVis = (JSON.parse(localStorage.getItem('deepsesh_linkedin_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
-      const defaultCanHelpVis = (JSON.parse(localStorage.getItem('deepsesh_can_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]); // NEW
-      const defaultNeedHelpVis = (JSON.parse(localStorage.getItem('deepsesh_need_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]); // NEW
+      const defaultCanHelpVis = (JSON.parse(localStorage.getItem('deepsesh_can_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+      const defaultNeedHelpVis = (JSON.parse(localStorage.getItem('deepsesh_need_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
 
       setBioVisibility(defaultBioVis);
       setIntentionVisibility(defaultIntentionVis);
       setLinkedinVisibility(defaultLinkedinVis);
-      setCanHelpWithVisibility(defaultCanHelpVis); // NEW
-      setNeedHelpWithVisibility(defaultNeedHelpVis); // NEW
+      setCanHelpWithVisibility(defaultCanHelpVis);
+      setNeedHelpWithVisibility(defaultNeedHelpVis);
 
       setBioLabelColorIndex(getIndexFromVisibility(defaultBioVis));
       setIntentionLabelColorIndex(getIndexFromVisibility(defaultIntentionVis));
       setLinkedinLabelColorIndex(getIndexFromVisibility(defaultLinkedinVis));
-      setCanHelpWithLabelColorIndex(getIndexFromVisibility(defaultCanHelpVis)); // NEW
-      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(defaultNeedHelpVis)); // NEW
+      setCanHelpWithLabelColorIndex(getIndexFromVisibility(defaultCanHelpVis));
+      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(defaultNeedHelpVis));
 
       setOriginalValues({
         firstName: localStorage.getItem('deepsesh_local_first_name') || "You",
-        bio: "", intention: "", canHelpWith: "", needHelpWith: "", sociability: [50], organization: "", linkedinUrl: "", // NEW
+        bio: "", intention: "", canHelpWith: "", needHelpWith: "", sociability: [50], organization: "", linkedinUrl: "",
         hostCode: localStorage.getItem('deepsesh_host_code') || "",
         bioVisibility: defaultBioVis,
         intentionVisibility: defaultIntentionVis,
         linkedinVisibility: defaultLinkedinVis,
-        canHelpWithVisibility: defaultCanHelpVis, // NEW
-        needHelpWithVisibility: defaultNeedHelpVis, // NEW
+        canHelpWithVisibility: defaultCanHelpVis,
+        needHelpWithVisibility: defaultNeedHelpVis,
+        pronouns: localStorage.getItem('deepsesh_pronouns') || null, // NEW
       });
       setHasChanges(false);
     }
-  }, [profile, setHostCode, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility]); // NEW dependencies
+  }, [profile, setHostCode, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility, setPronouns]);
 
 
   useEffect(() => {
@@ -310,8 +336,8 @@ const Profile = () => {
     const changed = localFirstName !== originalValues.firstName ||
                    bio !== originalValues.bio || 
                    intention !== originalValues.intention || 
-                   canHelpWith !== originalValues.canHelpWith || // NEW
-                   needHelpWith !== originalValues.needHelpWith || // NEW
+                   canHelpWith !== originalValues.canHelpWith ||
+                   needHelpWith !== originalValues.needHelpWith ||
                    sociability[0] !== originalValues.sociability[0] ||
                    organization !== originalValues.organization ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
@@ -319,20 +345,23 @@ const Profile = () => {
                    JSON.stringify(bioVisibility) !== JSON.stringify(originalValues.bioVisibility) ||
                    JSON.stringify(intentionVisibility) !== JSON.stringify(originalValues.intentionVisibility) ||
                    JSON.stringify(linkedinVisibility) !== JSON.stringify(originalValues.linkedinVisibility) ||
-                   JSON.stringify(canHelpWithVisibility) !== JSON.stringify(originalValues.canHelpWithVisibility) || // NEW
-                   JSON.stringify(needHelpWithVisibility) !== JSON.stringify(originalValues.needHelpWithVisibility); // NEW
+                   JSON.stringify(canHelpWithVisibility) !== JSON.stringify(originalValues.canHelpWithVisibility) ||
+                   JSON.stringify(needHelpWithVisibility) !== JSON.stringify(originalValues.needHelpWithVisibility) ||
+                   pronouns !== originalValues.pronouns; // NEW
     setHasChanges(changed);
   }, [
-    localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode, // NEW
-    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, // NEW
+    localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode,
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
+    pronouns, // NEW
     originalValues
   ]);
 
   useEffect(() => {
     checkForChanges();
   }, [
-    localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode, // NEW
-    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, // NEW
+    localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode,
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
+    pronouns, // NEW
     checkForChanges
   ]);
 
@@ -348,11 +377,11 @@ const Profile = () => {
     setIntention(value);
   };
 
-  const handleCanHelpWithChange = (value: string) => { // NEW
+  const handleCanHelpWithChange = (value: string) => {
     setCanHelpWith(value);
   };
 
-  const handleNeedHelpWithChange = (value: string) => { // NEW
+  const handleNeedHelpWithChange = (value: string) => {
     setNeedHelpWith(value);
   };
 
@@ -445,8 +474,8 @@ const Profile = () => {
       first_name: nameToSave,
       bio,
       intention,
-      can_help_with: canHelpWith, // NEW
-      need_help_with: needHelpWith, // NEW
+      can_help_with: canHelpWith,
+      need_help_with: needHelpWith,
       sociability: sociability[0],
       organization: organization.trim() === "" ? null : organization.trim(),
       linkedin_url: linkedinUrl.trim() === "" ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`,
@@ -454,8 +483,9 @@ const Profile = () => {
       bio_visibility: bioVisibility,
       intention_visibility: intentionVisibility,
       linkedin_visibility: linkedinVisibility,
-      can_help_with_visibility: canHelpWithVisibility, // NEW
-      need_help_with_visibility: needHelpWithVisibility, // NEW
+      can_help_with_visibility: canHelpWithVisibility,
+      need_help_with_visibility: needHelpWithVisibility,
+      pronouns: pronouns, // NEW
       updated_at: new Date().toISOString(),
     };
 
@@ -498,8 +528,8 @@ const Profile = () => {
       setLocalFirstName(profile.first_name || "You");
       setBio(profile.bio || "");
       setIntention(profile.intention || "");
-      setCanHelpWith(profile.can_help_with || ""); // NEW
-      setNeedHelpWith(profile.need_help_with || ""); // NEW
+      setCanHelpWith(profile.can_help_with || "");
+      setNeedHelpWith(profile.need_help_with || "");
       setSociability([profile.sociability || 50]);
       setOrganization(profile.organization || "");
       const fullLinkedinUrl = profile.linkedin_url || "";
@@ -507,25 +537,27 @@ const Profile = () => {
                                ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
                                : "");
       setHostCode(profile.host_code || "");
+      setPronouns(profile.pronouns || null); // NEW
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.pronouns || "")); // NEW
 
       setBioVisibility(profile.bio_visibility || ['public']);
       setIntentionVisibility(profile.intention_visibility || ['public']);
       setLinkedinVisibility(profile.linkedin_visibility || ['public']);
-      setCanHelpWithVisibility(profile.can_help_with_visibility || ['public']); // NEW
-      setNeedHelpWithVisibility(profile.need_help_with_visibility || ['public']); // NEW
+      setCanHelpWithVisibility(profile.can_help_with_visibility || ['public']);
+      setNeedHelpWithVisibility(profile.need_help_with_visibility || ['public']);
 
       setBioLabelColorIndex(getIndexFromVisibility(profile.bio_visibility || ['public']));
       setIntentionLabelColorIndex(getIndexFromVisibility(profile.intention_visibility || ['public']));
       setLinkedinLabelColorIndex(getIndexFromVisibility(profile.linkedin_visibility || ['public']));
-      setCanHelpWithLabelColorIndex(getIndexFromVisibility(profile.can_help_with_visibility || ['public'])); // NEW
-      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(profile.need_help_with_visibility || ['public'])); // NEW
+      setCanHelpWithLabelColorIndex(getIndexFromVisibility(profile.can_help_with_visibility || ['public']));
+      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(profile.need_help_with_visibility || ['public']));
     } else {
       // Revert to local storage defaults if no profile
       setLocalFirstName(localStorage.getItem('deepsesh_local_first_name') || "You");
       setBio(localStorage.getItem('deepsesh_bio') || "");
       setIntention(localStorage.getItem('deepsesh_intention') || "");
-      setCanHelpWith(localStorage.getItem('deepsesh_can_help_with') || ""); // NEW
-      setNeedHelpWith(localStorage.getItem('deepsesh_need_help_with') || ""); // NEW
+      setCanHelpWith(localStorage.getItem('deepsesh_can_help_with') || "");
+      setNeedHelpWith(localStorage.getItem('deepsesh_need_help_with') || "");
       setSociability([parseInt(localStorage.getItem('deepsesh_sociability') || '50', 10)]);
       setOrganization(localStorage.getItem('deepsesh_organization') || "");
       const fullLinkedinUrl = localStorage.getItem('deepsesh_linkedin_url') || "";
@@ -533,24 +565,26 @@ const Profile = () => {
                                ? fullLinkedinUrl.substring("https://www.linkedin.com/in/".length) 
                                : "");
       setHostCode(localStorage.getItem('deepsesh_host_code') || "");
+      setPronouns(localStorage.getItem('deepsesh_pronouns') || null); // NEW
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(localStorage.getItem('deepsesh_pronouns') || "")); // NEW
 
       const defaultBioVis = (JSON.parse(localStorage.getItem('deepsesh_bio_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultIntentionVis = (JSON.parse(localStorage.getItem('deepsesh_intention_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
       const defaultLinkedinVis = (JSON.parse(localStorage.getItem('deepsesh_linkedin_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
-      const defaultCanHelpVis = (JSON.parse(localStorage.getItem('deepsesh_can_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]); // NEW
-      const defaultNeedHelpVis = (JSON.parse(localStorage.getItem('deepsesh_need_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]); // NEW
+      const defaultCanHelpVis = (JSON.parse(localStorage.getItem('deepsesh_can_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
+      const defaultNeedHelpVis = (JSON.parse(localStorage.getItem('deepsesh_need_help_with_visibility') || '["public"]') as ('public' | 'friends' | 'organisation' | 'private')[]);
 
       setBioVisibility(defaultBioVis);
       setIntentionVisibility(defaultIntentionVis);
       setLinkedinVisibility(defaultLinkedinVis);
-      setCanHelpWithVisibility(defaultCanHelpVis); // NEW
-      setNeedHelpWithVisibility(defaultNeedHelpVis); // NEW
+      setCanHelpWithVisibility(defaultCanHelpVis);
+      setNeedHelpWithVisibility(defaultNeedHelpVis);
 
       setBioLabelColorIndex(getIndexFromVisibility(defaultBioVis));
       setIntentionLabelColorIndex(getIndexFromVisibility(defaultIntentionVis));
       setLinkedinLabelColorIndex(getIndexFromVisibility(defaultLinkedinVis));
-      setCanHelpWithLabelColorIndex(getIndexFromVisibility(defaultCanHelpVis)); // NEW
-      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(defaultNeedHelpVis)); // NEW
+      setCanHelpWithLabelColorIndex(getIndexFromVisibility(defaultCanHelpVis));
+      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(defaultNeedHelpVis));
     }
 
     setIsEditingFirstName(false);
@@ -558,7 +592,7 @@ const Profile = () => {
     setIsCopied(false);
     setHasChanges(false);
     setLongPressedFriendId(null);
-  }, [profile, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility, setHostCode]); // NEW dependencies
+  }, [profile, setLocalFirstName, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility, setHostCode, setPronouns]);
 
   const friends = Object.entries(friendStatuses)
     .filter(([, status]) => status === 'friends')
@@ -626,6 +660,23 @@ const Profile = () => {
                   </span>
                 )}
               </CardTitle>
+              {/* NEW: Pronoun Selector */}
+              <div className="flex items-center gap-2 mt-2">
+                <Label htmlFor="pronoun-selector" className="text-muted-foreground text-sm">Pronouns:</Label>
+                <Button
+                  id="pronoun-selector"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePronounCycle}
+                  className={cn(
+                    "px-3 py-1 h-auto rounded-full text-sm transition-colors",
+                    pronouns ? "bg-muted text-foreground hover:bg-muted/80" : "text-muted-foreground hover:bg-muted/50"
+                  )}
+                >
+                  {pronouns || "Blank"}
+                  {pronouns ? <ChevronUp className="ml-1 h-3 w-3 text-muted-foreground" /> : <ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />}
+                </Button>
+              </div>
               {/* Removed TooltipProvider here */}
                 <Tooltip>
                   <TooltipTrigger asChild>

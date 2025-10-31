@@ -19,10 +19,11 @@ export type Profile = {
   bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null
   intention_visibility: ("public" | "friends" | "organisation" | "private")[] | null
   linkedin_visibility: ("public" | "friends" | "organisation" | "private")[] | null
-  can_help_with: string | null // NEW: Added can_help_with
-  can_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW: Added can_help_with_visibility
-  need_help_with: string | null // NEW: Added need_help_with
-  need_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null // NEW: Added need_help_with_visibility
+  can_help_with: string | null
+  can_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null
+  need_help_with: string | null
+  need_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null
+  pronouns: string | null; // NEW: Added pronouns
 };
 
 // Simplified ProfileUpdate type for local storage
@@ -342,11 +343,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "React, TypeScript, Cloud Architecture", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Advanced AI algorithms, Quantum Computing", // NEW
-    need_help_with_visibility: ['friends', 'organisation'], // NEW
+    can_help_with: "React, TypeScript, Cloud Architecture",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Advanced AI algorithms, Quantum Computing",
+    need_help_with_visibility: ['friends', 'organisation'],
     host_code: "redfox",
+    pronouns: "She/Her", // NEW
   },
   {
     id: "mock-user-id-2",
@@ -362,11 +364,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "CSS, HTML, JavaScript, UI/UX Design", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Backend integration, Database optimization", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "CSS, HTML, JavaScript, UI/UX Design",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Backend integration, Database optimization",
+    need_help_with_visibility: ['organisation'],
     host_code: "bluebear",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-3",
@@ -382,11 +385,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['friends', 'organisation'],
     intention_visibility: ['friends', 'organisation'],
     linkedin_visibility: ['friends', 'organisation'],
-    can_help_with: "Node.js, Python, AWS, Docker", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Frontend frameworks, Mobile development", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Node.js, Python, AWS, Docker",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Frontend frameworks, Mobile development",
+    need_help_with_visibility: ['friends'],
     host_code: "greencat",
+    pronouns: "They/Them", // NEW
   },
   {
     id: "mock-user-id-4",
@@ -402,11 +406,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public', 'organisation'],
     intention_visibility: ['public', 'organisation'],
     linkedin_visibility: ['public', 'organisation'],
-    can_help_with: "Agile coaching, Project planning, Team management", // NEW
-    can_help_with_visibility: ['public', 'organisation'], // NEW
-    need_help_with: "Technical deep dives, Coding assistance", // NEW
-    need_help_with_visibility: ['private'], // NEW
+    can_help_with: "Agile coaching, Project planning, Team management",
+    can_help_with_visibility: ['public', 'organisation'],
+    need_help_with: "Technical deep dives, Coding assistance",
+    need_help_with_visibility: ['private'],
     host_code: "yellowdog",
+    pronouns: "She/Her", // NEW
   },
   {
     id: "mock-user-id-5",
@@ -422,11 +427,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['private'],
     intention_visibility: ['private'],
     linkedin_visibility: ['private'],
-    can_help_with: "User research, Wireframing, Prototyping", // NEW
-    can_help_with_visibility: ['private'], // NEW
-    need_help_with: "Statistical analysis, Data visualization", // NEW
-    need_help_with_visibility: ['private'], // NEW
+    can_help_with: "User research, Wireframing, Prototyping",
+    can_help_with_visibility: ['private'],
+    need_help_with: "Statistical analysis, Data visualization",
+    need_help_with_visibility: ['private'],
     host_code: "purplelion",
+    pronouns: null, // NEW
   },
   {
     id: "mock-user-id-6",
@@ -442,11 +448,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Machine Learning, Data Cleaning, SQL", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Deployment strategies, Real-time data processing", // NEW
-    need_help_with_visibility: ['public'], // NEW
+    can_help_with: "Machine Learning, Data Cleaning, SQL",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Deployment strategies, Real-time data processing",
+    need_help_with_visibility: ['public'],
     host_code: "orangetiger",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-7",
@@ -462,11 +469,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "SEO, Content Strategy, Social Media Marketing", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Video editing, Graphic design", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "SEO, Content Strategy, Social Media Marketing",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Video editing, Graphic design",
+    need_help_with_visibility: ['friends'],
     host_code: "pinkwolf",
+    pronouns: "She/Her", // NEW
   },
   {
     id: "mock-user-id-8",
@@ -482,11 +490,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Network security, Incident response, Compliance", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Advanced threat intelligence, Blockchain security", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Network security, Incident response, Compliance",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Advanced threat intelligence, Blockchain security",
+    need_help_with_visibility: ['organisation'],
     host_code: "browndeer",
+    pronouns: "She/Her", // NEW
   },
   {
     id: "mock-user-id-9",
@@ -502,11 +511,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "CI/CD, Kubernetes, Terraform, Azure", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Cost optimization, Serverless architecture best practices", // NEW
-    need_help_with_visibility: ['public'], // NEW
+    can_help_with: "CI/CD, Kubernetes, Terraform, Azure",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Cost optimization, Serverless architecture best practices",
+    need_help_with_visibility: ['public'],
     host_code: "greyzebra",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-10",
@@ -522,11 +532,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Figma, User flows, Interaction design", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Frontend development, Accessibility standards", // NEW
-    need_help_with_visibility: ['friends', 'organisation'], // NEW
+    can_help_with: "Figma, User flows, Interaction design",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Frontend development, Accessibility standards",
+    need_help_with_visibility: ['friends', 'organisation'],
     host_code: "blackpanda",
+    pronouns: "She/Her", // NEW
   },
   // NEW: Mock profiles for participants in mockNearbySessions
   {
@@ -543,11 +554,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Cloud strategy, E-commerce platforms", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Retail innovation, Space exploration", // NEW
-    need_help_with_visibility: ['private'], // NEW
+    can_help_with: "Cloud strategy, E-commerce platforms",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Retail innovation, Space exploration",
+    need_help_with_visibility: ['private'],
     host_code: "goldfish",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-musk",
@@ -563,11 +575,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Rocket engineering, EV design, AI ethics", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Neuralink research, Mars colonization logistics", // NEW
-    need_help_with_visibility: ['private'], // NEW
+    can_help_with: "Rocket engineering, EV design, AI ethics",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Neuralink research, Mars colonization logistics",
+    need_help_with_visibility: ['private'],
     host_code: "silverfalcon",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-zuckerberg",
@@ -583,11 +596,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Social network architecture, VR/AR development", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Privacy regulations, Content moderation strategies", // NEW
-    need_help_with_visibility: ['private'], // NEW
+    can_help_with: "Social network architecture, VR/AR development",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Privacy regulations, Content moderation strategies",
+    need_help_with_visibility: ['private'],
     host_code: "bronzeowl",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-gates",
@@ -603,11 +617,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Software development, Philanthropy, Global health", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Climate change solutions, Education reform", // NEW
-    need_help_with_visibility: ['private'], // NEW
+    can_help_with: "Software development, Philanthropy, Global health",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Climate change solutions, Education reform",
+    need_help_with_visibility: ['private'],
     host_code: "indigoduck",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-jobs",
@@ -623,11 +638,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Product design, Marketing, Entrepreneurship", // NEW
-    can_help_with_visibility: ['public'], // NEW
-    need_help_with: "Supply chain management, Software engineering", // NEW
-    need_help_with_visibility: ['private'], // NEW
+    can_help_with: "Product design, Marketing, Entrepreneurship",
+    can_help_with_visibility: ['public'],
+    need_help_with: "Supply chain management, Software engineering",
+    need_help_with_visibility: ['private'],
     host_code: "violetswan",
+    pronouns: "He/Him", // NEW
   },
   // NEW: Mock profiles for participants in mockFriendsSessions
   {
@@ -644,11 +660,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Psychoanalysis, Dream interpretation", // NEW
-    can_help_with_visibility: ['friends'], // NEW
-    need_help_with: "Modern neuroscience, Cognitive psychology", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Psychoanalysis, Dream interpretation",
+    can_help_with_visibility: ['friends'],
+    need_help_with: "Modern neuroscience, Cognitive psychology",
+    need_help_with_visibility: ['friends'],
     host_code: "tealshark",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-skinner",
@@ -664,11 +681,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Behavioral analysis, Operant conditioning", // NEW
-    can_help_with_visibility: ['friends'], // NEW
-    need_help_with: "Humanistic psychology, Free will debates", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Behavioral analysis, Operant conditioning",
+    can_help_with_visibility: ['friends'],
+    need_help_with: "Humanistic psychology, Free will debates",
+    need_help_with_visibility: ['friends'],
     host_code: "cyanwhale",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-piaget",
@@ -684,11 +702,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Child development, Cognitive stages", // NEW
-    can_help_with_visibility: ['friends'], // NEW
-    need_help_with: "Adolescent psychology, Educational technology", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Child development, Cognitive stages",
+    can_help_with_visibility: ['friends'],
+    need_help_with: "Adolescent psychology, Educational technology",
+    need_help_with_visibility: ['friends'],
     host_code: "magentadolphin",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-jung",
@@ -704,11 +723,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Archetypes, Collective unconscious, Dream analysis", // NEW
-    can_help_with_visibility: ['friends'], // NEW
-    need_help_with: "Behavioral economics, Social psychology", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Archetypes, Collective unconscious, Dream analysis",
+    can_help_with_visibility: ['friends'],
+    need_help_with: "Behavioral economics, Social psychology",
+    need_help_with_visibility: ['friends'],
     host_code: "limeoctopus",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-maslow",
@@ -724,11 +744,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Hierarchy of needs, Self-actualization", // NEW
-    can_help_with_visibility: ['friends'], // NEW
-    need_help_with: "Positive psychology interventions, Organizational behavior", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Hierarchy of needs, Self-actualization",
+    can_help_with_visibility: ['friends'],
+    need_help_with: "Positive psychology interventions, Organizational behavior",
+    need_help_with_visibility: ['friends'],
     host_code: "marooncrab",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-rogers",
@@ -744,11 +765,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Client-centered therapy, Empathy training", // NEW
-    can_help_with_visibility: ['friends'], // NEW
-    need_help_with: "Group therapy dynamics, Cross-cultural counseling", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Client-centered therapy, Empathy training",
+    can_help_with_visibility: ['friends'],
+    need_help_with: "Group therapy dynamics, Cross-cultural counseling",
+    need_help_with_visibility: ['friends'],
     host_code: "navysquid",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-bandura",
@@ -764,11 +786,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Social learning theory, Self-efficacy", // NEW
-    can_help_with_visibility: ['friends'], // NEW
-    need_help_with: "Cognitive neuroscience, Developmental psychology", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Social learning theory, Self-efficacy",
+    can_help_with_visibility: ['friends'],
+    need_help_with: "Cognitive neuroscience, Developmental psychology",
+    need_help_with_visibility: ['friends'],
     host_code: "olivejellyfish",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-pavlov",
@@ -784,11 +807,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Classical conditioning, Reflexology", // NEW
-    can_help_with_visibility: ['friends'], // NEW
-    need_help_with: "Neurophysiology, Animal behavior studies", // NEW
-    need_help_with_visibility: ['friends'], // NEW
+    can_help_with: "Classical conditioning, Reflexology",
+    can_help_with_visibility: ['friends'],
+    need_help_with: "Neurophysiology, Animal behavior studies",
+    need_help_with_visibility: ['friends'],
     host_code: "aquastarfish",
+    pronouns: "He/Him", // NEW
   },
   // NEW: Mock profiles for organization members (famous philosophers/scientists)
   {
@@ -805,11 +829,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Logic, Ethics, Political theory", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Modern science, Empirical research methods", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Logic, Ethics, Political theory",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Modern science, Empirical research methods",
+    need_help_with_visibility: ['organisation'],
     host_code: "redphilosopher",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-plato",
@@ -825,11 +850,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Metaphysics, Epistemology, Political philosophy", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Practical applications, Democratic theory", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Metaphysics, Epistemology, Political philosophy",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Practical applications, Democratic theory",
+    need_help_with_visibility: ['organisation'],
     host_code: "bluephilosopher",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-socrates",
@@ -845,11 +871,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Socratic method, Ethical reasoning", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Formal logic, Scientific method", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Socratic method, Ethical reasoning",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Formal logic, Scientific method",
+    need_help_with_visibility: ['organisation'],
     host_code: "greensocrates",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-descartes",
@@ -865,11 +892,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Rationalism, Metaphysics, Analytic geometry", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Empiricism, Modern physics", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Rationalism, Metaphysics, Analytic geometry",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Empiricism, Modern physics",
+    need_help_with_visibility: ['organisation'],
     host_code: "yellowdescartes",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-kant",
@@ -885,11 +913,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Categorical imperative, Epistemology", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Post-Kantian philosophy, Existentialism", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Categorical imperative, Epistemology",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Post-Kantian philosophy, Existentialism",
+    need_help_with_visibility: ['organisation'],
     host_code: "purplekant",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-locke",
@@ -905,11 +934,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Empiricism, Political philosophy, Natural rights", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Rationalism, Modern constitutional law", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Empiricism, Political philosophy, Natural rights",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Rationalism, Modern constitutional law",
+    need_help_with_visibility: ['organisation'],
     host_code: "orangelocke",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-hume",
@@ -925,11 +955,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Skepticism, Empiricism, Philosophy of mind", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Moral philosophy, Metaphysics", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Skepticism, Empiricism, Philosophy of mind",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Moral philosophy, Metaphysics",
+    need_help_with_visibility: ['organisation'],
     host_code: "pinkhume",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-rousseau",
@@ -945,11 +976,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Social contract theory, Education philosophy", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Modern political science, Environmental ethics", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Social contract theory, Education philosophy",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Modern political science, Environmental ethics",
+    need_help_with_visibility: ['organisation'],
     host_code: "brownrousseau",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-newton",
@@ -965,11 +997,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Classical mechanics, Optics, Calculus", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Quantum physics, Relativity", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Classical mechanics, Optics, Calculus",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Quantum physics, Relativity",
+    need_help_with_visibility: ['organisation'],
     host_code: "greynewton",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-einstein",
@@ -985,11 +1018,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Relativity, Quantum theory, Theoretical physics", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Unified field theory, Cosmology", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Relativity, Quantum theory, Theoretical physics",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Unified field theory, Cosmology",
+    need_help_with_visibility: ['organisation'],
     host_code: "blackeinstein",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-curie",
@@ -1005,11 +1039,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Radioactivity, Analytical chemistry", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Nuclear physics, Medical applications of isotopes", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Radioactivity, Analytical chemistry",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Nuclear physics, Medical applications of isotopes",
+    need_help_with_visibility: ['organisation'],
     host_code: "whitecurie",
+    pronouns: "She/Her", // NEW
   },
   {
     id: "mock-user-id-darwin",
@@ -1025,11 +1060,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Evolutionary biology, Natural selection", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Genetics, Molecular biology", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Evolutionary biology, Natural selection",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Genetics, Molecular biology",
+    need_help_with_visibility: ['organisation'],
     host_code: "golddarwin",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-galileo",
@@ -1045,11 +1081,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Astronomy, Physics, Scientific method", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Quantum mechanics, Astrophysics", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Astronomy, Physics, Scientific method",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Quantum physics, Astrophysics",
+    need_help_with_visibility: ['organisation'],
     host_code: "silvergalileo",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-hawking",
@@ -1065,11 +1102,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Black holes, Cosmology, Quantum gravity", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "String theory, Observational astronomy", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Black holes, Cosmology, Quantum gravity",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "String theory, Observational astronomy",
+    need_help_with_visibility: ['organisation'],
     host_code: "bronzehawking",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-turing",
@@ -1085,11 +1123,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Theoretical computer science, AI, Cryptography", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Machine learning, Quantum computing", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Theoretical computer science, AI, Cryptography",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Machine learning, Quantum computing",
+    need_help_with_visibility: ['organisation'],
     host_code: "indigoturing",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-hypatia",
@@ -1105,11 +1144,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Ancient philosophy, Mathematics, Astronomy", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Modern scientific notation, Telescope technology", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Ancient philosophy, Mathematics, Astronomy",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Modern scientific notation, Telescope technology",
+    need_help_with_visibility: ['organisation'],
     host_code: "violethypatia",
+    pronouns: "She/Her", // NEW
   },
   {
     id: "mock-user-id-copernicus",
@@ -1125,11 +1165,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Heliocentric model, Observational astronomy", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Orbital mechanics, Gravitational theory", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Heliocentric model, Observational astronomy",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Orbital mechanics, Gravitational theory",
+    need_help_with_visibility: ['organisation'],
     host_code: "tealcopernicus",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-kepler",
@@ -1145,11 +1186,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Planetary motion, Celestial mechanics", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Spacecraft trajectory, Exoplanet detection", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Planetary motion, Celestial mechanics",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Spacecraft trajectory, Exoplanet detection",
+    need_help_with_visibility: ['organisation'],
     host_code: "cyankepler",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-bohr",
@@ -1165,11 +1207,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Atomic structure, Quantum mechanics", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Particle physics, Quantum field theory", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Atomic structure, Quantum mechanics",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Particle physics, Quantum field theory",
+    need_help_with_visibility: ['organisation'],
     host_code: "magentabohr",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-heisenberg",
@@ -1185,11 +1228,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Uncertainty principle, Matrix mechanics", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Quantum entanglement, Quantum computing", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Uncertainty principle, Matrix mechanics",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Quantum entanglement, Quantum computing",
+    need_help_with_visibility: ['organisation'],
     host_code: "limeheisenberg",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-schrodinger",
@@ -1205,11 +1249,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Wave mechanics, Quantum states", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Quantum measurement problem, Decoherence", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Wave mechanics, Quantum states",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Quantum measurement problem, Decoherence",
+    need_help_with_visibility: ['organisation'],
     host_code: "maroonschrodinger",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-maxwell",
@@ -1225,11 +1270,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Electromagnetism, Classical field theory", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Quantum electrodynamics, Plasma physics", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Electromagnetism, Classical field theory",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Quantum electrodynamics, Plasma physics",
+    need_help_with_visibility: ['organisation'],
     host_code: "navymaxwell",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-faraday",
@@ -1245,11 +1291,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Electromagnetic induction, Electrochemistry", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Superconductivity, Magnetohydrodynamics", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Electromagnetic induction, Electrochemistry",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Superconductivity, Magnetohydrodynamics",
+    need_help_with_visibility: ['organisation'],
     host_code: "olivefaraday",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-pascal",
@@ -1265,11 +1312,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Probability, Fluid mechanics, Number theory", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Stochastic processes, Quantum field theory", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Probability, Fluid mechanics, Number theory",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Stochastic processes, Quantum field theory",
+    need_help_with_visibility: ['organisation'],
     host_code: "aquapascal",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-leibniz",
@@ -1285,11 +1333,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Calculus, Metaphysics, Logic", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Modern logic, Philosophy of language", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Calculus, Metaphysics, Logic",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Modern logic, Philosophy of language",
+    need_help_with_visibility: ['organisation'],
     host_code: "fuchsialeibniz",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-pythagoras",
@@ -1305,11 +1354,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Geometry, Number theory, Music theory", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Modern algebra, Abstract mathematics", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Geometry, Number theory, Music theory",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Modern algebra, Abstract mathematics",
+    need_help_with_visibility: ['organisation'],
     host_code: "azurepythagoras",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-euclid",
@@ -1325,11 +1375,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Euclidean geometry, Axiomatic systems", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Non-Euclidean geometry, Topology", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Euclidean geometry, Axiomatic systems",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Non-Euclidean geometry, Topology",
+    need_help_with_visibility: ['organisation'],
     host_code: "beigeuclid",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-archimedes",
@@ -1345,11 +1396,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Mechanics, Hydrostatics, Geometry", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Modern engineering, Materials science", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Mechanics, Hydrostatics, Geometry",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Modern engineering, Materials science",
+    need_help_with_visibility: ['organisation'],
     host_code: "coralarchimedes",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-davinci",
@@ -1365,11 +1417,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Art, Anatomy, Engineering design", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Modern art techniques, Digital fabrication", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Art, Anatomy, Engineering design",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Modern art techniques, Digital fabrication",
+    need_help_with_visibility: ['organisation'],
     host_code: "crimsondavinci",
+    pronouns: "He/Him", // NEW
   },
   {
     id: "mock-user-id-franklin",
@@ -1385,11 +1438,12 @@ const mockProfiles: Profile[] = [
     bio_visibility: ['public'],
     intention_visibility: ['public'],
     linkedin_visibility: ['public'],
-    can_help_with: "Electricity, Political science, Journalism", // NEW
-    can_help_with_visibility: ['organisation'], // NEW
-    need_help_with: "Modern energy systems, Digital media", // NEW
-    need_help_with_visibility: ['organisation'], // NEW
+    can_help_with: "Electricity, Political science, Journalism",
+    can_help_with_visibility: ['organisation'],
+    need_help_with: "Modern energy systems, Digital media",
+    need_help_with_visibility: ['organisation'],
     host_code: "lavenderfranklin",
+    pronouns: "He/Him", // NEW
   },
 ];
 
@@ -1420,10 +1474,13 @@ interface ProfileContextType {
   setIntentionVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
   linkedinVisibility: ('public' | 'friends' | 'organisation' | 'private')[]
   setLinkedinVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
-  canHelpWithVisibility: ('public' | 'friends' | 'organisation' | 'private')[] // NEW
-  setCanHelpWithVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>; // NEW
-  needHelpWithVisibility: ('public' | 'friends' | 'organisation' | 'private')[] // NEW
-  setNeedHelpWithVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>; // NEW
+  canHelpWithVisibility: ('public' | 'friends' | 'organisation' | 'private')[]
+  setCanHelpWithVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
+  needHelpWithVisibility: ('public' | 'friends' | 'organisation' | 'private')[]
+  setNeedHelpWithVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
+
+  pronouns: string | null; // NEW: Added pronouns to context type
+  setPronouns: React.Dispatch<React.SetStateAction<string | null>>; // NEW: Added setPronouns to context type
 
   friendStatuses: Record<string, 'none' | 'pending' | 'friends'>;
   sendFriendRequest: (targetUserId: string) => void;
@@ -1452,12 +1509,13 @@ const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
 const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility';
 const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility';
 const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility';
-const LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY = 'deepsesh_can_help_with_visibility'; // NEW
-const LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY = 'deepsesh_need_help_with_visibility'; // NEW
+const LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY = 'deepsesh_can_help_with_visibility';
+const LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY = 'deepsesh_need_help_with_visibility';
 const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses';
 const LOCAL_STORAGE_ORGANIZATION_KEY = 'deepsesh_organization';
-const LOCAL_STORAGE_CAN_HELP_WITH_KEY = 'deepsesh_can_help_with'; // NEW
-const LOCAL_STORAGE_NEED_HELP_WITH_KEY = 'deepsesh_need_help_with'; // NEW
+const LOCAL_STORAGE_CAN_HELP_WITH_KEY = 'deepsesh_can_help_with';
+const LOCAL_STORAGE_NEED_HELP_WITH_KEY = 'deepsesh_need_help_with';
+const LOCAL_STORAGE_PRONOUNS_KEY = 'deepsesh_pronouns'; // NEW: Local storage key for pronouns
 
 export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const { user, login } = useAuth();
@@ -1478,8 +1536,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
-  const [canHelpWithVisibility, setCanHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // NEW
-  const [needHelpWithVisibility, setNeedHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']); // NEW
+  const [canHelpWithVisibility, setCanHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
+  const [needHelpWithVisibility, setNeedHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
+  const [pronouns, setPronouns] = useState<string | null>(null); // NEW: State for pronouns
 
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
   const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -1592,10 +1651,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (storedIntentionVisibility) setIntentionVisibility(JSON.parse(storedIntentionVisibility));
     const storedLinkedinVisibility = localStorage.getItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY);
     if (storedLinkedinVisibility) setLinkedinVisibility(JSON.parse(storedLinkedinVisibility));
-    const storedCanHelpWithVisibility = localStorage.getItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY); // NEW
-    if (storedCanHelpWithVisibility) setCanHelpWithVisibility(JSON.parse(storedCanHelpWithVisibility)); // NEW
-    const storedNeedHelpWithVisibility = localStorage.getItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY); // NEW
-    if (storedNeedHelpWithVisibility) setNeedHelpWithVisibility(JSON.parse(storedNeedHelpWithVisibility)); // NEW
+    const storedCanHelpWithVisibility = localStorage.getItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY);
+    if (storedCanHelpWithVisibility) setCanHelpWithVisibility(JSON.parse(storedCanHelpWithVisibility));
+    const storedNeedHelpWithVisibility = localStorage.getItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY);
+    if (storedNeedHelpWithVisibility) setNeedHelpWithVisibility(JSON.parse(storedNeedHelpWithVisibility));
+    const storedPronouns = localStorage.getItem(LOCAL_STORAGE_PRONOUNS_KEY); // NEW
+    if (storedPronouns) setPronouns(storedPronouns); // NEW
 
     const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
     if (storedFriendStatuses) setFriendStatuses(JSON.parse(storedFriendStatuses));
@@ -1622,22 +1683,25 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         bio_visibility: (storedBioVisibility ? JSON.parse(storedBioVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         intention_visibility: (storedIntentionVisibility ? JSON.parse(storedIntentionVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
         linkedin_visibility: (storedLinkedinVisibility ? JSON.parse(storedLinkedinVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
-        can_help_with: localStorage.getItem(LOCAL_STORAGE_CAN_HELP_WITH_KEY) || null, // NEW
-        can_help_with_visibility: (storedCanHelpWithVisibility ? JSON.parse(storedCanHelpWithVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
-        need_help_with: localStorage.getItem(LOCAL_STORAGE_NEED_HELP_WITH_KEY) || null, // NEW
-        need_help_with_visibility: (storedNeedHelpWithVisibility ? JSON.parse(storedNeedHelpWithVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[], // NEW
+        can_help_with: localStorage.getItem(LOCAL_STORAGE_CAN_HELP_WITH_KEY) || null,
+        can_help_with_visibility: (storedCanHelpWithVisibility ? JSON.parse(storedCanHelpWithVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        need_help_with: localStorage.getItem(LOCAL_STORAGE_NEED_HELP_WITH_KEY) || null,
+        need_help_with_visibility: (storedNeedHelpWithVisibility ? JSON.parse(storedNeedHelpWithVisibility) : ['public']) as ('public' | 'friends' | 'organisation' | 'private')[],
+        pronouns: storedPronouns || null, // NEW
       };
       setProfile(currentProfile);
       setHostCode(currentProfile.host_code || generateRandomHostCode());
       setBioVisibility(currentProfile.bio_visibility || ['public']);
       setIntentionVisibility(currentProfile.intention_visibility || ['public']);
       setLinkedinVisibility(currentProfile.linkedin_visibility || ['public']);
-      setCanHelpWithVisibility(currentProfile.can_help_with_visibility || ['public']); // NEW
-      setNeedHelpWithVisibility(currentProfile.need_help_with_visibility || ['public']); // NEW
+      setCanHelpWithVisibility(currentProfile.can_help_with_visibility || ['public']);
+      setNeedHelpWithVisibility(currentProfile.need_help_with_visibility || ['public']);
+      setPronouns(currentProfile.pronouns || null); // NEW
       console.log("Profile fetched from local storage for logged-in user:", currentProfile.first_name);
     } else {
       setProfile(null);
       setHostCode(storedHostCode || generateRandomHostCode());
+      setPronouns(storedPronouns || null); // NEW
       console.log("No user logged in, using default/local host code.");
     }
     setLoading(false);
@@ -1667,10 +1731,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (data.bio_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY, JSON.stringify(data.bio_visibility));
     if (data.intention_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, JSON.stringify(data.intention_visibility));
     if (data.linkedin_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(data.linkedin_visibility));
-    if (data.can_help_with !== undefined) localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_KEY, data.can_help_with || ''); // NEW
-    if (data.can_help_with_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, JSON.stringify(data.can_help_with_visibility)); // NEW
-    if (data.need_help_with !== undefined) localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_KEY, data.need_help_with || ''); // NEW
-    if (data.need_help_with_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, JSON.stringify(data.need_help_with_visibility)); // NEW
+    if (data.can_help_with !== undefined) localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_KEY, data.can_help_with || '');
+    if (data.can_help_with_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, JSON.stringify(data.can_help_with_visibility));
+    if (data.need_help_with !== undefined) localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_KEY, data.need_help_with || '');
+    if (data.need_help_with_visibility !== undefined) localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, JSON.stringify(data.need_help_with_visibility));
+    if (data.pronouns !== undefined) localStorage.setItem(LOCAL_STORAGE_PRONOUNS_KEY, data.pronouns || ''); // NEW
 
     // Update the local profile state
     setProfile(prevProfile => {
@@ -1689,8 +1754,9 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     if (data.bio_visibility) setBioVisibility(data.bio_visibility);
     if (data.intention_visibility) setIntentionVisibility(data.intention_visibility);
     if (data.linkedin_visibility) setLinkedinVisibility(data.linkedin_visibility);
-    if (data.can_help_with_visibility) setCanHelpWithVisibility(data.can_help_with_visibility); // NEW
-    if (data.need_help_with_visibility) setNeedHelpWithVisibility(data.need_help_with_visibility); // NEW
+    if (data.can_help_with_visibility) setCanHelpWithVisibility(data.can_help_with_visibility);
+    if (data.need_help_with_visibility) setNeedHelpWithVisibility(data.need_help_with_visibility);
+    if (data.pronouns !== undefined) setPronouns(data.pronouns); // NEW
 
     console.log("Profile updated in local storage and context:", data);
     toast.success(successMessage || "Profile updated!", {
@@ -1721,10 +1787,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
       bio_visibility: ['public'],
       intention_visibility: ['public'],
       linkedin_visibility: ['public'],
-      can_help_with: null, // NEW
-      can_help_with_visibility: ['public'], // NEW
-      need_help_with: null, // NEW
-      need_help_with_visibility: ['public'], // NEW
+      can_help_with: null,
+      can_help_with_visibility: ['public'],
+      need_help_with: null,
+      need_help_with_visibility: ['public'],
+      pronouns: null, // NEW
     };
   }, []);
 
@@ -1798,13 +1865,17 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(linkedinVisibility));
   }, [linkedinVisibility]);
 
-  useEffect(() => { // NEW
+  useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, JSON.stringify(canHelpWithVisibility));
   }, [canHelpWithVisibility]);
 
-  useEffect(() => { // NEW
+  useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, JSON.stringify(needHelpWithVisibility));
   }, [needHelpWithVisibility]);
+
+  useEffect(() => { // NEW
+    localStorage.setItem(LOCAL_STORAGE_PRONOUNS_KEY, pronouns || '');
+  }, [pronouns]);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
@@ -1831,10 +1902,12 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
     setIntentionVisibility,
     linkedinVisibility,
     setLinkedinVisibility,
-    canHelpWithVisibility, // NEW
-    setCanHelpWithVisibility, // NEW
-    needHelpWithVisibility, // NEW
-    setNeedHelpWithVisibility, // NEW
+    canHelpWithVisibility,
+    setCanHelpWithVisibility,
+    needHelpWithVisibility,
+    setNeedHelpWithVisibility,
+    pronouns, // NEW
+    setPronouns, // NEW
     friendStatuses,
     sendFriendRequest,
     acceptFriendRequest,
