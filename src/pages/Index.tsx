@@ -1594,7 +1594,7 @@ const Index = () => {
                               {person.sociability}%
                             </span>
                           </PopoverTrigger>
-                          <PopoverContent className="select-none p-1 text-xs"> {/* Reduced padding and text size */}
+                          <PopoverContent className="select-none p-1 text-xs w-fit"> {/* Added w-fit here */}
                             Focus preference
                           </PopoverContent>
                         </Popover>
