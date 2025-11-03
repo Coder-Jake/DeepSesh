@@ -269,8 +269,8 @@ const Index = () => {
     ['nearby', 'friends', 'organization']
   );
 
-  // NEW: State and ref for sociability tooltip
-  const [isSociabilityTooltipOpen, setIsSociabilityTooltipOpen] = useState(false);
+  // NEW: State and ref for sociability popover
+  const [openSociabilityTooltipId, setOpenSociabilityTooltipId] = useState<string | null>(null);
   const sociabilityTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Removed mobileTooltipStates and mobileTooltipTimeoutRefs
@@ -598,6 +598,11 @@ const Index = () => {
     let remainingSecondsInPhase = 0;
     let currentPhaseDurationMinutes = 0;
 
+    // Calculate effective elapsed seconds within a cycle
+    const cycleDurationSeconds = session.fullSchedule.reduce((sum, phase) => sum + phase.durationMinutes * 60, 0);
+    const effectiveElapsedSeconds = cycleDurationSeconds > 0 ? elapsedSecondsSinceSessionStart % cycleDurationSeconds : 0;
+
+
     if (totalScheduleDurationSeconds === 0) {
       currentPhaseType = 'focus';
       remainingSecondsInPhase = 0;
@@ -617,6 +622,7 @@ const Index = () => {
           const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle; // Declare timeIntoPhase
           remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
           currentPhaseDurationMinutes = phase.durationMinutes;
+          currentPhaseType = phase.type; // Set currentPhaseType based on the phase
           break;
         }
         accumulatedDurationSecondsInCycle += phaseDurationSeconds;
@@ -1557,29 +1563,41 @@ const Index = () => {
                         {person.id === currentUserId ? "You" : person.name}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        <Tooltip open={isSociabilityTooltipOpen} onOpenChange={setIsSociabilityTooltipOpen} delayDuration={0}>
-                          <TooltipTrigger asChild>
-                            <span
-                              className="cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent parent div's onClick
-                                setIsSociabilityTooltipOpen(true);
+                        <Popover
+                          open={openSociabilityTooltipId === person.id}
+                          onOpenChange={(isOpen) => {
+                            if (isOpen) {
+                              setOpenSociabilityTooltipId(person.id);
+                              if (sociabilityTooltipTimeoutRef.current) {
+                                clearTimeout(sociabilityTooltipTimeoutRef.current);
+                              }
+                              sociabilityTooltipTimeoutRef.current = setTimeout(() => {
+                                setOpenSociabilityTooltipId(null);
+                                sociabilityTooltipTimeoutRef.current = null;
+                              }, 2000);
+                            } else {
+                              if (openSociabilityTooltipId === person.id) {
+                                setOpenSociabilityTooltipId(null);
                                 if (sociabilityTooltipTimeoutRef.current) {
                                   clearTimeout(sociabilityTooltipTimeoutRef.current);
-                                }
-                                sociabilityTooltipTimeoutRef.current = setTimeout(() => {
-                                  setIsSociabilityTooltipOpen(false);
                                   sociabilityTooltipTimeoutRef.current = null;
-                                }, 2000);
-                              }}
+                                }
+                              }
+                            }
+                          }}
+                        >
+                          <PopoverTrigger asChild>
+                            <span
+                              className="cursor-pointer"
+                              onClick={(e) => e.stopPropagation()} // Prevent parent div's onClick
                             >
                               {person.sociability}%
                             </span>
-                          </TooltipTrigger>
-                          <TooltipContent className="select-none">
+                          </PopoverTrigger>
+                          <PopoverContent className="select-none">
                             Focus preference
-                          </TooltipContent>
-                        </Tooltip>
+                          </PopoverContent>
+                        </Popover>
                       </span>
                     </div>
                   ))}
