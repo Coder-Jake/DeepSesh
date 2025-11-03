@@ -71,7 +71,7 @@ const Header = () => {
                   className={`absolute text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
                     secretTextVisible ? "opacity-100" : "opacity-0"
                   } select-none`}
-                  style={{ left: '125px', top: '31px' }} // Position "Study Sesh" below "Sesh"
+                  style={{ left: '90px', top: '31px' }} // Adjusted positioning for "Study Sesh"
                 >
                   Study Sesh
                 </div>
