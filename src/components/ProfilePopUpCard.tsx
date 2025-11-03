@@ -100,7 +100,7 @@ const ProfilePopUpCard: React.FC = () => {
             organization: currentUserOrganization,
             pronouns: currentUserPronouns,
             bio_visibility: bioVisibility,
-            intention_visibility: intentionVisibility,
+                        intention_visibility: intentionVisibility,
             linkedin_visibility: linkedinVisibility,
             can_help_with_visibility: canHelpWithVisibility,
             need_help_with_visibility: needHelpWithVisibility,
@@ -369,7 +369,7 @@ const ProfilePopUpCard: React.FC = () => {
         {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
-              <Users size={16} /> Sociability
+              <Users size={16} /> Focus Preference
             </h4>
             <div className="w-full bg-secondary rounded-full h-2 mt-1">
               <div
