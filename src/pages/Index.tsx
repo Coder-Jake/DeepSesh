@@ -94,11 +94,11 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "mock-user-id-bezos", name: "Bezos", sociability: 20, intention: "Optimizing cloud infrastructure." },
+      { id: "mock-user-id-bezos", name: "Altman", sociability: 20, intention: "Optimizing cloud infrastructure." },
       { id: "mock-user-id-musk", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
       { id: "mock-user-id-zuckerberg", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
-      { id: "mock-user-id-gates", name: "Gates", sociability: 20, intention: "Refining operating system architecture." },
-      { id: "mock-user-id-jobs", name: "Jobs", sociability: 30, intention: "Innovating user interface design." },
+      { id: "mock-user-id-gates", name: "Amodei", sociability: 20, intention: "Refining operating system architecture." },
+      { id: "mock-user-id-jobs", name: "Huang", sociability: 30, intention: "Innovating user interface design." },
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 55 },
@@ -271,8 +271,6 @@ const Index = () => {
 
   // Removed mobileTooltipStates and mobileTooltipTimeoutRefs
   // Removed useIsMobile as it's no longer needed for this interaction
-
-  // Removed state to manage which coworker popover is open as popover is removed
 
   // Removed cleanup for mobile tooltip timeouts
 

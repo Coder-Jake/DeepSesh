@@ -543,7 +543,7 @@ const mockProfiles: Profile[] = [
   // NEW: Mock profiles for participants in mockNearbySessions
   {
     id: "mock-user-id-bezos",
-    first_name: "Bezos",
+    first_name: "Altman",
     last_name: null,
     avatar_url: null,
     bio: "Optimizing cloud infrastructure for global scale.",
@@ -606,7 +606,7 @@ const mockProfiles: Profile[] = [
   },
   {
     id: "mock-user-id-gates",
-    first_name: "Gates",
+    first_name: "Amodei",
     last_name: null,
     avatar_url: null,
     bio: "Refining operating system architecture and philanthropic initiatives.",
@@ -627,7 +627,7 @@ const mockProfiles: Profile[] = [
   },
   {
     id: "mock-user-id-jobs",
-    first_name: "Jobs",
+    first_name: "Huang",
     last_name: null,
     avatar_url: null,
     bio: "Innovating user interface design and consumer electronics.",
@@ -1589,11 +1589,11 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
     const mockNearbyParticipants = [
-      { id: "mock-user-id-bezos", name: "Bezos", sociability: 20, intention: "Optimizing cloud infrastructure." },
+      { id: "mock-user-id-bezos", name: "Altman", sociability: 20, intention: "Optimizing cloud infrastructure." },
       { id: "mock-user-id-musk", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
       { id: "mock-user-id-zuckerberg", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
-      { id: "mock-user-id-gates", name: "Gates", sociability: 20, intention: "Refining operating system architecture." },
-      { id: "mock-user-id-jobs", name: "Jobs", sociability: 30, intention: "Innovating user interface design." },
+      { id: "mock-user-id-gates", name: "Amodei", sociability: 20, intention: "Refining operating system architecture." },
+      { id: "mock-user-id-jobs", name: "Huang", sociability: 30, intention: "Innovating user interface design." },
     ];
     const mockFriendsParticipants = [
       { id: "mock-user-id-freud", name: "Freud", sociability: 60, intention: "Reviewing psychoanalytic theories." },
