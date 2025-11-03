@@ -110,3 +110,8 @@
 .shape-octagon {
   clip-path: polygon(29.3% 0%, 70.7% 0%, 100% 29.3%, 100% 70.7%, 70.7% 100%, 29.3% 100%, 0% 70.7%, 0% 29.3%);
 }
+
+/* Custom CSS to apply dynamic color to the Slider range */
+.sociability-slider [data-radix-slider-range] {
+  background-color: var(--sociability-slider-color) !important;
+}

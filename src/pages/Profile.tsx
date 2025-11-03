@@ -716,7 +716,8 @@ const Profile = () => {
                       max={100}
                       min={0}
                       step={1}
-                      className="w-full"
+                      className="w-full sociability-slider" // Added custom class
+                      style={{ '--sociability-slider-color': getSociabilityColor(sociability) } as React.CSSProperties} // Set CSS variable
                     />
                   </div>
                   <div 
