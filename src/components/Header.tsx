@@ -3,34 +3,47 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import Navigation from "@/components/Navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Import useEffect
 import { cn } from "@/lib/utils"; // Fixed import for cn
 
 const Header = () => {
   const location = useLocation();
-  const { timeLeft, formatTime, isRunning, isPaused, isFlashing, hasWonPrize } = useTimer(); // NEW: Get hasWonPrize
+  const { timeLeft, formatTime, isRunning, isPaused, isFlashing, hasWonPrize } = useTimer();
   const isHomePage = location.pathname === "/";
 
   const [secretTextVisible, setSecretTextVisible] = useState(false);
-  const [showSecretTextDiv, setShowSecretTextDiv] = useState(false); // New state to control rendering
+  const [showSecretTextDiv, setShowSecretTextDiv] = useState(false);
+  const [showDemoText, setShowDemoText] = useState(false); // New state for the demo text visibility
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isHomePage) {
+      setShowDemoText(true); // Show it immediately when on home page
+      timer = setTimeout(() => {
+        setShowDemoText(false); // Hide after 3 seconds
+      }, 3000);
+    } else {
+      setShowDemoText(false); // Hide immediately if not on home page
+    }
+
+    return () => {
+      clearTimeout(timer); // Clean up the timer on unmount or dependency change
+    };
+  }, [isHomePage]); // Re-run effect when isHomePage changes
 
   const handleHeaderClick = () => {
     if (isHomePage) {
-      // Ensure any previous timeouts are cleared to prevent overlapping animations
-      // (This part is not strictly necessary for this specific request but good practice)
-      // if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-      setShowSecretTextDiv(true); // Start rendering the div with initial opacity-0
+      setShowSecretTextDiv(true);
       
       setTimeout(() => {
-        setSecretTextVisible(true); // Trigger fade-in after 1s delay
+        setSecretTextVisible(true);
         setTimeout(() => {
-          setSecretTextVisible(false); // Trigger fade-out after 3s
+          setSecretTextVisible(false);
           setTimeout(() => {
-            setShowSecretTextDiv(false); // Remove from DOM after fade-out completes (1s transition)
+            setShowSecretTextDiv(false);
           }, 1000); 
         }, 3000);
-      }, 1000); // Initial delay before fade-in starts
+      }, 1000);
     }
   };
 
@@ -40,7 +53,7 @@ const Header = () => {
         <div className="relative flex items-center">
           <Link 
             to="/" 
-            className="hover:opacity-80 transition-opacity flex items-center relative" // Added 'relative' here
+            className="hover:opacity-80 transition-opacity flex items-center relative"
             onClick={handleHeaderClick}
           >
             <img 
@@ -52,7 +65,7 @@ const Header = () => {
               DeepSesh
               <span className={cn(
                 "ml-0.5 text-[0.6rem] text-gray-400 font-normal transition-opacity duration-200",
-                isHomePage ? "opacity-100" : "opacity-0 pointer-events-none"
+                isHomePage && showDemoText ? "opacity-100" : "opacity-0 pointer-events-none" // Updated visibility logic
               )}>
                 (demo)
               </span>
@@ -63,7 +76,7 @@ const Header = () => {
                   className={`absolute text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
                     secretTextVisible ? "opacity-100" : "opacity-0"
                   } select-none`}
-                  style={{ left: '32px', top: '31px' }} // Position "Deep Work" below "Deep"
+                  style={{ left: '32px', top: '31px' }}
                 >
                   Deep Work
                 </div>
@@ -71,7 +84,7 @@ const Header = () => {
                   className={`absolute text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
                     secretTextVisible ? "opacity-100" : "opacity-0"
                   } select-none`}
-                  style={{ left: '107px', top: '31px' }} // Position "Study Sesh" below "Sesh"
+                  style={{ left: '107px', top: '31px' }}
                 >
                   Study Sesh
                 </div>
@@ -85,7 +98,7 @@ const Header = () => {
           <Link to="/" className="hover:opacity-80 transition-opacity">
             <div 
               className={`text-lg font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'animate-pulse' : ''} select-none`}
-              style={hasWonPrize ? { color: 'hsl(50 100% 40%)' } : {}} // NEW: Apply prize color
+              style={hasWonPrize ? { color: 'hsl(50 100% 40%)' } : {}}
             >
               {formatTime(timeLeft)}
             </div>
