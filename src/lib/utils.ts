@@ -41,15 +41,15 @@ export const getSociabilityGradientColor = (sociability: number): string => {
   const saturation = 90; // Fixed saturation
 
   if (clampedSociability > 50) {
-    // Blueish gradient: H=220, L from 0% (at 50%) to 50% (at 100%)
+    // Purpleish gradient for Deep Focus: H=260, L from 0% (at 50%) to 50% (at 100%)
     const lightness = (clampedSociability - 50) * (50 / 50); // (sociability - 50)
-    return `hsl(220 ${saturation}% ${lightness}%)`;
-  } else if (clampedSociability < 50) {
-    // Purpleish gradient: H=260, L from 0% (at 50%) to 50% (at 0%)
-    const lightness = (50 - clampedSociability) * (50 / 50); // (50 - sociability)
     return `hsl(260 ${saturation}% ${lightness}%)`;
+  } else if (clampedSociability < 50) {
+    // Blueish gradient for Banter: H=220, L from 0% (at 50%) to 50% (at 0%)
+    const lightness = (50 - clampedSociability) * (50 / 50); // (50 - sociability)
+    return `hsl(220 ${saturation}% ${lightness}%)`;
   } else {
-    // Exactly 50%, lightness is 0%. Use the blueish hue as a default for the midpoint.
-    return `hsl(220 ${saturation}% 0%)`;
+    // Exactly 50%, lightness is 0%. Use the purpleish hue as a default for the midpoint.
+    return `hsl(260 ${saturation}% 0%)`;
   }
 };
