@@ -717,15 +717,10 @@ const Profile = () => {
                       min={0}
                       step={1}
                       className="w-full"
+                      rangeColor={getSociabilityGradientColor(sociability)} // NEW: Apply dynamic color to the slider range
                     />
                   </div>
-                  {/* NEW: Visual bar for sociability */}
-                  <div className="w-full bg-secondary rounded-full h-2 mt-1">
-                    <div
-                      className="h-2 rounded-full"
-                      style={{ width: `${sociability}%`, backgroundColor: getSociabilityGradientColor(sociability) }}
-                    ></div>
-                  </div>
+                  {/* REMOVED: Visual bar for sociability */}
                   <div 
                     className="text-center mt-3 text-sm text-muted-foreground cursor-pointer select-none"
                     onMouseDown={() => handleLongPressStart(handleSociabilityLongPress)}
