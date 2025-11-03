@@ -3,34 +3,31 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import Navigation from "@/components/Navigation";
-import { useState } from "react";
-import { cn } from "@/lib/utils"; // Added import for cn
+import { useState, useRef } from "react"; // Added useRef
+import { cn } from "@/lib/utils";
 
 const Header = () => {
   const location = useLocation();
-  const { timeLeft, formatTime, isRunning, isPaused, isFlashing, hasWonPrize } = useTimer(); // NEW: Get hasWonPrize
+  const { timeLeft, formatTime, isRunning, isPaused, isFlashing, hasWonPrize } = useTimer();
   const isHomePage = location.pathname === "/";
 
   const [secretTextVisible, setSecretTextVisible] = useState(false);
-  const [showSecretTextDiv, setShowSecretTextDiv] = useState(false); // New state to control rendering
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref to store timeout ID
 
   const handleHeaderClick = () => {
     if (isHomePage) {
-      // Ensure any previous timeouts are cleared to prevent overlapping animations
-      // (This part is not strictly necessary for this specific request but good practice)
-      // if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      // Clear any existing timeout to prevent overlapping animations
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
 
-      setShowSecretTextDiv(true); // Start rendering the div with initial opacity-0
-      
-      setTimeout(() => {
-        setSecretTextVisible(true); // Trigger fade-in after 1s delay
-        setTimeout(() => {
-          setSecretTextVisible(false); // Trigger fade-out after 3s
-          setTimeout(() => {
-            setShowSecretTextDiv(false); // Remove from DOM after fade-out completes (1s transition)
-          }, 1000); 
-        }, 3000);
-      }, 1000); // Initial delay before fade-in starts
+      setSecretTextVisible(true); // Make it visible immediately
+
+      // Set a timeout to hide it after 3 seconds
+      timeoutRef.current = setTimeout(() => {
+        setSecretTextVisible(false);
+        timeoutRef.current = null; // Clear the ref after timeout
+      }, 3000); // Visible for 3 seconds
     }
   };
 
@@ -59,15 +56,14 @@ const Header = () => {
                   (demo)
                 </span>
               </h1>
-              {showSecretTextDiv && (
-                <div
-                  className={`text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
-                    secretTextVisible ? "opacity-100" : "opacity-0"
-                  } select-none -mt-2`}
-                >
-                  Deep Work Study Sesh
-                </div>
-              )}
+              {/* Secret text div is always rendered to reserve space */}
+              <div
+                className={`text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
+                  secretTextVisible ? "opacity-100" : "opacity-0 pointer-events-none" // Added pointer-events-none
+                } select-none -mt-2`}
+              >
+                Deep Work Study Sesh
+              </div>
             </div>
           </Link>
         </div>
@@ -77,7 +73,7 @@ const Header = () => {
           <Link to="/" className="hover:opacity-80 transition-opacity">
             <div 
               className={`text-lg font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'animate-pulse' : ''} select-none`}
-              style={hasWonPrize ? { color: 'hsl(50 100% 40%)' } : {}} // NEW: Apply prize color
+              style={hasWonPrize ? { color: 'hsl(50 100% 40%)' } : {}}
             >
               {formatTime(timeLeft)}
             </div>
