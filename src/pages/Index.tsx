@@ -116,14 +116,14 @@ const mockFriendsSessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
     participants: [
-      { id: "mock-user-id-freud", name: "Freud", sociability: 70, intention: "Reviewing psychoanalytic theories." }, // MODIFIED
-      { id: "mock-user-id-skinner", name: "Skinner", sociability: 70, intention: "Memorizing behavioral principles." }, // MODIFIED
-      { id: "mock-user-id-piaget", name: "Piaget", sociability: 80, intention: "Practicing cognitive development questions." }, // MODIFIED
-      { id: "mock-user-id-jung", name: "Jung", sociability: 70, intention: "Summarizing archetypal concepts." }, // MODIFIED
-      { id: "mock-user-id-maslow", name: "Maslow", sociability: 60, intention: "Creating hierarchy of needs flashcards." }, // MODIFIED
-      { id: "mock-user-id-rogers", name: "Rogers", sociability: 65, intention: "Discussing humanistic approaches." }, // MODIFIED
-      { id: "mock-user-id-bandura", name: "Bandura", sociability: 75, intention: "Collaborating on social learning theory guide." }, // MODIFIED
-      { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 80, intention: "Peer teaching classical conditioning." }, // MODIFIED
+      { id: "mock-user-id-freud", name: "Freud", sociability: 70, intention: "Reviewing psychoanalytic theories." },
+      { id: "mock-user-id-skinner", name: "Skinner", sociability: 70, intention: "Memorizing behavioral principles." },
+      { id: "mock-user-id-piaget", name: "Piaget", sociability: 80, intention: "Practicing cognitive development questions." },
+      { id: "mock-user-id-jung", name: "Jung", sociability: 70, intention: "Summarizing archetypal concepts." },
+      { id: "mock-user-id-maslow", name: "Maslow", sociability: 95, intention: "Creating hierarchy of needs flashcards." }, // MODIFIED
+      { id: "mock-user-id-rogers", name: "Rogers", sociability: 90, intention: "Discussing humanistic approaches." }, // MODIFIED
+      { id: "mock-user-id-bandura", name: "Bandura", sociability: 75, intention: "Collaborating on social learning theory guide." },
+      { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 80, intention: "Peer teaching classical conditioning." },
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 25 },
