@@ -823,16 +823,18 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setRecurrenceFrequency(schoolTimetableTemplate.recurrenceFrequency);
         setTimerColors(schoolTimetableTemplate.timerColors || {});
         // Also set the initial timer values based on the first item of the default schedule
-        if (schoolTimetableTemplate.schedule.length > 0) {
-          const firstItem = schoolTimetableTemplate.schedule[0];
-          _setFocusMinutes(firstItem.type === 'focus' ? firstItem.durationMinutes : _defaultFocusMinutes);
-          _setBreakMinutes(firstItem.type === 'break' ? firstItem.durationMinutes : _defaultBreakMinutes);
-          setTimerType(firstItem.type);
-          setTimeLeft(firstItem.durationMinutes * 60);
-        }
+        // MODIFIED: Ensure homepage timer defaults to _defaultFocusMinutes and _defaultBreakMinutes
+        _setFocusMinutes(_defaultFocusMinutes);
+        _setBreakMinutes(_defaultBreakMinutes);
+        setTimerType('focus'); // Default to focus
+        setTimeLeft(_defaultFocusMinutes * 60); // Set time left to default focus
       } else {
         // Fallback to default if "School Timetable" is not found
         setSavedSchedules(DEFAULT_SCHEDULE_TEMPLATES);
+        _setFocusMinutes(_defaultFocusMinutes);
+        _setBreakMinutes(_defaultBreakMinutes);
+        setTimerType('focus');
+        setTimeLeft(_defaultFocusMinutes * 60);
       }
     }
   }, []);
