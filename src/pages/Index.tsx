@@ -269,6 +269,10 @@ const Index = () => {
     ['nearby', 'friends', 'organization']
   );
 
+  // NEW: State and ref for sociability tooltip
+  const [isSociabilityTooltipOpen, setIsSociabilityTooltipOpen] = useState(false);
+  const sociabilityTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Removed mobileTooltipStates and mobileTooltipTimeoutRefs
   // Removed useIsMobile as it's no longer needed for this interaction
 
@@ -603,8 +607,6 @@ const Index = () => {
       currentPhaseDurationMinutes = session.fullSchedule[0]?.durationMinutes || 0;
       remainingSecondsInPhase = -elapsedSecondsSinceSessionStart;
     } else {
-      const effectiveElapsedSeconds = elapsedSecondsSinceSessionStart % totalScheduleDurationSeconds;
-
       let accumulatedDurationSecondsInCycle = 0;
       for (let i = 0; i < session.fullSchedule.length; i++) {
         const phase = session.fullSchedule[i];
@@ -1178,7 +1180,7 @@ const Index = () => {
   };
 
   return (
-    <>
+    <TooltipProvider> {/* Moved TooltipProvider to wrap the entire main content */}
       <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
         <div className="mb-6">
           <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
@@ -1554,14 +1556,38 @@ const Index = () => {
                       <span className="font-medium text-foreground">
                         {person.id === currentUserId ? "You" : person.name}
                       </span>
-                      <span className="text-sm text-muted-foreground">Sociability: {person.sociability}%</span>
+                      <span className="text-sm text-muted-foreground">
+                        <Tooltip open={isSociabilityTooltipOpen} onOpenChange={setIsSociabilityTooltipOpen} delayDuration={0}>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent parent div's onClick
+                                setIsSociabilityTooltipOpen(true);
+                                if (sociabilityTooltipTimeoutRef.current) {
+                                  clearTimeout(sociabilityTooltipTimeoutRef.current);
+                                }
+                                sociabilityTooltipTimeoutRef.current = setTimeout(() => {
+                                  setIsSociabilityTooltipOpen(false);
+                                  sociabilityTooltipTimeoutRef.current = null;
+                                }, 2000);
+                              }}
+                            >
+                              {person.sociability}%
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="select-none">
+                            Focus preference
+                          </TooltipContent>
+                        </Tooltip>
+                      </span>
                     </div>
                   ))}
                 </CardContent>
               </Card>
             )}
 
-            <TooltipProvider>
+            
               <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="sessions-list">
                   {(provided) => (
@@ -1588,7 +1614,7 @@ const Index = () => {
                   )}
                 </Droppable>
               </DragDropContext>
-            </TooltipProvider>
+            
           </div>
         </div>
         {isScheduleActive && (
@@ -1658,7 +1684,7 @@ const Index = () => {
           </DialogContent>
         </Dialog>
       </main>
-    </>
+    </TooltipProvider>
   );
 };
 export default Index;
