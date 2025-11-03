@@ -1574,7 +1574,7 @@ const Index = () => {
                               sociabilityTooltipTimeoutRef.current = setTimeout(() => {
                                 setOpenSociabilityTooltipId(null);
                                 sociabilityTooltipTimeoutRef.current = null;
-                              }, 2000);
+                              }, 1000); // Changed to 1000ms (1 second)
                             } else {
                               if (openSociabilityTooltipId === person.id) {
                                 setOpenSociabilityTooltipId(null);
@@ -1594,7 +1594,7 @@ const Index = () => {
                               {person.sociability}%
                             </span>
                           </PopoverTrigger>
-                          <PopoverContent className="select-none">
+                          <PopoverContent className="select-none p-1 text-xs"> {/* Reduced padding and text size */}
                             Focus preference
                           </PopoverContent>
                         </Popover>
