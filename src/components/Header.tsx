@@ -49,7 +49,7 @@ const Header = () => {
               className="h-8 w-8 mr-0 mt-[-6px]"
             />
             {/* Wrapper div for H1 and secret text */}
-            <div className="flex flex-col items-start">
+            <div className="flex flex-col items-start pb-1">
               <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
                 DeepSesh
                 <span className={cn(
@@ -63,7 +63,7 @@ const Header = () => {
                 <div
                   className={`text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
                     secretTextVisible ? "opacity-100" : "opacity-0"
-                  } select-none -mt-1`}
+                  } select-none -mt-2`}
                 >
                   Deep Work Study Sesh
                 </div>
