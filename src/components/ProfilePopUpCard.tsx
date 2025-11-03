@@ -7,7 +7,7 @@ import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { Profile } from '@/contexts/ProfileContext';
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityColor } from '@/lib/utils';
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -373,8 +373,8 @@ const ProfilePopUpCard: React.FC = () => {
             </h4>
             <div className="w-full bg-secondary rounded-full h-2 mt-1">
               <div
-                className="h-full rounded-full" // Removed bg-primary here
-                style={{ width: `${targetProfile.sociability}%`, backgroundColor: getSociabilityColor(targetProfile.sociability || 50) }} // Added backgroundColor
+                className="bg-primary h-2 rounded-full"
+                style={{ width: `${targetProfile.sociability}%` }}
               ></div>
             </div>
             <p className="text-xs text-muted-foreground mt-1 text-right">{targetProfile.sociability}%</p>
