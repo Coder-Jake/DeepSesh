@@ -58,13 +58,24 @@ const Header = () => {
               </span>
             </h1>
             {showSecretTextDiv && (
-              <div
-                className={`absolute left-8 top-[31px] text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${ // Adjusted positioning
-                  secretTextVisible ? "opacity-100" : "opacity-0"
-                } select-none`}
-              >
-                Deep Work Study Sesh
-              </div>
+              <>
+                <div
+                  className={`absolute text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
+                    secretTextVisible ? "opacity-100" : "opacity-0"
+                  } select-none`}
+                  style={{ left: '32px', top: '31px' }} // Position "Deep Work" below "Deep"
+                >
+                  Deep Work
+                </div>
+                <div
+                  className={`absolute text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
+                    secretTextVisible ? "opacity-100" : "opacity-0"
+                  } select-none`}
+                  style={{ left: '125px', top: '31px' }} // Position "Study Sesh" below "Sesh"
+                >
+                  Study Sesh
+                </div>
+              </>
             )}
           </Link>
         </div>
