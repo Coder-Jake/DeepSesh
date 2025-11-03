@@ -94,7 +94,7 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "mock-user-id-bezos", name: "Altman", sociability: 20, intention: "Optimizing cloud infrastructure." },
+      { id: "mock-user-id-bezos", name: "Altman", sociability: 15, intention: "Optimizing cloud infrastructure." }, // MODIFIED
       { id: "mock-user-id-musk", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
       { id: "mock-user-id-zuckerberg", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
       { id: "mock-user-id-gates", name: "Amodei", sociability: 20, intention: "Refining operating system architecture." },
@@ -116,14 +116,14 @@ const mockFriendsSessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
     participants: [
-      { id: "mock-user-id-freud", name: "Freud", sociability: 60, intention: "Reviewing psychoanalytic theories." },
-      { id: "mock-user-id-skinner", name: "Skinner", sociability: 60, intention: "Memorizing behavioral principles." },
-      { id: "mock-user-id-piaget", name: "Piaget", sociability: 70, intention: "Practicing cognitive development questions." },
-      { id: "mock-user-id-jung", name: "Jung", sociability: 60, intention: "Summarizing archetypal concepts." },
-      { id: "mock-user-id-maslow", name: "Maslow", sociability: 50, intention: "Creating hierarchy of needs flashcards." },
-      { id: "mock-user-id-rogers", name: "Rogers", sociability: 55, intention: "Discussing humanistic approaches." },
-      { id: "mock-user-id-bandura", name: "Bandura", sociability: 65, intention: "Collaborating on social learning theory guide." },
-      { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 70, intention: "Peer teaching classical conditioning." },
+      { id: "mock-user-id-freud", name: "Freud", sociability: 70, intention: "Reviewing psychoanalytic theories." }, // MODIFIED
+      { id: "mock-user-id-skinner", name: "Skinner", sociability: 70, intention: "Memorizing behavioral principles." }, // MODIFIED
+      { id: "mock-user-id-piaget", name: "Piaget", sociability: 80, intention: "Practicing cognitive development questions." }, // MODIFIED
+      { id: "mock-user-id-jung", name: "Jung", sociability: 70, intention: "Summarizing archetypal concepts." }, // MODIFIED
+      { id: "mock-user-id-maslow", name: "Maslow", sociability: 60, intention: "Creating hierarchy of needs flashcards." }, // MODIFIED
+      { id: "mock-user-id-rogers", name: "Rogers", sociability: 65, intention: "Discussing humanistic approaches." }, // MODIFIED
+      { id: "mock-user-id-bandura", name: "Bandura", sociability: 75, intention: "Collaborating on social learning theory guide." }, // MODIFIED
+      { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 80, intention: "Peer teaching classical conditioning." }, // MODIFIED
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 25 },
