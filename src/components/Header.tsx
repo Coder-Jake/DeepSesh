@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import Navigation from "@/components/Navigation";
 import { useState } from "react";
-import { cn } from "@/lib/utils"; // Added import for cn
+import { cn } => "@/lib/utils"; // Added import for cn
 
 const Header = () => {
   const location = useLocation();
@@ -40,7 +40,7 @@ const Header = () => {
         <div className="relative flex items-center">
           <Link 
             to="/" 
-            className="hover:opacity-80 transition-opacity flex items-center"
+            className="hover:opacity-80 transition-opacity flex items-center relative" // Added 'relative' here
             onClick={handleHeaderClick}
           >
             <img 
@@ -57,16 +57,16 @@ const Header = () => {
                 (demo)
               </span>
             </h1>
+            {showSecretTextDiv && (
+              <div
+                className={`absolute left-8 top-[31px] text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${ // Adjusted positioning
+                  secretTextVisible ? "opacity-100" : "opacity-0"
+                } select-none`}
+              >
+                Deep Work Study Sesh
+              </div>
+            )}
           </Link>
-          {showSecretTextDiv && (
-            <div
-              className={`absolute left-0 top-full mt-1 text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
-                secretTextVisible ? "opacity-100" : "opacity-0"
-              } select-none`}
-            >
-              Deep Work Study Sesh
-            </div>
-          )}
         </div>
         
         {/* Timer display on non-home pages */}
