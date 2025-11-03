@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import Navigation from "@/components/Navigation";
 import { useState } from "react";
-import { cn } => "@/lib/utils"; // Added import for cn
+import { cn } from "@/lib/utils"; // Fixed import for cn
 
 const Header = () => {
   const location = useLocation();
