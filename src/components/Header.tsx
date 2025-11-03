@@ -48,25 +48,28 @@ const Header = () => {
               alt="DeepSesh Logo" 
               className="h-8 w-8 mr-0 mt-[-6px]"
             />
-            <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
-              DeepSesh
-              <span className={cn(
-                "ml-0.5 text-[0.6rem] text-gray-400 font-normal transition-opacity duration-200",
-                isHomePage ? "opacity-100" : "opacity-0 pointer-events-none"
-              )}>
-                (demo)
-              </span>
-            </h1>
-          </Link>
-          {showSecretTextDiv && (
-            <div
-              className={`absolute left-0 top-full mt-1 text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
-                secretTextVisible ? "opacity-100" : "opacity-0"
-              } select-none`}
-            >
-              Deep Work Study Sesh
+            {/* Wrapper div for H1 and secret text */}
+            <div className="flex flex-col items-start">
+              <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
+                DeepSesh
+                <span className={cn(
+                  "ml-0.5 text-[0.6rem] text-gray-400 font-normal transition-opacity duration-200",
+                  isHomePage ? "opacity-100" : "opacity-0 pointer-events-none"
+                )}>
+                  (demo)
+                </span>
+              </h1>
+              {showSecretTextDiv && (
+                <div
+                  className={`text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
+                    secretTextVisible ? "opacity-100" : "opacity-0"
+                  } select-none -mt-1`}
+                >
+                  Deep Work Study Sesh
+                </div>
+              )}
             </div>
-          )}
+          </Link>
         </div>
         
         {/* Timer display on non-home pages */}
