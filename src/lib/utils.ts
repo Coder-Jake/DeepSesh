@@ -34,34 +34,3 @@ export const getPrivacyColorClassFromIndex = (index: number): string => {
   const labelColors = ["text-green-700", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
   return labelColors[index % labelColors.length];
 };
-
-// HSL values for interpolation
-// blue-500: hsl(210 100% 50%)
-// purple-600: hsl(270 100% 50%)
-// black: hsl(0 0% 0%)
-const BLUE_500_HSL = { h: 210, s: 100, l: 50 };
-const PURPLE_600_HSL = { h: 270, s: 100, l: 50 };
-const BLACK_HSL = { h: 0, s: 0, l: 0 };
-
-export const getSociabilityColor = (sociability: number): string => {
-  // Clamp sociability between 0 and 100
-  const clampedSociability = Math.max(0, Math.min(100, sociability));
-
-  let h, s, l;
-
-  if (clampedSociability <= 50) {
-    // Transition from BLUE_500 to BLACK (0% to 50%)
-    const ratio = clampedSociability / 50; // 0 at 0%, 1 at 50%
-    h = BLUE_500_HSL.h + (BLACK_HSL.h - BLUE_500_HSL.h) * ratio;
-    s = BLUE_500_HSL.s + (BLACK_HSL.s - BLUE_500_HSL.s) * ratio;
-    l = BLUE_500_HSL.l + (BLACK_HSL.l - BLUE_500_HSL.l) * ratio;
-  } else {
-    // Transition from BLACK to PURPLE_600 (50% to 100%)
-    const ratio = (clampedSociability - 50) / 50; // 0 at 50%, 1 at 100%
-    h = BLACK_HSL.h + (PURPLE_600_HSL.h - BLACK_HSL.h) * ratio;
-    s = BLACK_HSL.s + (PURPLE_600_HSL.s - BLACK_HSL.s) * ratio;
-    l = BLACK_HSL.l + (PURPLE_600_HSL.l - BLACK_HSL.l) * ratio;
-  }
-
-  return `hsl(${Math.round(h)} ${Math.round(s)}% ${Math.round(l)}%)`;
-};

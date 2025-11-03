@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext'; // Import useProfilePopUp
 import { useProfile } from '@/contexts/ProfileContext'; // Import useProfile to get getPublicProfile
-import { getSociabilityColor } from '@/lib/utils'; // NEW: Import getSociabilityColor
 
 interface DemoSession {
   id: string;
@@ -222,7 +221,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                       </span>
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{width: `${p.sociability}%`, backgroundColor: getSociabilityColor(p.sociability)}}></div> {/* MODIFIED */}
+                          <div className="h-full bg-primary rounded-full" style={{width: `${p.sociability}%`}}></div>
                         </div>
                       </div>
                     </div>
@@ -232,7 +231,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
             </Popover>
             <div className="flex items-center gap-2">
               <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full rounded-full" style={{width: `${averageSociability}%`, backgroundColor: getSociabilityColor(averageSociability)}}></div> {/* MODIFIED */}
+                <div className="h-full bg-primary rounded-full" style={{width: `${averageSociability}%`}}></div>
               </div>
             </div>
           </div>
