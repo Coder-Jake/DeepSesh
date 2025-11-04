@@ -26,7 +26,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     commenceTime: "09:00",
     commenceDay: null, // Today (default)
     scheduleStartOption: 'now',
-    isRecurring: false,
+    isRecurring: true, // MODIFIED: Set to true for Pomodoro
     recurrenceFrequency: 'daily',
     timerColors: {}, // NEW: Default empty colors
   },
@@ -46,7 +46,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     commenceTime: "08:30",
     commenceDay: DAYS_OF_WEEK.indexOf("Monday"), // Monday
     scheduleStartOption: 'custom_time',
-    isRecurring: true,
+    isRecurring: false, // MODIFIED: Set to false for School Timetable
     recurrenceFrequency: 'weekly',
     timerColors: {}, // NEW: Default empty colors
   },
@@ -64,7 +64,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     commenceTime: "09:00",
     commenceDay: null, // Today (default)
     scheduleStartOption: 'manual',
-    isRecurring: false,
+    isRecurring: false, // MODIFIED: Set to false for Conference
     recurrenceFrequency: 'daily',
     timerColors: {}, // NEW: Default empty colors
   },
@@ -81,7 +81,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     commenceTime: "10:00",
     commenceDay: null, // Today (default)
     scheduleStartOption: 'now',
-    isRecurring: false,
+    isRecurring: false, // MODIFIED: Set to false for Hackathon
     recurrenceFrequency: 'daily',
     timerColors: {}, // NEW: Default empty colors
   },
