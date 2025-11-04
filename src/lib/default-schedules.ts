@@ -74,8 +74,10 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     id: "default-hackathon", // Stable ID
     title: "Hackathon",
     schedule: [
-      { id: generateId(), title: "Brainstorming", type: "focus", durationMinutes: 90, isCustom: true, customTitle: "Brainstorming" },
-      { id: generateId(), title: "Team Sync", type: "break", durationMinutes: 15, isCustom: true, customTitle: "Team Sync" },
+      { id: generateId(), title: "Mission & Assignment", type: "focus", durationMinutes: 20, isCustom: true, customTitle: "Mission & Assignment" }, // NEW: Added Mission & Assignment
+      { id: generateId(), title: "Team Sync", type: "break", durationMinutes: 10, isCustom: true, customTitle: "Team Sync" }, // MODIFIED: Duration changed to 10 mins
+      { id: generateId(), title: "Brainstorming", type: "focus", durationMinutes: 90, isCustom: true, customTitle: "Brainstorming" }, // MOVED: After Team Sync
+      { id: generateId(), title: "Pizza", type: "break", durationMinutes: 30, isCustom: true, customTitle: "Pizza" }, // NEW: Added Pizza break
       { id: generateId(), title: "Coding Sprint", type: "focus", durationMinutes: 120, isCustom: true, customTitle: "Coding Sprint" },
       { id: generateId(), title: "Power Nap", type: "break", durationMinutes: 20, isCustom: true, customTitle: "Power Nap" },
       { id: generateId(), title: "Feature Implementation", type: "focus", durationMinutes: 180, isCustom: true, customTitle: "Feature Implementation" },
