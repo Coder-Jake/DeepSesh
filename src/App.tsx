@@ -33,8 +33,8 @@ function App() {
       <Router>
         <ThemeProvider>
           <AuthProvider>
-            <TimerProvider>
-              <ProfileProvider>
+            <ProfileProvider> {/* ProfileProvider now wraps TimerProvider */}
+              <TimerProvider>
                 <ProfilePopUpProvider>
                   <Routes>
                     <Route path="/" element={<AppLayout />}>
@@ -56,8 +56,8 @@ function App() {
                   </Routes>
                   {/* Removed: <ProfilePopUpCard key={isPopUpOpen ? targetUserId : 'closed'} /> */}
                 </ProfilePopUpProvider>
-              </ProfileProvider>
-            </TimerProvider>
+              </TimerProvider>
+            </ProfileProvider>
           </AuthProvider>
         </ThemeProvider>
       </Router>
