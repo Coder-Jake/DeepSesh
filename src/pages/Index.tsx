@@ -1541,6 +1541,7 @@ const Index = () => {
                       {seshTitle}
                     </CardTitle>
                   )}
+                  <span className="text-lg font-semibold text-muted-foreground">Notes</span>
                 </div>
               </CardHeader>
               <CardContent>
