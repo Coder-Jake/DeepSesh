@@ -61,6 +61,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
       { id: generateId(), title: "Session 2", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "Session 2" },
       { id: generateId(), title: "Q&A submissions", type: "break", durationMinutes: 15, isCustom: true, customTitle: "Q&A submissions" }, // MODIFIED: Changed to 'break'
       { id: generateId(), title: "Panel Discussion", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Panel Discussion" },
+      { id: generateId(), title: "Afterparty", type: "break", durationMinutes: 30, isCustom: true, customTitle: "Afterparty" }, // NEW: Added Afterparty
     ],
     commenceTime: "09:00",
     commenceDay: null, // Today (default)
