@@ -229,7 +229,7 @@ const Profile = () => {
         sociability: sociability || 50,
         organization: organization || "",
         linkedinUrl: linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : "",
-        hostCode: hostCode || "",
+        hostCode: hostCode || "", // This line is important
         bioVisibility: bioVisibility || ['public'],
         intentionVisibility: intentionVisibility || ['public'],
         linkedinVisibility: linkedinVisibility || ['public'],
@@ -496,6 +496,8 @@ const Profile = () => {
       </main>
     );
   }
+
+  console.log("Rendering Profile. Host Code:", hostCode); // Add this log
 
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">

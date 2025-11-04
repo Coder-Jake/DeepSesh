@@ -1759,13 +1759,24 @@ export const ProfileProvider = ({ children }: ProfileProviderProps) => {
         pronouns: storedPronouns || null,
       };
       setProfile(currentProfile);
-      console.log("Profile fetched from local storage for local user:", currentProfile.first_name);
+      setHostCode(currentProfile.host_code); // This should set the hostCode state
+      console.log("Profile fetched from local storage for local user:", currentProfile.first_name, "Host Code:", currentProfile.host_code);
     } else {
       console.error("AuthContext did not provide a user. This should not happen.");
       setProfile(null);
     }
     setLoading(false);
   };
+
+  // Add an effect to ensure hostCode is never empty after initial load
+  useEffect(() => {
+    if (!loading && !hostCode) {
+      const newHostCode = generateRandomHostCode();
+      setHostCode(newHostCode);
+      localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+      console.log("Generated and set new host code because it was empty:", newHostCode);
+    }
+  }, [loading, hostCode]); // Depend on loading and hostCode
 
   const updateProfile = async (data: ProfileUpdate, successMessage?: string) => {
     setLoading(true);
