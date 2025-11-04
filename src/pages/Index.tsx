@@ -88,7 +88,7 @@ const beginningOfMostRecentHour = new Date(now.getFullYear(), now.getMonth(), no
 const mockNearbySessions: DemoSession[] = [
   {
     id: "102",
-    title: "AI Anonymous", // Changed from "Computer Science Lab" to "AI Anonymous"
+    title: "Silicon Syndicate Study Sesh", // Changed from "AI Anonymous" to "Silicon Syndicate Study Sesh"
     startTime: Date.now() - (76.8 * 60 * 1000),
     location: "Science Building - Computer Lab 2B",
     workspaceImage: "/api/placeholder/200/120",
@@ -451,7 +451,6 @@ const Index = () => {
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
-      console.log("Index: Calling setActiveAsks. Current value of setActiveAsks:", setActiveAsks);
       setActiveAsks([]);
 
       setCurrentSessionRole(null);
