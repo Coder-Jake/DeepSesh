@@ -593,8 +593,9 @@ const Settings = () => {
                             setCustomBatchMinutes(parseFloat(value) || 0);
                           }
                         }}
-                        onBlur={() => {
-                          if (customBatchMinutes === 0) {
+                        onBlur={(e) => {
+                          const parsedValue = parseInt(e.target.value);
+                          if (isNaN(parsedValue) || parsedValue <= 0) {
                             setCustomBatchMinutes(currentTimerIncrement);
                           }
                         }}
@@ -763,10 +764,18 @@ const Settings = () => {
                       id="focus-duration"
                       type="number"
                       placeholder="Minutes"
-                      value={defaultFocusMinutes}
-                      onChange={(e) => setDefaultFocusMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                      value={defaultFocusMinutes === 0 ? "" : defaultFocusMinutes}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "") {
+                          setDefaultFocusMinutes(0);
+                        } else {
+                          setDefaultFocusMinutes(parseInt(value) || 0);
+                        }
+                      }}
                       onBlur={(e) => {
-                        if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                        const parsedValue = parseInt(e.target.value);
+                        if (isNaN(parsedValue) || parsedValue <= 0) {
                           setDefaultFocusMinutes(currentTimerIncrement);
                         }
                       }}
@@ -783,10 +792,18 @@ const Settings = () => {
                       id="break-duration"
                       type="number"
                       placeholder="Minutes"
-                      value={defaultBreakMinutes}
-                      onChange={(e) => setDefaultBreakMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                      value={defaultBreakMinutes === 0 ? "" : defaultBreakMinutes}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "") {
+                          setDefaultBreakMinutes(0);
+                        } else {
+                          setDefaultBreakMinutes(parseInt(value) || 0);
+                        }
+                      }}
                       onBlur={(e) => {
-                        if (parseInt(e.target.value) === 0 || e.target.value === '') {
+                        const parsedValue = parseInt(e.target.value);
+                        if (isNaN(parsedValue) || parsedValue <= 0) {
                           setDefaultBreakMinutes(currentTimerIncrement);
                         }
                       }}
