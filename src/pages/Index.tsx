@@ -160,6 +160,7 @@ const Index = () => {
     showSessionsWhileActive,
     setShowSessionsWhileActive,
     timerIncrement,
+    getDefaultSeshTitle, // NEW: Add this
     
     schedule,
     activeSchedule,
@@ -336,7 +337,7 @@ const Index = () => {
       setIsEditingSeshTitle(false);
       e.currentTarget.blur();
       if (seshTitle.trim() === "") {
-        setSeshTitle("Notes");
+        setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle here
       }
     }
   };
@@ -344,7 +345,7 @@ const Index = () => {
   const handleTitleInputBlur = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
-      setSeshTitle("Notes");
+      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle here
       }
   };
 
@@ -365,7 +366,7 @@ const Index = () => {
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setSeshTitle("Notes");
+      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
       setActiveAsks([]);
     }
 
@@ -449,7 +450,7 @@ const Index = () => {
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setSeshTitle("Notes");
+      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
       console.log("Index: Calling setActiveAsks. Current value of setActiveAsks:", setActiveAsks);
       setActiveAsks([]);
 
@@ -492,7 +493,7 @@ const Index = () => {
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setSeshTitle("Notes");
+      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
       setActiveAsks([]);
 
       setCurrentSessionRole(null);
@@ -512,7 +513,7 @@ const Index = () => {
         setCurrentPhaseStartTime(null);
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
-      setSeshTitle("Notes");
+      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
       setActiveAsks([]);
 
       setCurrentSessionRole(null);
@@ -579,7 +580,7 @@ const Index = () => {
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setSeshTitle("Notes");
+      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
       setActiveAsks([]);
     }
 
@@ -1084,7 +1085,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    });
+    );
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -1514,32 +1515,35 @@ const Index = () => {
 
             <Card>
               <CardHeader className="pb-2">
-                {isEditingSeshTitle ? (
-                  <Input
-                    ref={titleInputRef}
-                    value={seshTitle}
-                    onChange={(e) => setSeshTitle(e.target.value)}
-                    onKeyDown={handleTitleInputKeyDown}
-                    onBlur={handleTitleInputBlur}
-                    placeholder="Sesh Title"
-                    className="text-lg font-semibold h-auto py-1 px-2"
-                    onFocus={(e) => e.target.select()}
-                    data-name="Sesh Title Input"
-                  />
-                ) : (
-                  <CardTitle 
-                    className="text-lg cursor-pointer select-none"
-                    onClick={handleTitleClick}
-                    onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
-                    onTouchEnd={handleLongPressEnd}
-                    data-name="Sesh Title Display"
-                  >
-                    {seshTitle}
-                  </CardTitle>
-                )}
+                <div className="flex items-center gap-2"> {/* Flex container for title and notes */}
+                  {isEditingSeshTitle ? (
+                    <Input
+                      ref={titleInputRef}
+                      value={seshTitle}
+                      onChange={(e) => setSeshTitle(e.target.value)}
+                      onKeyDown={handleTitleInputKeyDown}
+                      onBlur={handleTitleInputBlur}
+                      placeholder={getDefaultSeshTitle()} // Use getDefaultSeshTitle as placeholder
+                      className="text-lg font-semibold h-auto py-1 px-2 flex-grow"
+                      onFocus={(e) => e.target.select()}
+                      data-name="Sesh Title Input"
+                    />
+                  ) : (
+                    <CardTitle 
+                      className="text-lg cursor-pointer select-none flex-grow"
+                      onClick={handleTitleClick}
+                      onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
+                      onMouseUp={handleLongPressEnd}
+                      onMouseLeave={handleLongPressEnd}
+                      onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
+                      onTouchEnd={handleLongPressEnd}
+                      data-name="Sesh Title Display"
+                    >
+                      {seshTitle}
+                    </CardTitle>
+                  )}
+                  <span className="text-lg font-semibold text-muted-foreground">Notes</span>
+                </div>
               </CardHeader>
               <CardContent>
                 <Textarea

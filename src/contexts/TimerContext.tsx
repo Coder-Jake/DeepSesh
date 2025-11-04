@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import { saveSessionToDatabase } from '@/utils/session-utils';
+import { useProfile } from '../contexts/ProfileContext'; // NEW: Import useProfile
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -12,6 +13,7 @@ const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context';
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const { localFirstName } = useProfile(); // NEW: Get localFirstName from ProfileContext
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
@@ -144,6 +146,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
 
+  // NEW: Helper function to get the default sesh title
+  const getDefaultSeshTitle = useCallback(() => {
+    return (localFirstName && localFirstName !== "You") ? `${localFirstName}'s Focus Sesh` : "My Focus Sesh";
+  }, [localFirstName]);
 
   const playSound = useCallback(() => {
     console.log("playSound called. startStopNotifications.sound:", startStopNotifications.sound);
@@ -200,21 +206,21 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  // MODIFIED: setSeshTitle now manages isSeshTitleCustomized based on the default title
   const setSeshTitle = useCallback((newTitle: string) => {
+    const defaultTitle = getDefaultSeshTitle();
     _setSeshTitle(newTitle);
-    if (newTitle !== "Notes" && newTitle.trim() !== "") {
-      setIsSeshTitleCustomized(true);
-    } else {
-      setIsSeshTitleCustomized(false);
-    }
-  }, []);
+    setIsSeshTitleCustomized(newTitle.trim() !== "" && newTitle !== defaultTitle);
+  }, [getDefaultSeshTitle]);
 
+  // MODIFIED: updateSeshTitleWithSchedule now only sets the editable part of the title
   const updateSeshTitleWithSchedule = useCallback((currentScheduleTitle: string) => {
     if (!isSeshTitleCustomized) {
-      _setSeshTitle(`${currentScheduleTitle} Notes`);
+      _setSeshTitle(currentScheduleTitle);
     }
   }, [isSeshTitleCustomized]);
 
+  // MODIFIED: resetSchedule now uses getDefaultSeshTitle
   const resetSchedule = useCallback(() => {
     setIsScheduleActive(false);
     setCurrentScheduleIndex(0);
@@ -237,7 +243,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentPhaseStartTime(null);
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    _setSeshTitle("Notes");
+    _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
     setIsSeshTitleCustomized(false);
     setTimerColors({});
     setActiveSchedule([]);
@@ -253,7 +259,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setActiveJoinedSessionCoworkerCount(0);
     setIsTimeLeftManagedBySession(false);
     setHasWonPrize(false);
-  }, [_defaultFocusMinutes, _defaultBreakMinutes]);
+  }, [_defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle]);
 
   const startSchedule = useCallback(() => {
     if (schedule.length === 0) {
@@ -314,7 +320,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsFlashing(false);
             setAccumulatedFocusSeconds(0);
             setAccumulatedBreakSeconds(0);
-            _setSeshTitle("Notes");
+            _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
             setIsSeshTitleCustomized(false);
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during schedule start. activeAsks cleared.");
@@ -356,8 +362,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks,
-    playSound, triggerVibration, setIsTimeLeftManagedBySession
+    setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks,
+    playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle // Add getDefaultSeshTitle
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -403,7 +409,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsPaused(false);
             setAccumulatedFocusSeconds(0);
             setAccumulatedBreakSeconds(0);
-            _setSeshTitle("Notes");
+            _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
             setIsSeshTitleCustomized(false);
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during prepared schedule start. activeAsks cleared.");
@@ -443,7 +449,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentSessionHostName(user?.user_metadata?.first_name || "Host");
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, _setSeshTitle, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -552,14 +558,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setIsRunning(true);
             setIsFlashing(false);
             setCurrentPhaseStartTime(Date.now());
-            if (shouldShowEndToast && areToastsEnabled) {
+            if (areToastsEnabled) {
               toast("Schedule Looping!", {
                 description: `"${scheduleTitle}" is restarting.`,
               });
             }
           } else {
             // Schedule completed, stop and save
-            if (shouldShowEndToast && areToastsEnabled) {
+            if (areToastsEnabled) {
               toast("Schedule Completed!", {
                 description: `"${scheduleTitle}" has finished.`,
               });
@@ -588,7 +594,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         }
       } else {
-        if (shouldShowEndToast && areToastsEnabled) {
+        if (areToastsEnabled) {
           toast("Timer Ended!", {
             description: `Your ${timerType} session has finished.`,
           });
@@ -630,9 +636,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, timeLeft]);
 
+  // MODIFIED: This effect now only updates _seshTitle if it's not customized
   useEffect(() => {
     if (!isSeshTitleCustomized && activeScheduleDisplayTitle.trim() !== "") {
-      _setSeshTitle(`${activeScheduleDisplayTitle} Notes`);
+      _setSeshTitle(activeScheduleDisplayTitle);
     }
   }, [activeScheduleDisplayTitle, isSeshTitleCustomized]);
 
@@ -731,8 +738,18 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       _setDefaultBreakMinutes(data. _defaultBreakMinutes ?? 5);
       _setFocusMinutes(data.focusMinutes ?? data._defaultFocusMinutes ?? 25);
       _setBreakMinutes(data.breakMinutes ?? data._defaultBreakMinutes ?? 5);
-      _setSeshTitle(data._seshTitle ?? "Notes");
-      setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
+      
+      // MODIFIED: Handle seshTitle loading with default logic
+      let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
+      let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
+
+      if (loadedSeshTitle === "Notes" || loadedSeshTitle.trim() === "" || loadedSeshTitle === getDefaultSeshTitle()) {
+        loadedSeshTitle = getDefaultSeshTitle();
+        loadedIsSeshTitleCustomized = false;
+      }
+      _setSeshTitle(loadedSeshTitle);
+      setIsSeshTitleCustomized(loadedIsSeshTitleCustomized);
+      
       setNotes(data.notes ?? "");
       setTimerIncrementInternal(data.timerIncrement ?? 5);
       
@@ -828,6 +845,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         _setBreakMinutes(_defaultBreakMinutes);
         setTimerType('focus'); // Default to focus
         setTimeLeft(_defaultFocusMinutes * 60); // Set time left to default focus
+        _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+        setIsSeshTitleCustomized(false);
       } else {
         // Fallback to default if "School Timetable" is not found
         setSavedSchedules(DEFAULT_SCHEDULE_TEMPLATES);
@@ -835,9 +854,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         _setBreakMinutes(_defaultBreakMinutes);
         setTimerType('focus');
         setTimeLeft(_defaultFocusMinutes * 60);
+        _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+        setIsSeshTitleCustomized(false);
       }
     }
-  }, []);
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes]); // Add getDefaultSeshTitle to dependencies
 
   useEffect(() => {
     const dataToSave = {
@@ -921,6 +942,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setShowSessionsWhileActive,
     timerIncrement,
     setTimerIncrement: setTimerIncrementInternal,
+    getDefaultSeshTitle, // NEW: Add getDefaultSeshTitle to context value
 
     schedule,
     setSchedule,
