@@ -39,17 +39,18 @@ export const getPrivacyColorClassFromIndex = (index: number): string => {
 export const getSociabilityGradientColor = (sociability: number): string => {
   const clampedSociability = Math.max(0, Math.min(100, sociability));
   const saturation = 90; // Fixed saturation
+  const minLightness = 10; // Minimum lightness value
 
   if (clampedSociability > 50) {
-    // Purpleish gradient for Deep Focus: H=260, L from 0% (at 50%) to 50% (at 100%)
-    const lightness = (clampedSociability - 50) * (50 / 50); // (sociability - 50)
+    // Purpleish gradient for Deep Focus: H=260, L from minLightness (at 50%) to 50% (at 100%)
+    const lightness = minLightness + (clampedSociability - 50) * ((50 - minLightness) / 50);
     return `hsl(260 ${saturation}% ${lightness}%)`;
   } else if (clampedSociability < 50) {
-    // Blueish gradient for Banter: H=220, L from 0% (at 50%) to 50% (at 0%)
-    const lightness = (50 - clampedSociability) * (50 / 50); // (50 - sociability)
+    // Blueish gradient for Banter: H=220, L from minLightness (at 50%) to 50% (at 0%)
+    const lightness = minLightness + (50 - clampedSociability) * ((50 - minLightness) / 50);
     return `hsl(220 ${saturation}% ${lightness}%)`;
   } else {
-    // Exactly 50%, lightness is 0%. Use the purpleish hue as a default for the midpoint.
-    return `hsl(260 ${saturation}% 0%)`;
+    // Exactly 50%, lightness is minLightness. Use the purpleish hue as a default for the midpoint.
+    return `hsl(260 ${saturation}% ${minLightness}%)`;
   }
 };
