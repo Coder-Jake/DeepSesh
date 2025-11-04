@@ -186,8 +186,8 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <div className="flex justify-between items-center">
-          {/* Group for Location and Coworkers Popovers */}
-          <div className="flex items-center gap-4">
+          {/* Group for Location, Coworkers Popovers, and Average Sociability Bar */}
+          <div className="flex items-center gap-4 flex-grow">
             <Popover>
               <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
                 ~{totalDurationMinutes}m
@@ -231,11 +231,8 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                 </div>
               </PopoverContent>
             </Popover>
-          </div>
-
-          {/* Average Sociability Bar - this will fill the space */}
-          <div className="flex-grow flex items-center justify-end pr-4">
-            <div className="h-2 bg-secondary rounded-full overflow-hidden w-full max-w-xs">
+            {/* Average Sociability Bar - now inside this flex container */}
+            <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow max-w-[150px]">
               <div className="h-full rounded-full" style={{width: `${averageSociability}%`, backgroundColor: getSociabilityGradientColor(averageSociability)}}></div>
             </div>
           </div>
