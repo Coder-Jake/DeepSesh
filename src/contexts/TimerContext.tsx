@@ -126,44 +126,48 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
   const [hasWonPrize, setHasWonPrize] = useState(false);
 
+  // NEW: State to track if homepage focus/break minutes have been manually customized
+  const [isHomepageFocusCustomized, setIsHomepageFocusCustomized] = useState(false);
+  const [isHomepageBreakCustomized, setIsHomepageBreakCustomized] = useState(false);
+
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
 
   const setHomepageFocusMinutes = useCallback((minutes: number) => {
     _setFocusMinutes(minutes);
+    setIsHomepageFocusCustomized(true); // Mark as customized
   }, []);
 
   const setHomepageBreakMinutes = useCallback((minutes: number) => {
     _setBreakMinutes(minutes);
+    setIsHomepageBreakCustomized(true); // Mark as customized
   }, []);
 
   const setDefaultFocusMinutes = useCallback((minutes: number) => {
     _setDefaultFocusMinutes(minutes);
-    // No longer directly setting _setFocusMinutes here, rely on useEffect below
   }, []);
 
   const setDefaultBreakMinutes = useCallback((minutes: number) => {
     _setDefaultBreakMinutes(minutes);
-    // No longer directly setting _setBreakMinutes here, rely on useEffect below
   }, []);
 
-  // NEW: Effect to synchronize homepage focusMinutes with defaultFocusMinutes when idle
+  // Effect to synchronize homepage focusMinutes with defaultFocusMinutes when idle AND not customized
   useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession) {
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession && !isHomepageFocusCustomized) {
       if (focusMinutes !== _defaultFocusMinutes) {
         _setFocusMinutes(_defaultFocusMinutes);
       }
     }
-  }, [_defaultFocusMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, focusMinutes]);
+  }, [_defaultFocusMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, focusMinutes, isHomepageFocusCustomized]);
 
-  // NEW: Effect to synchronize homepage breakMinutes with defaultBreakMinutes when idle
+  // Effect to synchronize homepage breakMinutes with defaultBreakMinutes when idle AND not customized
   useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession) {
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession && !isHomepageBreakCustomized) {
       if (breakMinutes !== _defaultBreakMinutes) {
         _setBreakMinutes(_defaultBreakMinutes);
       }
     }
-  }, [_defaultBreakMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, breakMinutes]);
+  }, [_defaultBreakMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, breakMinutes, isHomepageBreakCustomized]);
 
   const getDefaultSeshTitle = useCallback(() => {
     return (localFirstName && localFirstName !== "You") ? `${localFirstName}'s Focus Sesh` : "My Focus Sesh";
@@ -274,6 +278,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setActiveJoinedSessionCoworkerCount(0);
     setIsTimeLeftManagedBySession(false);
     setHasWonPrize(false);
+    setIsHomepageFocusCustomized(false); // Reset customization flag
+    setIsHomepageBreakCustomized(false); // Reset customization flag
   }, [_defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle]);
 
   const startSchedule = useCallback(() => {
@@ -336,6 +342,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during schedule start. activeAsks cleared.");
             setHasWonPrize(false);
+            setIsHomepageFocusCustomized(false); // Reset customization flag
+            setIsHomepageBreakCustomized(false); // Reset customization flag
         }
     }
 
@@ -374,7 +382,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks,
-    playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle
+    playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle,
+    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -410,6 +419,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setActiveAsks([]);
             console.log("TimerContext: Existing schedule reset during prepared schedule start. activeAsks cleared.");
             setHasWonPrize(false);
+            setIsHomepageFocusCustomized(false); // Reset customization flag
+            setIsHomepageBreakCustomized(false); // Reset customization flag
         }
         if (shouldResetManualTimer) {
             setIsRunning(false);
@@ -421,6 +432,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during prepared schedule start. activeAsks cleared.");
             setHasWonPrize(false);
+            setIsHomepageFocusCustomized(false); // Reset customization flag
+            setIsHomepageBreakCustomized(false); // Reset customization flag
         }
     }
 
@@ -456,7 +469,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentSessionHostName(user?.user_metadata?.first_name || "Host");
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -514,6 +527,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `"${templateToLoad.title}" has been loaded into the editor.`,
         });
       }
+      // When loading a template, it's considered a fresh state, so reset customization flags
+      setIsHomepageFocusCustomized(false);
+      setIsHomepageBreakCustomized(false);
     }
   }, [savedSchedules, areToastsEnabled, toast]);
 
@@ -635,6 +651,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, user?.id, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration, isRecurring]);
 
   useEffect(() => {
+    // This effect ensures timeLeft is correct when switching timerType or when homepage values change,
+    // but only if not managed by an active session/schedule.
     if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
       const expectedTime = (timerType === 'focus' ? focusMinutes : breakMinutes) * 60;
       if (timeLeft !== expectedTime) {
@@ -745,8 +763,17 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const data = JSON.parse(storedData);
       _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25);
       _setDefaultBreakMinutes(data. _defaultBreakMinutes ?? 5);
-      _setFocusMinutes(data.focusMinutes ?? data._defaultFocusMinutes ?? 25);
-      _setBreakMinutes(data.breakMinutes ?? data._defaultBreakMinutes ?? 5);
+      
+      // Load focusMinutes and breakMinutes, respecting customization flags
+      const loadedFocusMinutes = data.focusMinutes ?? data._defaultFocusMinutes ?? 25;
+      const loadedBreakMinutes = data.breakMinutes ?? data._defaultBreakMinutes ?? 5;
+      const loadedIsHomepageFocusCustomized = data.isHomepageFocusCustomized ?? false;
+      const loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
+
+      _setFocusMinutes(loadedFocusMinutes);
+      _setBreakMinutes(loadedBreakMinutes);
+      setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
+      setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
       
       let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
       let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
@@ -769,7 +796,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
       setIsGlobalPrivate(data.isGlobalPrivate ?? false);
       setTimerType(data.timerType ?? 'focus');
-      setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? (data.focusMinutes ?? data._defaultFocusMinutes ?? 25) * 60 : (data.breakMinutes ?? data._defaultBreakMinutes ?? 5) * 60));
+      setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60));
       setIsRunning(data.isRunning ?? false);
       setIsPaused(data.isPaused ?? false);
       setIsFlashing(data.isFlashing ?? false);
@@ -862,6 +889,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setTimeLeft(_defaultFocusMinutes * 60); 
       _setSeshTitle(getDefaultSeshTitle()); 
       setIsSeshTitleCustomized(false);
+      setIsHomepageFocusCustomized(false); // Ensure these are false on template load
+      setIsHomepageBreakCustomized(false);
     } else {
       _setFocusMinutes(_defaultFocusMinutes);
       _setBreakMinutes(_defaultBreakMinutes);
@@ -869,6 +898,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setTimeLeft(_defaultFocusMinutes * 60);
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
+      setIsHomepageFocusCustomized(false); // Ensure these are false if no template loads
+      setIsHomepageBreakCustomized(false);
     }
   }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled]);
 
@@ -894,6 +925,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       startStopNotifications,
       hasWonPrize,
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
+      isHomepageFocusCustomized, // Save customization flag
+      isHomepageBreakCustomized, // Save customization flag
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -918,6 +951,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     startStopNotifications,
     hasWonPrize,
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
+    isHomepageFocusCustomized, isHomepageBreakCustomized,
   ]);
 
   const value: TimerContextType = {
