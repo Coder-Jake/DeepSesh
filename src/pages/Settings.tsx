@@ -83,19 +83,23 @@ const Settings = () => {
     setStartStopNotifications,
   } = useTimer();
 
-  const { user } = useAuth(); // MODIFIED: Removed logout
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading } = useProfile(); // NEW: Destructure loading
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading } = useProfile();
 
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
   const [userNameToBlock, setUserNameToBlock] = useState("");
   const [selectedCoworkerToBlock, setSelectedCoworkerToBlock] = useState<string | undefined>(undefined);
 
+  // Local states for input values
+  const [localFocusMinutes, setLocalFocusMinutes] = useState(String(defaultFocusMinutes));
+  const [localBreakMinutes, setLocalBreakMinutes] = useState(String(defaultBreakMinutes));
+
   const [hasChanges, setHasChanges] = useState(false);
 
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
-  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({}); // Moved useRef inside the component
+  const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
@@ -131,13 +135,22 @@ const Settings = () => {
     startStopNotifications,
   });
 
+  // Sync local input states with global defaults
+  useEffect(() => {
+    setLocalFocusMinutes(String(defaultFocusMinutes));
+  }, [defaultFocusMinutes]);
+
+  useEffect(() => {
+    setLocalBreakMinutes(String(defaultBreakMinutes));
+  }, [defaultBreakMinutes]);
+
   useEffect(() => {
     setCurrentTimerIncrement(timerIncrement);
   }, [timerIncrement]);
 
   useEffect(() => {
-    const currentFocusVal = defaultFocusMinutes;
-    const currentBreakVal = defaultBreakMinutes;
+    const currentFocusVal = parseInt(localFocusMinutes) || 0;
+    const currentBreakVal = parseInt(localBreakMinutes) || 0;
 
     const currentUiSettings = {
       showSessionsWhileActive,
@@ -151,8 +164,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: currentFocusVal,
-      breakMinutes: currentBreakVal,
+      focusMinutes: currentFocusVal, // Use local parsed value for comparison
+      breakMinutes: currentBreakVal, // Use local parsed value for comparison
       maxDistance,
       askNotifications,
       joinNotifications, 
@@ -187,7 +200,7 @@ const Settings = () => {
     showSessionsWhileActive,
     isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
-    manualTransition, defaultFocusMinutes, defaultBreakMinutes, maxDistance,
+    manualTransition, localFocusMinutes, localBreakMinutes, maxDistance, // Use local states here
     askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
     verificationStandard, profileVisibility, locationSharing,
     isGlobalPrivate,
@@ -367,8 +380,12 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    setDefaultFocusMinutes(defaultFocusMinutes);
-    setDefaultBreakMinutes(defaultBreakMinutes);
+    // Parse local input values before saving to global state
+    const parsedFocus = parseInt(localFocusMinutes) || currentTimerIncrement;
+    const parsedBreak = parseInt(localBreakMinutes) || currentTimerIncrement;
+
+    setDefaultFocusMinutes(Math.max(currentTimerIncrement, parsedFocus));
+    setDefaultBreakMinutes(Math.max(currentTimerIncrement, parsedBreak));
 
     setTimerIncrement(currentTimerIncrement);
     setShowSessionsWhileActive(showSessionsWhileActive);
@@ -408,8 +425,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: defaultFocusMinutes,
-      breakMinutes: defaultBreakMinutes,
+      focusMinutes: Math.max(currentTimerIncrement, parsedFocus), // Save parsed values
+      breakMinutes: Math.max(currentTimerIncrement, parsedBreak), // Save parsed values
       maxDistance,
       askNotifications,
       joinNotifications, 
@@ -433,7 +450,6 @@ const Settings = () => {
   };
 
   const handleLogout = () => {
-    // Removed logout functionality as AuthContext no longer provides it
     if (areToastsEnabled) {
       toast.success("Logged Out", {
         description: "You have been successfully logged out.",
@@ -764,20 +780,11 @@ const Settings = () => {
                       id="focus-duration"
                       type="number"
                       placeholder="Minutes"
-                      value={defaultFocusMinutes === 0 ? "" : defaultFocusMinutes}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === "") {
-                          setDefaultFocusMinutes(0);
-                        } else {
-                          setDefaultFocusMinutes(parseInt(value) || 0);
-                        }
-                      }}
-                      onBlur={(e) => {
-                        const parsedValue = parseInt(e.target.value);
-                        if (isNaN(parsedValue) || parsedValue <= 0) {
-                          setDefaultFocusMinutes(currentTimerIncrement);
-                        }
+                      value={localFocusMinutes}
+                      onChange={(e) => setLocalFocusMinutes(e.target.value)}
+                      onBlur={() => {
+                        const parsedValue = parseInt(localFocusMinutes);
+                        setDefaultFocusMinutes(isNaN(parsedValue) || parsedValue <= 0 ? currentTimerIncrement : parsedValue);
                       }}
                       min={currentTimerIncrement}
                       step={currentTimerIncrement}
@@ -792,20 +799,11 @@ const Settings = () => {
                       id="break-duration"
                       type="number"
                       placeholder="Minutes"
-                      value={defaultBreakMinutes === 0 ? "" : defaultBreakMinutes}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === "") {
-                          setDefaultBreakMinutes(0);
-                        } else {
-                          setDefaultBreakMinutes(parseInt(value) || 0);
-                        }
-                      }}
-                      onBlur={(e) => {
-                        const parsedValue = parseInt(e.target.value);
-                        if (isNaN(parsedValue) || parsedValue <= 0) {
-                          setDefaultBreakMinutes(currentTimerIncrement);
-                        }
+                      value={localBreakMinutes}
+                      onChange={(e) => setLocalBreakMinutes(e.target.value)}
+                      onBlur={() => {
+                        const parsedValue = parseInt(localBreakMinutes);
+                        setDefaultBreakMinutes(isNaN(parsedValue) || parsedValue <= 0 ? currentTimerIncrement : parsedValue);
                       }}
                       min={currentTimerIncrement}
                       step={currentTimerIncrement}
