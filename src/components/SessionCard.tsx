@@ -97,7 +97,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
     }
 
     // Calculate the effective elapsed time within one full cycle of the schedule
-    const effectiveElapsedSeconds = elapsedSecondsSinceSessionStart % totalScheduleDurationSeconds;
+    const effectiveElapsedSeconds = totalScheduleDurationSeconds > 0 ? elapsedSecondsSinceSessionStart % totalScheduleDurationSeconds : 0;
 
     let accumulatedDurationSecondsInCycle = 0;
     for (let i = 0; i < currentSession.fullSchedule.length; i++) {
@@ -187,7 +187,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       <CardContent className="p-4 pt-0">
         <div className="flex justify-between items-center">
           {/* Group for Location, Coworkers Popovers, and Average Sociability Bar */}
-          <div className="flex items-center gap-4 flex-grow">
+          <div className="flex items-center gap-4 flex-grow mr-4"> {/* Added mr-4 here */}
             <Popover>
               <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
                 ~{totalDurationMinutes}m
@@ -232,7 +232,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
               </PopoverContent>
             </Popover>
             {/* Average Sociability Bar - now inside this flex container */}
-            <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow max-w-[150px] px-1">
+            <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow px-1"> {/* Removed max-w-[150px] */}
               <div className="h-full rounded-full" style={{width: `${averageSociability}%`, backgroundColor: getSociabilityGradientColor(averageSociability)}}></div>
             </div>
           </div>
