@@ -135,13 +135,17 @@ const Settings = () => {
     startStopNotifications,
   });
 
-  // Sync local input states with global defaults
+  // Sync local input states with global defaults, but only if not actively editing
   useEffect(() => {
-    setLocalFocusMinutes(String(defaultFocusMinutes));
+    if (document.activeElement?.id !== 'focus-duration') {
+      setLocalFocusMinutes(String(defaultFocusMinutes));
+    }
   }, [defaultFocusMinutes]);
 
   useEffect(() => {
-    setLocalBreakMinutes(String(defaultBreakMinutes));
+    if (document.activeElement?.id !== 'break-duration') {
+      setLocalBreakMinutes(String(defaultBreakMinutes));
+    }
   }, [defaultBreakMinutes]);
 
   useEffect(() => {
@@ -381,11 +385,14 @@ const Settings = () => {
 
   const handleSave = () => {
     // Parse local input values before saving to global state
-    const parsedFocus = parseInt(localFocusMinutes) || currentTimerIncrement;
-    const parsedBreak = parseInt(localBreakMinutes) || currentTimerIncrement;
+    const parsedFocus = parseInt(localFocusMinutes);
+    const finalFocusMinutes = isNaN(parsedFocus) || parsedFocus <= 0 ? currentTimerIncrement : parsedFocus;
 
-    setDefaultFocusMinutes(Math.max(currentTimerIncrement, parsedFocus));
-    setDefaultBreakMinutes(Math.max(currentTimerIncrement, parsedBreak));
+    const parsedBreak = parseInt(localBreakMinutes);
+    const finalBreakMinutes = isNaN(parsedBreak) || parsedBreak <= 0 ? currentTimerIncrement : parsedBreak;
+
+    setDefaultFocusMinutes(finalFocusMinutes);
+    setDefaultBreakMinutes(finalBreakMinutes);
 
     setTimerIncrement(currentTimerIncrement);
     setShowSessionsWhileActive(showSessionsWhileActive);
@@ -425,8 +432,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: Math.max(currentTimerIncrement, parsedFocus), // Save parsed values
-      breakMinutes: Math.max(currentTimerIncrement, parsedBreak), // Save parsed values
+      focusMinutes: finalFocusMinutes, // Save parsed values
+      breakMinutes: finalBreakMinutes, // Save parsed values
       maxDistance,
       askNotifications,
       joinNotifications, 
