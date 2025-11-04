@@ -186,6 +186,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <div className="flex justify-between items-center">
+          {/* Group for Location and Coworkers Popovers */}
           <div className="flex items-center gap-4">
             <Popover>
               <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
@@ -216,13 +217,13 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                           "min-w-0",
                           p.id !== "mock-user-id-123" && "cursor-pointer hover:text-primary"
                         )}
-                        onClick={(e) => handleParticipantNameClick(p.id, p.name, e)} // Use local handler
+                        onClick={(e) => handleParticipantNameClick(p.id, p.name, e)}
                       >
                         {p.name}
                       </span>
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{width: `${p.sociability}%`, backgroundColor: getSociabilityGradientColor(p.sociability)}}></div> {/* MODIFIED */}
+                          <div className="h-full rounded-full" style={{width: `${p.sociability}%`, backgroundColor: getSociabilityGradientColor(p.sociability)}}></div>
                         </div>
                       </div>
                     </div>
@@ -230,12 +231,15 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                 </div>
               </PopoverContent>
             </Popover>
-            <div className="flex items-center gap-2">
-              <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full rounded-full" style={{width: `${averageSociability}%`, backgroundColor: getSociabilityGradientColor(averageSociability)}}></div> {/* MODIFIED */}
-              </div>
+          </div>
+
+          {/* Average Sociability Bar - this will fill the space */}
+          <div className="flex-grow flex items-center justify-end pr-4">
+            <div className="h-2 bg-secondary rounded-full overflow-hidden w-full max-w-xs">
+              <div className="h-full rounded-full" style={{width: `${averageSociability}%`, backgroundColor: getSociabilityGradientColor(averageSociability)}}></div>
             </div>
           </div>
+          
           <Button size="sm" onClick={() => onJoinSession(session)}>Join</Button>
         </div>
       </CardContent>
