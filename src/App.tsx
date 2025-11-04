@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react'; // NEW: Import useState
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Index from './pages/Index';
@@ -23,18 +23,21 @@ import NotFound from './pages/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProfileProvider } from './contexts/ProfileContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext'; // Removed useProfilePopUp import
+import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 
 function App() {
-  // Removed: const { isPopUpOpen, targetUserId } = useProfilePopUp(); // This line caused the error
+  // NEW: Manage areToastsEnabled state at the App level
+  const [areToastsEnabled, setAreToastsEnabled] = useState(false);
 
   return (
     <TooltipProvider>
       <Router>
         <ThemeProvider>
           <AuthProvider>
-            <ProfileProvider> {/* ProfileProvider now wraps TimerProvider */}
-              <TimerProvider>
+            {/* ProfileProvider now wraps TimerProvider, and receives areToastsEnabled */}
+            <ProfileProvider areToastsEnabled={areToastsEnabled}>
+              {/* TimerProvider receives areToastsEnabled and its setter */}
+              <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
                 <ProfilePopUpProvider>
                   <Routes>
                     <Route path="/" element={<AppLayout />}>
@@ -54,7 +57,6 @@ function App() {
                     <Route path="/verify-email" element={<VerifyEmail />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                  {/* Removed: <ProfilePopUpCard key={isPopUpOpen ? targetUserId : 'closed'} /> */}
                 </ProfilePopUpProvider>
               </TimerProvider>
             </ProfileProvider>

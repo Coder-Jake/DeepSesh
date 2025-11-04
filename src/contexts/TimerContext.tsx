@@ -11,7 +11,13 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context';
 
-export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface TimerProviderProps {
+  children: React.ReactNode;
+  areToastsEnabled: boolean; // NEW: Accept areToastsEnabled as a prop
+  setAreToastsEnabled: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Accept setAreToastsEnabled as a prop
+}
+
+export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => { // NEW: Destructure props
   const { user } = useAuth();
   const { localFirstName } = useProfile(); // NEW: Get localFirstName from ProfileContext
 
@@ -117,7 +123,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]);
   const [is24HourFormat, setIs24HourFormat] = useState(true);
-  const [areToastsEnabled, setAreToastsEnabled] = useState(false);
+  // Removed: const [areToastsEnabled, setAreToastsEnabled] = useState(false); // Removed internal state
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
   const [hasWonPrize, setHasWonPrize] = useState(false);
 
@@ -812,7 +818,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setActiveTimerColors(data.activeTimerColors ?? {});
       setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? "My Focus Sesh");
       setIs24HourFormat(data.is24HourFormat ?? true);
-      setAreToastsEnabled(data.areToastsEnabled ?? false);
+      setAreToastsEnabled(data.areToastsEnabled ?? false); // NEW: Load from data, but it's now a prop
       setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false });
       setHasWonPrize(data.hasWonPrize ?? false);
 
@@ -858,7 +864,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsSeshTitleCustomized(false);
       }
     }
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes]); // Add getDefaultSeshTitle to dependencies
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled]); // Add getDefaultSeshTitle to dependencies
 
   useEffect(() => {
     const dataToSave = {
@@ -879,7 +885,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       is24HourFormat,
       preparedSchedules,
       timerIncrement,
-      areToastsEnabled,
+      // Removed: areToastsEnabled, // Removed from data to save
       startStopNotifications,
       hasWonPrize,
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
@@ -905,7 +911,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     is24HourFormat,
     preparedSchedules,
     timerIncrement,
-    areToastsEnabled,
+    // Removed: areToastsEnabled, // Removed from dependencies
     startStopNotifications,
     hasWonPrize,
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
@@ -1066,8 +1072,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setOpenSettingsAccordions,
     is24HourFormat,
     setIs24HourFormat,
-    areToastsEnabled,
-    setAreToastsEnabled,
+    areToastsEnabled, // NEW: Pass prop value
+    setAreToastsEnabled, // NEW: Pass prop setter
     startStopNotifications,
     setStartStopNotifications,
     playSound,

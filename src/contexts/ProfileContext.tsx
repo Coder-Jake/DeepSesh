@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext";
-import { useTimer } from "./TimerContext";
+// Removed: import { useTimer } from "./TimerContext"; // Removed this import
 
 // Define a simplified Profile type for local storage
 export type Profile = {
@@ -1517,6 +1517,7 @@ export const useProfile = () => {
 
 interface ProfileProviderProps {
   children: ReactNode;
+  areToastsEnabled: boolean; // NEW: Accept areToastsEnabled as a prop
 }
 
 const LOCAL_STORAGE_KEY = 'deepsesh_profile_data';
@@ -1550,9 +1551,9 @@ const safeJSONParse = <T extends unknown>(key: string, defaultValue: T): T => {
   }
 };
 
-export const ProfileProvider = ({ children }: ProfileProviderProps) => {
+export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderProps) => { // NEW: Accept areToastsEnabled
   const { user } = useAuth();
-  const { areToastsEnabled } = useTimer();
+  // Removed: const { areToastsEnabled } = useTimer(); // Removed this line
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
