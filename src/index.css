@@ -104,6 +104,28 @@
   .block-pointer-events {
     pointer-events: none !important;
   }
+
+  /* Styles for number input spinners to fill height */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    height: 100%; /* Make them fill the height */
+    margin: 0; /* Remove default margin */
+    background-color: hsl(var(--muted)); /* A subtle background */
+    border-left: 1px solid hsl(var(--border)); /* Separator */
+    border-radius: 0; /* Ensure no rounded corners interfere */
+    opacity: 0.8; /* Slightly transparent */
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button:hover,
+  input[type="number"]::-webkit-outer-spin-button:hover {
+    opacity: 1; /* Full opacity on hover */
+  }
+
+  /* For Firefox, to remove default styling that might interfere */
+  input[type="number"] {
+    -moz-appearance: textfield; /* Keep the default textfield appearance */
+  }
 }
 
 /* Custom class for octagonal shape */
