@@ -34,8 +34,9 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     id: generateId(),
     title: "School Timetable",
     schedule: [
-      { id: generateId(), title: "Mathematics", type: "focus", durationMinutes: 50, isCustom: true, customTitle: "Math" },
-      { id: generateId(), title: "Recess", type: "break", durationMinutes: 10, isCustom: true, customTitle: "Recess" },
+      { id: generateId(), title: "Mathematics", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Math" }, // MODIFIED: 60 minutes
+      { id: generateId(), title: "Economics", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Economics" }, // NEW: Added Economics
+      { id: generateId(), title: "Recess", type: "break", durationMinutes: 15, isCustom: true, customTitle: "Recess" }, // MODIFIED: 15 minutes
       { id: generateId(), title: "Science Lab", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Science Lab" },
       { id: generateId(), title: "PE", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "PE" }, // NEW: Added PE
       { id: generateId(), title: "Lunch", type: "break", durationMinutes: 30, isCustom: true, customTitle: "Lunch" },
