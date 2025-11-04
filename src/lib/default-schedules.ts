@@ -41,7 +41,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
       { id: generateId(), title: "PE", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "PE" }, // NEW: Added PE
       { id: generateId(), title: "Lunch", type: "break", durationMinutes: 30, isCustom: true, customTitle: "Lunch" },
       { id: generateId(), title: "English Literature", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "English Literature" },
-      { id: generateId(), title: "Study Hall", type: "focus", durationMinutes: 40, isCustom: true, customTitle: "Study Hall" },
+      { id: generateId(), title: "Music", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "Music" }, // MODIFIED: Changed from Study Hall to Music and 45 mins
     ],
     commenceTime: "08:30",
     commenceDay: DAYS_OF_WEEK.indexOf("Monday"), // Monday
