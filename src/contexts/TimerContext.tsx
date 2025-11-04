@@ -391,10 +391,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     if (confirmationMessageParts.length > 0) {
-        needsOverrideConfirmation = true;
-    }
-
-    if (needsOverrideConfirmation) {
         const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and commence "${templateToCommence.title}"?`;
         if (!confirm(finalMessage)) {
             return;
@@ -477,7 +473,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     const newTemplate: ScheduledTimerTemplate = {
-      id: crypto.randomUUID(),
+      id: crypto.randomUUID(), // User-saved templates get new UUIDs
       title: scheduleTitle,
       schedule: schedule,
       commenceTime: commenceTime,
@@ -738,6 +734,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
+    let initialSavedSchedules: ScheduledTimerTemplate[] = [];
+    let initialScheduleToLoad: ScheduledTimerTemplate | undefined;
+
     if (storedData) {
       const data = JSON.parse(storedData);
       _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25);
@@ -745,7 +744,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       _setFocusMinutes(data.focusMinutes ?? data._defaultFocusMinutes ?? 25);
       _setBreakMinutes(data.breakMinutes ?? data._defaultBreakMinutes ?? 5);
       
-      // MODIFIED: Handle seshTitle loading with default logic
+      // Handle seshTitle loading with default logic
       let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
       let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
 
@@ -759,7 +758,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setNotes(data.notes ?? "");
       setTimerIncrementInternal(data.timerIncrement ?? 5);
       
-      // MODIFIED: Handle 'yes' to 'all' conversion for showSessionsWhileActive
+      // Handle 'yes' to 'all' conversion for showSessionsWhileActive
       let loadedShowSessionsWhileActive = data.showSessionsWhileActive ?? 'hidden';
       if (loadedShowSessionsWhileActive === 'yes') {
         loadedShowSessionsWhileActive = 'all';
@@ -826,43 +825,56 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentSessionHostName(data.currentSessionHostName ?? null);
       setCurrentSessionOtherParticipants(data.currentSessionOtherParticipants ?? []);
 
-      const loadedSchedules = data.savedSchedules ?? [];
-      setSavedSchedules(loadedSchedules.length > 0 ? loadedSchedules : DEFAULT_SCHEDULE_TEMPLATES);
-      
+      initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
-    } else {
-      // Set "School Timetable" as the default schedule if no data is in local storage
-      const schoolTimetableTemplate = DEFAULT_SCHEDULE_TEMPLATES.find(
-        (template) => template.title === "School Timetable"
-      );
+    }
 
-      if (schoolTimetableTemplate) {
-        setSchedule(schoolTimetableTemplate.schedule);
-        setScheduleTitle(schoolTimetableTemplate.title);
-        setCommenceTime(schoolTimetableTemplate.commenceTime);
-        setCommenceDay(schoolTimetableTemplate.commenceDay);
-        setScheduleStartOption(schoolTimetableTemplate.scheduleStartOption);
-        setIsRecurring(schoolTimetableTemplate.isRecurring);
-        setRecurrenceFrequency(schoolTimetableTemplate.recurrenceFrequency);
-        setTimerColors(schoolTimetableTemplate.timerColors || {});
-        // Also set the initial timer values based on the first item of the default schedule
-        // MODIFIED: Ensure homepage timer defaults to _defaultFocusMinutes and _defaultBreakMinutes
-        _setFocusMinutes(_defaultFocusMinutes);
-        _setBreakMinutes(_defaultBreakMinutes);
-        setTimerType('focus'); // Default to focus
-        setTimeLeft(_defaultFocusMinutes * 60); // Set time left to default focus
-        _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
-        setIsSeshTitleCustomized(false);
-      } else {
-        // Fallback to default if "School Timetable" is not found
-        setSavedSchedules(DEFAULT_SCHEDULE_TEMPLATES);
-        _setFocusMinutes(_defaultFocusMinutes);
-        _setBreakMinutes(_defaultBreakMinutes);
-        setTimerType('focus');
-        setTimeLeft(_defaultFocusMinutes * 60);
-        _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
-        setIsSeshTitleCustomized(false);
-      }
+    // MODIFIED: Merge DEFAULT_SCHEDULE_TEMPLATES with loaded schedules
+    const mergedSchedulesMap = new Map<string, ScheduledTimerTemplate>();
+    
+    // Add default templates first (these are the latest from code)
+    DEFAULT_SCHEDULE_TEMPLATES.forEach(template => mergedSchedulesMap.set(template.id, template));
+
+    // Overlay with schedules from local storage
+    initialSavedSchedules.forEach(localSchedule => {
+      // If a local storage schedule has an ID that matches a default,
+      // it means the user might have modified it. Prioritize the local storage version.
+      // If it's a completely new ID (user-created), add it.
+      mergedSchedulesMap.set(localSchedule.id, localSchedule);
+    });
+
+    const finalSavedSchedules = Array.from(mergedSchedulesMap.values());
+    setSavedSchedules(finalSavedSchedules);
+
+    // Set the initial schedule to "School Timetable" from the *merged* set
+    initialScheduleToLoad = finalSavedSchedules.find(
+      (template) => template.id === "default-school-timetable"
+    );
+
+    if (initialScheduleToLoad) {
+      setSchedule(initialScheduleToLoad.schedule);
+      setScheduleTitle(initialScheduleToLoad.title);
+      setCommenceTime(initialScheduleToLoad.commenceTime);
+      setCommenceDay(initialScheduleToLoad.commenceDay);
+      setScheduleStartOption(initialScheduleToLoad.scheduleStartOption);
+      setIsRecurring(initialScheduleToLoad.isRecurring);
+      setRecurrenceFrequency(initialScheduleToLoad.recurrenceFrequency);
+      setTimerColors(initialScheduleToLoad.timerColors || {});
+      
+      _setFocusMinutes(_defaultFocusMinutes);
+      _setBreakMinutes(_defaultBreakMinutes);
+      setTimerType('focus'); 
+      setTimeLeft(_defaultFocusMinutes * 60); 
+      _setSeshTitle(getDefaultSeshTitle()); 
+      setIsSeshTitleCustomized(false);
+    } else {
+      // Fallback if "School Timetable" is somehow not found in the merged set
+      _setFocusMinutes(_defaultFocusMinutes);
+      _setBreakMinutes(_defaultBreakMinutes);
+      setTimerType('focus');
+      setTimeLeft(_defaultFocusMinutes * 60);
+      _setSeshTitle(getDefaultSeshTitle());
+      setIsSeshTitleCustomized(false);
     }
   }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled]); // Add getDefaultSeshTitle to dependencies
 

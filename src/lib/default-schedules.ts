@@ -11,7 +11,7 @@ const generateId = () => {
 
 export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
   {
-    id: generateId(),
+    id: "default-pomodoro", // Stable ID
     title: "Pomodoro",
     schedule: [
       { id: generateId(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
@@ -31,7 +31,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     timerColors: {}, // NEW: Default empty colors
   },
   {
-    id: generateId(),
+    id: "default-school-timetable", // Stable ID
     title: "School Timetable",
     schedule: [
       { id: generateId(), title: "Mathematics", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Math" }, // MODIFIED: 60 minutes
@@ -51,7 +51,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     timerColors: {}, // NEW: Default empty colors
   },
   {
-    id: generateId(),
+    id: "default-conference", // Stable ID
     title: "Conference",
     schedule: [
       { id: generateId(), title: "Keynote Address", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Keynote Address" },
@@ -69,7 +69,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     timerColors: {}, // NEW: Default empty colors
   },
   {
-    id: generateId(),
+    id: "default-hackathon", // Stable ID
     title: "Hackathon",
     schedule: [
       { id: generateId(), title: "Brainstorming", type: "focus", durationMinutes: 90, isCustom: true, customTitle: "Brainstorming" },
