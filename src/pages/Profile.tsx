@@ -535,7 +535,10 @@ const Profile = () => {
                   />
                 ) : (
                   <span
-                    className="cursor-pointer select-none"
+                    className={cn(
+                      "cursor-pointer select-none",
+                      localFirstName === "You" && "animate-fade-in-out" // Apply animation if default
+                    )}
                     onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }} // Prevent pronoun cycle when editing name
                   >
                     {localFirstName || "You"}
@@ -730,6 +733,10 @@ const Profile = () => {
                     onMouseLeave={handleLongPressEnd}
                     onTouchStart={() => handleLongPressStart(handleSociabilityLongPress)}
                     onTouchEnd={handleLongPressEnd}
+                    onClick={() => {
+                      if (!isLongPress.current) {
+                      }
+                    }}
                   >
                     {sociability <= 20 && "Looking to collaborate/brainstorm"}
                     {sociability > 20 && sociability <= 40 && "Happy to chat while we work"}
