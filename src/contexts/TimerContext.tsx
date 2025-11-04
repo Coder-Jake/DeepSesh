@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import { saveSessionToDatabase } from '@/utils/session-utils';
-import { useProfile } from '../contexts/ProfileContext'; // NEW: Import useProfile
+import { useProfile } from '../contexts/ProfileContext';
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -13,13 +13,13 @@ const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context';
 
 interface TimerProviderProps {
   children: React.ReactNode;
-  areToastsEnabled: boolean; // NEW: Accept areToastsEnabled as a prop
-  setAreToastsEnabled: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Accept setAreToastsEnabled as a prop
+  areToastsEnabled: boolean;
+  setAreToastsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => { // NEW: Destructure props
+export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user } = useAuth();
-  const { localFirstName } = useProfile(); // NEW: Get localFirstName from ProfileContext
+  const { localFirstName } = useProfile();
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
@@ -37,7 +37,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [notes, setNotes] = useState("");
   const [_seshTitle, _setSeshTitle] = useState("Notes");
   const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('hidden'); // MODIFIED: Changed 'yes' to 'all' and set default to 'hidden'
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('hidden');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
@@ -123,7 +123,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]);
   const [is24HourFormat, setIs24HourFormat] = useState(true);
-  // Removed: const [areToastsEnabled, setAreToastsEnabled] = useState(false); // Removed internal state
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
   const [hasWonPrize, setHasWonPrize] = useState(false);
 
@@ -140,19 +139,32 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const setDefaultFocusMinutes = useCallback((minutes: number) => {
     _setDefaultFocusMinutes(minutes);
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
-      _setFocusMinutes(minutes);
-    }
-  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
+    // No longer directly setting _setFocusMinutes here, rely on useEffect below
+  }, []);
 
   const setDefaultBreakMinutes = useCallback((minutes: number) => {
     _setDefaultBreakMinutes(minutes);
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isSchedulePrepared) {
-      _setBreakMinutes(minutes);
-    }
-  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, isSchedulePrepared]);
+    // No longer directly setting _setBreakMinutes here, rely on useEffect below
+  }, []);
 
-  // NEW: Helper function to get the default sesh title
+  // NEW: Effect to synchronize homepage focusMinutes with defaultFocusMinutes when idle
+  useEffect(() => {
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession) {
+      if (focusMinutes !== _defaultFocusMinutes) {
+        _setFocusMinutes(_defaultFocusMinutes);
+      }
+    }
+  }, [_defaultFocusMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, focusMinutes]);
+
+  // NEW: Effect to synchronize homepage breakMinutes with defaultBreakMinutes when idle
+  useEffect(() => {
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession) {
+      if (breakMinutes !== _defaultBreakMinutes) {
+        _setBreakMinutes(_defaultBreakMinutes);
+      }
+    }
+  }, [_defaultBreakMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, breakMinutes]);
+
   const getDefaultSeshTitle = useCallback(() => {
     return (localFirstName && localFirstName !== "You") ? `${localFirstName}'s Focus Sesh` : "My Focus Sesh";
   }, [localFirstName]);
@@ -212,21 +224,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, []);
 
-  // MODIFIED: setSeshTitle now manages isSeshTitleCustomized based on the default title
   const setSeshTitle = useCallback((newTitle: string) => {
     const defaultTitle = getDefaultSeshTitle();
     _setSeshTitle(newTitle);
     setIsSeshTitleCustomized(newTitle.trim() !== "" && newTitle !== defaultTitle);
   }, [getDefaultSeshTitle]);
 
-  // MODIFIED: updateSeshTitleWithSchedule now only sets the editable part of the title
   const updateSeshTitleWithSchedule = useCallback((currentScheduleTitle: string) => {
     if (!isSeshTitleCustomized) {
       _setSeshTitle(currentScheduleTitle);
     }
   }, [isSeshTitleCustomized]);
 
-  // MODIFIED: resetSchedule now uses getDefaultSeshTitle
   const resetSchedule = useCallback(() => {
     setIsScheduleActive(false);
     setCurrentScheduleIndex(0);
@@ -249,7 +258,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentPhaseStartTime(null);
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+    _setSeshTitle(getDefaultSeshTitle());
     setIsSeshTitleCustomized(false);
     setTimerColors({});
     setActiveSchedule([]);
@@ -309,10 +318,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     if (confirmationMessageParts.length > 0) {
-        needsOverrideConfirmation = true;
-    }
-
-    if (needsOverrideConfirmation) {
         const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and start this new schedule now?`;
         if (!confirm(finalMessage)) {
             return;
@@ -326,7 +331,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setIsFlashing(false);
             setAccumulatedFocusSeconds(0);
             setAccumulatedBreakSeconds(0);
-            _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+            _setSeshTitle(getDefaultSeshTitle());
             setIsSeshTitleCustomized(false);
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during schedule start. activeAsks cleared.");
@@ -369,7 +374,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks,
-    playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle // Add getDefaultSeshTitle
+    playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
@@ -411,7 +416,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setIsPaused(false);
             setAccumulatedFocusSeconds(0);
             setAccumulatedBreakSeconds(0);
-            _setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+            _setSeshTitle(getDefaultSeshTitle());
             setIsSeshTitleCustomized(false);
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during prepared schedule start. activeAsks cleared.");
@@ -473,7 +478,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     const newTemplate: ScheduledTimerTemplate = {
-      id: crypto.randomUUID(), // User-saved templates get new UUIDs
+      id: crypto.randomUUID(),
       title: scheduleTitle,
       schedule: schedule,
       commenceTime: commenceTime,
@@ -638,7 +643,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, timeLeft]);
 
-  // MODIFIED: This effect now only updates _seshTitle if it's not customized
   useEffect(() => {
     if (!isSeshTitleCustomized && activeScheduleDisplayTitle.trim() !== "") {
       _setSeshTitle(activeScheduleDisplayTitle);
@@ -744,7 +748,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       _setFocusMinutes(data.focusMinutes ?? data._defaultFocusMinutes ?? 25);
       _setBreakMinutes(data.breakMinutes ?? data._defaultBreakMinutes ?? 5);
       
-      // Handle seshTitle loading with default logic
       let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
       let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
 
@@ -758,7 +761,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setNotes(data.notes ?? "");
       setTimerIncrementInternal(data.timerIncrement ?? 5);
       
-      // Handle 'yes' to 'all' conversion for showSessionsWhileActive
       let loadedShowSessionsWhileActive = data.showSessionsWhileActive ?? 'hidden';
       if (loadedShowSessionsWhileActive === 'yes') {
         loadedShowSessionsWhileActive = 'all';
@@ -817,7 +819,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setActiveTimerColors(data.activeTimerColors ?? {});
       setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? "My Focus Sesh");
       setIs24HourFormat(data.is24HourFormat ?? true);
-      setAreToastsEnabled(data.areToastsEnabled ?? false); // NEW: Load from data, but it's now a prop
+      setAreToastsEnabled(data.areToastsEnabled ?? false);
       setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false });
       setHasWonPrize(data.hasWonPrize ?? false);
 
@@ -829,24 +831,17 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setPreparedSchedules(data.preparedSchedules ?? []);
     }
 
-    // MODIFIED: Merge DEFAULT_SCHEDULE_TEMPLATES with loaded schedules
     const mergedSchedulesMap = new Map<string, ScheduledTimerTemplate>();
     
-    // Add default templates first (these are the latest from code)
     DEFAULT_SCHEDULE_TEMPLATES.forEach(template => mergedSchedulesMap.set(template.id, template));
 
-    // Overlay with schedules from local storage
     initialSavedSchedules.forEach(localSchedule => {
-      // If a local storage schedule has an ID that matches a default,
-      // it means the user might have modified it. Prioritize the local storage version.
-      // If it's a completely new ID (user-created), add it.
       mergedSchedulesMap.set(localSchedule.id, localSchedule);
     });
 
     const finalSavedSchedules = Array.from(mergedSchedulesMap.values());
     setSavedSchedules(finalSavedSchedules);
 
-    // Set the initial schedule to "School Timetable" from the *merged* set
     initialScheduleToLoad = finalSavedSchedules.find(
       (template) => template.id === "default-school-timetable"
     );
@@ -868,7 +863,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       _setSeshTitle(getDefaultSeshTitle()); 
       setIsSeshTitleCustomized(false);
     } else {
-      // Fallback if "School Timetable" is somehow not found in the merged set
       _setFocusMinutes(_defaultFocusMinutes);
       _setBreakMinutes(_defaultBreakMinutes);
       setTimerType('focus');
@@ -876,7 +870,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
     }
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled]); // Add getDefaultSeshTitle to dependencies
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled]);
 
   useEffect(() => {
     const dataToSave = {
@@ -897,11 +891,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       is24HourFormat,
       preparedSchedules,
       timerIncrement,
-      // Removed: areToastsEnabled, // Removed from data to save
       startStopNotifications,
       hasWonPrize,
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
-      // Removed duplicate 'isRecurring' here
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -923,7 +915,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     is24HourFormat,
     preparedSchedules,
     timerIncrement,
-    // Removed: areToastsEnabled, // Removed from dependencies
     startStopNotifications,
     hasWonPrize,
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
@@ -960,7 +951,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setShowSessionsWhileActive,
     timerIncrement,
     setTimerIncrement: setTimerIncrementInternal,
-    getDefaultSeshTitle, // NEW: Add getDefaultSeshTitle to context value
+    getDefaultSeshTitle,
 
     schedule,
     setSchedule,
@@ -1084,8 +1075,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setOpenSettingsAccordions,
     is24HourFormat,
     setIs24HourFormat,
-    areToastsEnabled, // NEW: Pass prop value
-    setAreToastsEnabled, // NEW: Pass prop setter
+    areToastsEnabled,
+    setAreToastsEnabled,
     startStopNotifications,
     setStartStopNotifications,
     playSound,
