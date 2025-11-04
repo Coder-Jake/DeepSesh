@@ -59,6 +59,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
       { id: generateId(), title: "Session 1", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "Session 1" },
       { id: generateId(), title: "Networking Lunch", type: "break", durationMinutes: 60, isCustom: true, customTitle: "Networking Lunch" },
       { id: generateId(), title: "Session 2", type: "focus", durationMinutes: 45, isCustom: true, customTitle: "Session 2" },
+      { id: generateId(), title: "Q&A submissions", type: "focus", durationMinutes: 15, isCustom: true, customTitle: "Q&A submissions" }, // NEW: Added Q&A submissions
       { id: generateId(), title: "Panel Discussion", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Panel Discussion" },
     ],
     commenceTime: "09:00",
@@ -81,7 +82,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     commenceTime: "10:00",
     commenceDay: null, // Today (default)
     scheduleStartOption: 'now',
-    isRecurring: false, // MODIFIED: Set to false for Hackathon
+    isRecurring: false,
     recurrenceFrequency: 'daily',
     timerColors: {}, // NEW: Default empty colors
   },
