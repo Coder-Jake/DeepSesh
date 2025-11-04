@@ -136,20 +136,6 @@ const Settings = () => {
     startStopNotifications,
   });
 
-  // Update local states when global defaults change (e.g., on initial load or external updates)
-  // This effect will only run if the input is NOT focused, preventing overwrite during typing.
-  useEffect(() => {
-    if (document.activeElement?.id !== 'focus-duration') {
-      setLocalFocusMinutes(String(defaultFocusMinutes));
-    }
-  }, [defaultFocusMinutes]);
-
-  useEffect(() => {
-    if (document.activeElement?.id !== 'break-duration') {
-      setLocalBreakMinutes(String(defaultBreakMinutes));
-    }
-  }, [defaultBreakMinutes]);
-
   // Update currentTimerIncrement when global timerIncrement changes
   useEffect(() => {
     setCurrentTimerIncrement(timerIncrement);
