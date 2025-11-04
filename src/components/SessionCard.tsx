@@ -232,7 +232,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
               </PopoverContent>
             </Popover>
             {/* Average Sociability Bar - now inside this flex container */}
-            <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow max-w-[150px]">
+            <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow max-w-[150px] px-1">
               <div className="h-full rounded-full" style={{width: `${averageSociability}%`, backgroundColor: getSociabilityGradientColor(averageSociability)}}></div>
             </div>
           </div>
