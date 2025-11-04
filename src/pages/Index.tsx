@@ -274,10 +274,8 @@ const Index = () => {
   const [openSociabilityTooltipId, setOpenSociabilityTooltipId] = useState<string | null>(null);
   const sociabilityTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Removed mobileTooltipStates and mobileTooltipTimeoutRefs
-  // Removed useIsMobile as it's no longer needed for this interaction
-
-  // Removed cleanup for mobile tooltip timeouts
+  // NEW: State to control default title animation
+  const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
@@ -296,6 +294,12 @@ const Index = () => {
   useEffect(() => {
     console.log("Index: Current activeAsks on homepage:", activeAsks);
   }, [activeAsks]);
+
+  // NEW: Effect to manage default title animation
+  useEffect(() => {
+    const isDefault = seshTitle === getDefaultSeshTitle() && !isSeshTitleCustomized;
+    setIsDefaultTitleAnimating(isDefault);
+  }, [seshTitle, isSeshTitleCustomized, getDefaultSeshTitle]);
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
@@ -1523,13 +1527,16 @@ const Index = () => {
                       onKeyDown={handleTitleInputKeyDown}
                       onBlur={handleTitleInputBlur}
                       placeholder={getDefaultSeshTitle()} // Use getDefaultSeshTitle as placeholder
-                      className="text-lg font-semibold h-auto py-1 px-2" // Removed flex-grow
+                      className="text-lg font-semibold h-auto py-1 px-2" 
                       onFocus={(e) => e.target.select()}
                       data-name="Sesh Title Input"
                     />
                   ) : (
                     <CardTitle 
-                      className="text-lg cursor-pointer select-none" // Removed flex-grow
+                      className={cn(
+                        "text-lg cursor-pointer select-none",
+                        isDefaultTitleAnimating && "animate-fade-in-out" // Apply animation class
+                      )}
                       onClick={handleTitleClick}
                       onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
                       onMouseUp={handleLongPressEnd}
@@ -1541,7 +1548,7 @@ const Index = () => {
                       {seshTitle}
                     </CardTitle>
                   )}
-                  <span className="text-lg font-semibold text-muted-foreground">Notes</span>
+                  <span className="text-lg font-semibold text-black">Notes</span>
                 </div>
               </CardHeader>
               <CardContent>

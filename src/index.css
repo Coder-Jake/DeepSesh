@@ -110,3 +110,14 @@
 .shape-octagon {
   clip-path: polygon(29.3% 0%, 70.7% 0%, 100% 29.3%, 100% 70.7%, 70.7% 100%, 29.3% 100%, 0% 70.7%, 0% 29.3%);
 }
+
+/* NEW: Keyframe animation for fading effect */
+@keyframes fade-in-out {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* NEW: Utility class to apply the fading animation */
+.animate-fade-in-out {
+  animation: fade-in-out 2s ease-in-out infinite;
+}
