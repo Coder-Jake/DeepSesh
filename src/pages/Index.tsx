@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -383,7 +385,8 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now());
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    setTimeLeft(focusMinutes * 60);
+    // MODIFIED: Set timeLeft based on current timerType
+    setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     setIsTimeLeftManagedBySession(true);
 
     setCurrentSessionRole('host');
