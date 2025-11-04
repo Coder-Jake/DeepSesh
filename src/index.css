@@ -34,21 +34,23 @@
 
     --radius: 0.5rem;
 
-    --public-bg: 120 90% 85%; /* Light green for public */
-    --private-bg: 270 100% 90%; /* Light purple for private */
-    --olive: 80 40% 50%; /* Olive green */
-    --olive-foreground: 80 40% 10%; /* Darker olive for text */
+    /* Custom Timer Colors */
+    --focus-background: 210 40% 96.1%; /* Light gray for focus */
+    --focus-foreground: 222.2 47.4% 11.2%; /* Dark text for focus */
+    --focus-accent: 210 40% 96.1%; /* Accent for focus */
 
-    --focus-background: 200 100% 80%; /* Light pastel teal for focus */
-    --break-background: 40 100% 80%; /* Light pastel yellow for break */
-    --neutral-background: 210 20% 95%; /* Light gray for neutral */
+    --break-background: 142.1 76.2% 36.3%; /* Green for break */
+    --break-foreground: 210 40% 98%; /* Light text for break */
+    --break-accent: 142.1 76.2% 36.3%; /* Accent for break */
 
-    --cancel: 0 100% 95%; /* Light red */
-    --cancel-foreground: 0 80% 30%; /* Darker red for text */
+    --public-bg: 200 100% 95%; /* Light blue for public */
+    --public-gradient-start-dark: 210 40% 15%; /* Darker blue for public gradient start */
+    --public-gradient-end-dark: 220 30% 25%; /* Darker blue for public gradient end */
+    --private-bg: 0 0% 95%; /* Light red for private */
   }
 
   .dark {
-    --background: 222.2 84% 10%; /* Adjusted from 4.9% to 10% */
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
@@ -76,19 +78,19 @@
 
     --ring: 217.2 32.6% 17.5%;
 
-    /* Removed --public-bg from dark mode as it's replaced by gradient variables */
-    --public-gradient-start-dark: 120 30% 45%; /* Start of the public gradient in dark mode */
-    --public-gradient-end-dark: 120 30% 40%;   /* End of the public gradient in dark mode */
-    --private-bg: 270 30% 45%; /* Darker purple for private (updated) */
-    --olive: 80 40% 50%; /* Olive green */
-    --olive-foreground: 80 40% 90%; /* Lighter olive for text */
+    /* Custom Timer Colors */
+    --focus-background: 217.2 32.6% 17.5%; /* Dark gray for focus */
+    --focus-foreground: 210 40% 98%; /* Light text for focus */
+    --focus-accent: 217.2 32.6% 17.5%; /* Accent for focus */
 
-    --focus-background: 210 40% 25%; /* Dark mode pastel blue for focus */
-    --break-background: 60 40% 25%; /* Dark mode pastel yellow for break */
-    --neutral-background: 210 20% 15%; /* Darker gray for neutral */
+    --break-background: 142.1 70.6% 45.3%; /* Darker green for break */
+    --break-foreground: 210 40% 98%; /* Light text for break */
+    --break-accent: 142.1 70.6% 45.3%; /* Accent for break */
 
-    --cancel: 0 60% 20%; /* Darker light red for dark mode */
-    --cancel-foreground: 0 80% 80%; /* Lighter red for text in dark mode */
+    --public-bg: 210 40% 15%; /* Darker blue for public */
+    --public-gradient-start-dark: 210 40% 15%; /* Darker blue for public gradient start */
+    --public-gradient-end-dark: 220 30% 25%; /* Darker blue for public gradient end */
+    --private-bg: 0 0% 15%; /* Darker red for private */
   }
 }
 
@@ -97,16 +99,26 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground select-none; /* Added select-none here */
-  }
-
-  /* NEW: Class to block pointer events */
-  .block-pointer-events {
-    pointer-events: none !important;
+    @apply bg-background text-foreground;
   }
 }
 
-/* Custom class for octagonal shape */
+/* Custom Octagon Shape */
 .shape-octagon {
-  clip-path: polygon(29.3% 0%, 70.7% 0%, 100% 29.3%, 100% 70.7%, 70.7% 100%, 29.3% 100%, 0% 70.7%, 0% 29.3%);
+  clip-path: polygon(
+    30% 0%,
+    70% 0%,
+    100% 30%,
+    100% 70%,
+    70% 100%,
+    30% 100%,
+    0% 70%,
+    0% 30%
+  );
+}
+
+/* Keyframe for fade-in-out animation */
+@keyframes fade-in-out {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }

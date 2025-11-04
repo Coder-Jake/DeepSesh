@@ -1523,13 +1523,16 @@ const Index = () => {
                       onKeyDown={handleTitleInputKeyDown}
                       onBlur={handleTitleInputBlur}
                       placeholder={getDefaultSeshTitle()} // Use getDefaultSeshTitle as placeholder
-                      className="text-lg font-semibold h-auto py-1 px-2" // Removed flex-grow
+                      className="text-lg font-semibold h-auto py-1 px-2"
                       onFocus={(e) => e.target.select()}
                       data-name="Sesh Title Input"
                     />
                   ) : (
                     <CardTitle 
-                      className="text-lg cursor-pointer select-none" // Removed flex-grow
+                      className={cn(
+                        "text-lg cursor-pointer select-none",
+                        !isSeshTitleCustomized && "animate-fade-in-out"
+                      )}
                       onClick={handleTitleClick}
                       onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
                       onMouseUp={handleLongPressEnd}
@@ -1541,7 +1544,7 @@ const Index = () => {
                       {seshTitle}
                     </CardTitle>
                   )}
-                  <span className="text-lg font-semibold text-muted-foreground">Notes</span>
+                  <span className="text-lg font-semibold text-foreground">Notes</span>
                 </div>
               </CardHeader>
               <CardContent>
