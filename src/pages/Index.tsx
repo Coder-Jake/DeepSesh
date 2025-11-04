@@ -120,8 +120,8 @@ const mockFriendsSessions: DemoSession[] = [
       { id: "mock-user-id-skinner", name: "Skinner", sociability: 70, intention: "Memorizing behavioral principles." },
       { id: "mock-user-id-piaget", name: "Piaget", sociability: 80, intention: "Practicing cognitive development questions." },
       { id: "mock-user-id-jung", name: "Jung", sociability: 70, intention: "Summarizing archetypal concepts." },
-      { id: "mock-user-id-maslow", name: "Maslow", sociability: 95, intention: "Creating hierarchy of needs flashcards." }, // MODIFIED
-      { id: "mock-user-id-rogers", name: "Rogers", sociability: 90, intention: "Discussing humanistic approaches." }, // MODIFIED
+      { id: "mock-user-id-maslow", name: "Maslow", sociability: 50, intention: "Creating hierarchy of needs flashcards." }, // MODIFIED: Changed from 95 to 50
+      { id: "mock-user-id-rogers", name: "Rogers", sociability: 55, intention: "Discussing humanistic approaches." }, // MODIFIED: Changed from 90 to 55
       { id: "mock-user-id-bandura", name: "Bandura", sociability: 75, intention: "Collaborating on social learning theory guide." },
       { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 80, intention: "Peer teaching classical conditioning." },
     ],
@@ -814,6 +814,7 @@ const Index = () => {
   const allParticipantsToDisplayInCard = useMemo(() => {
     const participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }> = [];
 
+    // Add current user
     participants.push({
       id: currentUserId,
       name: currentUserName,
@@ -823,25 +824,38 @@ const Index = () => {
       bio: profile?.bio || undefined,
     });
 
-    if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName) {
-      // Fetch host profile details using getPublicProfile
-      const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName); // Assuming name can be used as ID for mock profiles
-      const hostSociability = hostProfile ? hostProfile.sociability || 50 : 50;
-      const hostIntention = hostProfile ? hostProfile.intention || undefined : undefined;
-      const hostBio = hostProfile ? hostProfile.bio || undefined : undefined;
-
-      participants.push({
-        id: "host-id", // This ID is generic, but the name and other details are from the hostProfile
-        name: currentSessionHostName,
-        sociability: hostSociability,
-        role: 'host',
-        intention: hostIntention,
-        bio: hostBio,
-      });
+    // Add host if current user is a coworker and a session is active
+    if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName && activeJoinedSession) {
+      // Find the host's full participant object from the activeJoinedSession
+      const hostParticipant = activeJoinedSession.participants.find(p => p.name === currentSessionHostName);
+      
+      if (hostParticipant) {
+        participants.push({
+          id: hostParticipant.id,
+          name: hostParticipant.name,
+          sociability: hostParticipant.sociability,
+          role: 'host',
+          intention: hostParticipant.intention,
+          bio: hostParticipant.bio,
+        });
+      } else {
+        // Fallback to getPublicProfile if host somehow not found in activeJoinedSession (should not happen with consistent data)
+        const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName);
+        participants.push({
+          id: hostProfile?.id || "host-id-fallback",
+          name: currentSessionHostName,
+          sociability: hostProfile?.sociability || 50,
+          role: 'host',
+          intention: hostProfile?.intention,
+          bio: hostProfile?.bio,
+        });
+      }
     }
 
+    // Add other participants
     currentSessionOtherParticipants.forEach(p => {
       if (p.id !== currentUserId && p.name !== currentSessionHostName) {
+        // p already contains the correct sociability from the DemoSession
         participants.push({ ...p, sociability: p.sociability || 50, role: 'coworker' });
       }
     });
@@ -853,7 +867,7 @@ const Index = () => {
       if (a.role !== 'host' && b.role === 'host') return 1;
       return a.name.localeCompare(b.name);
     });
-  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, currentUserId, currentUserName, profile?.sociability, profile?.intention, profile?.bio, getPublicProfile]);
+  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, currentUserId, currentUserName, profile?.sociability, profile?.intention, profile?.bio, activeJoinedSession, getPublicProfile]);
 
 
   const handleExtendSubmit = (minutes: number) => {
