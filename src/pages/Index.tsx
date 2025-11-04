@@ -120,8 +120,8 @@ const mockFriendsSessions: DemoSession[] = [
       { id: "mock-user-id-skinner", name: "Skinner", sociability: 70, intention: "Memorizing behavioral principles." },
       { id: "mock-user-id-piaget", name: "Piaget", sociability: 80, intention: "Practicing cognitive development questions." },
       { id: "mock-user-id-jung", name: "Jung", sociability: 70, intention: "Summarizing archetypal concepts." },
-      { id: "mock-user-id-maslow", name: "Maslow", sociability: 50, intention: "Creating hierarchy of needs flashcards." }, // MODIFIED: Changed from 95 to 50
-      { id: "mock-user-id-rogers", name: "Rogers", sociability: 55, intention: "Discussing humanistic approaches." }, // MODIFIED: Changed from 90 to 55
+      { id: "mock-user-id-maslow", name: "Maslow", sociability: 90, intention: "Creating hierarchy of needs flashcards." }, // MODIFIED: Changed from 50 to 90
+      { id: "mock-user-id-rogers", name: "Rogers", sociability: 95, intention: "Discussing humanistic approaches." }, // MODIFIED: Changed from 55 to 95
       { id: "mock-user-id-bandura", name: "Bandura", sociability: 75, intention: "Collaborating on social learning theory guide." },
       { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 80, intention: "Peer teaching classical conditioning." },
     ],
