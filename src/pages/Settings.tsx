@@ -600,7 +600,7 @@ const Settings = () => {
                         }}
                         min={currentTimerIncrement}
                         step={currentTimerIncrement}
-                        className="mt-2"
+                        className="mt-2 pr-0"
                         onFocus={(e) => e.target.select()}
                       />
                     )}
@@ -772,7 +772,7 @@ const Settings = () => {
                       }}
                       min={currentTimerIncrement}
                       step={currentTimerIncrement}
-                      className="mt-2"
+                      className="mt-2 pr-0"
                       onFocus={(e) => e.target.select()}
                     />
                   </div>
@@ -792,7 +792,7 @@ const Settings = () => {
                       }}
                       min={currentTimerIncrement}
                       step={currentTimerIncrement}
-                      className="mt-2"
+                      className="mt-2 pr-0"
                       onFocus={(e) => e.target.select()}
                     />
                   </div>

@@ -440,7 +440,7 @@ const ScheduleForm: React.FC = () => {
                   }}
                   min={timerIncrement}
                   step={timerIncrement}
-                  className="w-16 text-center flex-shrink-0"
+                  className="w-16 text-center flex-shrink-0 pr-0"
                   onFocus={(e) => e.target.select()}
                   onKeyDown={handleEnterKeyNavigation}
                   data-input-type="timer-duration"
@@ -568,6 +568,7 @@ const ScheduleForm: React.FC = () => {
                     onFocus={(e) => e.target.select()}
                     onKeyDown={handleEnterKeyNavigation}
                     data-input-type="commence-time"
+                    className="pr-0"
                   />
                 </div>
                 <div className="space-y-2">

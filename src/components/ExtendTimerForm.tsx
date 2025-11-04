@@ -53,7 +53,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
           }}
           min={timerIncrement} // Set min to timerIncrement
           step={timerIncrement} // Set step to timerIncrement
-          className="w-full"
+          className="w-full pr-0"
           onFocus={(e) => e.target.select()}
         />
       </div>
