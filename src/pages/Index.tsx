@@ -1480,14 +1480,11 @@ const Index = () => {
                       </div>
                     </div>
                   )}
-                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && (
-                    <div className="absolute bottom-4 right-4"> {/* Positioned inside the main timer card */}
-                      <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />
-                    </div>
-                  )}
+                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
                 </>
               )}
             </div>
+
             <ActiveAskSection 
               activeAsks={activeAsks} 
               onVoteExtend={handleVoteExtend} 
