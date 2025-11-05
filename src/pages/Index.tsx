@@ -1345,12 +1345,6 @@ const Index = () => {
                     </CircularProgress>
                   </div>
                   
-                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && (
-                    <div className="flex justify-center mb-6"> {/* Added div for spacing */}
-                      <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />
-                    </div>
-                  )}
-
                   <div className="flex gap-3 justify-center mb-6">
                     {isFlashing ? (
                       <Button 
@@ -1486,6 +1480,7 @@ const Index = () => {
                       </div>
                     </div>
                   )}
+                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
                 </>
               )}
             </div>
