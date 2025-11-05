@@ -1506,11 +1506,11 @@ const Index = () => {
             {/* NEW SHARE BUTTON */}
             <Button
               variant="outline"
-              className="w-full flex items-center gap-2"
+              className="block h-8 px-3 text-xs rounded-none mt-[-1.5rem] ml-1" // Modified classes
               onClick={() => setShowShareDialog(true)}
               data-name="Share Sesh Button"
             >
-              <Share2 size={16} /> Share Sesh
+              Share
             </Button>
 
             <ActiveAskSection 
