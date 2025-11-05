@@ -240,7 +240,7 @@ const Index = () => {
     startStopNotifications, playSound, triggerVibration, areToastsEnabled
   });
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode } = useProfile();
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp(); // Use toggleProfilePopUp
   const { isDarkMode } = useTheme();
@@ -1118,6 +1118,34 @@ const Index = () => {
     setSectionOrder(items as ('nearby' | 'friends' | 'organization')[]);
   };
 
+  const handleShareLink = useCallback(async () => {
+    if (!hostCode) {
+      if (areToastsEnabled) {
+        toast.error("Host Code Missing", {
+          description: "Your host code is not available. Please check your profile settings.",
+        });
+      }
+      return;
+    }
+
+    const shareUrl = `${window.location.origin}/?joinCode=${hostCode}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      if (areToastsEnabled) {
+        toast.success("Link Copied!", {
+          description: "The join link has been copied to your clipboard.",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+      if (areToastsEnabled) {
+        toast.error("Failed to Copy Link", {
+          description: "Please try again or copy manually.",
+        });
+      }
+    }
+  }, [hostCode, areToastsEnabled]);
+
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
@@ -1273,7 +1301,7 @@ const Index = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="select-none">
                             <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')} data-name="Share QR Option">QR</DropdownMenuItem>
-                            <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share Link')} data-name="Share Link Option">Link</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleShareLink} data-name="Share Link Option">Link</DropdownMenuItem>
                             <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
