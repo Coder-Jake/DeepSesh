@@ -1480,12 +1480,7 @@ const Index = () => {
                       </div>
                     </div>
                   )}
-                  {/* AskMenu moved here, wrapped in a div for absolute positioning */}
-                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && (
-                    <div className="absolute bottom-0 right-0">
-                      <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />
-                    </div>
-                  )}
+                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
                 </>
               )}
             </div>
