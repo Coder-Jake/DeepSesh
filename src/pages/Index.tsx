@@ -279,6 +279,10 @@ const Index = () => {
   // NEW: State to control default title animation
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
+  // NEW: State for link copied feedback
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
       titleInputRef.current.focus();
@@ -1131,11 +1135,14 @@ const Index = () => {
     const shareUrl = `${window.location.origin}/?joinCode=${hostCode}`;
     try {
       await navigator.clipboard.writeText(shareUrl);
-      if (areToastsEnabled) {
-        toast.success("Link Copied!", {
-          description: "The join link has been copied to your clipboard.",
-        });
+      setIsLinkCopied(true); // Set state to true
+      if (linkCopiedTimeoutRef.current) {
+        clearTimeout(linkCopiedTimeoutRef.current);
       }
+      linkCopiedTimeoutRef.current = setTimeout(() => {
+        setIsLinkCopied(false); // Reset state after 3 seconds
+        linkCopiedTimeoutRef.current = null;
+      }, 3000);
     } catch (err) {
       console.error("Failed to copy link:", err);
       if (areToastsEnabled) {
@@ -1301,7 +1308,7 @@ const Index = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="select-none">
                             <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share QR')} data-name="Share QR Option">QR</DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleShareLink} data-name="Share Link Option">Link</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleShareLink} className={cn(isLinkCopied && "text-green-500")} data-name="Share Link Option">Link</DropdownMenuItem>
                             <DropdownMenuItem className="text-muted-foreground" onClick={() => console.log('Share NFC')} data-name="Share NFC Option">NFC</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
