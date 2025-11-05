@@ -1234,7 +1234,7 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div className={cn(
-              "relative rounded-lg border border-border pt-1 pb-16 px-1 text-center transition-colors", // Changed pb-8 to pb-16
+              "relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors",
               !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
               !isGlobalPrivate && !isDarkMode && "bg-[hsl(var(--public-bg))]",
               isGlobalPrivate && "bg-[hsl(var(--private-bg))]"
@@ -1500,20 +1500,18 @@ const Index = () => {
                     </div>
                   )}
                   {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
-                  {/* NEW SHARE BUTTON - positioned absolutely inside the green div, to the left of AskMenu */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute bottom-0 right-[80px] rounded-none rounded-tl-lg px-3 py-1 text-xs" // Small, no icon, bottom right, next to AskMenu
-                    onClick={() => setShowShareDialog(true)}
-                    data-name="Share Sesh Button"
-                  >
-                    Share
-                  </Button>
                 </>
               )}
             </div>
-            {/* Removed the old Share button here */}
+            {/* NEW SHARE BUTTON */}
+            <Button
+              variant="outline"
+              className="w-full flex items-center gap-2"
+              onClick={() => setShowShareDialog(true)}
+              data-name="Share Sesh Button"
+            >
+              <Share2 size={16} /> Share Sesh
+            </Button>
 
             <ActiveAskSection 
               activeAsks={activeAsks} 
