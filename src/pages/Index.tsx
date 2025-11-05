@@ -1480,11 +1480,12 @@ const Index = () => {
                       </div>
                     </div>
                   )}
-                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
                 </>
               )}
             </div>
-
+            {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && (
+              <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />
+            )}
             <ActiveAskSection 
               activeAsks={activeAsks} 
               onVoteExtend={handleVoteExtend} 
