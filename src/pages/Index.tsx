@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react";
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, Copy } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +42,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { useTheme } from '@/contexts/ThemeContext';
 // Removed useIsMobile import as it's no longer needed for this interaction
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
+import ShareSessionDialog from "@/components/ShareSessionDialog"; // NEW IMPORT
 
 interface ExtendSuggestion {
   id: string;
@@ -278,6 +279,9 @@ const Index = () => {
 
   // NEW: State to control default title animation
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
+
+  // NEW STATE FOR SHARE DIALOG
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
@@ -678,6 +682,21 @@ const Index = () => {
       setJoinSessionCode("");
       setShowJoinInput(false);
     }
+  };
+
+  // NEW FUNCTION FOR COPYING SHARE LINK
+  const handleCopyShareLink = (title: string) => {
+    const shareLink = `https://deepsesh.com/join?code=ABCDEF&title=${encodeURIComponent(title)}`; // Placeholder link
+    navigator.clipboard.writeText(shareLink).then(() => {
+      toast.success("Share link copied!", {
+        description: "Anyone with the link can join your sesh.",
+      });
+    }).catch(err => {
+      console.error("Failed to copy share link:", err);
+      toast.error("Failed to copy link.", {
+        description: "Please try again or copy manually.",
+      });
+    });
   };
 
   const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
@@ -1484,6 +1503,15 @@ const Index = () => {
                 </>
               )}
             </div>
+            {/* NEW SHARE BUTTON */}
+            <Button
+              variant="outline"
+              className="w-full flex items-center gap-2"
+              onClick={() => setShowShareDialog(true)}
+              data-name="Share Sesh Button"
+            >
+              <Share2 size={16} /> Share Sesh
+            </Button>
 
             <ActiveAskSection 
               activeAsks={activeAsks} 
@@ -1728,6 +1756,15 @@ const Index = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* NEW SHARE SESSION DIALOG */}
+        <ShareSessionDialog
+          isOpen={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          seshTitle={seshTitle}
+          setSeshTitle={setSeshTitle}
+          onCopyLink={handleCopyShareLink}
+        />
       </main>
     </TooltipProvider>
   );
