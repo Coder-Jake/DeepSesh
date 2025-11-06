@@ -43,6 +43,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 // Removed useIsMobile import as it's no longer needed for this interaction
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 import { supabase } from '@/integrations/supabase/client'; // NEW: Import Supabase client
+import { useAuth } from '@/contexts/AuthContext'; // NEW: Import useAuth
 
 interface ExtendSuggestion {
   id: string;
@@ -245,6 +246,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp(); // Use toggleProfilePopUp
   const { isDarkMode } = useTheme();
+  const { user } = useAuth(); // NEW: Get user from useAuth
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
