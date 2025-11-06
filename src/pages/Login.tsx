@@ -1,20 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
 
 const Login = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth(); // MODIFIED: Removed login
+  const { user, loading } = useAuth();
   const { areToastsEnabled } = useTimer();
-
-  // Removed email and firstName states as they are no longer needed for explicit login
-  // Removed handleLogin function as it is no longer needed
 
   useEffect(() => {
     if (!loading && user) {
@@ -27,7 +23,7 @@ const Login = () => {
     }
   }, [user, loading, navigate, areToastsEnabled]);
 
-  if (loading || user) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Loading...</p>
@@ -37,20 +33,25 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background pt-16 lg:pt-20">
-      <Card className="w-full max-w-md p-8 space-y-6 text-center">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-foreground">Welcome!</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            You are automatically logged in with a local user profile.
-            You can customize your profile in the settings.
-          </p>
-          <Button onClick={() => navigate('/')} className="w-full">
-            Go to Home
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="w-full max-w-md p-8 space-y-6">
+        <Auth
+          supabaseClient={supabase}
+          providers={[]} // You can add 'google', 'github', etc. here if configured in Supabase
+          appearance={{
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: 'hsl(var(--primary))',
+                  brandAccent: 'hsl(var(--primary-foreground))',
+                },
+              },
+            },
+          }}
+          theme="light" // You can make this dynamic based on your app's theme
+          redirectTo={window.location.origin + '/'}
+        />
+      </div>
     </div>
   );
 };

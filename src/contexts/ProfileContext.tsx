@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext";
-// Removed: import { useTimer } from "./TimerContext"; // Removed this import
+import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
 
 // Define a simplified Profile type for local storage
 export type Profile = {
@@ -28,7 +28,7 @@ export type Profile = {
 };
 
 // Simplified ProfileUpdate type for local storage
-export type ProfileUpdate = Partial<Omit<Profile, 'id'>>;
+export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at'>>;
 
 export type TimePeriod = 'week' | 'month' | 'all';
 
@@ -1517,27 +1517,11 @@ export const useProfile = () => {
 
 interface ProfileProviderProps {
   children: ReactNode;
-  areToastsEnabled: boolean; // NEW: Accept areToastsEnabled as a prop
+  areToastsEnabled: boolean;
 }
 
-const LOCAL_STORAGE_KEY = 'deepsesh_profile_data';
-const LOCAL_FIRST_NAME_KEY = 'deepsesh_local_first_name';
 const BLOCKED_USERS_KEY = 'deepsesh_blocked_users';
-const LOCAL_STORAGE_HOST_CODE_KEY = 'deepsesh_host_code';
-const LOCAL_STORAGE_BIO_VISIBILITY_KEY = 'deepsesh_bio_visibility';
-const LOCAL_STORAGE_INTENTION_VISIBILITY_KEY = 'deepsesh_intention_visibility';
-const LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY = 'deepsesh_linkedin_visibility';
-const LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY = 'deepsesh_can_help_with_visibility';
-const LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY = 'deepsesh_need_help_with_visibility';
 const LOCAL_STORAGE_FRIEND_STATUSES_KEY = 'deepsesh_friend_statuses';
-const LOCAL_STORAGE_ORGANIZATION_KEY = 'deepsesh_organization';
-const LOCAL_STORAGE_CAN_HELP_WITH_KEY = 'deepsesh_can_help_with';
-const LOCAL_STORAGE_NEED_HELP_WITH_KEY = 'deepsesh_need_help_with';
-const LOCAL_STORAGE_PRONOUNS_KEY = 'deepsesh_pronouns';
-const LOCAL_STORAGE_BIO_KEY = 'deepsesh_bio';
-const LOCAL_STORAGE_INTENTION_KEY = 'deepsesh_intention';
-const LOCAL_STORAGE_SOCIABILITY_KEY = 'deepsesh_sociability';
-const LOCAL_STORAGE_LINKEDIN_URL_KEY = 'deepsesh_linkedin_url';
 
 // Helper function to safely parse JSON from local storage
 const safeJSONParse = <T extends unknown>(key: string, defaultValue: T): T => {
@@ -1551,15 +1535,14 @@ const safeJSONParse = <T extends unknown>(key: string, defaultValue: T): T => {
   }
 };
 
-export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderProps) => { // NEW: Accept areToastsEnabled
-  const { user } = useAuth();
-  // Removed: const { areToastsEnabled } = useTimer(); // Removed this line
+export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderProps) => {
+  const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // NEW: Individual profile states
-  const [localFirstName, setLocalFirstName] = useState("You");
+  // Individual profile states
+  const [localFirstName, setLocalFirstName] = useState("You"); // This will be derived from Supabase profile
   const [bio, setBio] = useState<string | null>(null);
   const [intention, setIntention] = useState<string | null>(null);
   const [canHelpWith, setCanHelpWith] = useState<string | null>(null);
@@ -1568,6 +1551,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
   const [organization, setOrganization] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   const [pronouns, setPronouns] = useState<string | null>(null);
+  const [hostCode, setHostCode] = useState("");
 
   const statsData = useMemo(() => ({
     week: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
@@ -1576,8 +1560,6 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
   }), []);
 
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
-  const [hostCode, setHostCode] = useState("");
-
   const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
   const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
@@ -1705,153 +1687,175 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
     setLoading(true);
     setError(null);
 
-    // Load individual states from local storage
-    const storedLocalFirstName = localStorage.getItem(LOCAL_FIRST_NAME_KEY);
-    if (storedLocalFirstName) setLocalFirstName(storedLocalFirstName);
-    const storedBio = localStorage.getItem(LOCAL_STORAGE_BIO_KEY);
-    if (storedBio) setBio(storedBio);
-    const storedIntention = localStorage.getItem(LOCAL_STORAGE_INTENTION_KEY);
-    if (storedIntention) setIntention(storedIntention);
-    const storedCanHelpWith = localStorage.getItem(LOCAL_STORAGE_CAN_HELP_WITH_KEY);
-    if (storedCanHelpWith) setCanHelpWith(storedCanHelpWith);
-    const storedNeedHelpWith = localStorage.getItem(LOCAL_STORAGE_NEED_HELP_WITH_KEY);
-    if (storedNeedHelpWith) setNeedHelpWith(storedNeedHelpWith);
-    const storedSociability = localStorage.getItem(LOCAL_STORAGE_SOCIABILITY_KEY);
-    if (storedSociability) setSociability(parseInt(storedSociability, 10));
-    const storedOrganization = localStorage.getItem(LOCAL_STORAGE_ORGANIZATION_KEY);
-    if (storedOrganization) setOrganization(storedOrganization);
-    const storedLinkedinUrl = localStorage.getItem(LOCAL_STORAGE_LINKEDIN_URL_KEY);
-    if (storedLinkedinUrl) setLinkedinUrl(storedLinkedinUrl);
-    const storedPronouns = localStorage.getItem(LOCAL_STORAGE_PRONOUNS_KEY);
-    if (storedPronouns) setPronouns(storedPronouns);
-    const storedHostCode = localStorage.getItem(LOCAL_STORAGE_HOST_CODE_KEY);
-    if (storedHostCode) setHostCode(storedHostCode);
-
-    // Use safeJSONParse for array-based visibility settings
-    setBioVisibility(safeJSONParse(LOCAL_STORAGE_BIO_VISIBILITY_KEY, ['public']));
-    setIntentionVisibility(safeJSONParse(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, ['public']));
-    setLinkedinVisibility(safeJSONParse(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, ['public']));
-    setCanHelpWithVisibility(safeJSONParse(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, ['public']));
-    setNeedHelpWithVisibility(safeJSONParse(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, ['public']));
-
-    setFriendStatuses(safeJSONParse(LOCAL_STORAGE_FRIEND_STATUSES_KEY, {}));
-
-    // Construct the `profile` object from the individual states for backward compatibility
-    if (user) {
-      const currentProfile: Profile = {
-        id: user.id,
-        first_name: storedLocalFirstName || user.user_metadata.first_name || user.email.split('@')[0],
-        last_name: user.user_metadata.last_name || null,
-        avatar_url: null,
-        bio: storedBio || null,
-        intention: storedIntention || null,
-        sociability: parseInt(storedSociability || '50', 10),
-        organization: storedOrganization || null,
-        linkedin_url: storedLinkedinUrl || null,
-        updated_at: new Date().toISOString(),
-        host_code: storedHostCode || generateRandomHostCode(),
-        bio_visibility: safeJSONParse(LOCAL_STORAGE_BIO_VISIBILITY_KEY, ['public']),
-        intention_visibility: safeJSONParse(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, ['public']),
-        linkedin_visibility: safeJSONParse(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, ['public']),
-        can_help_with: storedCanHelpWith || null,
-        can_help_with_visibility: safeJSONParse(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, ['public']),
-        need_help_with: storedNeedHelpWith || null,
-        need_help_with_visibility: safeJSONParse(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, ['public']),
-        pronouns: storedPronouns || null,
-      };
-      setProfile(currentProfile);
-      setHostCode(currentProfile.host_code); // This should set the hostCode state
-      console.log("Profile fetched from local storage for local user:", currentProfile.first_name, "Host Code:", currentProfile.host_code);
-    } else {
-      console.error("AuthContext did not provide a user. This should not happen.");
+    if (!user) {
       setProfile(null);
+      setLocalFirstName("You");
+      setBio(null);
+      setIntention(null);
+      setCanHelpWith(null);
+      setNeedHelpWith(null);
+      setSociability(50);
+      setOrganization(null);
+      setLinkedinUrl(null);
+      setPronouns(null);
+      setHostCode(generateRandomHostCode()); // Generate a host code for local user
+      setBioVisibility(['public']);
+      setIntentionVisibility(['public']);
+      setLinkedinVisibility(['public']);
+      setCanHelpWithVisibility(['public']);
+      setNeedHelpWithVisibility(['public']);
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error && error.code === 'PGRST116') { // No rows found
+        // Create a new profile if one doesn't exist
+        const { data: newProfileData, error: insertError } = await supabase
+          .from('profiles')
+          .insert({ 
+            id: user.id, 
+            first_name: user.user_metadata.first_name || user.email?.split('@')[0] || "You",
+            last_name: user.user_metadata.last_name || null,
+            avatar_url: user.user_metadata.avatar_url || null,
+            host_code: generateRandomHostCode(),
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        setProfile(newProfileData);
+        setLocalFirstName(newProfileData.first_name || "You");
+        setBio(newProfileData.bio);
+        setIntention(newProfileData.intention);
+        setCanHelpWith(newProfileData.can_help_with);
+        setNeedHelpWith(newProfileData.need_help_with);
+        setSociability(newProfileData.sociability || 50);
+        setOrganization(newProfileData.organization);
+        setLinkedinUrl(newProfileData.linkedin_url);
+        setPronouns(newProfileData.pronouns);
+        setHostCode(newProfileData.host_code || generateRandomHostCode());
+        setBioVisibility(newProfileData.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        setIntentionVisibility(newProfileData.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        setLinkedinVisibility(newProfileData.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        setCanHelpWithVisibility(newProfileData.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        setNeedHelpWithVisibility(newProfileData.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        console.log("New profile created for user:", newProfileData.first_name);
+      } else if (error) {
+        throw error;
+      } else {
+        setProfile(data);
+        setLocalFirstName(data.first_name || "You");
+        setBio(data.bio);
+        setIntention(data.intention);
+        setCanHelpWith(data.can_help_with);
+        setNeedHelpWith(data.need_help_with);
+        setSociability(data.sociability || 50);
+        setOrganization(data.organization);
+        setLinkedinUrl(data.linkedin_url);
+        setPronouns(data.pronouns);
+        setHostCode(data.host_code || generateRandomHostCode());
+        setBioVisibility(data.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        setIntentionVisibility(data.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        setLinkedinVisibility(data.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        setCanHelpWithVisibility(data.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        setNeedHelpWithVisibility(data.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+        console.log("Profile fetched for user:", data.first_name);
+      }
+    } catch (err: any) {
+      console.error("Error fetching/creating profile:", err.message);
+      setError(err.message);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Add an effect to ensure hostCode is never empty after initial load
   useEffect(() => {
-    if (!loading && !hostCode) {
+    if (!loading && !hostCode && user) {
       const newHostCode = generateRandomHostCode();
       setHostCode(newHostCode);
-      localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, newHostCode);
+      updateProfile({ host_code: newHostCode }, "Host code generated.");
       console.log("Generated and set new host code because it was empty:", newHostCode);
     }
-  }, [loading, hostCode]); // Depend on loading and hostCode
+  }, [loading, hostCode, user]);
 
   const updateProfile = async (data: ProfileUpdate, successMessage?: string) => {
     setLoading(true);
     setError(null);
 
     if (!user) {
-      setError("Local user not found. Cannot update profile.");
+      setError("User not authenticated. Cannot update profile.");
       setLoading(false);
       if (areToastsEnabled) {
         toast.error("Profile Update Failed", {
-          description: "A local user profile is required to save changes.",
+          description: "You must be logged in to save changes.",
         });
       }
       return;
     }
 
-    // Update local storage and state for each field
-    if (data.first_name !== undefined) { localStorage.setItem(LOCAL_FIRST_NAME_KEY, data.first_name); setLocalFirstName(data.first_name); }
-    if (data.bio !== undefined) { localStorage.setItem(LOCAL_STORAGE_BIO_KEY, data.bio || ''); setBio(data.bio); }
-    if (data.intention !== undefined) { localStorage.setItem(LOCAL_STORAGE_INTENTION_KEY, data.intention || ''); setIntention(data.intention); }
-    if (data.sociability !== undefined) { localStorage.setItem(LOCAL_STORAGE_SOCIABILITY_KEY, String(data.sociability)); setSociability(data.sociability); }
-    if (data.organization !== undefined) { localStorage.setItem(LOCAL_STORAGE_ORGANIZATION_KEY, data.organization || ''); setOrganization(data.organization); }
-    if (data.linkedin_url !== undefined) { localStorage.setItem(LOCAL_STORAGE_LINKEDIN_URL_KEY, data.linkedin_url || ''); setLinkedinUrl(data.linkedin_url); }
-    if (data.host_code !== undefined) { localStorage.setItem(LOCAL_STORAGE_HOST_CODE_KEY, data.host_code); setHostCode(data.host_code); }
-    if (data.bio_visibility !== undefined) { localStorage.setItem(LOCAL_STORAGE_BIO_VISIBILITY_KEY, JSON.stringify(data.bio_visibility)); setBioVisibility(data.bio_visibility); }
-    if (data.intention_visibility !== undefined) { localStorage.setItem(LOCAL_STORAGE_INTENTION_VISIBILITY_KEY, JSON.stringify(data.intention_visibility)); setIntentionVisibility(data.intention_visibility); }
-    if (data.linkedin_visibility !== undefined) { localStorage.setItem(LOCAL_STORAGE_LINKEDIN_VISIBILITY_KEY, JSON.stringify(data.linkedin_visibility)); setLinkedinVisibility(data.linkedin_visibility); }
-    if (data.can_help_with !== undefined) { localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_KEY, data.can_help_with || ''); setCanHelpWith(data.can_help_with); }
-    if (data.can_help_with_visibility !== undefined) { localStorage.setItem(LOCAL_STORAGE_CAN_HELP_WITH_VISIBILITY_KEY, JSON.stringify(data.can_help_with_visibility)); setCanHelpWithVisibility(data.can_help_with_visibility); }
-    if (data.need_help_with !== undefined) { localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_KEY, data.need_help_with || ''); setNeedHelpWith(data.need_help_with); }
-    if (data.need_help_with_visibility !== undefined) { localStorage.setItem(LOCAL_STORAGE_NEED_HELP_WITH_VISIBILITY_KEY, JSON.stringify(data.need_help_with_visibility)); setNeedHelpWithVisibility(data.need_help_with_visibility); }
-    if (data.pronouns !== undefined) { localStorage.setItem(LOCAL_STORAGE_PRONOUNS_KEY, data.pronouns || ''); setPronouns(data.pronouns); }
+    try {
+      const { data: updatedData, error } = await supabase
+        .from('profiles')
+        .update({ ...data, updated_at: new Date().toISOString() })
+        .eq('id', user.id)
+        .select()
+        .single();
 
-    // Reconstruct the `profile` object from the updated individual states
-    setProfile(prevProfile => {
-      if (!prevProfile) return null;
-      const updatedProfile: Profile = {
-        ...prevProfile,
-        first_name: data.first_name !== undefined ? data.first_name : prevProfile.first_name,
-        bio: data.bio !== undefined ? data.bio : prevProfile.bio,
-        intention: data.intention !== undefined ? data.intention : prevProfile.intention,
-        sociability: data.sociability !== undefined ? data.sociability : prevProfile.sociability,
-        organization: data.organization !== undefined ? data.organization : prevProfile.organization,
-        linkedin_url: data.linkedin_url !== undefined ? data.linkedin_url : prevProfile.linkedin_url,
-        host_code: data.host_code !== undefined ? data.host_code : prevProfile.host_code,
-        bio_visibility: data.bio_visibility !== undefined ? data.bio_visibility : prevProfile.bio_visibility,
-        intention_visibility: data.intention_visibility !== undefined ? data.intention_visibility : prevProfile.intention_visibility,
-        linkedin_visibility: data.linkedin_visibility !== undefined ? data.linkedin_visibility : prevProfile.linkedin_visibility,
-        can_help_with: data.can_help_with !== undefined ? data.can_help_with : prevProfile.can_help_with,
-        can_help_with_visibility: data.can_help_with_visibility !== undefined ? data.can_help_with_visibility : prevProfile.can_help_with_visibility,
-        need_help_with: data.need_help_with !== undefined ? data.need_help_with : prevProfile.need_help_with,
-        need_help_with_visibility: data.need_help_with_visibility !== undefined ? data.need_help_with_visibility : prevProfile.need_help_with_visibility,
-        pronouns: data.pronouns !== undefined ? data.pronouns : prevProfile.pronouns,
-        updated_at: new Date().toISOString(),
-      };
-      return updatedProfile;
-    });
+      if (error) throw error;
 
-    console.log("Profile updated in local storage and context:", data);
-    if (areToastsEnabled) {
-      toast.success(successMessage || "Profile updated!", {
-        description: "Your profile has been successfully saved locally.",
-      });
+      setProfile(updatedData);
+      setLocalFirstName(updatedData.first_name || "You");
+      setBio(updatedData.bio);
+      setIntention(updatedData.intention);
+      setCanHelpWith(updatedData.can_help_with);
+      setNeedHelpWith(updatedData.need_help_with);
+      setSociability(updatedData.sociability || 50);
+      setOrganization(updatedData.organization);
+      setLinkedinUrl(updatedData.linkedin_url);
+      setPronouns(updatedData.pronouns);
+      setHostCode(updatedData.host_code || generateRandomHostCode());
+      setBioVisibility(updatedData.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+      setIntentionVisibility(updatedData.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+      setLinkedinVisibility(updatedData.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+      setCanHelpWithVisibility(updatedData.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+      setNeedHelpWithVisibility(updatedData.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
+
+      console.log("Profile updated in Supabase and context:", updatedData);
+      if (areToastsEnabled) {
+        toast.success(successMessage || "Profile updated!", {
+          description: "Your profile has been successfully saved.",
+        });
+      }
+    } catch (err: any) {
+      console.error("Error updating profile:", err.message);
+      setError(err.message);
+      if (areToastsEnabled) {
+        toast.error("Profile Update Failed", {
+          description: `Failed to save profile changes. ${err.message}`,
+        });
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const getPublicProfile = useCallback((userId: string, userName: string): Profile | null => {
+    // First, check mock profiles
     const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
     if (mockProfile) {
       return mockProfile;
     }
 
-    // For non-logged-in users or mock users, return a basic profile
+    // If not found in mocks, return a basic profile (Supabase query would go here in a real app)
     return {
       id: userId,
       first_name: userName,
@@ -1877,11 +1881,36 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
 
 
   useEffect(() => {
-    fetchProfile();
+    if (!authLoading) {
+      fetchProfile();
+    }
+
+    // Clear local storage keys that are now managed by Supabase
+    localStorage.removeItem('deepsesh_profile_data');
+    localStorage.removeItem('deepsesh_local_first_name');
+    localStorage.removeItem('deepsesh_host_code');
+    localStorage.removeItem('deepsesh_bio_visibility');
+    localStorage.removeItem('deepsesh_intention_visibility');
+    localStorage.removeItem('deepsesh_linkedin_visibility');
+    localStorage.removeItem('deepsesh_can_help_with_visibility');
+    localStorage.removeItem('deepsesh_need_help_with_visibility');
+    localStorage.removeItem('deepsesh_organization');
+    localStorage.removeItem('deepsesh_can_help_with');
+    localStorage.removeItem('deepsesh_need_help_with');
+    localStorage.removeItem('deepsesh_pronouns');
+    localStorage.removeItem('deepsesh_bio');
+    localStorage.removeItem('deepsesh_intention');
+    localStorage.removeItem('deepsesh_sociability');
+    localStorage.removeItem('deepsesh_linkedin_url');
+
+    // Blocked users and friend statuses can remain local for now if not synced to backend
+    setBlockedUsers(safeJSONParse(BLOCKED_USERS_KEY, []));
+    setFriendStatuses(safeJSONParse(LOCAL_STORAGE_FRIEND_STATUSES_KEY, {}));
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === LOCAL_STORAGE_KEY || event.key === LOCAL_FIRST_NAME_KEY || event.key === BLOCKED_USERS_KEY) {
-        fetchProfile();
+      if (event.key === BLOCKED_USERS_KEY || event.key === LOCAL_STORAGE_FRIEND_STATUSES_KEY) {
+        setBlockedUsers(safeJSONParse(BLOCKED_USERS_KEY, []));
+        setFriendStatuses(safeJSONParse(LOCAL_STORAGE_FRIEND_STATUSES_KEY, {}));
       }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -1891,7 +1920,11 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
       friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
       friendRequestTimeouts.current.clear();
     };
-  }, [user]);
+  }, [user, authLoading]);
+
+  useEffect(() => {
+    localStorage.setItem(BLOCKED_USERS_KEY, JSON.stringify(blockedUsers));
+  }, [blockedUsers]);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
@@ -1928,7 +1961,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
     sendFriendRequest,
     acceptFriendRequest,
     removeFriend,
-    // NEW: Individual profile fields
+    // Individual profile fields
     bio, setBio,
     intention, setIntention,
     canHelpWith, setCanHelpWith,

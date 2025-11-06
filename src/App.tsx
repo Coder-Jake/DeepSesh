@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react'; // NEW: Import useState
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Index from './pages/Index';
@@ -26,7 +26,6 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 
 function App() {
-  // NEW: Manage areToastsEnabled state at the App level
   const [areToastsEnabled, setAreToastsEnabled] = useState(false);
 
   return (
@@ -34,9 +33,7 @@ function App() {
       <Router>
         <ThemeProvider>
           <AuthProvider>
-            {/* ProfileProvider now wraps TimerProvider, and receives areToastsEnabled */}
             <ProfileProvider areToastsEnabled={areToastsEnabled}>
-              {/* TimerProvider receives areToastsEnabled and its setter */}
               <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
                 <ProfilePopUpProvider>
                   <Routes>
