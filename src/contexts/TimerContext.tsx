@@ -6,6 +6,7 @@ import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import { saveSessionToDatabase } from '@/utils/session-utils';
 import { useProfile } from '../contexts/ProfileContext';
+import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -130,6 +131,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [isHomepageFocusCustomized, setIsHomepageFocusCustomized] = useState(false);
   const [isHomepageBreakCustomized, setIsHomepageBreakCustomized] = useState(false);
 
+  // NEW: State to store the ID of the active session record in Supabase
+  const [activeSessionRecordId, setActiveSessionRecordId] = useState<string | null>(null);
+
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
 
@@ -240,7 +244,97 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [isSeshTitleCustomized]);
 
-  const resetSchedule = useCallback(() => {
+  // NEW: Function to sync session data to Supabase
+  const syncSessionToSupabase = useCallback(async () => {
+    if (!user?.id || isGlobalPrivate || !activeSessionRecordId) {
+      return;
+    }
+
+    const currentScheduleItem = isScheduleActive ? activeSchedule[currentScheduleIndex] : null;
+    const currentPhaseDuration = currentScheduleItem ? currentScheduleItem.durationMinutes : (timerType === 'focus' ? focusMinutes : breakMinutes);
+    const currentPhaseEndTime = new Date(Date.now() + timeLeft * 1000).toISOString();
+
+    const sessionData = {
+      host_name: localFirstName,
+      session_title: activeScheduleDisplayTitle,
+      current_phase_type: timerType,
+      current_phase_end_time: currentPhaseEndTime,
+      is_active: isRunning,
+      is_paused: isPaused,
+      focus_duration: focusMinutes, // Store current homepage focus/break for manual timers
+      break_duration: breakMinutes,
+      total_session_duration_seconds: isScheduleActive ? activeSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60 : currentPhaseDuration * 60,
+      schedule_id: isScheduleActive ? activeSchedule[0]?.id : null, // Assuming first item ID can represent schedule ID
+      current_schedule_index: isScheduleActive ? currentScheduleIndex : 0,
+      schedule_data: isScheduleActive ? activeSchedule : null,
+    };
+
+    try {
+      const { error } = await supabase
+        .from('active_sessions')
+        .update(sessionData)
+        .eq('id', activeSessionRecordId);
+
+      if (error) {
+        console.error("Error updating active session in Supabase:", error);
+        if (areToastsEnabled) {
+          toast.error("Supabase Sync Error", {
+            description: `Failed to update active session: ${error.message}`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected error during Supabase sync:", error);
+    }
+  }, [
+    user?.id, isGlobalPrivate, activeSessionRecordId, localFirstName, activeScheduleDisplayTitle,
+    timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
+    currentScheduleIndex, timeLeft, areToastsEnabled
+  ]);
+
+  // NEW: Effect to sync session data to Supabase on relevant state changes
+  useEffect(() => {
+    if (activeSessionRecordId && user?.id && !isGlobalPrivate) {
+      // Debounce updates to avoid excessive writes
+      const handler = setTimeout(() => {
+        syncSessionToSupabase();
+      }, 500); // Sync every 500ms if state changes
+
+      return () => clearTimeout(handler);
+    }
+  }, [
+    isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
+    focusMinutes, breakMinutes, isScheduleActive, isGlobalPrivate, activeSessionRecordId, user?.id,
+    syncSessionToSupabase
+  ]);
+
+  const resetSchedule = useCallback(async () => {
+    // NEW: Delete active session from Supabase if it exists
+    if (activeSessionRecordId && user?.id && !isGlobalPrivate) {
+      try {
+        const { error } = await supabase
+          .from('active_sessions')
+          .delete()
+          .eq('id', activeSessionRecordId)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error("Error deleting active session from Supabase:", error);
+          if (areToastsEnabled) {
+            toast.error("Supabase Delete Error", {
+              description: `Failed to delete active session: ${error.message}`,
+            });
+          }
+        } else {
+          console.log("Active session deleted from Supabase:", activeSessionRecordId);
+        }
+      } catch (error) {
+        console.error("Unexpected error during Supabase delete:", error);
+      } finally {
+        setActiveSessionRecordId(null); // Clear the record ID
+      }
+    }
+
     setIsScheduleActive(false);
     setCurrentScheduleIndex(0);
     setSchedule([]);
@@ -280,9 +374,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setHasWonPrize(false);
     setIsHomepageFocusCustomized(false); // Reset customization flag
     setIsHomepageBreakCustomized(false); // Reset customization flag
-  }, [_defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle]);
+  }, [
+    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, activeSessionRecordId, user?.id,
+    isGlobalPrivate, areToastsEnabled
+  ]);
 
-  const startSchedule = useCallback(() => {
+  const startSchedule = useCallback(async () => {
     if (schedule.length === 0) {
       return;
     }
@@ -329,7 +426,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             return;
         }
         if (shouldResetExistingActiveSchedule) {
-            resetSchedule();
+            await resetSchedule(); // Use await here
         }
         if (shouldResetManualTimer) {
             setIsRunning(false);
@@ -377,16 +474,55 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentSessionHostName(user?.user_metadata?.first_name || "Host");
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
+
+    // NEW: Insert into active_sessions if not private
+    if (user?.id && !isGlobalPrivate) {
+      const currentScheduleItem = schedule[0];
+      const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
+      try {
+        const { data, error } = await supabase
+          .from('active_sessions')
+          .insert({
+            user_id: user.id,
+            host_name: localFirstName,
+            session_title: scheduleTitle,
+            visibility: 'public', // Always public if not isGlobalPrivate
+            focus_duration: schedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
+            break_duration: schedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
+            current_phase_type: currentScheduleItem.type,
+            current_phase_end_time: currentPhaseEndTime,
+            total_session_duration_seconds: schedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
+            schedule_id: schedule[0]?.id, // Use the first item's ID as a simple schedule ID
+            is_active: true,
+            is_paused: false,
+            current_schedule_index: 0,
+            schedule_data: schedule,
+          })
+          .select('id')
+          .single();
+
+        if (error) throw error;
+        setActiveSessionRecordId(data.id);
+        console.log("Active session inserted into Supabase:", data.id);
+      } catch (error: any) {
+        console.error("Error inserting active session into Supabase:", error.message);
+        if (areToastsEnabled) {
+          toast.error("Supabase Error", {
+            description: `Failed to publish session: ${error.message}`,
+          });
+        }
+      }
+    }
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks,
     playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle,
-    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
+    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, user?.id, isGlobalPrivate, localFirstName
 ]);
 
-  const commenceSpecificPreparedSchedule = useCallback((templateId: string) => {
+  const commenceSpecificPreparedSchedule = useCallback(async (templateId: string) => {
     const templateToCommence = preparedSchedules.find(template => template.id === templateId);
     if (!templateToCommence) return;
 
@@ -410,17 +546,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             return;
         }
         if (shouldResetExistingActiveSchedule) {
-            setIsScheduleActive(false);
-            setCurrentScheduleIndex(0);
-            setActiveSchedule([]);
-            setActiveTimerColors({});
-            setActiveScheduleDisplayTitleInternal("My Focus Sesh");
-            setIsSchedulePending(false);
-            setActiveAsks([]);
-            console.log("TimerContext: Existing schedule reset during prepared schedule start. activeAsks cleared.");
-            setHasWonPrize(false);
-            setIsHomepageFocusCustomized(false); // Reset customization flag
-            setIsHomepageBreakCustomized(false); // Reset customization flag
+            await resetSchedule(); // Use await here
         }
         if (shouldResetManualTimer) {
             setIsRunning(false);
@@ -469,7 +595,46 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentSessionHostName(user?.user_metadata?.first_name || "Host");
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized]);
+
+    // NEW: Insert into active_sessions if not private
+    if (user?.id && !isGlobalPrivate) {
+      const currentScheduleItem = templateToCommence.schedule[0];
+      const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
+      try {
+        const { data, error } = await supabase
+          .from('active_sessions')
+          .insert({
+            user_id: user.id,
+            host_name: localFirstName,
+            session_title: templateToCommence.title,
+            visibility: 'public', // Always public if not isGlobalPrivate
+            focus_duration: templateToCommence.schedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
+            break_duration: templateToCommence.schedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
+            current_phase_type: currentScheduleItem.type,
+            current_phase_end_time: currentPhaseEndTime,
+            total_session_duration_seconds: templateToCommence.schedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
+            schedule_id: templateToCommence.id,
+            is_active: true,
+            is_paused: false,
+            current_schedule_index: 0,
+            schedule_data: templateToCommence.schedule,
+          })
+          .select('id')
+          .single();
+
+        if (error) throw error;
+        setActiveSessionRecordId(data.id);
+        console.log("Active session inserted into Supabase (prepared schedule):", data.id);
+      } catch (error: any) {
+        console.error("Error inserting active session into Supabase (prepared schedule):", error.message);
+        if (areToastsEnabled) {
+          toast.error("Supabase Error", {
+            description: `Failed to publish session: ${error.message}`,
+          });
+        }
+      }
+    }
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, user?.id, isGlobalPrivate, localFirstName, resetSchedule]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -853,6 +1018,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentSessionRole(data.currentSessionRole ?? null);
       setCurrentSessionHostName(data.currentSessionHostName ?? null);
       setCurrentSessionOtherParticipants(data.currentSessionOtherParticipants ?? []);
+      setActiveSessionRecordId(data.activeSessionRecordId ?? null); // NEW: Load activeSessionRecordId
 
       initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
@@ -927,6 +1093,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
       isHomepageFocusCustomized, // Save customization flag
       isHomepageBreakCustomized, // Save customization flag
+      activeSessionRecordId, // NEW: Save activeSessionRecordId
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -952,6 +1119,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     hasWonPrize,
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     isHomepageFocusCustomized, isHomepageBreakCustomized,
+    activeSessionRecordId,
   ]);
 
   const value: TimerContextType = {

@@ -42,6 +42,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { useTheme } from '@/contexts/ThemeContext';
 // Removed useIsMobile import as it's no longer needed for this interaction
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
+import { supabase } from '@/integrations/supabase/client'; // NEW: Import Supabase client
 
 interface ExtendSuggestion {
   id: string;
@@ -365,12 +366,12 @@ const Index = () => {
     }
   };
   
-  const startNewManualTimer = () => {
+  const startNewManualTimer = async () => { // Made async
     if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
       }
-      if (isScheduleActive || isSchedulePrepared) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) await resetSchedule(); // Use await
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
@@ -397,6 +398,42 @@ const Index = () => {
     setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
+
+    // NEW: Insert into active_sessions if not private
+    if (user?.id && !isGlobalPrivate) {
+      const currentPhaseDuration = timerType === 'focus' ? focusMinutes : breakMinutes;
+      const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
+      try {
+        const { data, error } = await supabase
+          .from('active_sessions')
+          .insert({
+            user_id: user.id,
+            host_name: localFirstName,
+            session_title: seshTitle,
+            visibility: 'public', // Always public if not isGlobalPrivate
+            focus_duration: focusMinutes,
+            break_duration: breakMinutes,
+            current_phase_type: timerType,
+            current_phase_end_time: currentPhaseEndTime,
+            total_session_duration_seconds: currentPhaseDuration * 60, // For manual timer, total is just current phase
+            is_active: true,
+            is_paused: false,
+          })
+          .select('id')
+          .single();
+
+        if (error) throw error;
+        // setActiveSessionRecordId(data.id); // This is handled by TimerContext's state
+        console.log("Manual session inserted into Supabase:", data.id);
+      } catch (error: any) {
+        console.error("Error inserting manual session into Supabase:", error.message);
+        if (areToastsEnabled) {
+          toast.error("Supabase Error", {
+            description: `Failed to publish session: ${error.message}`,
+          });
+        }
+      }
+    }
   };
 
   const resumeTimer = () => {
@@ -456,7 +493,7 @@ const Index = () => {
       setTimerType('focus');
       setTimeLeft(defaultFocusMinutes * 60);
       setActiveJoinedSession(null);
-      if (isScheduleActive || isSchedulePrepared) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) await resetSchedule(); // Use await
       setSessionStartTime(null);
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
@@ -490,7 +527,7 @@ const Index = () => {
     }
   };
   
-  const resetTimer = () => {
+  const resetTimer = async () => { // Made async
     if (longPressRef.current) {
       setIsRunning(false);
       setIsPaused(false);
@@ -498,7 +535,7 @@ const Index = () => {
       const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
       setTimeLeft(initialTime);
       setActiveJoinedSession(null);
-      if (isScheduleActive || isSchedulePrepared) resetSchedule();
+      if (isScheduleActive || isSchedulePrepared) await resetSchedule(); // Use await
       setSessionStartTime(null);
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
@@ -518,7 +555,7 @@ const Index = () => {
         const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
         setTimeLeft(initialTime);
         setActiveJoinedSession(null);
-        if (isScheduleActive || isSchedulePrepared) resetSchedule();
+        if (isScheduleActive || isSchedulePrepared) await resetSchedule(); // Use await
         setSessionStartTime(null);
         setCurrentPhaseStartTime(null);
         setAccumulatedFocusSeconds(0);
