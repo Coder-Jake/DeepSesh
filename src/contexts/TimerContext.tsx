@@ -176,9 +176,15 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     return (localFirstName && localFirstName !== "You") ? `${localFirstName}'s Focus Sesh` : "My Focus Sesh";
   }, [localFirstName]);
 
+  const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
+
   const playSound = useCallback(() => {
+    // Defensive check for the object itself
+    if (!startStopNotifications || !startStopNotifications.sound) {
+      console.log("playSound: startStopNotifications object or sound property is not enabled/defined.");
+      return;
+    }
     console.log("playSound called. startStopNotifications.sound:", startStopNotifications.sound);
-    if (!startStopNotifications.sound) return;
     if (typeof window.AudioContext !== 'undefined' || typeof (window as any).webkitAudioContext !== 'undefined') {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -194,16 +200,21 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     } else {
       console.warn("AudioContext not supported in this browser.");
     }
-  }, [startStopNotifications.sound]);
+  }, [startStopNotifications]); // Dependency changed to the whole object
 
   const triggerVibration = useCallback(() => {
+    // Defensive check for the object itself
+    if (!startStopNotifications || !startStopNotifications.vibrate) {
+      console.log("triggerVibration: startStopNotifications object or vibrate property is not enabled/defined.");
+      return;
+    }
     console.log("triggerVibration called. startStopNotifications.vibrate:", startStopNotifications.vibrate);
     if (startStopNotifications.vibrate && navigator.vibrate) {
       navigator.vibrate(200);
     } else if (startStopNotifications.vibrate) {
       console.warn("Vibration API not supported in this browser.");
     }
-  }, [startStopNotifications.vibrate]);
+  }, [startStopNotifications]); // Dependency changed to the whole object
 
   const formatTime = useCallback((totalSeconds: number) => {
     const days = Math.floor(totalSeconds / (3600 * 24));
