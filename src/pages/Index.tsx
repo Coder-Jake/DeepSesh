@@ -365,6 +365,51 @@ const Index = () => {
     enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'), // Only fetch if discovery is activated and not private
   });
 
+  // NEW: Define allParticipantsToDisplayInCard
+  const allParticipantsToDisplayInCard = useMemo(() => {
+    const participantsMap = new Map<string, { id: string; name: string; sociability: number; role: 'host' | 'coworker' | 'self' }>();
+
+    // Add current user
+    if (profile?.id) {
+      participantsMap.set(profile.id, {
+        id: profile.id,
+        name: localFirstName || "You",
+        sociability: sociability, // Use current user's sociability
+        role: (currentSessionRole === 'host' && profile.id === user?.id) ? 'host' : 'self',
+      });
+    }
+
+    // Add host if current user is a coworker
+    if (currentSessionRole === 'coworker' && currentSessionHostName) {
+      const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName); // Assuming getPublicProfile can fetch by name or ID
+      if (hostProfile && !participantsMap.has(hostProfile.id)) {
+        participantsMap.set(hostProfile.id, {
+          id: hostProfile.id,
+          name: hostProfile.first_name || currentSessionHostName,
+          sociability: hostProfile.sociability || 50,
+          role: 'host',
+        });
+      }
+    }
+
+    // Add other participants
+    currentSessionOtherParticipants.forEach(p => {
+      if (!participantsMap.has(p.id)) {
+        participantsMap.set(p.id, {
+          id: p.id,
+          name: p.name,
+          sociability: p.sociability || 50,
+          role: 'coworker', // Assuming others are coworkers
+        });
+      }
+    });
+
+    return Array.from(participantsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [
+    profile, localFirstName, sociability, currentSessionRole, currentSessionHostName,
+    currentSessionOtherParticipants, getPublicProfile, user?.id
+  ]);
+
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
       titleInputRef.current.focus();
@@ -1714,7 +1759,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            {allParticipantsToDisplayInCard.length > 1 && (
+            {allParticipantsToDisplayInCard.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Coworkers</CardTitle>
@@ -1725,7 +1770,7 @@ const Index = () => {
                       key={person.id}
                       className={cn(
                         "flex items-center justify-between p-2 rounded-md select-none",
-                        person.id === currentUserId ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
+                        person.role === 'self' ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
                         "hover:bg-muted cursor-pointer"
                       )} 
@@ -1733,7 +1778,7 @@ const Index = () => {
                       onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
                       <span className="font-medium text-foreground">
-                        {person.id === currentUserId ? "You" : person.name}
+                        {person.role === 'self' ? "You" : person.name}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         <Popover
