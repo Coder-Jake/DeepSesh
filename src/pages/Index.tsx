@@ -1997,7 +1997,7 @@ const Index = () => {
                 >
                   <MapPin size={16} />
                   {geolocationPermissionStatus === 'granted' && "Location Enabled"}
-                  {geolocationPermissionStatus === 'denied' && "Location Denied (Click to Re-enable)"}
+                  {geolocationPermissionStatus === 'denied' && "Enable Location"}
                   {geolocationPermissionStatus === 'prompt' && "Enable Location"}
                 </Button>
               </div>
