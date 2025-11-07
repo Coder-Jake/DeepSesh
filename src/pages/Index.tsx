@@ -12,7 +12,7 @@ import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
-import { cn } from "@/lib/utils";
+import { cn, getSociabilityGradientColor } from "@/lib/utils"; // Import getSociabilityGradientColor
 import AskMenu from "@/components/AskMenu";
 import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
@@ -45,6 +45,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider'; // Import Slider
 
 interface ExtendSuggestion {
   id: string;
@@ -308,7 +309,7 @@ const Index = () => {
     startStopNotifications, playSound, triggerVibration, areToastsEnabled
   });
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, sociability, setSociability } = useProfile(); // Added sociability, setSociability
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
@@ -1937,8 +1938,41 @@ const Index = () => {
                   onFocus={(e) => e.target.select()}
                 />
               </div>
+
+              {/* NEW: Focus Preferences */}
               <div className="space-y-2">
-                <Label>Location Sharing</Label>
+                <Label>Focus Preferences</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  How would you prefer to balance focus vs socialising?
+                </p>
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Banter</span>
+                    <span>Deep Focus</span>
+                  </div>
+                  <div className="relative group">
+                    <Slider
+                      value={[sociability]}
+                      onValueChange={(val) => setSociability(val[0])}
+                      max={100}
+                      min={0}
+                      step={1}
+                      className="w-full"
+                      rangeColor={getSociabilityGradientColor(sociability)}
+                    />
+                  </div>
+                  <div className="text-center mt-3 text-sm text-muted-foreground select-none">
+                    {sociability <= 20 && "Looking to collaborate/brainstorm"}
+                    {sociability > 20 && sociability <= 40 && "Happy to chat while we work"}
+                    {sociability > 40 && sociability <= 60 && "I don't mind"}
+                    {sociability > 60 && sociability <= 80 && "Socialise only during breaks"}
+                    {sociability > 80 && "Minimal interaction even during breaks"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Location</Label> {/* Changed from 'Location Sharing' to 'Location' */}
                 <Button
                   variant="outline"
                   className={cn(
