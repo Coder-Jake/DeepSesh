@@ -1280,13 +1280,14 @@ const Index = () => {
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
-                <h3>Nearby</h3>
+                {/* Moved MapPin to the left */}
                 <Tooltip>
                     <TooltipTrigger asChild>
                       <MapPin 
                         size={16} 
                         className={cn(
-                          "text-muted-foreground cursor-pointer hover:text-primary",
+                          "cursor-pointer hover:text-primary",
+                          geolocationPermissionStatus === 'granted' && "text-green-600", // Green when granted
                           geolocationPermissionStatus === 'denied' && "text-destructive"
                         )}
                         onClick={(e) => {
@@ -1302,6 +1303,7 @@ const Index = () => {
                       }
                     </TooltipContent>
                   </Tooltip>
+                <h3>Nearby</h3>
               </div>
               <div className="flex items-center gap-2">
                 {hiddenNearbyCount > 0 && (
