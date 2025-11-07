@@ -24,43 +24,48 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProfileProvider } from './contexts/ProfileContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // NEW: Import QueryClient and QueryClientProvider
+
+const queryClient = new QueryClient(); // NEW: Create a new QueryClient instance
 
 function App() {
   const [areToastsEnabled, setAreToastsEnabled] = useState(false);
 
   return (
-    <TooltipProvider>
-      <Router>
-        <ThemeProvider>
-          <AuthProvider>
-            <ProfileProvider areToastsEnabled={areToastsEnabled}>
-              <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
-                <ProfilePopUpProvider>
-                  <Routes>
-                    <Route path="/" element={<AppLayout />}>
-                      <Route index element={<Index />} />
-                      <Route path="settings" element={<Settings />} />
-                      <Route path="profile" element={<Profile />} />
-                      <Route path="chip-in" element={<ChipIn />} />
-                      <Route path="feedback" element={<Feedback />} />
-                      <Route path="upcoming-features" element={<UpcomingFeatures />} />
-                      <Route path="credits" element={<Credits />} />
-                      <Route path="vibes" element={<Vibes />} />
-                    </Route>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/verify-email" element={<VerifyEmail />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </ProfilePopUpProvider>
-              </TimerProvider>
-            </ProfileProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </Router>
-    </TooltipProvider>
+    <QueryClientProvider client={queryClient}> {/* NEW: Wrap the entire app with QueryClientProvider */}
+      <TooltipProvider>
+        <Router>
+          <ThemeProvider>
+            <AuthProvider>
+              <ProfileProvider areToastsEnabled={areToastsEnabled}>
+                <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
+                  <ProfilePopUpProvider>
+                    <Routes>
+                      <Route path="/" element={<AppLayout />}>
+                        <Route index element={<Index />} />
+                        <Route path="settings" element={<Settings />} />
+                        <Route path="profile" element={<Profile />} />
+                        <Route path="chip-in" element={<ChipIn />} />
+                        <Route path="feedback" element={<Feedback />} />
+                        <Route path="upcoming-features" element={<UpcomingFeatures />} />
+                        <Route path="credits" element={<Credits />} />
+                        <Route path="vibes" element={<Vibes />} />
+                      </Route>
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/verify-email" element={<VerifyEmail />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </ProfilePopUpProvider>
+                </TimerProvider>
+              </ProfileProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </Router>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
