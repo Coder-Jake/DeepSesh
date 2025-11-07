@@ -189,63 +189,63 @@ export type TimerContextType = {
   shouldPlayEndSound: boolean;
   setShouldPlayEndSound: React.Dispatch<React.SetStateAction<boolean>>;
   shouldShowEndToast: boolean;
-  setShouldShowEndToast: React.SetStateAction<boolean>;
+  setShouldShowEndToast: React.Dispatch<React.SetStateAction<boolean>>;
   isBatchNotificationsEnabled: boolean;
-  setIsBatchNotificationsEnabled: React.SetStateAction<boolean>;
+  setIsBatchNotificationsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   batchNotificationPreference: 'break' | 'sesh_end' | 'custom';
-  setBatchNotificationPreference: React.SetStateAction<'break' | 'sesh_end' | 'custom'>;
+  setBatchNotificationPreference: React.Dispatch<React.SetStateAction<'break' | 'sesh_end' | 'custom'>>;
   customBatchMinutes: number;
-  setCustomBatchMinutes: React.SetStateAction<number>;
+  setCustomBatchMinutes: React.Dispatch<React.SetStateAction<number>>;
   lock: boolean;
-  setLock: React.SetStateAction<boolean>;
+  setLock: React.Dispatch<React.SetStateAction<boolean>>;
   exemptionsEnabled: boolean;
-  setExemptionsEnabled: React.SetStateAction<boolean>;
+  setExemptionsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   phoneCalls: boolean;
-  setPhoneCalls: React.SetStateAction<boolean>;
+  setPhoneCalls: React.Dispatch<React.SetStateAction<boolean>>;
   favourites: boolean;
-  setFavourites: React.SetStateAction<boolean>;
+  setFavourites: React.Dispatch<React.SetStateAction<boolean>>;
   workApps: boolean;
-  setWorkApps: React.SetStateAction<boolean>;
+  setWorkApps: React.Dispatch<React.SetStateAction<boolean>>;
   intentionalBreaches: boolean;
-  setIntentionalBreaches: React.SetStateAction<boolean>;
+  setIntentionalBreaches: React.Dispatch<React.SetStateAction<boolean>>;
   manualTransition: boolean;
-  setManualTransition: React.SetStateAction<boolean>;
+  setManualTransition: React.Dispatch<React.SetStateAction<boolean>>;
   maxDistance: number;
-  setMaxDistance: React.SetStateAction<number>;
+  setMaxDistance: React.Dispatch<React.SetStateAction<number>>;
   askNotifications: NotificationSettings;
-  setAskNotifications: React.SetStateAction<NotificationSettings>;
+  setAskNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   joinNotifications: NotificationSettings;
-  setJoinNotifications: React.SetStateAction<NotificationSettings>;
+  setJoinNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   sessionInvites: NotificationSettings;
-  setSessionInvites: React.SetStateAction<NotificationSettings>;
+  setSessionInvites: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   friendActivity: NotificationSettings;
-  setFriendActivity: React.SetStateAction<NotificationSettings>;
+  setFriendActivity: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   breakNotificationsVibrate: boolean;
-  setBreakNotificationsVibrate: React.SetStateAction<boolean>;
+  setBreakNotificationsVibrate: React.Dispatch<React.SetStateAction<boolean>>;
   verificationStandard: 'anyone' | 'phone1' | 'organisation' | 'id1';
-  setVerificationStandard: React.SetStateAction<'anyone' | 'phone1' | 'organisation' | 'id1'>;
+  setVerificationStandard: React.Dispatch<React.SetStateAction<'anyone' | 'phone1' | 'organisation' | 'id1'>>;
   profileVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
-  setProfileVisibility: React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>;
+  setProfileVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
   locationSharing: boolean;
-  setLocationSharing: React.SetStateAction<boolean>;
+  setLocationSharing: React.Dispatch<React.SetStateAction<boolean>>;
   openSettingsAccordions: string[];
-  setOpenSettingsAccordions: React.SetStateAction<string[]>;
+  setOpenSettingsAccordions: React.Dispatch<React.SetStateAction<string[]>>;
   is24HourFormat: boolean;
-  setIs24HourFormat: React.SetStateAction<boolean>;
+  setIs24HourFormat: React.Dispatch<React.SetStateAction<boolean>>;
   areToastsEnabled: boolean;
-  setAreToastsEnabled: React.SetStateAction<boolean>;
+  setAreToastsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   startStopNotifications: NotificationSettings;
-  setStartStopNotifications: React.SetStateAction<NotificationSettings>;
+  setStartStopNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   playSound: () => void;
   triggerVibration: () => void;
   showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'all'; // MODIFIED: Changed 'yes' to 'all'
-  setShowSessionsWhileActive: React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'all'>; // MODIFIED: Changed 'yes' to 'all'
+  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'all'>>; // MODIFIED: Changed 'yes' to 'all'
   hasWonPrize: boolean; // NEW: Added hasWonPrize
-  setHasWonPrize: React.SetStateAction<boolean>; // NEW: Added setHasWonPrize
+  setHasWonPrize: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setHasWonPrize
   getLocation: () => Promise<{ latitude: number | null; longitude: number | null }>; // NEW: Added getLocation
   geolocationPermissionStatus: PermissionState; // NEW: Added geolocationPermissionStatus
   isDiscoveryActivated: boolean; // NEW: Added isDiscoveryActivated
-  setIsDiscoveryActivated: React.SetStateAction<boolean>; // NEW: Added setIsDiscoveryActivated
+  setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsDiscoveryActivated
 };
 
 // Define the structure for a saved session
