@@ -188,7 +188,7 @@ const Settings = () => {
 
     const changed = Object.keys(currentUiSettings).some(key => {
       const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
-      const savedVal = savedSettingsRef.current[key as keyof typeof savedUiSettings];
+      const savedVal = savedSettingsRef.current[key as keyof typeof savedSettingsRef.current]; // Corrected type reference
 
       if (typeof currentVal === 'object' && currentVal !== null) {
         return JSON.stringify(currentVal) !== JSON.stringify(savedVal);
