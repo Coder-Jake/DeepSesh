@@ -17,7 +17,6 @@ interface DemoSession {
   workspaceDescription: string;
   participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
-  visibility: 'public' | 'private'; // Added visibility property
 }
 
 interface SessionCardProps {
@@ -157,14 +156,12 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
     }
   };
 
-  const titleColorClass = session.visibility === 'public' ? 'text-green-700' : 'text-purple-700';
-
   return (
     <Card key={session.id}>
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className={cn("text-lg", titleColorClass)}>{session.title}</CardTitle>
+            <CardTitle className="text-lg">{session.title}</CardTitle>
           </div>
           <div 
             className="text-sm text-muted-foreground cursor-pointer select-none flex flex-col items-end"
