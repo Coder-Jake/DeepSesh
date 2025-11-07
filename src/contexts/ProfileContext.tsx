@@ -1688,6 +1688,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
     setError(null);
 
     if (!user) {
+      // If no user, ensure local states are reset to defaults for unauthenticated experience
       setProfile(null);
       setLocalFirstName("You");
       setBio(null);
@@ -1705,7 +1706,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
       setCanHelpWithVisibility(['public']);
       setNeedHelpWithVisibility(['public']);
       setLoading(false);
-      return;
+      return; // Exit early if no user
     }
 
     try {
@@ -1882,7 +1883,29 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
 
   useEffect(() => {
     if (!authLoading) {
-      fetchProfile();
+      // Only fetch profile if a user is authenticated
+      if (user) {
+        fetchProfile();
+      } else {
+        // If no user, ensure local states are reset to defaults for unauthenticated experience
+        setProfile(null);
+        setLocalFirstName("You");
+        setBio(null);
+        setIntention(null);
+        setCanHelpWith(null);
+        setNeedHelpWith(null);
+        setSociability(50);
+        setOrganization(null);
+        setLinkedinUrl(null);
+        setPronouns(null);
+        setHostCode(generateRandomHostCode()); // Generate a host code for local user
+        setBioVisibility(['public']);
+        setIntentionVisibility(['public']);
+        setLinkedinVisibility(['public']);
+        setCanHelpWithVisibility(['public']);
+        setNeedHelpWithVisibility(['public']);
+        setLoading(false); // Ensure loading is false when no user
+      }
     }
 
     // Clear local storage keys that are now managed by Supabase

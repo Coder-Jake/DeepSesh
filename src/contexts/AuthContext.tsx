@@ -16,22 +16,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true; // Flag to prevent state updates on unmounted component
+
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user || null);
-        setLoading(false);
+        if (!isMounted) return;
+
+        // Only set loading to false once the initial session is determined
+        // For subsequent events, just update session/user
+        if (event === 'INITIAL_SESSION') {
+          setSession(currentSession);
+          setUser(currentSession?.user || null);
+          setLoading(false); 
+        } else {
+          setSession(currentSession);
+          setUser(currentSession?.user || null);
+        }
       }
     );
 
-    // Fetch initial session
+    // Fetch initial session directly as a fallback/immediate check.
+    // The onAuthStateChange 'INITIAL_SESSION' event is the primary source of truth.
+    // We only set loading to false here if onAuthStateChange hasn't already done it.
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      setSession(initialSession);
-      setUser(initialSession?.user || null);
-      setLoading(false);
+      if (isMounted && loading) { // Only update if still loading and mounted
+        setSession(initialSession);
+        setUser(initialSession?.user || null);
+        setLoading(false);
+      }
     });
 
     return () => {
+      isMounted = false;
       authListener.subscription.unsubscribe();
     };
   }, []);
