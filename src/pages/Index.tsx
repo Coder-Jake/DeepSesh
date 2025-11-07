@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin } from "lucide-react"; // NEW: Import MapPin
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
-import { useNavigate, Link } from "react-router-dom"; // ADDED Link import
+import { useNavigate, Link } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
@@ -39,12 +39,12 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } from '@/contexts/Theme/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query'; // NEW: Import useQuery
-import { Label } from '@/components/ui/label'; // NEW: Import Label
+import { useQuery } from '@tanstack/react-query';
+import { Label } from '@/components/ui/label';
 
 interface ExtendSuggestion {
   id: string;
@@ -287,8 +287,8 @@ const Index = () => {
     playSound,
     triggerVibration,
     areToastsEnabled,
-    getLocation, // NEW: Import getLocation
-    geolocationPermissionStatus, // NEW: Import geolocationPermissionStatus
+    getLocation,
+    geolocationPermissionStatus,
   } = useTimer();
   
   console.log("Index.tsx: Value from useTimer hook:", {
@@ -476,7 +476,7 @@ const Index = () => {
     setActiveJoinedSessionCoworkerCount(0);
 
     if (user?.id && !isGlobalPrivate) {
-      const { latitude, longitude } = await getLocation(); // Get location
+      const { latitude, longitude } = await getLocation();
       const currentPhaseDuration = timerType === 'focus' ? focusMinutes : breakMinutes;
       const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
       try {
@@ -494,14 +494,14 @@ const Index = () => {
             total_session_duration_seconds: currentPhaseDuration * 60,
             is_active: true,
             is_paused: false,
-            location_lat: latitude, // Include latitude
-            location_long: longitude, // Include longitude
+            location_lat: latitude,
+            location_long: longitude,
           })
           .select('id')
           .single();
 
         if (error) throw error;
-        (useTimer() as any).setActiveSessionRecordId(data.id); // Set active session record ID
+        (useTimer() as any).setActiveSessionRecordId(data.id);
         console.log("Manual session inserted into Supabase:", data.id);
       } catch (error: any) {
         console.error("Error inserting manual session into Supabase:", error.message);
@@ -799,7 +799,7 @@ const Index = () => {
   const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
 
   const shouldShowNearbySessions = useMemo(() => {
-    if (!isDiscoveryActivated) return false; // NEW: Only show if discovery is activated
+    if (!isDiscoveryActivated) return false;
     if (!isActiveTimer) {
       return !isGlobalPrivate;
     }
@@ -811,10 +811,10 @@ const Index = () => {
       return !isGlobalPrivate;
     }
     return false;
-  }, [isActiveTimer, isGlobalPrivate, showSessionsWhileActive, isDiscoveryActivated]); // Added isDiscoveryActivated
+  }, [isActiveTimer, isGlobalPrivate, showSessionsWhileActive, isDiscoveryActivated]);
 
   const shouldShowFriendsSessions = useMemo(() => {
-    if (!isDiscoveryActivated) return false; // NEW: Only show if discovery is activated
+    if (!isDiscoveryActivated) return false;
     if (!isActiveTimer) {
       return true;
     }
@@ -826,12 +826,12 @@ const Index = () => {
       return true;
     }
     return false;
-  }, [isActiveTimer, showSessionsWhileActive, isDiscoveryActivated]); // Added isDiscoveryActivated
+  }, [isActiveTimer, showSessionsWhileActive, isDiscoveryActivated]);
 
   const shouldShowOrganizationSessions = useMemo(() => {
-    if (!isDiscoveryActivated) return false; // NEW: Only show if discovery is activated
+    if (!isDiscoveryActivated) return false;
     return !!profile?.organization;
-  }, [profile?.organization, isDiscoveryActivated]); // Added isDiscoveryActivated
+  }, [profile?.organization, isDiscoveryActivated]);
 
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
     if (!profile?.organization) return [];
@@ -1280,18 +1280,18 @@ const Index = () => {
             >
               <div className="flex items-center gap-2">
                 <h3>Nearby</h3>
-                {geolocationPermissionStatus !== 'granted' && ( // NEW: Conditionally render MapPin
+                {geolocationPermissionStatus !== 'granted' && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <MapPin 
                         size={16} 
                         className={cn(
                           "text-muted-foreground cursor-pointer hover:text-primary",
-                          geolocationPermissionStatus === 'denied' && "text-destructive" // Red if denied
+                          geolocationPermissionStatus === 'denied' && "text-destructive"
                         )}
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent accordion from toggling
-                          getLocation(); // Request location on click
+                          e.stopPropagation();
+                          getLocation();
                         }}
                       />
                     </TooltipTrigger>
