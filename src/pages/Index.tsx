@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from 'sonner'; // Changed to sonner toast
 import { format } from 'date-fns';
-import { ScheduledTimerTemplate } from "@/types/timer";
+import { ScheduledTimerTemplate, DemoSession, SupabaseActiveSession } from "@/types/timer"; // NEW: Import DemoSession and SupabaseActiveSession
 import { DAYS_OF_WEEK } from "@/lib/constants";
 import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
@@ -72,17 +72,6 @@ interface Poll {
 type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
 
-interface DemoSession {
-  id: string;
-  title: string;
-  startTime: number;
-  location: string;
-  workspaceImage: "/api/placeholder/200/120";
-  workspaceDescription: string;
-  participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
-  fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
-}
-
 const now = new Date();
 const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
 const pomodoroStartTime = nextHour.getTime();
@@ -95,7 +84,7 @@ const mockNearbySessions: DemoSession[] = [
     title: "Silicon Syndicate Study Sesh", // Changed from "AI Anonymous" to "Silicon Syndicate Study Sesh"
     startTime: Date.now() - (76.8 * 60 * 1000),
     location: "Science Building - Computer Lab 2B",
-    workspaceImage: "/api/placeholder/200/120",
+    workspaceImage: "/public/placeholder.svg",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
       { id: "mock-user-id-bezos", name: "Altman", sociability: 15, intention: "Optimizing cloud infrastructure." }, // MODIFIED
@@ -108,6 +97,7 @@ const mockNearbySessions: DemoSession[] = [
       { type: "focus", durationMinutes: 55 },
       { type: "break", durationMinutes: 5 },
     ],
+    hostUserId: "mock-user-id-bezos", // NEW: Added hostUserId
   },
 ];
 
@@ -117,7 +107,7 @@ const mockFriendsSessions: DemoSession[] = [
     title: "Psychology 101 Final Review",
     startTime: beginningOfMostRecentHour,
     location: "Main Library - Study Room 12",
-    workspaceImage: "/api/placeholder/200/120",
+    workspaceImage: "/public/placeholder.svg",
     workspaceDescription: "Private group study room",
     participants: [
       { id: "mock-user-id-freud", name: "Freud", sociability: 70, intention: "Reviewing psychoanalytic theories." },
@@ -133,6 +123,7 @@ const mockFriendsSessions: DemoSession[] = [
       { type: "focus", durationMinutes: 25 },
       { type: "break", durationMinutes: 5 },
     ],
+    hostUserId: "mock-user-id-freud", // NEW: Added hostUserId
   },
 ];
 
@@ -258,7 +249,7 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const notesTextareaRef = useRef<HTMLTextAreaAreaElement>(null);
 
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
@@ -285,6 +276,10 @@ const Index = () => {
   // NEW: State for link copied feedback
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // NEW: State for fetched nearby sessions
+  const [nearbySessions, setNearbySessions] = useState<DemoSession[]>([]);
+  const [loadingNearbySessions, setLoadingNearbySessions] = useState(true);
 
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
@@ -822,6 +817,8 @@ const Index = () => {
 
       // Add 2-3 other mock participants from the famousNamesWithIds list
       const hostSociability = profile.sociability || 50; // Use current user's sociability as a base for host
+      let hostIdForOrgSession: string | undefined; // To store the ID of the first participant (host)
+
       for (let i = 0; i < 3; i++) {
         let randomIndex = (hashValue + i) % famousNamesWithIds.length;
         while (usedIndices.has(randomIndex)) {
@@ -834,12 +831,16 @@ const Index = () => {
         const sociabilityOffset = Math.floor(Math.random() * 15) - 7; // -7 to +7
         const variedSociability = Math.max(0, Math.min(100, hostSociability + sociabilityOffset));
 
-        participantNames.push({ 
+        const participant = { 
           id: id, // Use the ID from the mock profile
           name: name, 
           sociability: variedSociability,
           intention: `Deep work on ${name}'s theories.` 
-        });
+        };
+        participantNames.push(participant);
+        if (i === 0) { // The first participant is considered the host for this mock session
+          hostIdForOrgSession = id;
+        }
       }
 
       sessions.push({
@@ -847,13 +848,14 @@ const Index = () => {
         title: `${orgName} Focus Sesh`,
         startTime: staggeredStartTime,
         location: `${orgName} HQ - Study Room`,
-        workspaceImage: "/api/placeholder/200/120",
+        workspaceImage: "/public/placeholder.svg",
         workspaceDescription: "Dedicated study space for organization members",
         participants: participantNames,
         fullSchedule: [
           { type: "focus", durationMinutes: 50 },
           { type: "break", durationMinutes: 10 },
         ],
+        hostUserId: hostIdForOrgSession || "mock-org-host-fallback", // NEW: Added hostUserId
       });
     });
 
@@ -1192,9 +1194,80 @@ const Index = () => {
     }
   }, [hostCode, areToastsEnabled]);
 
+  const fetchNearbySessions = useCallback(async () => {
+    setLoadingNearbySessions(true);
+    try {
+      const { data, error } = await supabase
+        .from('active_sessions')
+        .select('*')
+        .eq('visibility', 'public') // Only fetch public sessions for now
+        .eq('is_active', true)
+        .neq('user_id', user?.id || null); // Exclude current user's session if logged in
+
+      if (error) {
+        console.error("Error fetching nearby sessions:", error);
+        if (areToastsEnabled) {
+          toast.error("Failed to load nearby sessions", {
+            description: error.message,
+          });
+        }
+        setNearbySessions([]);
+        return;
+      }
+
+      if (data) {
+        const mappedSessions: DemoSession[] = data.map((session: SupabaseActiveSession) => {
+          // Construct a simplified participant list for SessionCard
+          const hostProfile = getPublicProfile(session.user_id, session.host_name || "Unknown Host");
+          const participants = hostProfile ? [{
+            id: hostProfile.id,
+            name: hostProfile.first_name || hostProfile.last_name || session.host_name || "Unknown Host",
+            sociability: hostProfile.sociability || 50, // Default sociability if not available
+            intention: hostProfile.intention || undefined,
+            bio: hostProfile.bio || undefined,
+          }] : [{
+            id: session.user_id,
+            name: session.host_name || "Unknown Host",
+            sociability: 50, // Default
+            intention: undefined,
+            bio: undefined,
+          }];
+
+          return {
+            id: session.id,
+            title: session.session_title || "Untitled Session",
+            startTime: new Date(session.created_at).getTime(), // Use created_at as start time for now
+            location: "Unknown Location", // Location logic not implemented yet
+            workspaceImage: "/public/placeholder.svg", // Placeholder image
+            workspaceDescription: "A productive workspace",
+            participants: participants,
+            fullSchedule: session.schedule_data || [ // Use schedule_data or default to simple focus/break
+              { type: session.current_phase_type || 'focus', durationMinutes: session.focus_duration || 25 },
+              { type: session.current_phase_type === 'focus' ? 'break' : 'focus', durationMinutes: session.break_duration || 5 },
+            ],
+            hostUserId: session.user_id,
+          };
+        });
+        setNearbySessions(mappedSessions);
+      }
+    } finally {
+      setLoadingNearbySessions(false);
+    }
+  }, [user?.id, areToastsEnabled, getPublicProfile]);
+
+  useEffect(() => {
+    if (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all') {
+      fetchNearbySessions();
+    } else {
+      setNearbySessions([]); // Clear sessions if not in nearby/all mode
+      setLoadingNearbySessions(false);
+    }
+  }, [showSessionsWhileActive, fetchNearbySessions]); // Re-fetch when visibility mode changes
+
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
+        const allNearbySessions = [...nearbySessions, ...mockNearbySessions];
         return shouldShowNearbySessions && (
           <div className="mb-6" data-name="Nearby Sessions Section">
             <button 
@@ -1203,21 +1276,31 @@ const Index = () => {
             >
               <h3>Nearby</h3>
               <div className="flex items-center gap-2">
-                {hiddenNearbyCount > 0 && (
-                  <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
+                {loadingNearbySessions ? (
+                  <span className="text-sm text-muted-foreground">Loading...</span>
+                ) : (
+                  hiddenNearbyCount > 0 && (
+                    <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
+                  )
                 )}
                 {isNearbySessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
             </button>
             {isNearbySessionsOpen && (
               <div className="space-y-3">
-                {mockNearbySessions.map(session => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onJoinSession={handleJoinSession} 
-                  />
-                ))}
+                {loadingNearbySessions ? (
+                  <p className="text-center text-muted-foreground">Loading nearby sessions...</p>
+                ) : allNearbySessions.length === 0 ? (
+                  <p className="text-center text-muted-foreground">No public sessions nearby.</p>
+                ) : (
+                  allNearbySessions.map(session => (
+                    <SessionCard 
+                      key={session.id} 
+                      session={session} 
+                      onJoinSession={handleJoinSession} 
+                    />
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -1239,19 +1322,23 @@ const Index = () => {
             </button>
             {isFriendsSessionsOpen && (
               <div className="space-y-3">
-                {mockFriendsSessions.map(session => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onJoinSession={handleJoinSession} 
-                  />
-                ))}
+                {mockFriendsSessions.length === 0 ? (
+                  <p className="text-center text-muted-foreground">No friends sessions available.</p>
+                ) : (
+                  mockFriendsSessions.map(session => (
+                    <SessionCard 
+                      key={session.id} 
+                      session={session} 
+                      onJoinSession={handleJoinSession} 
+                    />
+                  ))
+                )}
               </div>
             )}
           </div>
         );
       case 'organization':
-        return shouldShowOrganizationSessions && mockOrganizationSessions.length > 0 && (
+        return shouldShowOrganizationSessions && (
           <div data-name="Organization Sessions Section">
             <button 
               onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
@@ -1264,13 +1351,17 @@ const Index = () => {
             </button>
             {isOrganizationSessionsOpen && (
               <div className="space-y-3">
-                {mockOrganizationSessions.map(session => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onJoinSession={handleJoinSession} 
-                  />
-                ))}
+                {mockOrganizationSessions.length === 0 ? (
+                  <p className="text-center text-muted-foreground">No organization sessions available.</p>
+                ) : (
+                  mockOrganizationSessions.map(session => (
+                    <SessionCard 
+                      key={session.id} 
+                      session={session} 
+                      onJoinSession={handleJoinSession} 
+                    />
+                  ))
+                )}
               </div>
             )}
           </div>
