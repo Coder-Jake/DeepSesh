@@ -279,7 +279,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           if (areToastsEnabled) {
             let errorMessage = "Failed to get your location.";
             if (error.code === error.PERMISSION_DENIED) {
-              errorMessage = "Location access denied. Please enable it in your browser settings to share your location.";
+              errorMessage = "Location access denied. Your session has been set to private.";
+              setIsGlobalPrivate(true); // Automatically switch to private
             } else if (error.code === error.POSITION_UNAVAILABLE) {
               errorMessage = "Location information is unavailable.";
             } else if (error.code === error.TIMEOUT) {
@@ -298,7 +299,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
       );
     });
-  }, [areToastsEnabled]);
+  }, [areToastsEnabled, setIsGlobalPrivate]);
 
   // NEW: Function to sync session data to Supabase
   const syncSessionToSupabase = useCallback(async () => {
