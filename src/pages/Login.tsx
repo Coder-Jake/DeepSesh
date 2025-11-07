@@ -6,11 +6,13 @@ import { useTimer } from '@/contexts/TimerContext';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
+import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 const Login = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { areToastsEnabled } = useTimer();
+  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode from ThemeContext
 
   useEffect(() => {
     if (!loading && user) {
@@ -48,7 +50,7 @@ const Login = () => {
               },
             },
           }}
-          theme="light" // You can make this dynamic based on your app's theme
+          theme={isDarkMode ? "dark" : "light"} // MODIFIED: Make theme dynamic based on isDarkMode
           redirectTo={window.location.origin + '/'}
         />
       </div>
