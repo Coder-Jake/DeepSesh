@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info } from "lucide-react";
+import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -81,6 +81,10 @@ const Settings = () => {
     setAreToastsEnabled,
     startStopNotifications,
     setStartStopNotifications,
+    getLocation, // NEW: Get getLocation from TimerContext
+    geolocationPermissionStatus, // NEW: Get geolocationPermissionStatus from TimerContext
+    isDiscoveryActivated, // NEW: Get isDiscoveryActivated from TimerContext
+    setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from TimerContext
   } = useTimer();
 
   const { user } = useAuth();
@@ -134,6 +138,7 @@ const Settings = () => {
     areToastsEnabled,
     blockedUsers,
     startStopNotifications,
+    isDiscoveryActivated, // NEW: Add to saved settings
   });
 
   // Update currentTimerIncrement when global timerIncrement changes
@@ -178,6 +183,7 @@ const Settings = () => {
       areToastsEnabled,
       blockedUsers,
       startStopNotifications,
+      isDiscoveryActivated, // NEW: Add to current UI settings
     };
 
     const changed = Object.keys(currentUiSettings).some(key => {
@@ -204,6 +210,7 @@ const Settings = () => {
     areToastsEnabled,
     blockedUsers,
     startStopNotifications,
+    isDiscoveryActivated, // NEW: Add to dependencies
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -373,6 +380,10 @@ const Settings = () => {
     }
   };
 
+  const handleUnblockUser = (userName: string) => {
+    unblockUser(userName);
+  };
+
   const handleSave = () => {
     // Parse local input values before saving to global state
     const parsedFocus = parseInt(localFocusMinutes);
@@ -409,6 +420,7 @@ const Settings = () => {
     setShouldShowEndToast(shouldShowEndToast);
     setAreToastsEnabled(areToastsEnabled);
     setStartStopNotifications(startStopNotifications);
+    setIsDiscoveryActivated(isDiscoveryActivated); // NEW: Save isDiscoveryActivated
 
     savedSettingsRef.current = {
       showSessionsWhileActive,
@@ -442,6 +454,7 @@ const Settings = () => {
       areToastsEnabled,
       blockedUsers,
       startStopNotifications,
+      isDiscoveryActivated, // NEW: Save isDiscoveryActivated
     };
     setHasChanges(false);
   };
@@ -464,6 +477,12 @@ const Settings = () => {
 
   const cycleTimerTransitions = () => {
     setManualTransition(prev => !prev);
+  };
+
+  // NEW: Handle location button click
+  const handleLocationButtonClick = async () => {
+    await getLocation(); // Request/check location permission
+    setIsDiscoveryActivated(true); // Activate discovery when location is managed
   };
 
   return (
@@ -830,6 +849,32 @@ const Settings = () => {
               Location & Discovery
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4">
+              {/* NEW: Location Sharing Section */}
+              <div className="space-y-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Label>Location Sharing</Label>
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none">
+                    Enabling location allows you to see and host nearby sessions.
+                  </TooltipContent>
+                </Tooltip>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full flex items-center gap-2",
+                    geolocationPermissionStatus === 'granted' && "bg-green-100 text-green-700 border-green-200",
+                    geolocationPermissionStatus === 'denied' && "bg-red-100 text-red-700 border-red-200"
+                  )}
+                  onClick={handleLocationButtonClick} // Call the new handler
+                >
+                  <MapPin size={16} />
+                  {geolocationPermissionStatus === 'granted' && "Location Enabled"}
+                  {geolocationPermissionStatus === 'denied' && "Enable Location"}
+                  {geolocationPermissionStatus === 'prompt' && "Enable Location"}
+                </Button>
+              </div>
+
               <div>
                 <Label>Maximum Distance for Nearby Sessions</Label>
                 <div className="space-y-4">
