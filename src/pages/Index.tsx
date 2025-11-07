@@ -44,6 +44,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query'; // NEW: Import useQuery
+import { Label } from '@/components/ui/label'; // NEW: Import Label
 
 interface ExtendSuggestion {
   id: string;
@@ -1839,7 +1840,6 @@ const Index = () => {
                           {(provided) => (
                             <div
                               ref={provided.innerRef}
-                              {...provided.draggableProps}
                               {...provided.dragHandleProps}
                             >
                               {renderSection(sectionId)}
