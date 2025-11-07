@@ -702,7 +702,7 @@ const Profile = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle id="social-preferences">Focus Preferences</CardTitle>
+              <CardTitle id="social-preferences">Focus Preference</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
