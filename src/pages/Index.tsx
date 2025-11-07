@@ -10,7 +10,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin } from "lucide-react"; // NEW: Import MapPin
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // ADDED Link import
 import SessionCard from "@/components/SessionCard";
 import { cn } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
@@ -1840,6 +1840,7 @@ const Index = () => {
                           {(provided) => (
                             <div
                               ref={provided.innerRef}
+                              {...provided.draggableProps}
                               {...provided.dragHandleProps}
                             >
                               {renderSection(sectionId)}
