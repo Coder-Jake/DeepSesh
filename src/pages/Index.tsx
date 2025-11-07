@@ -307,7 +307,7 @@ const Index = () => {
     startStopNotifications, playSound, triggerVibration, areToastsEnabled
   });
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName } = useProfile();
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
@@ -348,12 +348,17 @@ const Index = () => {
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // NEW: State for Discovery Activation
+  const [isDiscoveryActivated, setIsDiscoveryActivated] = useState(false);
+  const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
+  const [discoveryDisplayName, setDiscoveryDisplayName] = useState(localFirstName || hostCode || "You");
+
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
     queryKey: ['supabaseActiveSessions'],
     queryFn: fetchSupabaseSessions,
     refetchInterval: 5000, // Refetch every 5 seconds
-    enabled: !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'), // Only fetch if not private and discovery is enabled
+    enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'), // Only fetch if discovery is activated and not private
   });
 
   useEffect(() => {
@@ -793,6 +798,7 @@ const Index = () => {
   const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
 
   const shouldShowNearbySessions = useMemo(() => {
+    if (!isDiscoveryActivated) return false; // NEW: Only show if discovery is activated
     if (!isActiveTimer) {
       return !isGlobalPrivate;
     }
@@ -804,9 +810,10 @@ const Index = () => {
       return !isGlobalPrivate;
     }
     return false;
-  }, [isActiveTimer, isGlobalPrivate, showSessionsWhileActive]);
+  }, [isActiveTimer, isGlobalPrivate, showSessionsWhileActive, isDiscoveryActivated]); // Added isDiscoveryActivated
 
   const shouldShowFriendsSessions = useMemo(() => {
+    if (!isDiscoveryActivated) return false; // NEW: Only show if discovery is activated
     if (!isActiveTimer) {
       return true;
     }
@@ -818,11 +825,12 @@ const Index = () => {
       return true;
     }
     return false;
-  }, [isActiveTimer, showSessionsWhileActive]);
+  }, [isActiveTimer, showSessionsWhileActive, isDiscoveryActivated]); // Added isDiscoveryActivated
 
   const shouldShowOrganizationSessions = useMemo(() => {
+    if (!isDiscoveryActivated) return false; // NEW: Only show if discovery is activated
     return !!profile?.organization;
-  }, [profile?.organization]);
+  }, [profile?.organization, isDiscoveryActivated]); // Added isDiscoveryActivated
 
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
     if (!profile?.organization) return [];
@@ -1229,6 +1237,36 @@ const Index = () => {
       }
     }
   }, [hostCode, areToastsEnabled]);
+
+  const handleActivateDiscovery = async () => {
+    // Update localFirstName if user changed it in the dialog
+    if (discoveryDisplayName.trim() !== "" && discoveryDisplayName !== localFirstName) {
+      setLocalFirstName(discoveryDisplayName.trim());
+      // Optionally, update profile in backend here if user is logged in
+      // await updateProfile({ first_name: discoveryDisplayName.trim() });
+    }
+
+    setIsDiscoveryActivated(true);
+    setIsDiscoverySetupOpen(false);
+
+    if (geolocationPermissionStatus === 'granted') {
+      setIsGlobalPrivate(false);
+      setShowSessionsWhileActive('nearby'); // Or 'all' if preferred
+      if (areToastsEnabled) {
+        toast.success("Discovery Activated!", {
+          description: "Nearby sessions are now visible.",
+        });
+      }
+    } else {
+      setIsGlobalPrivate(false); // Still allow friends/org sessions
+      setShowSessionsWhileActive('friends'); // Default to friends if location not granted
+      if (areToastsEnabled) {
+        toast.info("Discovery Activated!", {
+          description: "Location not enabled. Showing friends and organization sessions.",
+        });
+      }
+    }
+  };
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
@@ -1777,7 +1815,17 @@ const Index = () => {
               </Card>
             )}
 
-            
+            {/* NEW: Conditional rendering for Discovery sections */}
+            {!isDiscoveryActivated ? (
+              <Card className="p-6 text-center">
+                <CardContent className="flex flex-col items-center justify-center p-0">
+                  <p className="text-muted-foreground mb-4">Discover nearby sessions and connect with friends!</p>
+                  <Button onClick={() => setIsDiscoverySetupOpen(true)} variant="default">
+                    <Users className="mr-2 h-4 w-4" /> Activate Discovery
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
               <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="sessions-list">
                   {(provided) => (
@@ -1804,7 +1852,7 @@ const Index = () => {
                   )}
                 </Droppable>
               </DragDropContext>
-            
+            )}
           </div>
         </div>
         {isScheduleActive && (
@@ -1870,6 +1918,56 @@ const Index = () => {
               >
                 Join
               </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* NEW: Discovery Setup Dialog */}
+        <Dialog open={isDiscoverySetupOpen} onOpenChange={setIsDiscoverySetupOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Activate Discovery</DialogTitle>
+              <DialogDescription>
+                Set up your preferences to discover and be discovered by coworkers.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="discovery-display-name">Your Display Name</Label>
+                <Input
+                  id="discovery-display-name"
+                  placeholder={hostCode || "Your Host Code"}
+                  value={discoveryDisplayName}
+                  onChange={(e) => setDiscoveryDisplayName(e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Location Sharing</Label>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full flex items-center gap-2",
+                    geolocationPermissionStatus === 'granted' && "bg-green-100 text-green-700 border-green-200",
+                    geolocationPermissionStatus === 'denied' && "bg-red-100 text-red-700 border-red-200"
+                  )}
+                  onClick={getLocation}
+                >
+                  <MapPin size={16} />
+                  {geolocationPermissionStatus === 'granted' && "Location Enabled"}
+                  {geolocationPermissionStatus === 'denied' && "Location Denied (Click to Re-enable)"}
+                  {geolocationPermissionStatus === 'prompt' && "Enable Location"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Enabling location allows you to see nearby sessions.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <p className="text-xs text-muted-foreground mr-auto">
+                Add more details on your <Link to="/profile" className="text-blue-500 hover:underline">profile page</Link>
+              </p>
+              <Button onClick={handleActivateDiscovery}>Continue</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
