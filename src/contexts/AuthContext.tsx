@@ -22,26 +22,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (event, currentSession) => {
         if (!isMounted) return;
 
-        // Only set loading to false once the initial session is determined
-        // For subsequent events, just update session/user
-        if (event === 'INITIAL_SESSION') {
-          setSession(currentSession);
-          setUser(currentSession?.user || null);
-          setLoading(false); 
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
+          if (!currentSession) {
+            // If no session, try to sign in anonymously
+            const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
+            if (anonError) {
+              console.error("Error signing in anonymously:", anonError);
+              // Fallback to no user if anonymous sign-in fails
+              setSession(null);
+              setUser(null);
+            } else {
+              setSession(anonData.session);
+              setUser(anonData.user);
+            }
+          } else {
+            setSession(currentSession);
+            setUser(currentSession.user);
+          }
+          setLoading(false); // Set loading to false after initial session or anonymous sign-in attempt
         } else {
+          // For other events (SIGNED_IN, USER_UPDATED, etc.), just update session/user
           setSession(currentSession);
           setUser(currentSession?.user || null);
         }
       }
     );
 
-    // Fetch initial session directly as a fallback/immediate check.
-    // The onAuthStateChange 'INITIAL_SESSION' event is the primary source of truth.
-    // We only set loading to false here if onAuthStateChange hasn't already done it.
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+    // Initial check for session to handle cases where onAuthStateChange might be delayed
+    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
       if (isMounted && loading) { // Only update if still loading and mounted
-        setSession(initialSession);
-        setUser(initialSession?.user || null);
+        if (!initialSession) {
+          // If no initial session, attempt anonymous sign-in
+          const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
+          if (anonError) {
+            console.error("Error during initial anonymous sign-in:", anonError);
+            setSession(null);
+            setUser(null);
+          } else {
+            setSession(anonData.session);
+            setUser(anonData.user);
+          }
+        } else {
+          setSession(initialSession);
+          setUser(initialSession.user);
+        }
         setLoading(false);
       }
     });
