@@ -242,6 +242,8 @@ export type TimerContextType = {
   setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'all'>>; // MODIFIED: Changed 'yes' to 'all'
   hasWonPrize: boolean; // NEW: Added hasWonPrize
   setHasWonPrize: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setHasWonPrize
+  getLocation: () => Promise<{ latitude: number | null; longitude: number | null }>; // NEW: Added getLocation
+  geolocationPermissionStatus: PermissionState; // NEW: Added geolocationPermissionStatus
 };
 
 // Define the structure for a saved session

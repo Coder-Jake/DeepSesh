@@ -1171,8 +1171,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       startStopNotifications,
       hasWonPrize,
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
-      isHomepageFocusCustomized, // Save customization flag
-      isHomepageBreakCustomized, // Save customization flag
+      isHomepageFocusCustomized, isHomepageBreakCustomized,
       activeSessionRecordId, // NEW: Save activeSessionRecordId
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
@@ -1363,10 +1362,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setStartStopNotifications,
     playSound,
     triggerVibration,
-    showSessionsWhileActive: showSessionsWhileActive, // MODIFIED: Changed 'yes' to 'all'
-    setShowSessionsWhileActive: setShowSessionsWhileActive, // MODIFIED: Changed 'yes' to 'all'
     hasWonPrize,
     setHasWonPrize,
+    getLocation, // NEW: Expose getLocation
     geolocationPermissionStatus, // NEW: Expose geolocationPermissionStatus
   };
 
