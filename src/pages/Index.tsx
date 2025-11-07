@@ -1253,17 +1253,24 @@ const Index = () => {
     setIsDiscoveryActivated(true);
     setIsDiscoverySetupOpen(false);
 
-    if (geolocationPermissionStatus === 'granted') {
-      setIsGlobalPrivate(false); // Set to public if location is granted
-      setShowSessionsWhileActive('nearby'); // Or 'all' if preferred
+    // The logic for setting isGlobalPrivate and showSessionsWhileActive based on geolocationPermissionStatus
+    // is now primarily handled within getLocation itself, or by the useEffect that listens to geolocationPermissionStatus.
+    // I'll simplify this part here to just call getLocation and let its side effects manage the state.
+    await getLocation(); // Call getLocation to trigger permission check/request
+
+    // Check the *updated* status after getLocation call
+    if (geolocationPermissionStatus === 'granted') { 
+      setIsGlobalPrivate(false);
+      setShowSessionsWhileActive('nearby'); 
       if (areToastsEnabled) {
         toast.success("Discovery Activated!", {
           description: "Nearby sessions are now visible.",
         });
       }
     } else {
-      setIsGlobalPrivate(true); // Keep private if location not granted
-      setShowSessionsWhileActive('hidden'); // Default to hidden if location not granted
+      // If permission is still not granted (e.g., denied or prompt but user didn't respond)
+      setIsGlobalPrivate(true);
+      setShowSessionsWhileActive('hidden'); 
       if (areToastsEnabled) {
         toast.info("Discovery Activated!", {
           description: "Location not enabled. Sessions are currently hidden.",
@@ -1294,15 +1301,14 @@ const Index = () => {
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
-                          getLocation();
+                          getLocation(); // Trigger location request/check
                         }}
                       />
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
-                      {geolocationPermissionStatus === 'denied' ? 
-                        "Click to enable Location access." : 
-                        "Click to enable location for nearby sessions."
-                      }
+                      {geolocationPermissionStatus === 'granted' && "Location access granted."}
+                      {geolocationPermissionStatus === 'denied' && "Location access denied. Click to re-enable in browser settings."}
+                      {geolocationPermissionStatus === 'prompt' && "Click to enable location for nearby sessions."}
                     </TooltipContent>
                   </Tooltip>
                 <h3>Nearby</h3>

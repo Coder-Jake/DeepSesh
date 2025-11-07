@@ -262,20 +262,45 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   // Helper function to get user's current location
   const getLocation = useCallback(async (): Promise<{ latitude: number | null; longitude: number | null }> => {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       if (!navigator.geolocation) {
         if (areToastsEnabled) {
           toast.error("Location Error", {
             description: "Geolocation is not supported by your browser.",
           });
         }
+        setGeolocationPermissionStatus('denied'); // Set to denied if not supported
         resolve({ latitude: null, longitude: null });
         return;
       }
 
+      // Check current permission status first
+      const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+      setGeolocationPermissionStatus(permissionStatus.state); // Update state immediately
+
+      if (permissionStatus.state === 'granted') {
+        if (areToastsEnabled) {
+          toast.info("Location Already Enabled", {
+            description: "Your browser is already sharing your location.",
+          });
+        }
+        // Proceed to get position even if already granted, to get fresh coordinates
+      } else if (permissionStatus.state === 'denied') {
+        if (areToastsEnabled) {
+          toast.error("Location Access Denied", {
+            description: "Please enable location access for this site in your browser settings.",
+          });
+        }
+        setIsGlobalPrivate(true); // Keep private if denied
+        resolve({ latitude: null, longitude: null });
+        return;
+      }
+      // If state is 'prompt', getCurrentPosition will trigger the prompt
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setGeolocationPermissionStatus('granted'); // Update status on success
+          setGeolocationPermissionStatus('granted');
+          setIsGlobalPrivate(false); // Automatically set to public if location is granted
           resolve({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -286,9 +311,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           if (areToastsEnabled) {
             let errorMessage = "Failed to get your location.";
             if (error.code === error.PERMISSION_DENIED) {
-              errorMessage = "Location access denied. Your session has been set to private.";
-              setIsGlobalPrivate(true); // Automatically switch to private
-              setGeolocationPermissionStatus('denied'); // Update status on denial
+              errorMessage = "Location access denied. Your session has been set to private. Please enable in browser settings.";
+              setIsGlobalPrivate(true);
+              setGeolocationPermissionStatus('denied');
             } else if (error.code === error.POSITION_UNAVAILABLE) {
               errorMessage = "Location information is unavailable.";
             } else if (error.code === error.TIMEOUT) {
@@ -308,6 +333,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       );
     });
   }, [areToastsEnabled, setIsGlobalPrivate]);
+
+  // NEW: Effect to ensure isGlobalPrivate is true if discovery is active but location is denied
+  useEffect(() => {
+    if (isDiscoveryActivated && geolocationPermissionStatus === 'denied' && !isGlobalPrivate) {
+      setIsGlobalPrivate(true);
+      if (areToastsEnabled) {
+        toast.info("Discovery Privacy Adjusted", {
+          description: "Location access is denied, so your sessions are now private.",
+        });
+      }
+    }
+  }, [isDiscoveryActivated, geolocationPermissionStatus, isGlobalPrivate, areToastsEnabled]);
 
   // NEW: Effect to query and listen for geolocation permission changes
   useEffect(() => {
@@ -582,7 +619,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .single();
 
         if (error) throw error;
-        (useTimer() as any).setActiveSessionRecordId(data.id);
+        setActiveSessionRecordId(data.id);
         console.log("Active session inserted into Supabase:", data.id);
       } catch (error: any) {
         console.error("Error inserting active session into Supabase:", error.message);
@@ -1109,6 +1146,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentSessionHostName(data.currentSessionHostName ?? null);
       setCurrentSessionOtherParticipants(data.currentSessionOtherParticipants ?? []);
       setActiveSessionRecordId(data.activeSessionRecordId ?? null); // NEW: Load activeSessionRecordId
+      setGeolocationPermissionStatus(data.geolocationPermissionStatus ?? 'prompt'); // NEW: Load geolocationPermissionStatus
 
       initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
@@ -1184,6 +1222,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       isHomepageFocusCustomized, isHomepageBreakCustomized,
       activeSessionRecordId, // NEW: Save activeSessionRecordId
       isDiscoveryActivated, // NEW: Save isDiscoveryActivated
+      geolocationPermissionStatus, // NEW: Save geolocationPermissionStatus
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -1211,6 +1250,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isHomepageFocusCustomized, isHomepageBreakCustomized,
     activeSessionRecordId,
     isDiscoveryActivated,
+    geolocationPermissionStatus,
   ]);
 
   const value: TimerContextType = {
