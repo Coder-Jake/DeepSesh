@@ -1281,8 +1281,7 @@ const Index = () => {
             >
               <div className="flex items-center gap-2">
                 <h3>Nearby</h3>
-                {geolocationPermissionStatus !== 'granted' && (
-                  <Tooltip>
+                <Tooltip>
                     <TooltipTrigger asChild>
                       <MapPin 
                         size={16} 
@@ -1303,7 +1302,6 @@ const Index = () => {
                       }
                     </TooltipContent>
                   </Tooltip>
-                )}
               </div>
               <div className="flex items-center gap-2">
                 {hiddenNearbyCount > 0 && (
@@ -1941,10 +1939,14 @@ const Index = () => {
 
               {/* NEW: Focus Preferences */}
               <div className="space-y-2">
-                <Label>Focus Preferences</Label>
-                <p className="text-xs text-muted-foreground mb-2">
-                  How would you prefer to balance focus vs socialising?
-                </p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Label>Focus Preference</Label>
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none">
+                    How would you prefer to balance focus vs socialising?
+                  </TooltipContent>
+                </Tooltip>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Banter</span>
