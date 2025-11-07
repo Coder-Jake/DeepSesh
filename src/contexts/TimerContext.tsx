@@ -38,7 +38,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [notes, setNotes] = useState("");
   const [_seshTitle, _setSeshTitle] = useState("Notes");
   const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('all'); // MODIFIED: Default to 'all'
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('all');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
@@ -75,7 +75,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [currentSessionHostName, setCurrentSessionHostName] = useState<string | null>(null);
   const [currentSessionOtherParticipants, setCurrentSessionOtherParticipants] = useState<{ id: string; name: string; sociability?: number; intention?: string; bio?: string }[]>([]);
 
-  // NEW: State to store all participants data for the current active session
   const [currentSessionParticipantsData, setCurrentSessionParticipantsData] = useState<ParticipantSessionData[]>([]);
 
   const allParticipantsToDisplay = useMemo(() => {
@@ -129,30 +128,28 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [is24HourFormat, setIs24HourFormat] = useState(true);
   const [hasWonPrize, setHasWonPrize] = useState(false);
 
-  // NEW: State to track if homepage focus/break minutes have been manually customized
   const [isHomepageFocusCustomized, setIsHomepageFocusCustomized] = useState(false);
   const [isHomepageBreakCustomized, setIsHomepageBreakCustomized] = useState(false);
 
-  // NEW: State to store the ID of the active session record in Supabase
   const [activeSessionRecordId, setActiveSessionRecordId] = useState<string | null>(null);
 
-  // NEW: State to track geolocation permission status
   const [geolocationPermissionStatus, setGeolocationPermissionStatus] = useState<PermissionState>('prompt');
 
-  // NEW: State for Discovery Activation
   const [isDiscoveryActivated, setIsDiscoveryActivated] = useState(false);
+
+  const [lastActivityTime, setLastActivityTime] = useState<number | null>(null); // NEW: State for last activity time
 
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
 
   const setHomepageFocusMinutes = useCallback((minutes: number) => {
     _setFocusMinutes(minutes);
-    setIsHomepageFocusCustomized(true); // Mark as customized
+    setIsHomepageFocusCustomized(true);
   }, []);
 
   const setHomepageBreakMinutes = useCallback((minutes: number) => {
     _setBreakMinutes(minutes);
-    setIsHomepageBreakCustomized(true); // Mark as customized
+    setIsHomepageBreakCustomized(true);
   }, []);
 
   const setDefaultFocusMinutes = useCallback((minutes: number) => {
@@ -163,7 +160,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     _setDefaultBreakMinutes(minutes);
   }, []);
 
-  // Effect to synchronize homepage focusMinutes with defaultFocusMinutes when idle AND not customized
   useEffect(() => {
     if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession && !isHomepageFocusCustomized) {
       if (focusMinutes !== _defaultFocusMinutes) {
@@ -172,7 +168,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [_defaultFocusMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, focusMinutes, isHomepageFocusCustomized]);
 
-  // Effect to synchronize homepage breakMinutes with defaultBreakMinutes when idle AND not customized
   useEffect(() => {
     if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession && !isHomepageBreakCustomized) {
       if (breakMinutes !== _defaultBreakMinutes) {
@@ -188,7 +183,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
 
   const playSound = useCallback(() => {
-    // Defensive check for the object itself
     if (!startStopNotifications || !startStopNotifications.sound) {
       console.log("playSound: startStopNotifications object or sound property is not enabled/defined.");
       return;
@@ -209,10 +203,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     } else {
       console.warn("AudioContext not supported in this browser.");
     }
-  }, [startStopNotifications]); // Dependency changed to the whole object
+  }, [startStopNotifications]);
 
   const triggerVibration = useCallback(() => {
-    // Defensive check for the object itself
     if (!startStopNotifications || !startStopNotifications.vibrate) {
       console.log("triggerVibration: startStopNotifications object or vibrate property is not enabled/defined.");
       return;
@@ -223,7 +216,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     } else if (startStopNotifications.vibrate) {
       console.warn("Vibration API not supported in this browser.");
     }
-  }, [startStopNotifications]); // Dependency changed to the whole object
+  }, [startStopNotifications]);
 
   const formatTime = useCallback((totalSeconds: number) => {
     const days = Math.floor(totalSeconds / (3600 * 24));
@@ -263,7 +256,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [isSeshTitleCustomized]);
 
-  // Helper function to get user's current location
   const getLocation = useCallback(async (): Promise<{ latitude: number | null; longitude: number | null }> => {
     return new Promise(async (resolve) => {
       if (!navigator.geolocation) {
@@ -272,14 +264,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             description: "Geolocation is not supported by your browser.",
           });
         }
-        setGeolocationPermissionStatus('denied'); // Set to denied if not supported
+        setGeolocationPermissionStatus('denied');
         resolve({ latitude: null, longitude: null });
         return;
       }
 
-      // Check current permission status first
       const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-      setGeolocationPermissionStatus(permissionStatus.state); // Update state immediately
+      setGeolocationPermissionStatus(permissionStatus.state);
 
       if (permissionStatus.state === 'granted') {
         if (areToastsEnabled) {
@@ -287,23 +278,21 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             description: "Your browser is already sharing your location.",
           });
         }
-        // Proceed to get position even if already granted, to get fresh coordinates
       } else if (permissionStatus.state === 'denied') {
         if (areToastsEnabled) {
           toast.error("Location Access Denied", {
             description: "Please enable location access for this site in your browser settings.",
           });
         }
-        setIsGlobalPrivate(true); // Keep private if denied
+        setIsGlobalPrivate(true);
         resolve({ latitude: null, longitude: null });
         return;
       }
-      // If state is 'prompt', getCurrentPosition will trigger the prompt
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setGeolocationPermissionStatus('granted');
-          setIsGlobalPrivate(false); // Automatically set to public if location is granted
+          setIsGlobalPrivate(false);
           resolve({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -337,7 +326,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     });
   }, [areToastsEnabled, setIsGlobalPrivate]);
 
-  // NEW: Effect to ensure isGlobalPrivate is true if discovery is active but location is denied
   useEffect(() => {
     if (isDiscoveryActivated && geolocationPermissionStatus === 'denied' && !isGlobalPrivate) {
       setIsGlobalPrivate(true);
@@ -349,7 +337,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [isDiscoveryActivated, geolocationPermissionStatus, isGlobalPrivate, areToastsEnabled]);
 
-  // NEW: Effect to query and listen for geolocation permission changes
   useEffect(() => {
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
@@ -361,9 +348,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, []);
 
-  // NEW: Function to sync session data to Supabase
   const syncSessionToSupabase = useCallback(async () => {
-    // Only update if there's an authenticated user and an active session record
     if (!user?.id || !activeSessionRecordId) {
       console.log("syncSessionToSupabase: Skipping sync. User ID or activeSessionRecordId missing.");
       return;
@@ -374,21 +359,21 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const currentPhaseEndTime = new Date(Date.now() + timeLeft * 1000).toISOString();
 
     const sessionData = {
-      host_name: currentSessionHostName, // Use currentSessionHostName
+      host_name: currentSessionHostName,
       session_title: activeScheduleDisplayTitle,
       current_phase_type: timerType,
       current_phase_end_time: currentPhaseEndTime,
       is_active: isRunning,
       is_paused: isPaused,
-      focus_duration: focusMinutes, // Store current homepage focus/break for manual timers
+      focus_duration: focusMinutes,
       break_duration: breakMinutes,
       total_session_duration_seconds: isScheduleActive ? activeSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60 : currentPhaseDuration * 60,
-      schedule_id: isScheduleActive ? activeSchedule[0]?.id : null, // Assuming first item ID can represent schedule ID
+      schedule_id: isScheduleActive ? activeSchedule[0]?.id : null,
       current_schedule_index: isScheduleActive ? currentScheduleIndex : 0,
       schedule_data: isScheduleActive ? activeSchedule : null,
-      visibility: isGlobalPrivate ? 'private' : 'public', // Update visibility
-      participants_data: currentSessionParticipantsData, // NEW: Update participants_data
-      user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null, // Ensure host user_id is correct
+      visibility: isGlobalPrivate ? 'private' : 'public',
+      participants_data: currentSessionParticipantsData,
+      user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
     };
 
     try {
@@ -416,13 +401,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentScheduleIndex, timeLeft, isGlobalPrivate, currentSessionParticipantsData, areToastsEnabled
   ]);
 
-  // NEW: Effect to sync session data to Supabase on relevant state changes
   useEffect(() => {
-    if (activeSessionRecordId && user?.id) { // Sync regardless of private status, but visibility is set in syncSessionToSupabase
-      // Debounce updates to avoid excessive writes
+    if (activeSessionRecordId && user?.id) {
       const handler = setTimeout(() => {
         syncSessionToSupabase();
-      }, 500); // Sync every 500ms if state changes
+      }, 500);
 
       return () => clearTimeout(handler);
     }
@@ -470,17 +453,17 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setActiveJoinedSessionCoworkerCount(0);
     setIsTimeLeftManagedBySession(false);
     setHasWonPrize(false);
-    setIsHomepageFocusCustomized(false); // Reset customization flag
-    setIsHomepageBreakCustomized(false); // Reset customization flag
-    setCurrentSessionParticipantsData([]); // NEW: Clear participants data
+    setIsHomepageFocusCustomized(false);
+    setIsHomepageBreakCustomized(false);
+    setCurrentSessionParticipantsData([]);
     console.log("resetSessionStates: activeSessionRecordId cleared to null.");
-    setActiveSessionRecordId(null); // Ensure activeSessionRecordId is cleared
+    setActiveSessionRecordId(null);
+    setLastActivityTime(null); // NEW: Clear lastActivityTime on reset
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle
   ]);
 
   const resetSchedule = useCallback(async () => {
-    // NEW: Delete active session from Supabase if it exists and is owned by the current user
     if (activeSessionRecordId && user?.id && currentSessionRole === 'host') {
       console.log("resetSchedule: Attempting to delete active session from Supabase:", activeSessionRecordId);
       try {
@@ -488,7 +471,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .from('active_sessions')
           .delete()
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id); // Ensure only the owner can delete
+          .eq('user_id', user.id);
 
         if (error) {
           console.error("Error deleting active session from Supabase:", error);
@@ -502,8 +485,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
       } catch (error) {
         console.error("Unexpected error during Supabase delete:", error);
-      } finally {
-        // setActiveSessionRecordId(null); // This is now handled by resetSessionStates
       }
     } else {
       console.log("resetSchedule: Not deleting from Supabase. activeSessionRecordId:", activeSessionRecordId, "user?.id:", user?.id, "currentSessionRole:", currentSessionRole);
@@ -540,10 +521,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     if (confirmationMessageParts.length > 0) {
         const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and start this new session now?`;
         if (!confirm(finalMessage)) {
-            return false; // User cancelled
+            return false;
         }
         if (shouldResetExistingActiveSchedule) {
-            await resetSchedule(); // Use await here
+            await resetSchedule();
         }
         if (shouldResetManualTimer) {
             setIsRunning(false);
@@ -556,8 +537,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during session start. activeAsks cleared.");
             setHasWonPrize(false);
-            setIsHomepageFocusCustomized(false); // Reset customization flag
-            setIsHomepageBreakCustomized(false); // Reset customization flag
+            setIsHomepageFocusCustomized(false);
+            setIsHomepageBreakCustomized(false);
         }
     }
 
@@ -602,32 +583,31 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 
-    // NEW: Insert into active_sessions if not private (user_id can be null)
     if (!isGlobalPrivate) {
-      const { latitude, longitude } = await getLocation(); // Get location
+      const { latitude, longitude } = await getLocation();
       const currentScheduleItem = initialSchedule[0];
       const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
       try {
         const { data, error } = await supabase
           .from('active_sessions')
           .insert({
-            user_id: hostParticipant.userId, // Use the host's ID
+            user_id: hostParticipant.userId,
             host_name: hostParticipant.userName,
             session_title: initialScheduleTitle,
-            visibility: 'public', // Always public if not isGlobalPrivate
+            visibility: 'public',
             focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
             break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
             current_phase_type: currentScheduleItem.type,
             current_phase_end_time: currentPhaseEndTime,
             total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
-            schedule_id: initialSchedule[0]?.id, // Use the first item's ID as a simple schedule ID
+            schedule_id: initialSchedule[0]?.id,
             is_active: true,
             is_paused: false,
             current_schedule_index: 0,
             schedule_data: initialSchedule,
-            location_lat: latitude, // Include latitude
-            location_long: longitude, // Include longitude
-            participants_data: [hostParticipant], // NEW: Initialize participants_data
+            location_lat: latitude,
+            location_long: longitude,
+            participants_data: [hostParticipant],
           })
           .select('id')
           .single();
@@ -644,7 +624,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
       }
     }
-    return true; // Session started successfully
+    return true;
   }, [
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
@@ -689,7 +669,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       scheduleStartOption,
       isRecurring,
       recurrenceFrequency,
-      false // Not pending start
+      false
     );
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
@@ -710,7 +690,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       templateToCommence.scheduleStartOption,
       templateToCommence.isRecurring,
       templateToCommence.recurrenceFrequency,
-      templateToCommence.scheduleStartOption === 'custom_time' // Is pending start if custom time
+      templateToCommence.scheduleStartOption === 'custom_time'
     );
 
     if (started) {
@@ -774,7 +754,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `"${templateToLoad.title}" has been loaded into the editor.`,
         });
       }
-      // When loading a template, it's considered a fresh state, so reset customization flags
       setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
     }
@@ -789,7 +768,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [areToastsEnabled, toast]);
 
-  // NEW: joinSessionAsCoworker function
   const joinSessionAsCoworker = useCallback(async (
     sessionId: string,
     sessionTitle: string,
@@ -809,7 +787,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return;
     }
 
-    // Reset any existing timer/schedule
     if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
       if (isScheduleActive || isSchedulePrepared) await resetSchedule();
       setIsRunning(false);
@@ -824,7 +801,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsHomepageBreakCustomized(false);
     }
 
-    // Set session states for the joining coworker
     setActiveSessionRecordId(sessionId);
     setActiveSchedule(fullSchedule);
     setActiveScheduleDisplayTitleInternal(sessionTitle);
@@ -834,7 +810,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
-    setSessionStartTime(Date.now() - (currentPhaseDurationMinutes * 60 - remainingSecondsInPhase) * 1000); // Estimate session start
+    setSessionStartTime(Date.now() - (currentPhaseDurationMinutes * 60 - remainingSecondsInPhase) * 1000);
     setCurrentPhaseStartTime(Date.now());
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
@@ -861,7 +837,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       bio: userBio || undefined,
     };
 
-    // Fetch current participants from Supabase to avoid overwriting
     const { data: existingSession, error: fetchError } = await supabase
       .from('active_sessions')
       .select('participants_data')
@@ -880,13 +855,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     let updatedParticipantsData: ParticipantSessionData[] = existingSession?.participants_data || [];
-    // Ensure the joining user is not already listed, then add
     if (!updatedParticipantsData.some(p => p.userId === user.id)) {
       updatedParticipantsData.push(newCoworker);
     }
     setCurrentSessionParticipantsData(updatedParticipantsData);
 
-    // Update Supabase with new participant
     const { error: updateError } = await supabase
       .from('active_sessions')
       .update({ participants_data: updatedParticipantsData })
@@ -923,7 +896,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates
   ]);
 
-  // NEW: leaveSession function
   const leaveSession = useCallback(async () => {
     if (!user?.id || !activeSessionRecordId || currentSessionRole === null) {
       console.warn("Attempted to leave session without active session or user ID.");
@@ -931,12 +903,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     if (currentSessionRole === 'host') {
-      // Host leaving, need to transfer or end session
-      await transferHostRole(); // This will handle the host's departure
+      await transferHostRole();
       return;
     }
 
-    // Coworker leaving
     const updatedParticipants = currentSessionParticipantsData.filter(p => p.userId !== user.id);
     setCurrentSessionParticipantsData(updatedParticipants);
 
@@ -959,10 +929,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         });
       }
     }
-    resetSessionStates(); // Reset all local session states for the leaving user
+    resetSessionStates();
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates]);
 
-  // NEW: transferHostRole function
   const transferHostRole = useCallback(async () => {
     if (!user?.id || !activeSessionRecordId || currentSessionRole !== 'host') {
       console.warn("Attempted to transfer host role without being the host or having an active session.");
@@ -974,7 +943,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     const otherCoworkers = currentSessionParticipantsData
       .filter(p => p.role === 'coworker')
-      .sort((a, b) => a.joinTime - b.joinTime); // Sort by join time to find oldest
+      .sort((a, b) => a.joinTime - b.joinTime);
 
     if (otherCoworkers.length > 0) {
       const newHost = otherCoworkers[0];
@@ -983,12 +952,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           return { ...p, role: 'host' };
         }
         if (p.userId === currentHostId) {
-          return { ...p, role: 'coworker' }; // Old host becomes a coworker if they stay
+          return { ...p, role: 'coworker' };
         }
         return p;
       });
 
-      // Update Supabase
       const { error } = await supabase
         .from('active_sessions')
         .update({
@@ -1005,32 +973,28 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             description: `Failed to transfer host role: ${error.message}`,
           });
         }
-        // If Supabase update fails, don't update local state to avoid inconsistency
         return;
       }
 
-      // Update local state for the *current user* (the old host)
       if (areToastsEnabled) {
         toast.success("Host Role Transferred", {
           description: `Host role transferred to ${newHost.userName}. You are now a coworker.`,
         });
       }
-      // The old host (current user) now becomes a coworker in the session
       setCurrentSessionRole('coworker');
       setCurrentSessionHostName(newHost.userName);
       setCurrentSessionOtherParticipants(updatedParticipants.filter(p => p.userId !== user.id && p.userId !== newHost.userId));
-      setCurrentSessionParticipantsData(updatedParticipants); // Update full list
+      setCurrentSessionParticipantsData(updatedParticipants);
       setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
 
     } else {
-      // No other coworkers, end the session
       console.log("transferHostRole: No other coworkers to transfer to. Ending session.");
       if (areToastsEnabled) {
         toast.info("Session Ended", {
           description: "No other participants to transfer host role to. Session ended.",
         });
       }
-      await resetSchedule(); // This will delete the Supabase record
+      await resetSchedule();
     }
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
 
@@ -1065,9 +1029,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           setIsFlashing(false);
           setCurrentPhaseStartTime(Date.now());
         } else {
-          // Schedule has reached its end
           if (isRecurring && activeSchedule.length > 0) {
-            // Loop the schedule
             setCurrentScheduleIndex(0);
             setTimerType(activeSchedule[0].type);
             setTimeLeft(activeSchedule[0].durationMinutes * 60);
@@ -1080,7 +1042,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
               });
             }
           } else {
-            // Schedule completed, stop and save
             if (areToastsEnabled) {
               toast("Schedule Completed!", {
                 description: `"${scheduleTitle}" has finished.`,
@@ -1144,8 +1105,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [isRunning, isPaused, timeLeft, isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle, currentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, user?.id, _seshTitle, notes, accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition, focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration, isRecurring]);
 
   useEffect(() => {
-    // This effect ensures timeLeft is correct when switching timerType or when homepage values change,
-    // but only if not managed by an active session/schedule.
     if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
       const expectedTime = (timerType === 'focus' ? focusMinutes : breakMinutes) * 60;
       if (timeLeft !== expectedTime) {
@@ -1246,6 +1205,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     };
   }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule]);
 
+  // NEW: Effect to update lastActivityTime whenever the timer is active
+  useEffect(() => {
+    if (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) {
+      setLastActivityTime(Date.now());
+    } else {
+      setLastActivityTime(null); // Clear if timer is completely inactive
+    }
+  }, [isRunning, isPaused, isFlashing, isScheduleActive, isSchedulePending]);
 
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
@@ -1254,12 +1221,45 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     if (storedData) {
       const data = JSON.parse(storedData);
+
+      // --- Start Inactivity Check Logic ---
+      const loadedLastActivityTime = data.lastActivityTime ?? null;
+      const loadedIsRunning = data.isRunning ?? false;
+      const loadedIsPaused = data.isPaused ?? false;
+      const loadedIsFlashing = data.isFlashing ?? false;
+      const loadedIsScheduleActive = data.isScheduleActive ?? false;
+      const loadedIsSchedulePending = data.isSchedulePending ?? false;
+      const loadedFocusMinutes = data.focusMinutes ?? data._defaultFocusMinutes ?? 25;
+      const loadedBreakMinutes = data.breakMinutes ?? data._defaultBreakMinutes ?? 5;
+      const loadedActiveSchedule = data.activeSchedule ?? [];
+
+      let maxAllowedInactivitySeconds = 0;
+      if (loadedIsScheduleActive || loadedIsSchedulePending) {
+        maxAllowedInactivitySeconds = loadedActiveSchedule.reduce((sum: number, item: ScheduledTimer) => sum + item.durationMinutes, 0) * 60;
+      } else if (loadedIsRunning || loadedIsPaused || loadedIsFlashing) {
+        maxAllowedInactivitySeconds = (loadedFocusMinutes + loadedBreakMinutes) * 60;
+      }
+
+      const now = Date.now();
+      const timeSinceLastActivity = loadedLastActivityTime ? (now - loadedLastActivityTime) / 1000 : 0;
+
+      // If the timer was active and has been inactive for too long, reset it
+      if (
+        (loadedIsRunning || loadedIsPaused || loadedIsFlashing || loadedIsScheduleActive || loadedIsSchedulePending) &&
+        loadedLastActivityTime !== null &&
+        timeSinceLastActivity > maxAllowedInactivitySeconds &&
+        maxAllowedInactivitySeconds > 0
+      ) {
+        console.log("TimerContext: Timer state reset due to prolonged inactivity.");
+        localStorage.removeItem(LOCAL_STORAGE_KEY_TIMER);
+        resetSessionStates();
+        return;
+      }
+      // --- End Inactivity Check Logic ---
+
       _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25);
       _setDefaultBreakMinutes(data. _defaultBreakMinutes ?? 5);
       
-      // Load focusMinutes and breakMinutes, respecting customization flags
-      const loadedFocusMinutes = data.focusMinutes ?? data._defaultFocusMinutes ?? 25;
-      const loadedBreakMinutes = data.breakMinutes ?? data._defaultBreakMinutes ?? 5;
       const loadedIsHomepageFocusCustomized = data.isHomepageFocusCustomized ?? false;
       const loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
 
@@ -1281,29 +1281,41 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setNotes(data.notes ?? "");
       setTimerIncrementInternal(data.timerIncrement ?? 5);
       
-      let loadedShowSessionsWhileActive = data.showSessionsWhileActive ?? 'all'; // MODIFIED: Default to 'all'
+      let loadedShowSessionsWhileActive = data.showSessionsWhileActive ?? 'all';
       if (loadedShowSessionsWhileActive === 'yes') {
         loadedShowSessionsWhileActive = 'all';
       }
       setShowSessionsWhileActive(loadedShowSessionsWhileActive);
 
-      // NEW: Load isDiscoveryActivated
       const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
       setIsDiscoveryActivated(loadedIsDiscoveryActivated);
 
-      // NEW: Adjust isGlobalPrivate based on isDiscoveryActivated
       const loadedIsGlobalPrivate = loadedIsDiscoveryActivated ? (data.isGlobalPrivate ?? false) : true;
       setIsGlobalPrivate(loadedIsGlobalPrivate);
 
       setTimerType(data.timerType ?? 'focus');
-      setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60));
-      setIsRunning(data.isRunning ?? false);
-      setIsPaused(data.isPaused ?? false);
-      setIsFlashing(data.isFlashing ?? false);
+      
+      // Adjust timeLeft based on current time if timer was running/paused
+      let actualTimeLeft = data.timeLeft ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
+      if ((loadedIsRunning || loadedIsPaused || loadedIsFlashing || loadedIsScheduleActive || loadedIsSchedulePending) && loadedLastActivityTime !== null) {
+          const elapsedSinceLastActivity = (now - loadedLastActivityTime) / 1000;
+          actualTimeLeft = Math.max(0, actualTimeLeft - elapsedSinceLastActivity);
+          if (actualTimeLeft === 0) {
+              console.log("TimerContext: Timer ran out while inactive, resetting state.");
+              localStorage.removeItem(LOCAL_STORAGE_KEY_TIMER);
+              resetSessionStates();
+              return;
+          }
+      }
+      setTimeLeft(actualTimeLeft);
+
+      setIsRunning(loadedIsRunning);
+      setIsPaused(loadedIsPaused);
+      setIsFlashing(loadedIsFlashing);
       setSchedule(data.schedule ?? []);
       setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
-      setIsScheduleActive(data.isScheduleActive ?? false);
+      setIsScheduleActive(loadedIsScheduleActive);
       setScheduleTitle(data.scheduleTitle ?? "My Focus Sesh");
       setCommenceTime(data.commenceTime ?? "");
       setCommenceDay(data.commenceDay ?? null);
@@ -1316,7 +1328,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setActiveJoinedSessionCoworkerCount(data.activeJoinedSessionCoworkerCount ?? 0);
       setActiveAsks(data.activeAsks ?? []);
       console.log("TimerContext: Loading activeAsks from local storage:", data.activeAsks);
-      setIsSchedulePending(data.isSchedulePending ?? false);
+      setIsSchedulePending(loadedIsSchedulePending);
       setScheduleStartOption(data.scheduleStartOption ?? 'now');
       setIsTimeLeftManagedBySession(data.isTimeLeftManagedBySession ?? false);
       setShouldPlayEndSound(data.shouldPlayEndSound ?? false);
@@ -1342,7 +1354,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setLocationSharing(data.locationSharing ?? false);
       setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
       setTimerColors(data.timerColors ?? {});
-      setActiveSchedule(data.activeSchedule ?? {});
+      setActiveSchedule(loadedActiveSchedule);
       setActiveTimerColors(data.activeTimerColors ?? {});
       setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? "My Focus Sesh");
       setIs24HourFormat(data.is24HourFormat ?? true);
@@ -1353,9 +1365,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentSessionRole(data.currentSessionRole ?? null);
       setCurrentSessionHostName(data.currentSessionHostName ?? null);
       setCurrentSessionOtherParticipants(data.currentSessionOtherParticipants ?? []);
-      setActiveSessionRecordId(data.activeSessionRecordId ?? null); // NEW: Load activeSessionRecordId
-      setGeolocationPermissionStatus(data.geolocationPermissionStatus ?? 'prompt'); // NEW: Load geolocationPermissionStatus
-      setCurrentSessionParticipantsData(data.currentSessionParticipantsData ?? []); // NEW: Load participants data
+      setActiveSessionRecordId(data.activeSessionRecordId ?? null);
+      setGeolocationPermissionStatus(data.geolocationPermissionStatus ?? 'prompt');
+      setCurrentSessionParticipantsData(data.currentSessionParticipantsData ?? []);
+      setLastActivityTime(loadedLastActivityTime);
 
       initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
@@ -1392,7 +1405,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setTimeLeft(_defaultFocusMinutes * 60); 
       _setSeshTitle(getDefaultSeshTitle()); 
       setIsSeshTitleCustomized(false);
-      setIsHomepageFocusCustomized(false); // Ensure these are false on template load
+      setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
     } else {
       _setFocusMinutes(_defaultFocusMinutes);
@@ -1401,10 +1414,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setTimeLeft(_defaultFocusMinutes * 60);
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
-      setIsHomepageFocusCustomized(false); // Ensure these are false if no template loads
+      setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
     }
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement]);
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates]);
 
   useEffect(() => {
     const dataToSave = {
@@ -1429,14 +1442,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       hasWonPrize,
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
       isHomepageFocusCustomized, isHomepageBreakCustomized,
-      activeSessionRecordId, // NEW: Save activeSessionRecordId
-      isDiscoveryActivated, // NEW: Save isDiscoveryActivated
-      geolocationPermissionStatus, // NEW: Save geolocationPermissionStatus
-      currentSessionParticipantsData, // NEW: Save participants data
+      activeSessionRecordId,
+      isDiscoveryActivated,
+      geolocationPermissionStatus,
+      currentSessionParticipantsData,
+      lastActivityTime, // NEW: Save lastActivityTime
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
     console.log("TimerContext: Saving activeSessionRecordId to local storage:", activeSessionRecordId);
+    console.log("TimerContext: Saving lastActivityTime to local storage:", lastActivityTime);
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes,
     focusMinutes, breakMinutes,
@@ -1463,6 +1478,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isDiscoveryActivated,
     geolocationPermissionStatus,
     currentSessionParticipantsData,
+    lastActivityTime,
   ]);
 
   const value: TimerContextType = {
@@ -1628,15 +1644,15 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     triggerVibration,
     hasWonPrize,
     setHasWonPrize,
-    getLocation, // NEW: Expose getLocation
-    geolocationPermissionStatus, // NEW: Expose geolocationPermissionStatus
-    isDiscoveryActivated, // NEW: Expose isDiscoveryActivated
-    setIsDiscoveryActivated, // NEW: Expose setIsDiscoveryActivated
-    activeSessionRecordId, // NEW: Expose activeSessionRecordId
-    setActiveSessionRecordId, // NEW: Expose setActiveSessionRecordId
-    joinSessionAsCoworker, // NEW: Expose joinSessionAsCoworker
-    leaveSession, // NEW: Expose leaveSession
-    transferHostRole, // NEW: Expose transferHostRole
+    getLocation,
+    geolocationPermissionStatus,
+    isDiscoveryActivated,
+    setIsDiscoveryActivated,
+    activeSessionRecordId,
+    setActiveSessionRecordId,
+    joinSessionAsCoworker,
+    leaveSession,
+    transferHostRole,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
