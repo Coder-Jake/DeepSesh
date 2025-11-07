@@ -43,6 +43,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query'; // Corrected: Added useQuery import
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider'; // Import Slider
 
@@ -1975,7 +1976,7 @@ const Index = () => {
               <div className="space-y-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Label>Location</Label> {/* Changed from 'Location Sharing' to 'Location' */}
+                    <Label>Location</Label>
                   </TooltipTrigger>
                   <TooltipContent className="select-none">
                     Enabling location allows you to see nearby sessions.
