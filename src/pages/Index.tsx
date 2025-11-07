@@ -43,7 +43,6 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider'; // Import Slider
 
@@ -1974,7 +1973,14 @@ const Index = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Location</Label> {/* Changed from 'Location Sharing' to 'Location' */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Label>Location</Label> {/* Changed from 'Location Sharing' to 'Location' */}
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none">
+                    Enabling location allows you to see nearby sessions.
+                  </TooltipContent>
+                </Tooltip>
                 <Button
                   variant="outline"
                   className={cn(
@@ -1989,9 +1995,6 @@ const Index = () => {
                   {geolocationPermissionStatus === 'denied' && "Location Denied (Click to Re-enable)"}
                   {geolocationPermissionStatus === 'prompt' && "Enable Location"}
                 </Button>
-                <p className="text-xs text-muted-foreground">
-                  Enabling location allows you to see nearby sessions.
-                </p>
               </div>
             </div>
             <DialogFooter>
