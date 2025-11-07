@@ -468,6 +468,7 @@ const Index = () => {
     setActiveJoinedSessionCoworkerCount(0);
 
     if (user?.id && !isGlobalPrivate) {
+      const { latitude, longitude } = await (useTimer() as any).getLocation(); // Get location
       const currentPhaseDuration = timerType === 'focus' ? focusMinutes : breakMinutes;
       const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
       try {
@@ -485,11 +486,14 @@ const Index = () => {
             total_session_duration_seconds: currentPhaseDuration * 60,
             is_active: true,
             is_paused: false,
+            location_lat: latitude, // Include latitude
+            location_long: longitude, // Include longitude
           })
           .select('id')
           .single();
 
         if (error) throw error;
+        (useTimer() as any).setActiveSessionRecordId(data.id); // Set active session record ID
         console.log("Manual session inserted into Supabase:", data.id);
       } catch (error: any) {
         console.error("Error inserting manual session into Supabase:", error.message);
@@ -1108,7 +1112,7 @@ const Index = () => {
     setIsPaused(false);
     setCurrentPhaseStartTime(Date.now());
     if (areToastsEnabled) {
-      toast.success("Schedule Commenced!", {
+      toast("Schedule Commenced!", {
         description: `Your scheduled sesh has now begun.`,
       });
     }

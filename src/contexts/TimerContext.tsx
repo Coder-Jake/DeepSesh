@@ -254,6 +254,52 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [isSeshTitleCustomized]);
 
+  // Helper function to get user's current location
+  const getLocation = useCallback(async (): Promise<{ latitude: number | null; longitude: number | null }> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        if (areToastsEnabled) {
+          toast.error("Location Error", {
+            description: "Geolocation is not supported by your browser.",
+          });
+        }
+        resolve({ latitude: null, longitude: null });
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          if (areToastsEnabled) {
+            let errorMessage = "Failed to get your location.";
+            if (error.code === error.PERMISSION_DENIED) {
+              errorMessage = "Location access denied. Please enable it in your browser settings to share your location.";
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+              errorMessage = "Location information is unavailable.";
+            } else if (error.code === error.TIMEOUT) {
+              errorMessage = "The request to get user location timed out.";
+            }
+            toast.error("Location Error", {
+              description: errorMessage,
+            });
+          }
+          resolve({ latitude: null, longitude: null });
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+    });
+  }, [areToastsEnabled]);
+
   // NEW: Function to sync session data to Supabase
   const syncSessionToSupabase = useCallback(async () => {
     if (!user?.id || isGlobalPrivate || !activeSessionRecordId) {
@@ -487,6 +533,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     // NEW: Insert into active_sessions if not private
     if (user?.id && !isGlobalPrivate) {
+      const { latitude, longitude } = await getLocation(); // Get location
       const currentScheduleItem = schedule[0];
       const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
       try {
@@ -507,6 +554,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             is_paused: false,
             current_schedule_index: 0,
             schedule_data: schedule,
+            location_lat: latitude, // Include latitude
+            location_long: longitude, // Include longitude
           })
           .select('id')
           .single();
@@ -529,7 +578,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks,
     playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle,
-    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, user?.id, isGlobalPrivate, localFirstName
+    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, user?.id, isGlobalPrivate, localFirstName, getLocation
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback(async (templateId: string) => {
@@ -608,6 +657,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     // NEW: Insert into active_sessions if not private
     if (user?.id && !isGlobalPrivate) {
+      const { latitude, longitude } = await getLocation(); // Get location
       const currentScheduleItem = templateToCommence.schedule[0];
       const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
       try {
@@ -628,6 +678,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             is_paused: false,
             current_schedule_index: 0,
             schedule_data: templateToCommence.schedule,
+            location_lat: latitude, // Include latitude
+            location_long: longitude, // Include longitude
           })
           .select('id')
           .single();
@@ -644,7 +696,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
       }
     }
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, user?.id, isGlobalPrivate, localFirstName, resetSchedule]);
+  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, user?.id, isGlobalPrivate, localFirstName, resetSchedule, getLocation]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
