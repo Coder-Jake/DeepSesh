@@ -1926,12 +1926,6 @@ const Index = () => {
         {/* NEW: Discovery Setup Dialog */}
         <Dialog open={isDiscoverySetupOpen} onOpenChange={setIsDiscoverySetupOpen}>
           <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Activate Discovery</DialogTitle>
-              <DialogDescription>
-                Set up your preferences to discover and be discovered by coworkers.
-              </DialogDescription>
-            </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="discovery-display-name">Your Display Name</Label>
