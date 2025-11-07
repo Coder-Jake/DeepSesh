@@ -35,15 +35,15 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer";
 import { DAYS_OF_WEEK } from "@/lib/constants";
-import { Accordion }
- from "@/components/ui/accordion";
+import { Accordion
+ } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query'; // Corrected: Added useQuery import
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider'; // Import Slider
@@ -283,7 +283,9 @@ const Index = () => {
     setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
-    allParticipantsToDisplay, // This is for the summary, not for the card
+    // allParticipantsToDisplay, // This is for the summary, not for the card
+    currentSessionParticipantsData, // NEW: Get currentSessionParticipantsData from context
+    setCurrentSessionParticipantsData, // NEW: Get setCurrentSessionParticipantsData from context
 
     startStopNotifications,
     playSound,
@@ -298,7 +300,6 @@ const Index = () => {
     joinSessionAsCoworker, // NEW: Get joinSessionAsCoworker from context
     leaveSession, // NEW: Get leaveSession from context
     transferHostRole, // NEW: Get transferHostRole from context
-    setCurrentSessionParticipantsData, // NEW: Get setCurrentSessionParticipantsData from context
   } = useTimer();
   
   // Removed previous diagnostic log
@@ -1154,7 +1155,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []);
+  }, [template.commenceTime, template.commenceDay, template.isRecurring, template.recurrenceFrequency]);
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
