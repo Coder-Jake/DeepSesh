@@ -38,7 +38,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [notes, setNotes] = useState("");
   const [_seshTitle, _setSeshTitle] = useState("Notes");
   const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false);
-  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('hidden');
+  const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('all'); // MODIFIED: Default to 'all'
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
@@ -124,7 +124,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]);
   const [is24HourFormat, setIs24HourFormat] = useState(true);
-  const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
   const [hasWonPrize, setHasWonPrize] = useState(false);
 
   // NEW: State to track if homepage focus/break minutes have been manually customized
@@ -953,7 +952,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setNotes(data.notes ?? "");
       setTimerIncrementInternal(data.timerIncrement ?? 5);
       
-      let loadedShowSessionsWhileActive = data.showSessionsWhileActive ?? 'hidden';
+      let loadedShowSessionsWhileActive = data.showSessionsWhileActive ?? 'all'; // MODIFIED: Default to 'all'
       if (loadedShowSessionsWhileActive === 'yes') {
         loadedShowSessionsWhileActive = 'all';
       }
@@ -1283,6 +1282,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setStartStopNotifications,
     playSound,
     triggerVibration,
+    showSessionsWhileActive: showSessionsWhileActive, // MODIFIED: Changed 'yes' to 'all'
+    setShowSessionsWhileActive: setShowSessionsWhileActive, // MODIFIED: Changed 'yes' to 'all'
     hasWonPrize,
     setHasWonPrize,
   };
