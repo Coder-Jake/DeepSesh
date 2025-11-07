@@ -136,6 +136,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   // NEW: State to track geolocation permission status
   const [geolocationPermissionStatus, setGeolocationPermissionStatus] = useState<PermissionState>('prompt');
 
+  // NEW: State for Discovery Activation
+  const [isDiscoveryActivated, setIsDiscoveryActivated] = useState(false);
+
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
 
@@ -579,7 +582,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .single();
 
         if (error) throw error;
-        setActiveSessionRecordId(data.id);
+        (useTimer() as any).setActiveSessionRecordId(data.id);
         console.log("Active session inserted into Supabase:", data.id);
       } catch (error: any) {
         console.error("Error inserting active session into Supabase:", error.message);
@@ -1039,7 +1042,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       setShowSessionsWhileActive(loadedShowSessionsWhileActive);
 
-      setIsGlobalPrivate(data.isGlobalPrivate ?? false);
+      // NEW: Load isDiscoveryActivated
+      const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
+      setIsDiscoveryActivated(loadedIsDiscoveryActivated);
+
+      // NEW: Adjust isGlobalPrivate based on isDiscoveryActivated
+      const loadedIsGlobalPrivate = loadedIsDiscoveryActivated ? (data.isGlobalPrivate ?? false) : true;
+      setIsGlobalPrivate(loadedIsGlobalPrivate);
+
       setTimerType(data.timerType ?? 'focus');
       setTimeLeft(data.timeLeft ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60));
       setIsRunning(data.isRunning ?? false);
@@ -1147,7 +1157,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsHomepageFocusCustomized(false); // Ensure these are false if no template loads
       setIsHomepageBreakCustomized(false);
     }
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled]);
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement]);
 
   useEffect(() => {
     const dataToSave = {
@@ -1173,6 +1183,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
       isHomepageFocusCustomized, isHomepageBreakCustomized,
       activeSessionRecordId, // NEW: Save activeSessionRecordId
+      isDiscoveryActivated, // NEW: Save isDiscoveryActivated
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -1199,6 +1210,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
     isHomepageFocusCustomized, isHomepageBreakCustomized,
     activeSessionRecordId,
+    isDiscoveryActivated,
   ]);
 
   const value: TimerContextType = {
@@ -1260,6 +1272,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsRecurring,
     recurrenceFrequency,
     setRecurrenceFrequency,
+    scheduleStartOption,
+    setScheduleStartOption,
 
     activeSchedule,
     setActiveSchedule,
@@ -1307,8 +1321,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsSchedulePending,
     isTimeLeftManagedBySession,
     setIsTimeLeftManagedBySession,
-    scheduleStartOption,
-    setScheduleStartOption,
 
     shouldPlayEndSound,
     setShouldPlayEndSound,
@@ -1366,6 +1378,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setHasWonPrize,
     getLocation, // NEW: Expose getLocation
     geolocationPermissionStatus, // NEW: Expose geolocationPermissionStatus
+    isDiscoveryActivated, // NEW: Expose isDiscoveryActivated
+    setIsDiscoveryActivated, // NEW: Expose setIsDiscoveryActivated
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

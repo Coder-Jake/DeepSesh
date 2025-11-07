@@ -244,6 +244,8 @@ export type TimerContextType = {
   setHasWonPrize: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setHasWonPrize
   getLocation: () => Promise<{ latitude: number | null; longitude: number | null }>; // NEW: Added getLocation
   geolocationPermissionStatus: PermissionState; // NEW: Added geolocationPermissionStatus
+  isDiscoveryActivated: boolean; // NEW: Added isDiscoveryActivated
+  setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsDiscoveryActivated
 };
 
 // Define the structure for a saved session

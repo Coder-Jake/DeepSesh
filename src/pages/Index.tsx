@@ -290,6 +290,8 @@ const Index = () => {
     areToastsEnabled,
     getLocation,
     geolocationPermissionStatus,
+    isDiscoveryActivated, // NEW: Get isDiscoveryActivated from context
+    setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from context
   } = useTimer();
   
   console.log("Index.tsx: Value from useTimer hook:", {
@@ -351,7 +353,7 @@ const Index = () => {
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // NEW: State for Discovery Activation
-  const [isDiscoveryActivated, setIsDiscoveryActivated] = useState(false);
+  // const [isDiscoveryActivated, setIsDiscoveryActivated] = useState(false); // Now managed by context
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(localFirstName || hostCode || "You");
 
@@ -1252,7 +1254,7 @@ const Index = () => {
     setIsDiscoverySetupOpen(false);
 
     if (geolocationPermissionStatus === 'granted') {
-      setIsGlobalPrivate(false);
+      setIsGlobalPrivate(false); // Set to public if location is granted
       setShowSessionsWhileActive('nearby'); // Or 'all' if preferred
       if (areToastsEnabled) {
         toast.success("Discovery Activated!", {
@@ -1260,7 +1262,7 @@ const Index = () => {
         });
       }
     } else {
-      setIsGlobalPrivate(false); // Still allow friends/org sessions
+      setIsGlobalPrivate(true); // Keep private if location not granted
       setShowSessionsWhileActive('hidden'); // Default to hidden if location not granted
       if (areToastsEnabled) {
         toast.info("Discovery Activated!", {
