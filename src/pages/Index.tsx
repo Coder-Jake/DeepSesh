@@ -299,22 +299,8 @@ const Index = () => {
     transferHostRole, // NEW: Get transferHostRole from context
   } = useTimer();
   
-  console.log("Index.tsx: Value from useTimer hook:", {
-    focusMinutes, setHomepageFocusMinutes, breakMinutes, setHomepageBreakMinutes,
-    defaultFocusMinutes, defaultBreakMinutes, isRunning, setIsRunning, isPaused, setIsPaused,
-    timeLeft, setTimeLeft, timerType, setTimerType, isFlashing, setIsFlashing, notes, setNotes,
-    seshTitle, setSeshTitle, isSeshTitleCustomized, formatTime, showSessionsWhileActive, timerIncrement,
-    schedule, activeSchedule, activeTimerColors, currentScheduleIndex, isSchedulingMode, setIsSchedulingMode,
-    isScheduleActive, setIsScheduleActive, isSchedulePrepared, startSchedule, commenceSpecificPreparedSchedule,
-    discardPreparedSchedule, resetSchedule, scheduleTitle, commenceTime, commenceDay, isGlobalPrivate,
-    activeScheduleDisplayTitle, sessionStartTime, setSessionStartTime, currentPhaseStartTime, setCurrentPhaseStartTime,
-    accumulatedFocusSeconds, setAccumulatedFocusSeconds, accumulatedBreakSeconds, setAccumulatedBreakSeconds,
-    activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount, activeAsks, addAsk, updateAsk, setActiveAsks,
-    isSchedulePending, setIsSchedulePending, isTimeLeftManagedBySession, scheduleStartOption, is24HourFormat, preparedSchedules,
-    currentSessionRole, setCurrentSessionRole, currentSessionHostName, setCurrentSessionHostName,
-    currentSessionOtherParticipants, setCurrentSessionOtherParticipants, allParticipantsToDisplay,
-    startStopNotifications, playSound, triggerVibration, areToastsEnabled
-  });
+  // Removed previous diagnostic log
+  // console.log("Index.tsx: Value from useTimer hook:", { ... });
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, sociability, setSociability } = useProfile(); // Added sociability, setSociability
   const navigate = useNavigate();
@@ -374,11 +360,11 @@ const Index = () => {
   const allParticipantsToDisplayInCard = useMemo(() => {
     const participantsMap = new Map<string, { id: string; name: string; sociability: number; role: 'host' | 'coworker' | 'self' }>();
 
-    // Add current user
-    if (profile?.id) {
+    // Add current user ONLY if there's an active session (host or coworker)
+    if (profile?.id && (currentSessionRole === 'host' || currentSessionRole === 'coworker')) {
       participantsMap.set(profile.id, {
         id: profile.id,
-        name: localFirstName || "You",
+        name: localFirstName || "You", // Use localFirstName, defaulting to "You"
         sociability: sociability, // Use current user's sociability
         role: (currentSessionRole === 'host' && profile.id === user?.id) ? 'host' : 'self',
       });
@@ -386,10 +372,7 @@ const Index = () => {
 
     // Add host if current user is a coworker
     if (currentSessionRole === 'coworker' && currentSessionHostName) {
-      // For unauthenticated hosts, their ID might be a generated string, not a real user ID.
-      // We need to handle this gracefully. If currentSessionHostName is not a real user ID,
-      // getPublicProfile might return a generic profile.
-      const hostId = user?.id || currentSessionHostName; // Use user.id if available, otherwise hostName as ID
+      const hostId = user?.id || currentSessionHostName; 
       const hostProfile = getPublicProfile(hostId, currentSessionHostName); 
       if (hostProfile && !participantsMap.has(hostProfile.id)) {
         participantsMap.set(hostProfile.id, {
@@ -1145,7 +1128,7 @@ const Index = () => {
     let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
     const currentDay = now.getDay();
-    const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
+    const templateDay = template.commenceDay === null ? currentDay : currentDay; // Default to current day if null
     const daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
 
@@ -1746,7 +1729,8 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            {allParticipantsToDisplayInCard.length > 0 && (
+            {/* Only render Coworkers card if there's an active timer/schedule */}
+            {isActiveTimer && allParticipantsToDisplayInCard.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Coworkers</CardTitle>
@@ -1765,7 +1749,7 @@ const Index = () => {
                       onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
                       <span className="font-medium text-foreground">
-                        {person.role === 'self' ? "You" : person.name}
+                        {person.role === 'self' ? localFirstName || "You" : person.name} {/* Use localFirstName here */}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         <Popover
