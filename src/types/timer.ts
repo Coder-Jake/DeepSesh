@@ -80,6 +80,17 @@ export type NotificationSettings = {
   sound: boolean;
 };
 
+// NEW: Define ParticipantSessionData for tracking participants in Supabase
+export interface ParticipantSessionData {
+  userId: string;
+  userName: string;
+  joinTime: number; // Unix timestamp
+  role: 'host' | 'coworker';
+  sociability?: number;
+  intention?: string;
+  bio?: string;
+}
+
 // Define the structure for the TimerContext value
 export type TimerContextType = {
   focusMinutes: number;
@@ -133,7 +144,7 @@ export type TimerContextType = {
   isGlobalPrivate: boolean;
   setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>;
   isRecurring: boolean;
-  setIsRecurring: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRecurring: React.SetStateAction<boolean>;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
   setRecurrenceFrequency: React.Dispatch<React.SetStateAction<'daily' | 'weekly' | 'monthly'>>;
   scheduleStartOption: 'now' | 'manual' | 'custom_time';
@@ -246,6 +257,11 @@ export type TimerContextType = {
   geolocationPermissionStatus: PermissionState; // NEW: Added geolocationPermissionStatus
   isDiscoveryActivated: boolean; // NEW: Added isDiscoveryActivated
   setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsDiscoveryActivated
+  activeSessionRecordId: string | null; // NEW: Expose activeSessionRecordId
+  setActiveSessionRecordId: React.Dispatch<React.SetStateAction<string | null>>; // NEW: Expose setActiveSessionRecordId
+  joinSessionAsCoworker: (sessionId: string, sessionTitle: string, hostName: string, participants: { id: string; name: string; sociability?: number; intention?: string; bio?: string }[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>; // NEW: Add joinSessionAsCoworker
+  leaveSession: () => Promise<void>; // NEW: Add leaveSession
+  transferHostRole: () => Promise<void>; // NEW: Add transferHostRole
 };
 
 // Define the structure for a saved session

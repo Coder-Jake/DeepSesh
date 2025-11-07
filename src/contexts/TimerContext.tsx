@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings } from '@/types/timer';
+import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings, ParticipantSessionData } from '@/types/timer';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
@@ -20,7 +20,7 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user } = useAuth();
-  const { localFirstName } = useProfile();
+  const { localFirstName, profile, sociability: userSociability, intention: userIntention, bio: userBio } = useProfile();
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
@@ -74,6 +74,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [currentSessionRole, setCurrentSessionRole] = useState<'host' | 'coworker' | null>(null);
   const [currentSessionHostName, setCurrentSessionHostName] = useState<string | null>(null);
   const [currentSessionOtherParticipants, setCurrentSessionOtherParticipants] = useState<{ id: string; name: string; sociability?: number; intention?: string; bio?: string }[]>([]);
+
+  // NEW: State to store all participants data for the current active session
+  const [currentSessionParticipantsData, setCurrentSessionParticipantsData] = useState<ParticipantSessionData[]>([]);
 
   const allParticipantsToDisplay = useMemo(() => {
     const participants: string[] = [];
@@ -361,7 +364,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   // NEW: Function to sync session data to Supabase
   const syncSessionToSupabase = useCallback(async () => {
     // Only update if there's an authenticated user and an active session record
-    if (!user?.id || isGlobalPrivate || !activeSessionRecordId) {
+    if (!user?.id || !activeSessionRecordId) {
       return;
     }
 
@@ -370,7 +373,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const currentPhaseEndTime = new Date(Date.now() + timeLeft * 1000).toISOString();
 
     const sessionData = {
-      host_name: localFirstName,
+      host_name: currentSessionHostName, // Use currentSessionHostName
       session_title: activeScheduleDisplayTitle,
       current_phase_type: timerType,
       current_phase_end_time: currentPhaseEndTime,
@@ -382,6 +385,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       schedule_id: isScheduleActive ? activeSchedule[0]?.id : null, // Assuming first item ID can represent schedule ID
       current_schedule_index: isScheduleActive ? currentScheduleIndex : 0,
       schedule_data: isScheduleActive ? activeSchedule : null,
+      visibility: isGlobalPrivate ? 'private' : 'public', // Update visibility
+      participants_data: currentSessionParticipantsData, // NEW: Update participants_data
+      user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null, // Ensure host user_id is correct
     };
 
     try {
@@ -402,14 +408,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       console.error("Unexpected error during Supabase sync:", error);
     }
   }, [
-    user?.id, isGlobalPrivate, activeSessionRecordId, localFirstName, activeScheduleDisplayTitle,
+    user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
-    currentScheduleIndex, timeLeft, areToastsEnabled
+    currentScheduleIndex, timeLeft, isGlobalPrivate, currentSessionParticipantsData, areToastsEnabled
   ]);
 
   // NEW: Effect to sync session data to Supabase on relevant state changes
   useEffect(() => {
-    if (activeSessionRecordId && user?.id && !isGlobalPrivate) {
+    if (activeSessionRecordId && user?.id) { // Sync regardless of private status, but visibility is set in syncSessionToSupabase
       // Debounce updates to avoid excessive writes
       const handler = setTimeout(() => {
         syncSessionToSupabase();
@@ -420,36 +426,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
     focusMinutes, breakMinutes, isScheduleActive, isGlobalPrivate, activeSessionRecordId, user?.id,
-    syncSessionToSupabase
+    currentSessionParticipantsData, syncSessionToSupabase
   ]);
 
-  const resetSchedule = useCallback(async () => {
-    // NEW: Delete active session from Supabase if it exists and is owned by the current user
-    if (activeSessionRecordId && user?.id && !isGlobalPrivate) {
-      try {
-        const { error } = await supabase
-          .from('active_sessions')
-          .delete()
-          .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id); // Ensure only the owner can delete
-
-        if (error) {
-          console.error("Error deleting active session from Supabase:", error);
-          if (areToastsEnabled) {
-            toast.error("Supabase Delete Error", {
-              description: `Failed to delete active session: ${error.message}`,
-            });
-          }
-        } else {
-          console.log("Active session deleted from Supabase:", activeSessionRecordId);
-        }
-      } catch (error) {
-        console.error("Unexpected error during Supabase delete:", error);
-      } finally {
-        setActiveSessionRecordId(null); // Clear the record ID
-      }
-    }
-
+  const resetSessionStates = useCallback(() => {
     setIsScheduleActive(false);
     setCurrentScheduleIndex(0);
     setSchedule([]);
@@ -479,7 +459,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setActiveScheduleDisplayTitleInternal("My Focus Sesh");
     setPreparedSchedules([]);
     setActiveAsks([]);
-    console.log("TimerContext: resetSchedule called. activeAsks cleared.");
+    console.log("TimerContext: resetSessionStates called. activeAsks cleared.");
 
     setCurrentSessionRole(null);
     setCurrentSessionHostName(null);
@@ -489,9 +469,179 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setHasWonPrize(false);
     setIsHomepageFocusCustomized(false); // Reset customization flag
     setIsHomepageBreakCustomized(false); // Reset customization flag
+    setCurrentSessionParticipantsData([]); // NEW: Clear participants data
   }, [
-    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, activeSessionRecordId, user?.id,
-    isGlobalPrivate, areToastsEnabled
+    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle
+  ]);
+
+  const resetSchedule = useCallback(async () => {
+    // NEW: Delete active session from Supabase if it exists and is owned by the current user
+    if (activeSessionRecordId && user?.id && currentSessionRole === 'host') {
+      try {
+        const { error } = await supabase
+          .from('active_sessions')
+          .delete()
+          .eq('id', activeSessionRecordId)
+          .eq('user_id', user.id); // Ensure only the owner can delete
+
+        if (error) {
+          console.error("Error deleting active session from Supabase:", error);
+          if (areToastsEnabled) {
+            toast.error("Supabase Delete Error", {
+              description: `Failed to delete active session: ${error.message}`,
+            });
+          }
+        } else {
+          console.log("Active session deleted from Supabase:", activeSessionRecordId);
+        }
+      } catch (error) {
+        console.error("Unexpected error during Supabase delete:", error);
+      } finally {
+        setActiveSessionRecordId(null); // Clear the record ID
+      }
+    }
+    resetSessionStates();
+  }, [activeSessionRecordId, user?.id, currentSessionRole, areToastsEnabled, resetSessionStates]);
+
+  const startSessionCommonLogic = useCallback(async (
+    sessionType: 'manual' | 'schedule',
+    initialSchedule: ScheduledTimer[],
+    initialScheduleTitle: string,
+    initialTimerColors: Record<string, string>,
+    initialCommenceTime: string,
+    initialCommenceDay: number | null,
+    initialScheduleStartOption: 'now' | 'manual' | 'custom_time',
+    initialIsRecurring: boolean,
+    initialRecurrenceFrequency: 'daily' | 'weekly' | 'monthly',
+    isPendingStart: boolean = false
+  ) => {
+    let needsOverrideConfirmation = false;
+    let confirmationMessageParts: string[] = [];
+    let shouldResetManualTimer = false;
+    let shouldResetExistingActiveSchedule = false;
+
+    if (isScheduleActive) {
+        confirmationMessageParts.push("An active schedule is running.");
+        shouldResetExistingActiveSchedule = true;
+    }
+    if (isRunning || isPaused) {
+        confirmationMessageParts.push("A manual timer is also active.");
+        shouldResetManualTimer = true;
+    }
+
+    if (confirmationMessageParts.length > 0) {
+        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and start this new session now?`;
+        if (!confirm(finalMessage)) {
+            return false; // User cancelled
+        }
+        if (shouldResetExistingActiveSchedule) {
+            await resetSchedule(); // Use await here
+        }
+        if (shouldResetManualTimer) {
+            setIsRunning(false);
+            setIsPaused(false);
+            setIsFlashing(false);
+            setAccumulatedFocusSeconds(0);
+            setAccumulatedBreakSeconds(0);
+            _setSeshTitle(getDefaultSeshTitle());
+            setIsSeshTitleCustomized(false);
+            setActiveAsks([]);
+            console.log("TimerContext: Manual timer reset during session start. activeAsks cleared.");
+            setHasWonPrize(false);
+            setIsHomepageFocusCustomized(false); // Reset customization flag
+            setIsHomepageBreakCustomized(false); // Reset customization flag
+        }
+    }
+
+    setActiveSchedule(initialSchedule);
+    setActiveTimerColors(initialTimerColors);
+    setActiveScheduleDisplayTitleInternal(initialScheduleTitle);
+
+    setCurrentScheduleIndex(0);
+    setTimerType(initialSchedule[0].type);
+    setIsTimeLeftManagedBySession(true);
+    setTimeLeft(initialSchedule[0].durationMinutes * 60);
+    setIsFlashing(false);
+    setSessionStartTime(Date.now());
+    setIsSchedulingMode(false);
+
+    setIsScheduleActive(true);
+    setIsSchedulePending(isPendingStart);
+    setIsRunning(true);
+    setIsPaused(false);
+    setCurrentPhaseStartTime(Date.now());
+    updateSeshTitleWithSchedule(initialScheduleTitle);
+    if (areToastsEnabled) {
+        toast("Session Started!", {
+            description: `"${initialScheduleTitle}" has begun.`,
+        });
+    }
+    playSound();
+    triggerVibration();
+
+    const hostParticipant: ParticipantSessionData = {
+      userId: user?.id || `anon-${crypto.randomUUID()}`,
+      userName: localFirstName,
+      joinTime: Date.now(),
+      role: 'host',
+      sociability: userSociability || 50,
+      intention: userIntention || undefined,
+      bio: userBio || undefined,
+    };
+    setCurrentSessionParticipantsData([hostParticipant]);
+    setCurrentSessionRole('host');
+    setCurrentSessionHostName(localFirstName);
+    setCurrentSessionOtherParticipants([]);
+    setActiveJoinedSessionCoworkerCount(0);
+
+    // NEW: Insert into active_sessions if not private (user_id can be null)
+    if (!isGlobalPrivate) {
+      const { latitude, longitude } = await getLocation(); // Get location
+      const currentScheduleItem = initialSchedule[0];
+      const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
+      try {
+        const { data, error } = await supabase
+          .from('active_sessions')
+          .insert({
+            user_id: hostParticipant.userId, // Use the host's ID
+            host_name: hostParticipant.userName,
+            session_title: initialScheduleTitle,
+            visibility: 'public', // Always public if not isGlobalPrivate
+            focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
+            break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
+            current_phase_type: currentScheduleItem.type,
+            current_phase_end_time: currentPhaseEndTime,
+            total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
+            schedule_id: initialSchedule[0]?.id, // Use the first item's ID as a simple schedule ID
+            is_active: true,
+            is_paused: false,
+            current_schedule_index: 0,
+            schedule_data: initialSchedule,
+            location_lat: latitude, // Include latitude
+            location_long: longitude, // Include longitude
+            participants_data: [hostParticipant], // NEW: Initialize participants_data
+          })
+          .select('id')
+          .single();
+
+        if (error) throw error;
+        setActiveSessionRecordId(data.id);
+        console.log("Active session inserted into Supabase:", data.id);
+      } catch (error: any) {
+        console.error("Error inserting active session into Supabase:", error.message);
+        if (areToastsEnabled) {
+          toast.error("Supabase Error", {
+            description: `Failed to publish session: ${error.message}`,
+          });
+        }
+      }
+    }
+    return true; // Session started successfully
+  }, [
+    isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
+    setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
+    updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
+    userSociability, userIntention, userBio, isGlobalPrivate, getLocation, getDefaultSeshTitle
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -521,241 +671,44 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         return;
     }
 
-    let needsOverrideConfirmation = false;
-    let confirmationMessageParts: string[] = [];
-    let shouldResetManualTimer = false;
-    let shouldResetExistingActiveSchedule = false;
-
-    if (isScheduleActive) {
-        confirmationMessageParts.push("An active schedule is running.");
-        shouldResetExistingActiveSchedule = true;
-    }
-    if (isRunning || isPaused) {
-        confirmationMessageParts.push("A manual timer is also active.");
-        shouldResetManualTimer = true;
-    }
-
-    if (confirmationMessageParts.length > 0) {
-        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and start this new schedule now?`;
-        if (!confirm(finalMessage)) {
-            return;
-        }
-        if (shouldResetExistingActiveSchedule) {
-            await resetSchedule(); // Use await here
-        }
-        if (shouldResetManualTimer) {
-            setIsRunning(false);
-            setIsPaused(false);
-            setIsFlashing(false);
-            setAccumulatedFocusSeconds(0);
-            setAccumulatedBreakSeconds(0);
-            _setSeshTitle(getDefaultSeshTitle());
-            setIsSeshTitleCustomized(false);
-            setActiveAsks([]);
-            console.log("TimerContext: Manual timer reset during schedule start. activeAsks cleared.");
-            setHasWonPrize(false);
-            setIsHomepageFocusCustomized(false); // Reset customization flag
-            setIsHomepageBreakCustomized(false); // Reset customization flag
-        }
-    }
-
-    setActiveSchedule([...schedule]);
-    setActiveTimerColors({ ...timerColors });
-    setActiveScheduleDisplayTitleInternal(scheduleTitle);
-
-    setCurrentScheduleIndex(0);
-    setTimerType(schedule[0].type);
-    setIsTimeLeftManagedBySession(true);
-    setTimeLeft(schedule[0].durationMinutes * 60);
-    setIsFlashing(false);
-    setSessionStartTime(Date.now());
-    setIsSchedulingMode(false);
-
-    setIsScheduleActive(true);
-    setIsSchedulePending(false);
-    setIsRunning(true);
-    setIsPaused(false);
-    setCurrentPhaseStartTime(Date.now());
-    updateSeshTitleWithSchedule(scheduleTitle);
-    if (areToastsEnabled) {
-        toast("Schedule Started!", {
-            description: `"${scheduleTitle}" has begun.`,
-        });
-    }
-    playSound();
-    triggerVibration();
-
-    setCurrentSessionRole('host');
-    setCurrentSessionHostName(user?.user_metadata?.first_name || "Host");
-    setCurrentSessionOtherParticipants([]);
-    setActiveJoinedSessionCoworkerCount(0);
-
-    // NEW: Insert into active_sessions if not private (user_id can be null)
-    if (!isGlobalPrivate) {
-      const { latitude, longitude } = await getLocation(); // Get location
-      const currentScheduleItem = schedule[0];
-      const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
-      try {
-        const { data, error } = await supabase
-          .from('active_sessions')
-          .insert({
-            user_id: user?.id || null, // Pass user.id or null if not logged in
-            host_name: localFirstName,
-            session_title: scheduleTitle,
-            visibility: 'public', // Always public if not isGlobalPrivate
-            focus_duration: schedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
-            break_duration: schedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
-            current_phase_type: currentScheduleItem.type,
-            current_phase_end_time: currentPhaseEndTime,
-            total_session_duration_seconds: schedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
-            schedule_id: schedule[0]?.id, // Use the first item's ID as a simple schedule ID
-            is_active: true,
-            is_paused: false,
-            current_schedule_index: 0,
-            schedule_data: schedule,
-            location_lat: latitude, // Include latitude
-            location_long: longitude, // Include longitude
-          })
-          .select('id')
-          .single();
-
-        if (error) throw error;
-        setActiveSessionRecordId(data.id);
-        console.log("Active session inserted into Supabase:", data.id);
-      } catch (error: any) {
-        console.error("Error inserting active session into Supabase:", error.message);
-        if (areToastsEnabled) {
-          toast.error("Supabase Error", {
-            description: `Failed to publish session: ${error.message}`,
-          });
-        }
-      }
-    }
+    await startSessionCommonLogic(
+      'schedule',
+      schedule,
+      scheduleTitle,
+      timerColors,
+      commenceTime,
+      commenceDay,
+      scheduleStartOption,
+      isRecurring,
+      recurrenceFrequency,
+      false // Not pending start
+    );
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
-    isRunning, isPaused, isScheduleActive, timerColors, updateSeshTitleWithSchedule,
-    resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks,
-    playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle,
-    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, user?.id, isGlobalPrivate, localFirstName, getLocation
+    timerColors, areToastsEnabled, startSessionCommonLogic
 ]);
 
   const commenceSpecificPreparedSchedule = useCallback(async (templateId: string) => {
     const templateToCommence = preparedSchedules.find(template => template.id === templateId);
     if (!templateToCommence) return;
 
-    let needsOverrideConfirmation = false;
-    let confirmationMessageParts: string[] = [];
-    let shouldResetManualTimer = false;
-    let shouldResetExistingActiveSchedule = false;
+    const started = await startSessionCommonLogic(
+      'schedule',
+      templateToCommence.schedule,
+      templateToCommence.title,
+      templateToCommence.timerColors || {},
+      templateToCommence.commenceTime,
+      templateToCommence.commenceDay,
+      templateToCommence.scheduleStartOption,
+      templateToCommence.isRecurring,
+      templateToCommence.recurrenceFrequency,
+      templateToCommence.scheduleStartOption === 'custom_time' // Is pending start if custom time
+    );
 
-    if (isScheduleActive) {
-        confirmationMessageParts.push("An active schedule is running.");
-        shouldResetExistingActiveSchedule = true;
+    if (started) {
+      setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
     }
-    if (isRunning || isPaused) {
-        confirmationMessageParts.push("A manual timer is currently active.");
-        shouldResetManualTimer = true;
-    }
-
-    if (confirmationMessageParts.length > 0) {
-        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and commence "${templateToCommence.title}"?`;
-        if (!confirm(finalMessage)) {
-            return;
-        }
-        if (shouldResetExistingActiveSchedule) {
-            await resetSchedule(); // Use await here
-        }
-        if (shouldResetManualTimer) {
-            setIsRunning(false);
-            setIsPaused(false);
-            setAccumulatedFocusSeconds(0);
-            setAccumulatedBreakSeconds(0);
-            _setSeshTitle(getDefaultSeshTitle());
-            setIsSeshTitleCustomized(false);
-            setActiveAsks([]);
-            console.log("TimerContext: Manual timer reset during prepared schedule start. activeAsks cleared.");
-            setHasWonPrize(false);
-            setIsHomepageFocusCustomized(false); // Reset customization flag
-            setIsHomepageBreakCustomized(false); // Reset customization flag
-        }
-    }
-
-    setActiveSchedule(templateToCommence.schedule);
-    setActiveTimerColors(templateToCommence.timerColors || {});
-    setActiveScheduleDisplayTitleInternal(templateToCommence.title);
-
-    setCurrentScheduleIndex(0);
-    setTimerType(templateToCommence.schedule[0].type);
-    setIsTimeLeftManagedBySession(true);
-    setTimeLeft(templateToCommence.schedule[0].durationMinutes * 60);
-    setIsFlashing(false);
-    setSessionStartTime(Date.now());
-
-    setIsScheduleActive(true);
-    setIsSchedulePending(templateToCommence.scheduleStartOption === 'custom_time');
-    setIsRunning(true);
-    setIsPaused(false);
-    setCurrentPhaseStartTime(Date.now());
-    updateSeshTitleWithSchedule(templateToCommence.title);
-    
-    setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
-
-    if (areToastsEnabled) {
-        toast("Schedule Commenced!", {
-            description: `"${templateToCommence.title}" has begun.`,
-        });
-    }
-    playSound();
-    triggerVibration();
-
-    setCurrentSessionRole('host');
-    setCurrentSessionHostName(user?.user_metadata?.first_name || "Host");
-    setCurrentSessionOtherParticipants([]);
-    setActiveJoinedSessionCoworkerCount(0);
-
-    // NEW: Insert into active_sessions if not private (user_id can be null)
-    if (!isGlobalPrivate) {
-      const { latitude, longitude } = await getLocation(); // Get location
-      const currentScheduleItem = templateToCommence.schedule[0];
-      const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
-      try {
-        const { data, error } = await supabase
-          .from('active_sessions')
-          .insert({
-            user_id: user?.id || null, // Pass user.id or null if not logged in
-            host_name: localFirstName,
-            session_title: templateToCommence.title,
-            visibility: 'public', // Always public if not isGlobalPrivate
-            focus_duration: templateToCommence.schedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
-            break_duration: templateToCommence.schedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
-            current_phase_type: currentScheduleItem.type,
-            current_phase_end_time: currentPhaseEndTime,
-            total_session_duration_seconds: templateToCommence.schedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
-            schedule_id: templateToCommence.id,
-            is_active: true,
-            is_paused: false,
-            current_schedule_index: 0,
-            schedule_data: templateToCommence.schedule,
-            location_lat: latitude, // Include latitude
-            location_long: longitude, // Include longitude
-          })
-          .select('id')
-          .single();
-
-        if (error) throw error;
-        setActiveSessionRecordId(data.id);
-        console.log("Active session inserted into Supabase (prepared schedule):", data.id);
-      } catch (error: any) {
-        console.error("Error inserting active session into Supabase (prepared schedule):", error.message);
-        if (areToastsEnabled) {
-          toast.error("Supabase Error", {
-            description: `Failed to publish session: ${error.message}`,
-          });
-        }
-      }
-    }
-  }, [isScheduleActive, isRunning, isPaused, preparedSchedules, updateSeshTitleWithSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setIsSeshTitleCustomized, toast, areToastsEnabled, user?.user_metadata?.first_name, setActiveAsks, playSound, triggerVibration, setIsTimeLeftManagedBySession, getDefaultSeshTitle, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, user?.id, isGlobalPrivate, localFirstName, resetSchedule, getLocation]);
+  }, [preparedSchedules, startSessionCommonLogic]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
     setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
@@ -827,6 +780,251 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         });
     }
   }, [areToastsEnabled, toast]);
+
+  // NEW: joinSessionAsCoworker function
+  const joinSessionAsCoworker = useCallback(async (
+    sessionId: string,
+    sessionTitle: string,
+    hostName: string,
+    participants: { id: string; name: string; sociability?: number; intention?: string; bio?: string }[],
+    fullSchedule: ScheduledTimer[],
+    currentPhaseType: 'focus' | 'break',
+    currentPhaseDurationMinutes: number,
+    remainingSecondsInPhase: number
+  ) => {
+    if (!user?.id) {
+      if (areToastsEnabled) {
+        toast.error("Join Session Failed", {
+          description: "You must be logged in to join a session.",
+        });
+      }
+      return;
+    }
+
+    // Reset any existing timer/schedule
+    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
+      if (isScheduleActive || isSchedulePrepared) await resetSchedule();
+      setIsRunning(false);
+      setIsPaused(false);
+      setIsFlashing(false);
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+      _setSeshTitle(getDefaultSeshTitle());
+      setActiveAsks([]);
+      setHasWonPrize(false);
+      setIsHomepageFocusCustomized(false);
+      setIsHomepageBreakCustomized(false);
+    }
+
+    // Set session states for the joining coworker
+    setActiveSessionRecordId(sessionId);
+    setActiveSchedule(fullSchedule);
+    setActiveScheduleDisplayTitleInternal(sessionTitle);
+    setTimerType(currentPhaseType);
+    setIsTimeLeftManagedBySession(true);
+    setTimeLeft(Math.max(0, remainingSecondsInPhase));
+    setIsRunning(true);
+    setIsPaused(false);
+    setIsFlashing(false);
+    setSessionStartTime(Date.now() - (currentPhaseDurationMinutes * 60 - remainingSecondsInPhase) * 1000); // Estimate session start
+    setCurrentPhaseStartTime(Date.now());
+    setAccumulatedFocusSeconds(0);
+    setAccumulatedBreakSeconds(0);
+    
+    if (currentPhaseType === 'focus') {
+      setHomepageFocusMinutes(currentPhaseDurationMinutes);
+      setHomepageBreakMinutes(_defaultBreakMinutes);
+    } else {
+      setHomepageBreakMinutes(currentPhaseDurationMinutes);
+      setHomepageFocusMinutes(_defaultFocusMinutes);
+    }
+
+    setCurrentSessionRole('coworker');
+    setCurrentSessionHostName(hostName);
+    setCurrentSessionOtherParticipants(participants.filter(p => p.id !== user.id));
+
+    const newCoworker: ParticipantSessionData = {
+      userId: user.id,
+      userName: localFirstName,
+      joinTime: Date.now(),
+      role: 'coworker',
+      sociability: userSociability || 50,
+      intention: userIntention || undefined,
+      bio: userBio || undefined,
+    };
+
+    // Fetch current participants from Supabase to avoid overwriting
+    const { data: existingSession, error: fetchError } = await supabase
+      .from('active_sessions')
+      .select('participants_data')
+      .eq('id', sessionId)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching existing session for join:", fetchError);
+      if (areToastsEnabled) {
+        toast.error("Join Session Failed", {
+          description: `Could not fetch session details: ${fetchError.message}`,
+        });
+      }
+      resetSessionStates();
+      return;
+    }
+
+    let updatedParticipantsData: ParticipantSessionData[] = existingSession?.participants_data || [];
+    // Ensure the joining user is not already listed, then add
+    if (!updatedParticipantsData.some(p => p.userId === user.id)) {
+      updatedParticipantsData.push(newCoworker);
+    }
+    setCurrentSessionParticipantsData(updatedParticipantsData);
+
+    // Update Supabase with new participant
+    const { error: updateError } = await supabase
+      .from('active_sessions')
+      .update({ participants_data: updatedParticipantsData })
+      .eq('id', sessionId);
+
+    if (updateError) {
+      console.error("Error updating participants in Supabase:", updateError);
+      if (areToastsEnabled) {
+        toast.error("Join Session Failed", {
+          description: `Failed to update session participants: ${updateError.message}`,
+        });
+      }
+      resetSessionStates();
+      return;
+    }
+
+    if (areToastsEnabled) {
+      toast.success("Sesh Joined!", {
+        description: `You've joined "${sessionTitle}".`,
+      });
+    }
+    playSound();
+    triggerVibration();
+  }, [
+    user?.id, areToastsEnabled, isRunning, isPaused, isScheduleActive, isSchedulePrepared,
+    resetSchedule, setIsRunning, setIsPaused, setIsFlashing, setAccumulatedFocusSeconds,
+    setAccumulatedBreakSeconds, _setSeshTitle, setActiveAsks, setHasWonPrize,
+    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setActiveSessionRecordId,
+    setActiveSchedule, setActiveScheduleDisplayTitleInternal, setTimerType,
+    setIsTimeLeftManagedBySession, setTimeLeft, setSessionStartTime, setCurrentPhaseStartTime,
+    setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
+    setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
+    userSociability, userIntention, userBio, _defaultBreakMinutes, _defaultFocusMinutes,
+    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates
+  ]);
+
+  // NEW: leaveSession function
+  const leaveSession = useCallback(async () => {
+    if (!user?.id || !activeSessionRecordId || currentSessionRole === null) {
+      console.warn("Attempted to leave session without active session or user ID.");
+      return;
+    }
+
+    if (currentSessionRole === 'host') {
+      // Host leaving, need to transfer or end session
+      await transferHostRole(); // This will handle the host's departure
+      return;
+    }
+
+    // Coworker leaving
+    const updatedParticipants = currentSessionParticipantsData.filter(p => p.userId !== user.id);
+    setCurrentSessionParticipantsData(updatedParticipants);
+
+    const { error } = await supabase
+      .from('active_sessions')
+      .update({ participants_data: updatedParticipants })
+      .eq('id', activeSessionRecordId);
+
+    if (error) {
+      console.error("Error removing coworker from Supabase session:", error);
+      if (areToastsEnabled) {
+        toast.error("Leave Session Failed", {
+          description: `Failed to update session participants: ${error.message}`,
+        });
+      }
+    } else {
+      if (areToastsEnabled) {
+        toast.info("Session Left", {
+          description: "You have left the session.",
+        });
+      }
+    }
+    resetSessionStates(); // Reset all local session states for the leaving user
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates]);
+
+  // NEW: transferHostRole function
+  const transferHostRole = useCallback(async () => {
+    if (!user?.id || !activeSessionRecordId || currentSessionRole !== 'host') {
+      console.warn("Attempted to transfer host role without being the host or having an active session.");
+      return;
+    }
+
+    const currentHostId = user.id;
+    const currentHostName = localFirstName;
+
+    const otherCoworkers = currentSessionParticipantsData
+      .filter(p => p.role === 'coworker')
+      .sort((a, b) => a.joinTime - b.joinTime); // Sort by join time to find oldest
+
+    if (otherCoworkers.length > 0) {
+      const newHost = otherCoworkers[0];
+      const updatedParticipants = currentSessionParticipantsData.map(p => {
+        if (p.userId === newHost.userId) {
+          return { ...p, role: 'host' };
+        }
+        if (p.userId === currentHostId) {
+          return { ...p, role: 'coworker' }; // Old host becomes a coworker if they stay
+        }
+        return p;
+      });
+
+      // Update Supabase
+      const { error } = await supabase
+        .from('active_sessions')
+        .update({
+          user_id: newHost.userId,
+          host_name: newHost.userName,
+          participants_data: updatedParticipants,
+        })
+        .eq('id', activeSessionRecordId);
+
+      if (error) {
+        console.error("Error transferring host role in Supabase:", error);
+        if (areToastsEnabled) {
+          toast.error("Host Transfer Failed", {
+            description: `Failed to transfer host role: ${error.message}`,
+          });
+        }
+        // If Supabase update fails, don't update local state to avoid inconsistency
+        return;
+      }
+
+      // Update local state for the *current user* (the old host)
+      if (areToastsEnabled) {
+        toast.success("Host Role Transferred", {
+          description: `Host role transferred to ${newHost.userName}. You are now a coworker.`,
+        });
+      }
+      // The old host (current user) now becomes a coworker in the session
+      setCurrentSessionRole('coworker');
+      setCurrentSessionHostName(newHost.userName);
+      setCurrentSessionOtherParticipants(updatedParticipants.filter(p => p.userId !== user.id && p.userId !== newHost.userId));
+      setCurrentSessionParticipantsData(updatedParticipants); // Update full list
+      setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
+
+    } else {
+      // No other coworkers, end the session
+      if (areToastsEnabled) {
+        toast.info("Session Ended", {
+          description: "No other participants to transfer host role to. Session ended.",
+        });
+      }
+      await resetSchedule(); // This will delete the Supabase record
+    }
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
+
 
   useEffect(() => {
     if (isRunning && !isPaused && timeLeft > 0) {
@@ -1148,6 +1346,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentSessionOtherParticipants(data.currentSessionOtherParticipants ?? []);
       setActiveSessionRecordId(data.activeSessionRecordId ?? null); // NEW: Load activeSessionRecordId
       setGeolocationPermissionStatus(data.geolocationPermissionStatus ?? 'prompt'); // NEW: Load geolocationPermissionStatus
+      setCurrentSessionParticipantsData(data.currentSessionParticipantsData ?? []); // NEW: Load participants data
 
       initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
@@ -1224,6 +1423,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       activeSessionRecordId, // NEW: Save activeSessionRecordId
       isDiscoveryActivated, // NEW: Save isDiscoveryActivated
       geolocationPermissionStatus, // NEW: Save geolocationPermissionStatus
+      currentSessionParticipantsData, // NEW: Save participants data
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -1252,6 +1452,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     activeSessionRecordId,
     isDiscoveryActivated,
     geolocationPermissionStatus,
+    currentSessionParticipantsData,
   ]);
 
   const value: TimerContextType = {
@@ -1421,6 +1622,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     geolocationPermissionStatus, // NEW: Expose geolocationPermissionStatus
     isDiscoveryActivated, // NEW: Expose isDiscoveryActivated
     setIsDiscoveryActivated, // NEW: Expose setIsDiscoveryActivated
+    activeSessionRecordId, // NEW: Expose activeSessionRecordId
+    setActiveSessionRecordId, // NEW: Expose setActiveSessionRecordId
+    joinSessionAsCoworker, // NEW: Expose joinSessionAsCoworker
+    leaveSession, // NEW: Expose leaveSession
+    transferHostRole, // NEW: Expose transferHostRole
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

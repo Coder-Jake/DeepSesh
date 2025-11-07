@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ScheduledTimerTemplate } from "@/types/timer";
+import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer";
 import { DAYS_OF_WEEK } from "@/lib/constants";
 import { Accordion }
  from "@/components/ui/accordion";
@@ -283,7 +283,7 @@ const Index = () => {
     setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
-    allParticipantsToDisplay,
+    allParticipantsToDisplay, // This is for the summary, not for the card
 
     startStopNotifications,
     playSound,
@@ -293,6 +293,10 @@ const Index = () => {
     geolocationPermissionStatus,
     isDiscoveryActivated, // NEW: Get isDiscoveryActivated from context
     setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from context
+    activeSessionRecordId, // NEW: Get activeSessionRecordId from context
+    joinSessionAsCoworker, // NEW: Get joinSessionAsCoworker from context
+    leaveSession, // NEW: Get leaveSession from context
+    transferHostRole, // NEW: Get transferHostRole from context
   } = useTimer();
   
   console.log("Index.tsx: Value from useTimer hook:", {
@@ -526,10 +530,21 @@ const Index = () => {
     setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     setIsTimeLeftManagedBySession(true);
 
+    const hostParticipant = {
+      userId: user?.id || `anon-${crypto.randomUUID()}`,
+      userName: localFirstName,
+      joinTime: Date.now(),
+      role: 'host',
+      sociability: sociability || 50,
+      intention: profile?.intention || undefined,
+      bio: profile?.bio || undefined,
+    };
+
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(currentUserName);
+    setCurrentSessionHostName(localFirstName);
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
+    (useTimer() as any).setCurrentSessionParticipantsData([hostParticipant]); // Update full list
 
     // NEW: Insert into active_sessions if not private (user_id can be null)
     if (!isGlobalPrivate) {
@@ -540,7 +555,7 @@ const Index = () => {
         const { data, error } = await supabase
           .from('active_sessions')
           .insert({
-            user_id: user?.id || null, // Pass user.id or null if not logged in
+            user_id: hostParticipant.userId, // Pass user.id or null if not logged in
             host_name: localFirstName,
             session_title: seshTitle,
             visibility: 'public',
@@ -553,6 +568,7 @@ const Index = () => {
             is_paused: false,
             location_lat: latitude,
             location_long: longitude,
+            participants_data: [hostParticipant], // NEW: Initialize participants_data
           })
           .select('id')
           .single();
@@ -608,55 +624,64 @@ const Index = () => {
   };
   
   const stopTimer = async () => {
-    let finalAccumulatedFocus = accumulatedFocusSeconds;
-    let finalAccumulatedBreak = accumulatedBreakSeconds;
-
-    if (isRunning && currentPhaseStartTime !== null) {
-      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-      if (timerType === 'focus') {
-        finalAccumulatedFocus += elapsed;
-      } else {
-        finalAccumulatedBreak += elapsed;
-      }
-    }
-    const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
-
-    const performStopActions = async () => {
-      setIsRunning(false);
-      setIsPaused(false);
-      setIsFlashing(false);
-      setTimerType('focus');
-      setTimeLeft(defaultFocusMinutes * 60);
-      setActiveJoinedSession(null);
-      if (isScheduleActive || isSchedulePrepared) await resetSchedule();
-      setSessionStartTime(null);
-      setCurrentPhaseStartTime(null);
-      setAccumulatedFocusSeconds(0);
-      setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle());
-      setActiveAsks([]);
-
-      setCurrentSessionRole(null);
-      setCurrentSessionHostName(null);
-      setCurrentSessionOtherParticipants([]);
-      setIsTimeLeftManagedBySession(false);
-
-      setHomepageFocusMinutes(defaultFocusMinutes);
-      setHomepageBreakMinutes(defaultBreakMinutes);
-    };
-
-    const handleSaveAndStop = async () => {
-      console.log("Index: Calling saveSession with activeAsks:", activeAsks);
-      await performStopActions();
-      playSound();
-      triggerVibration();
-    };
-
-    if (longPressRef.current) {
-      await handleSaveAndStop();
+    if (currentSessionRole === 'host') {
+      // If host, try to transfer role
+      await transferHostRole();
+    } else if (currentSessionRole === 'coworker') {
+      // If coworker, just leave the session
+      await leaveSession();
     } else {
-      if (confirm('Are you sure you want to stop the timer?')) {
+      // No active session role, just reset local timer
+      let finalAccumulatedFocus = accumulatedFocusSeconds;
+      let finalAccumulatedBreak = accumulatedBreakSeconds;
+
+      if (isRunning && currentPhaseStartTime !== null) {
+        const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+        if (timerType === 'focus') {
+          finalAccumulatedFocus += elapsed;
+        } else {
+          finalAccumulatedBreak += elapsed;
+        }
+      }
+      const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
+
+      const performStopActions = async () => {
+        setIsRunning(false);
+        setIsPaused(false);
+        setIsFlashing(false);
+        setTimerType('focus');
+        setTimeLeft(defaultFocusMinutes * 60);
+        setActiveJoinedSession(null);
+        if (isScheduleActive || isSchedulePrepared) await resetSchedule();
+        setSessionStartTime(null);
+        setCurrentPhaseStartTime(null);
+        setAccumulatedFocusSeconds(0);
+        setAccumulatedBreakSeconds(0);
+        setSeshTitle(getDefaultSeshTitle());
+        setActiveAsks([]);
+
+        setCurrentSessionRole(null);
+        setCurrentSessionHostName(null);
+        setCurrentSessionOtherParticipants([]);
+        setIsTimeLeftManagedBySession(false);
+
+        setHomepageFocusMinutes(defaultFocusMinutes);
+        setHomepageBreakMinutes(defaultBreakMinutes);
+      };
+
+      const handleSaveAndStop = async () => {
+        console.log("Index: Calling saveSession with activeAsks:", activeAsks);
+        await performStopActions();
+        playSound();
+        triggerVibration();
+      };
+
+      if (longPressRef.current) {
         await handleSaveAndStop();
+      } else {
+        if (confirm('Are you sure you want to stop the timer?')) {
+          await handleSaveAndStop();
+        }
       }
     }
   };
@@ -750,24 +775,14 @@ const Index = () => {
     setIsTimeLeftManagedBySession(false);
   };
 
-  const handleJoinSession = (session: DemoSession) => {
-    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
-      if (!confirm("A timer or schedule is already active. Do you want to override it and join this sesh?")) {
-        return;
-      }
-      if (isScheduleActive || isSchedulePrepared) resetSchedule();
-      setIsRunning(false);
-      setIsPaused(false);
-      setIsFlashing(false);
-      setAccumulatedFocusSeconds(0);
-      setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle());
-      setActiveAsks([]);
-    }
+  const handleJoinSession = async (session: DemoSession) => {
+    // Extract relevant data from DemoSession to pass to joinSessionAsCoworker
+    const sessionId = session.id;
+    const sessionTitle = session.title;
+    const hostName = session.participants[0]?.name || session.title; // Assuming first participant is host for demo
+    const participants = session.participants;
+    const fullSchedule = session.fullSchedule;
 
-    setActiveJoinedSession(session);
-    setActiveJoinedSessionCoworkerCount(session.participants.length);
-    
     const now = Date.now();
     const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
     
@@ -809,36 +824,16 @@ const Index = () => {
       }
     }
 
-    setTimerType(currentPhaseType);
-    setIsTimeLeftManagedBySession(true);
-    setTimeLeft(Math.max(0, remainingSecondsInPhase));
-    
-    if (currentPhaseType === 'focus') {
-      setHomepageFocusMinutes(currentPhaseDurationMinutes);
-      setHomepageBreakMinutes(defaultBreakMinutes);
-    } else {
-      setHomepageBreakMinutes(currentPhaseDurationMinutes);
-      setHomepageFocusMinutes(defaultFocusMinutes);
-    }
-
-    setIsRunning(true);
-    setIsPaused(false);
-    setIsFlashing(false);
-    setSessionStartTime(Date.now());
-    setCurrentPhaseStartTime(Date.now());
-    setAccumulatedFocusSeconds(0);
-    setAccumulatedBreakSeconds(0);
-    if (areToastsEnabled) {
-      toast.success("Sesh Joined!", {
-        description: `You've joined "${session.title}".`,
-      });
-    }
-    playSound();
-    triggerVibration();
-
-    setCurrentSessionRole('coworker');
-    setCurrentSessionHostName(session.participants[0]?.name || session.title);
-    setCurrentSessionOtherParticipants(session.participants.filter(p => p.id !== currentUserId));
+    await joinSessionAsCoworker(
+      sessionId,
+      sessionTitle,
+      hostName,
+      participants,
+      fullSchedule,
+      currentPhaseType,
+      currentPhaseDurationMinutes,
+      remainingSecondsInPhase
+    );
   };
 
   const handleJoinCodeSubmit = () => {
@@ -960,7 +955,7 @@ const Index = () => {
         const { id, name } = famousNamesWithIds[randomIndex];
         
         const sociabilityOffset = Math.floor(Math.random() * 15) - 7;
-        const variedSociability = Math.max(0, Math.min(100, (profile.sociability || 50) + sociabilityOffset));
+        const variedSociability = Math.max(0, Math.min(100, (sociability || 50) + sociabilityOffset));
 
         participantNames.push({ 
           id: id,
@@ -986,7 +981,7 @@ const Index = () => {
     });
 
     return sessions;
-  }, [profile, currentUserId, currentUserName]);
+  }, [profile, currentUserId, currentUserName, sociability]);
 
 
   const handleExtendSubmit = (minutes: number) => {
