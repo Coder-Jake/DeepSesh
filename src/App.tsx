@@ -14,25 +14,20 @@ import Feedback from './pages/Feedback';
 import UpcomingFeatures from './pages/UpcomingFeatures';
 import Credits from './pages/Credits';
 import Vibes from './pages/Vibes';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import VerifyEmail from './pages/VerifyEmail';
 import NotFound from './pages/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProfileProvider } from './contexts/ProfileContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // NEW: Import QueryClient and QueryClientProvider
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const queryClient = new QueryClient(); // NEW: Create a new QueryClient instance
+const queryClient = new QueryClient();
 
 function App() {
   const [areToastsEnabled, setAreToastsEnabled] = useState(false);
 
   return (
-    <QueryClientProvider client={queryClient}> {/* NEW: Wrap the entire app with QueryClientProvider */}
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Router>
           <ThemeProvider>
@@ -51,11 +46,6 @@ function App() {
                         <Route path="credits" element={<Credits />} />
                         <Route path="vibes" element={<Vibes />} />
                       </Route>
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/forgot-password" element={<ForgotPassword />} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
-                      <Route path="/verify-email" element={<VerifyEmail />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </ProfilePopUpProvider>
