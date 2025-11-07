@@ -36,23 +36,26 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background pt-16 lg:pt-20">
       <div className="w-full max-w-md p-8 space-y-6">
-        <Auth
-          supabaseClient={supabase}
-          providers={[]} // You can add 'google', 'github', etc. here if configured in Supabase
-          appearance={{
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: 'hsl(var(--primary))',
-                  brandAccent: 'hsl(var(--primary-foreground))',
+        {/* Wrap Auth component in a Fragment with a key to prevent re-mounts in Strict Mode */}
+        <React.Fragment key={isDarkMode ? "dark-theme" : "light-theme"}>
+          <Auth
+            supabaseClient={supabase}
+            providers={[]} // You can add 'google', 'github', etc. here if configured in Supabase
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: 'hsl(var(--primary))',
+                    brandAccent: 'hsl(var(--primary-foreground))',
+                  },
                 },
               },
-            },
-          }}
-          theme={isDarkMode ? "dark" : "light"} // MODIFIED: Make theme dynamic based on isDarkMode
-          redirectTo={window.location.origin + '/'}
-        />
+            }}
+            theme={isDarkMode ? "dark" : "light"}
+            redirectTo={window.location.origin + '/'}
+          />
+        </React.Fragment>
       </div>
     </div>
   );
