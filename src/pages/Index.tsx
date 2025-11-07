@@ -403,12 +403,15 @@ const Index = () => {
     isLongPress.current = false;
   };
   
-  const handlePublicPrivateToggle = () => {
-    if (isLongPress.current) {
-      setIsGlobalPrivate((prev: boolean) => !prev);
-    } else {
-      setIsGlobalPrivate((prev: boolean) => !prev);
+  const handlePublicPrivateToggle = async () => {
+    if (isGlobalPrivate && !isLongPress.current) { // If currently private and not a long press (i.e., trying to go public)
+      if (geolocationPermissionStatus === 'denied' || geolocationPermissionStatus === 'prompt') {
+        setIsDiscoverySetupOpen(true); // Open discovery setup dialog
+        return; // Prevent toggling to public immediately
+      }
     }
+    // If already public, or if location is granted, or if it's a long press, or if going from public to private
+    setIsGlobalPrivate((prev: boolean) => !prev);
   };
 
   const handleIntentionLongPress = () => {
@@ -935,59 +938,6 @@ const Index = () => {
   }, [profile, currentUserId, currentUserName]);
 
 
-  const allParticipantsToDisplayInCard = useMemo(() => {
-    const participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }> = [];
-
-    participants.push({
-      id: currentUserId,
-      name: currentUserName,
-      sociability: profile?.sociability || 50,
-      role: currentSessionRole === 'host' ? 'host' : 'coworker',
-      intention: profile?.intention || undefined,
-      bio: profile?.bio || undefined,
-    });
-
-    if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName && activeJoinedSession) {
-      const hostParticipant = activeJoinedSession.participants.find(p => p.name === currentSessionHostName);
-      
-      if (hostParticipant) {
-        participants.push({
-          id: hostParticipant.id,
-          name: hostParticipant.name,
-          sociability: hostParticipant.sociability,
-          role: 'host',
-          intention: hostParticipant.intention,
-          bio: hostParticipant.bio,
-        });
-      } else {
-        const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName);
-        participants.push({
-          id: hostProfile?.id || "host-id-fallback",
-          name: currentSessionHostName,
-          sociability: hostProfile?.sociability || 50,
-          role: 'host',
-          intention: hostProfile?.intention,
-          bio: hostProfile?.bio,
-        });
-      }
-    }
-
-    currentSessionOtherParticipants.forEach(p => {
-      if (p.id !== currentUserId && p.name !== currentSessionHostName) {
-        participants.push({ ...p, sociability: p.sociability || 50, role: 'coworker' });
-      }
-    });
-
-    return participants.sort((a, b) => {
-      if (a.id === currentUserId) return -1;
-      if (b.id === currentUserId) return 1;
-      if (a.role === 'host' && b.role !== 'host') return -1;
-      if (a.role !== 'host' && b.role === 'host') return 1;
-      return a.name.localeCompare(b.name);
-    });
-  }, [currentSessionRole, currentSessionHostName, currentSessionOtherParticipants, currentUserId, currentUserName, profile?.sociability, profile?.intention, profile?.bio, activeJoinedSession, getPublicProfile]);
-
-
   const handleExtendSubmit = (minutes: number) => {
     const newSuggestion: ExtendSuggestion = {
       id: `extend-${Date.now()}`,
@@ -1256,7 +1206,7 @@ const Index = () => {
     // The logic for setting isGlobalPrivate and showSessionsWhileActive based on geolocationPermissionStatus
     // is now primarily handled within getLocation itself, or by the useEffect that listens to geolocationPermissionStatus.
     // I'll simplify this part here to just call getLocation and let its side effects manage the state.
-    await getLocation(); // Call getLocation to trigger permission check/request
+    const { latitude, longitude } = await getLocation(); // Call getLocation to trigger permission check/request
 
     // Check the *updated* status after getLocation call
     if (geolocationPermissionStatus === 'granted') { 
