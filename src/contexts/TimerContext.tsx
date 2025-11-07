@@ -365,6 +365,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const syncSessionToSupabase = useCallback(async () => {
     // Only update if there's an authenticated user and an active session record
     if (!user?.id || !activeSessionRecordId) {
+      console.log("syncSessionToSupabase: Skipping sync. User ID or activeSessionRecordId missing.");
       return;
     }
 
@@ -403,6 +404,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             description: `Failed to update active session: ${error.message}`,
           });
         }
+      } else {
+        console.log("syncSessionToSupabase: Successfully updated session:", activeSessionRecordId);
       }
     } catch (error) {
       console.error("Unexpected error during Supabase sync:", error);
@@ -470,6 +473,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsHomepageFocusCustomized(false); // Reset customization flag
     setIsHomepageBreakCustomized(false); // Reset customization flag
     setCurrentSessionParticipantsData([]); // NEW: Clear participants data
+    console.log("resetSessionStates: activeSessionRecordId cleared to null.");
+    setActiveSessionRecordId(null); // Ensure activeSessionRecordId is cleared
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle
   ]);
@@ -477,6 +482,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const resetSchedule = useCallback(async () => {
     // NEW: Delete active session from Supabase if it exists and is owned by the current user
     if (activeSessionRecordId && user?.id && currentSessionRole === 'host') {
+      console.log("resetSchedule: Attempting to delete active session from Supabase:", activeSessionRecordId);
       try {
         const { error } = await supabase
           .from('active_sessions')
@@ -497,8 +503,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       } catch (error) {
         console.error("Unexpected error during Supabase delete:", error);
       } finally {
-        setActiveSessionRecordId(null); // Clear the record ID
+        // setActiveSessionRecordId(null); // This is now handled by resetSessionStates
       }
+    } else {
+      console.log("resetSchedule: Not deleting from Supabase. activeSessionRecordId:", activeSessionRecordId, "user?.id:", user?.id, "currentSessionRole:", currentSessionRole);
     }
     resetSessionStates();
   }, [activeSessionRecordId, user?.id, currentSessionRole, areToastsEnabled, resetSessionStates]);
@@ -626,7 +634,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
         if (error) throw error;
         setActiveSessionRecordId(data.id);
-        console.log("Active session inserted into Supabase:", data.id);
+        console.log("startSessionCommonLogic: Active session inserted into Supabase:", data.id);
       } catch (error: any) {
         console.error("Error inserting active session into Supabase:", error.message);
         if (areToastsEnabled) {
@@ -1016,6 +1024,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     } else {
       // No other coworkers, end the session
+      console.log("transferHostRole: No other coworkers to transfer to. Ending session.");
       if (areToastsEnabled) {
         toast.info("Session Ended", {
           description: "No other participants to transfer host role to. Session ended.",
@@ -1427,6 +1436,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
+    console.log("TimerContext: Saving activeSessionRecordId to local storage:", activeSessionRecordId);
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes,
     focusMinutes, breakMinutes,
