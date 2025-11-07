@@ -294,9 +294,11 @@ const Index = () => {
     isDiscoveryActivated, // NEW: Get isDiscoveryActivated from context
     setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from context
     activeSessionRecordId, // NEW: Get activeSessionRecordId from context
+    setActiveSessionRecordId, // NEW: Get setActiveSessionRecordId from context
     joinSessionAsCoworker, // NEW: Get joinSessionAsCoworker from context
     leaveSession, // NEW: Get leaveSession from context
     transferHostRole, // NEW: Get transferHostRole from context
+    setCurrentSessionParticipantsData, // NEW: Get setCurrentSessionParticipantsData from context
   } = useTimer();
   
   // Removed previous diagnostic log
@@ -527,7 +529,7 @@ const Index = () => {
     setCurrentSessionHostName(localFirstName);
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
-    (useTimer() as any).setCurrentSessionParticipantsData([hostParticipant]); // Update full list
+    setCurrentSessionParticipantsData([hostParticipant]); // Update full list
 
     // NEW: Insert into active_sessions if not private (user_id can be null)
     if (!isGlobalPrivate) {
@@ -557,7 +559,7 @@ const Index = () => {
           .single();
 
         if (error) throw error;
-        (useTimer() as any).setActiveSessionRecordId(data.id);
+        setActiveSessionRecordId(data.id);
         console.log("Manual session inserted into Supabase:", data.id);
       } catch (error: any) {
         console.error("Error inserting manual session into Supabase:", error.message);
