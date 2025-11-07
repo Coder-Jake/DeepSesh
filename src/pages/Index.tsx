@@ -31,7 +31,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from 'sonner'; // Changed to sonner toast
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ScheduledTimerTemplate } from "@/types/timer";
 import { DAYS_OF_WEEK } from "@/lib/constants";
@@ -40,10 +40,10 @@ import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordio
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
-// Removed useIsMobile import as it's no longer needed for this interaction
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
-import { supabase } from '@/integrations/supabase/client'; // NEW: Import Supabase client
-import { useAuth } from '@/contexts/AuthContext'; // NEW: Import useAuth
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query'; // NEW: Import useQuery
 
 interface ExtendSuggestion {
   id: string;
@@ -83,6 +83,27 @@ interface DemoSession {
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
 }
 
+// NEW: Define a type for Supabase fetched sessions
+interface SupabaseSessionData {
+  id: string;
+  session_title: string;
+  created_at: string;
+  location_long: number | null;
+  location_lat: number | null;
+  focus_duration: number;
+  break_duration: number;
+  user_id: string;
+  host_name: string;
+  current_phase_type: 'focus' | 'break';
+  current_phase_end_time: string;
+  total_session_duration_seconds: number;
+  schedule_data: any; // JSONB type
+  is_active: boolean;
+  is_paused: boolean;
+  current_schedule_index: number;
+  visibility: 'public' | 'friends' | 'organisation' | 'private';
+}
+
 const now = new Date();
 const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
 const pomodoroStartTime = nextHour.getTime();
@@ -92,13 +113,13 @@ const beginningOfMostRecentHour = new Date(now.getFullYear(), now.getMonth(), no
 const mockNearbySessions: DemoSession[] = [
   {
     id: "102",
-    title: "Silicon Syndicate Study Sesh", // Changed from "AI Anonymous" to "Silicon Syndicate Study Sesh"
+    title: "Silicon Syndicate Study Sesh",
     startTime: Date.now() - (76.8 * 60 * 1000),
     location: "Science Building - Computer Lab 2B",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "mock-user-id-bezos", name: "Altman", sociability: 15, intention: "Optimizing cloud infrastructure." }, // MODIFIED
+      { id: "mock-user-id-bezos", name: "Altman", sociability: 15, intention: "Optimizing cloud infrastructure." },
       { id: "mock-user-id-musk", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
       { id: "mock-user-id-zuckerberg", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
       { id: "mock-user-id-gates", name: "Amodei", sociability: 20, intention: "Refining operating system architecture." },
@@ -124,8 +145,8 @@ const mockFriendsSessions: DemoSession[] = [
       { id: "mock-user-id-skinner", name: "Skinner", sociability: 70, intention: "Memorizing behavioral principles." },
       { id: "mock-user-id-piaget", name: "Piaget", sociability: 80, intention: "Practicing cognitive development questions." },
       { id: "mock-user-id-jung", name: "Jung", sociability: 70, intention: "Summarizing archetypal concepts." },
-      { id: "mock-user-id-maslow", name: "Maslow", sociability: 90, intention: "Creating hierarchy of needs flashcards." }, // MODIFIED: Changed from 50 to 90
-      { id: "mock-user-id-rogers", name: "Rogers", sociability: 95, intention: "Discussing humanistic approaches." }, // MODIFIED: Changed from 55 to 95
+      { id: "mock-user-id-maslow", name: "Maslow", sociability: 90, intention: "Creating hierarchy of needs flashcards." },
+      { id: "mock-user-id-rogers", name: "Rogers", sociability: 95, intention: "Discussing humanistic approaches." },
       { id: "mock-user-id-bandura", name: "Bandura", sociability: 75, intention: "Collaborating on social learning theory guide." },
       { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 80, intention: "Peer teaching classical conditioning." },
     ],
@@ -135,6 +156,48 @@ const mockFriendsSessions: DemoSession[] = [
     ],
   },
 ];
+
+// NEW: Function to fetch active sessions from Supabase
+const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
+  const { data, error } = await supabase
+    .from('active_sessions')
+    .select('*')
+    .eq('visibility', 'public')
+    .eq('is_active', true);
+
+  if (error) {
+    console.error("Error fetching active sessions from Supabase:", error);
+    throw new Error(error.message);
+  }
+
+  return data.map((session: SupabaseSessionData) => {
+    const participants = [{ id: session.user_id, name: session.host_name, sociability: 50 }]; // Default sociability for now
+
+    let fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
+    if (session.schedule_data && Array.isArray(session.schedule_data) && session.schedule_data.length > 0) {
+      fullSchedule = session.schedule_data.map((item: any) => ({
+        type: item.type,
+        durationMinutes: item.durationMinutes,
+      }));
+    } else {
+      fullSchedule = [{
+        type: session.current_phase_type,
+        durationMinutes: session.current_phase_type === 'focus' ? session.focus_duration : session.break_duration,
+      }];
+    }
+
+    return {
+      id: session.id,
+      title: session.session_title,
+      startTime: new Date(session.created_at).getTime(),
+      location: session.location_long && session.location_lat ? `Lat: ${session.location_lat}, Long: ${session.location_lat}` : "Unknown Location",
+      workspaceImage: "/api/placeholder/200/120",
+      workspaceDescription: "Live session from Supabase",
+      participants: participants,
+      fullSchedule: fullSchedule,
+    };
+  });
+};
 
 const Index = () => {
   const {
@@ -164,7 +227,7 @@ const Index = () => {
     showSessionsWhileActive,
     setShowSessionsWhileActive,
     timerIncrement,
-    getDefaultSeshTitle, // NEW: Add this
+    getDefaultSeshTitle,
     
     schedule,
     activeSchedule,
@@ -244,9 +307,9 @@ const Index = () => {
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode } = useProfile();
   const navigate = useNavigate();
-  const { toggleProfilePopUp } = useProfilePopUp(); // Use toggleProfilePopUp
+  const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
-  const { user } = useAuth(); // NEW: Get user from useAuth
+  const { user } = useAuth();
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
@@ -275,16 +338,21 @@ const Index = () => {
     ['nearby', 'friends', 'organization']
   );
 
-  // NEW: State and ref for sociability popover
   const [openSociabilityTooltipId, setOpenSociabilityTooltipId] = useState<string | null>(null);
   const sociabilityTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // NEW: State to control default title animation
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
-  // NEW: State for link copied feedback
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // NEW: Fetch Supabase sessions
+  const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
+    queryKey: ['supabaseActiveSessions'],
+    queryFn: fetchSupabaseSessions,
+    refetchInterval: 5000, // Refetch every 5 seconds
+    enabled: !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'), // Only fetch if not private and discovery is enabled
+  });
 
   useEffect(() => {
     if (isEditingSeshTitle && titleInputRef.current) {
@@ -304,7 +372,6 @@ const Index = () => {
     console.log("Index: Current activeAsks on homepage:", activeAsks);
   }, [activeAsks]);
 
-  // NEW: Effect to manage default title animation
   useEffect(() => {
     const isDefault = seshTitle === getDefaultSeshTitle() && !isSeshTitleCustomized;
     setIsDefaultTitleAnimating(isDefault);
@@ -350,7 +417,7 @@ const Index = () => {
       setIsEditingSeshTitle(false);
       e.currentTarget.blur();
       if (seshTitle.trim() === "") {
-        setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle here
+        setSeshTitle(getDefaultSeshTitle());
       }
     }
   };
@@ -358,7 +425,7 @@ const Index = () => {
   const handleTitleInputBlur = () => {
     setIsEditingSeshTitle(false);
     if (seshTitle.trim() === "") {
-      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle here
+      setSeshTitle(getDefaultSeshTitle());
       }
   };
 
@@ -368,18 +435,18 @@ const Index = () => {
     }
   };
   
-  const startNewManualTimer = async () => { // Made async
+  const startNewManualTimer = async () => {
     if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
       }
-      if (isScheduleActive || isSchedulePrepared) await resetSchedule(); // Use await
+      if (isScheduleActive || isSchedulePrepared) await resetSchedule();
       setIsRunning(false);
       setIsPaused(false);
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+      setSeshTitle(getDefaultSeshTitle());
       setActiveAsks([]);
     }
 
@@ -392,7 +459,6 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now());
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    // MODIFIED: Set timeLeft based on current timerType
     setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     setIsTimeLeftManagedBySession(true);
 
@@ -401,7 +467,6 @@ const Index = () => {
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 
-    // NEW: Insert into active_sessions if not private
     if (user?.id && !isGlobalPrivate) {
       const currentPhaseDuration = timerType === 'focus' ? focusMinutes : breakMinutes;
       const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
@@ -412,12 +477,12 @@ const Index = () => {
             user_id: user.id,
             host_name: localFirstName,
             session_title: seshTitle,
-            visibility: 'public', // Always public if not isGlobalPrivate
+            visibility: 'public',
             focus_duration: focusMinutes,
             break_duration: breakMinutes,
             current_phase_type: timerType,
             current_phase_end_time: currentPhaseEndTime,
-            total_session_duration_seconds: currentPhaseDuration * 60, // For manual timer, total is just current phase
+            total_session_duration_seconds: currentPhaseDuration * 60,
             is_active: true,
             is_paused: false,
           })
@@ -425,7 +490,6 @@ const Index = () => {
           .single();
 
         if (error) throw error;
-        // setActiveSessionRecordId(data.id); // This is handled by TimerContext's state
         console.log("Manual session inserted into Supabase:", data.id);
       } catch (error: any) {
         console.error("Error inserting manual session into Supabase:", error.message);
@@ -495,12 +559,12 @@ const Index = () => {
       setTimerType('focus');
       setTimeLeft(defaultFocusMinutes * 60);
       setActiveJoinedSession(null);
-      if (isScheduleActive || isSchedulePrepared) await resetSchedule(); // Use await
+      if (isScheduleActive || isSchedulePrepared) await resetSchedule();
       setSessionStartTime(null);
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+      setSeshTitle(getDefaultSeshTitle());
       setActiveAsks([]);
 
       setCurrentSessionRole(null);
@@ -514,7 +578,6 @@ const Index = () => {
 
     const handleSaveAndStop = async () => {
       console.log("Index: Calling saveSession with activeAsks:", activeAsks);
-      // Removed saveSession from here, it's now handled by TimerContext's useEffect
       await performStopActions();
       playSound();
       triggerVibration();
@@ -529,7 +592,7 @@ const Index = () => {
     }
   };
   
-  const resetTimer = async () => { // Made async
+  const resetTimer = async () => {
     if (longPressRef.current) {
       setIsRunning(false);
       setIsPaused(false);
@@ -537,12 +600,12 @@ const Index = () => {
       const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
       setTimeLeft(initialTime);
       setActiveJoinedSession(null);
-      if (isScheduleActive || isSchedulePrepared) await resetSchedule(); // Use await
+      if (isScheduleActive || isSchedulePrepared) await resetSchedule();
       setSessionStartTime(null);
       setCurrentPhaseStartTime(null);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+      setSeshTitle(getDefaultSeshTitle());
       setActiveAsks([]);
 
       setCurrentSessionRole(null);
@@ -557,12 +620,12 @@ const Index = () => {
         const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
         setTimeLeft(initialTime);
         setActiveJoinedSession(null);
-        if (isScheduleActive || isSchedulePrepared) await resetSchedule(); // Use await
+        if (isScheduleActive || isSchedulePrepared) await resetSchedule();
         setSessionStartTime(null);
         setCurrentPhaseStartTime(null);
         setAccumulatedFocusSeconds(0);
         setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+      setSeshTitle(getDefaultSeshTitle());
       setActiveAsks([]);
 
       setCurrentSessionRole(null);
@@ -629,7 +692,7 @@ const Index = () => {
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle()); // Use getDefaultSeshTitle
+      setSeshTitle(getDefaultSeshTitle());
       setActiveAsks([]);
     }
 
@@ -648,7 +711,6 @@ const Index = () => {
     let remainingSecondsInPhase = 0;
     let currentPhaseDurationMinutes = 0;
 
-    // Calculate effective elapsed seconds within a cycle
     const cycleDurationSeconds = session.fullSchedule.reduce((sum, phase) => sum + phase.durationMinutes * 60, 0);
     const effectiveElapsedSeconds = cycleDurationSeconds > 0 ? elapsedSecondsSinceSessionStart % cycleDurationSeconds : 0;
 
@@ -668,11 +730,10 @@ const Index = () => {
         const phaseDurationSeconds = phase.durationMinutes * 60;
 
         if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
-          // Current effective time falls within this phase
-          const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle; // Declare timeIntoPhase
+          const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle;
           remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
           currentPhaseDurationMinutes = phase.durationMinutes;
-          currentPhaseType = phase.type; // Set currentPhaseType based on the phase
+          currentPhaseType = phase.type;
           break;
         }
         accumulatedDurationSecondsInCycle += phaseDurationSeconds;
@@ -763,7 +824,6 @@ const Index = () => {
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
 
-    // List of famous philosophers/scientists (using IDs from ProfileContext mockProfiles)
     const famousNamesWithIds = [
       { id: "mock-user-id-aristotle", name: "Aristotle" },
       { id: "mock-user-id-plato", name: "Plato" },
@@ -798,19 +858,18 @@ const Index = () => {
     ];
 
     organizationNames.forEach((orgName) => {
-      // Simple hash function for deterministic staggering
       const getDeterministicOffset = (name: string) => {
         let hash = 0;
         for (let i = 0; i < name.length; i++) {
           const char = name.charCodeAt(i);
           hash = ((hash << 5) - hash) + char;
-          hash |= 0; // Convert to 32bit integer
+          hash |= 0;
         }
         return Math.abs(hash);
       };
 
       const hashValue = getDeterministicOffset(orgName);
-      const minuteOffset = (hashValue % 12) * 5; // 12 slots of 5 minutes in an hour
+      const minuteOffset = (hashValue % 12) * 5;
 
       const now = new Date();
       const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
@@ -820,8 +879,6 @@ const Index = () => {
       const participantNames: { id: string; name: string; sociability: number; intention?: string; bio?: string }[] = [];
       const usedIndices = new Set<number>();
 
-      // Add 2-3 other mock participants from the famousNamesWithIds list
-      const hostSociability = profile.sociability || 50; // Use current user's sociability as a base for host
       for (let i = 0; i < 3; i++) {
         let randomIndex = (hashValue + i) % famousNamesWithIds.length;
         while (usedIndices.has(randomIndex)) {
@@ -830,12 +887,11 @@ const Index = () => {
         usedIndices.add(randomIndex);
         const { id, name } = famousNamesWithIds[randomIndex];
         
-        // Vary sociability by up to 7 points from the host's sociability
-        const sociabilityOffset = Math.floor(Math.random() * 15) - 7; // -7 to +7
-        const variedSociability = Math.max(0, Math.min(100, hostSociability + sociabilityOffset));
+        const sociabilityOffset = Math.floor(Math.random() * 15) - 7;
+        const variedSociability = Math.max(0, Math.min(100, (profile.sociability || 50) + sociabilityOffset));
 
         participantNames.push({ 
-          id: id, // Use the ID from the mock profile
+          id: id,
           name: name, 
           sociability: variedSociability,
           intention: `Deep work on ${name}'s theories.` 
@@ -864,7 +920,6 @@ const Index = () => {
   const allParticipantsToDisplayInCard = useMemo(() => {
     const participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }> = [];
 
-    // Add current user
     participants.push({
       id: currentUserId,
       name: currentUserName,
@@ -874,9 +929,7 @@ const Index = () => {
       bio: profile?.bio || undefined,
     });
 
-    // Add host if current user is a coworker and a session is active
     if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName && activeJoinedSession) {
-      // Find the host's full participant object from the activeJoinedSession
       const hostParticipant = activeJoinedSession.participants.find(p => p.name === currentSessionHostName);
       
       if (hostParticipant) {
@@ -889,7 +942,6 @@ const Index = () => {
           bio: hostParticipant.bio,
         });
       } else {
-        // Fallback to getPublicProfile if host somehow not found in activeJoinedSession (should not happen with consistent data)
         const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName);
         participants.push({
           id: hostProfile?.id || "host-id-fallback",
@@ -902,10 +954,8 @@ const Index = () => {
       }
     }
 
-    // Add other participants
     currentSessionOtherParticipants.forEach(p => {
       if (p.id !== currentUserId && p.name !== currentSessionHostName) {
-        // p already contains the correct sociability from the DemoSession
         participants.push({ ...p, sociability: p.sociability || 50, role: 'coworker' });
       }
     });
@@ -999,19 +1049,15 @@ const Index = () => {
     let currentPoll = currentAsk as Poll;
     let finalOptionIdsToVote: string[] = [...selectedOptionIdsFromCard];
 
-    // --- Handle custom response text and its corresponding option ---
     const trimmedCustomText = customOptionText?.trim();
     let userCustomOptionId: string | null = null;
 
-    // Find the custom option previously created by this user, if any
     const existingUserCustomOption = currentPoll.options.find(
       opt => opt.id.startsWith('custom-') && opt.votes.some(vote => vote.userId === currentUserId)
     );
 
     if (trimmedCustomText && isCustomOptionSelected) {
-      // User has provided a custom response AND it's selected
       if (existingUserCustomOption) {
-        // Update existing custom option's text if it changed
         if (existingUserCustomOption.text !== trimmedCustomText) {
           currentPoll = {
             ...currentPoll,
@@ -1022,7 +1068,6 @@ const Index = () => {
         }
         userCustomOptionId = existingUserCustomOption.id;
       } else {
-        // Create a new custom option
         const newCustomOption: PollOption = {
           id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
           text: trimmedCustomText,
@@ -1031,30 +1076,24 @@ const Index = () => {
         currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
         userCustomOptionId = newCustomOption.id;
       }
-      // Ensure the custom option is in the list of options to be voted for
       if (userCustomOptionId && !finalOptionIdsToVote.includes(userCustomOptionId)) {
         finalOptionIdsToVote.push(userCustomOptionId);
       }
     } else {
-      // User cleared the custom response input OR unchecked the custom option.
-      // If there was an existing custom option by this user, ensure its vote is removed.
       if (existingUserCustomOption) {
         finalOptionIdsToVote = finalOptionIdsToVote.filter(id => id !== existingUserCustomOption.id);
       }
     }
 
-    // --- Update votes for all options ---
     let updatedOptions = currentPoll.options.map(option => {
-      let newVotes = option.votes.filter(v => v.userId !== currentUserId); // Remove current user's previous vote
+      let newVotes = option.votes.filter(v => v.userId !== currentUserId);
 
       if (finalOptionIdsToVote.includes(option.id)) {
-        newVotes.push({ userId: currentUserId }); // Add vote if it's in the final list
+        newVotes.push({ userId: currentUserId });
       }
       return { ...option, votes: newVotes };
     });
 
-    // --- Clean up voteless custom options ---
-    // Filter out custom options that now have no votes from any user
     updatedOptions = updatedOptions.filter(option =>
       !option.id.startsWith('custom-') || option.votes.length > 0
     );
@@ -1085,7 +1124,7 @@ const Index = () => {
 
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
-      return Infinity; // Manual schedules sort to the end if not explicitly started
+      return Infinity;
     }
 
     const [hours, minutes] = template.commenceTime.split(':').map(Number);
@@ -1096,14 +1135,10 @@ const Index = () => {
     const daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
 
-    // If the target time is in the past for today, and it's not recurring, sort it to the end.
-    // The actual discarding will happen in TimerContext's useEffect.
     if (targetDate.getTime() < now.getTime() && !template.isRecurring) {
       return Infinity;
     }
     
-    // If it's recurring and in the past, calculate the next occurrence for sorting purposes.
-    // The actual update to preparedSchedules happens in TimerContext's useEffect.
     if (targetDate.getTime() < now.getTime() && template.isRecurring) {
       let nextCommenceDate = new Date(targetDate);
       while (nextCommenceDate.getTime() < now.getTime()) {
@@ -1114,7 +1149,6 @@ const Index = () => {
         } else if (template.recurrenceFrequency === 'monthly') {
           nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
         } else {
-          // Fallback for unknown recurrence, treat as non-recurring past
           return Infinity;
         }
       }
@@ -1122,7 +1156,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []); // Dependencies should only be constants or props that affect the calculation, not state setters
+  }, []);
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
@@ -1134,7 +1168,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    }); // Closing brace added here
+    });
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -1146,8 +1180,6 @@ const Index = () => {
       toggleProfilePopUp(userId, userName, event.clientX, event.clientY);
     }
   }, [toggleProfilePopUp, getPublicProfile]);
-
-  // Removed mobile tap handler for tooltips as Popover handles it natively.
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) {
@@ -1174,12 +1206,12 @@ const Index = () => {
     const shareUrl = `${window.location.origin}/?joinCode=${hostCode}`;
     try {
       await navigator.clipboard.writeText(shareUrl);
-      setIsLinkCopied(true); // Set state to true
+      setIsLinkCopied(true);
       if (linkCopiedTimeoutRef.current) {
         clearTimeout(linkCopiedTimeoutRef.current);
       }
       linkCopiedTimeoutRef.current = setTimeout(() => {
-        setIsLinkCopied(false); // Reset state after 3 seconds
+        setIsLinkCopied(false);
         linkCopiedTimeoutRef.current = null;
       }, 3000);
     } catch (err) {
@@ -1211,6 +1243,16 @@ const Index = () => {
             </button>
             {isNearbySessionsOpen && (
               <div className="space-y-3">
+                {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
+                {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
+                {supabaseNearbySessions?.map(session => (
+                  <SessionCard 
+                    key={session.id} 
+                    session={session} 
+                    onJoinSession={handleJoinSession} 
+                  />
+                ))}
+                {/* Mock sessions are now positioned at the bottom */}
                 {mockNearbySessions.map(session => (
                   <SessionCard 
                     key={session.id} 
@@ -1281,7 +1323,7 @@ const Index = () => {
   };
 
   return (
-    <TooltipProvider> {/* Moved TooltipProvider to wrap the entire main content */}
+    <TooltipProvider>
       <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
         <div className="mb-6">
           <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
@@ -1371,18 +1413,16 @@ const Index = () => {
                     onClick={(e) => {
                       if (!isActiveTimer) {
                         const rect = e.currentTarget.getBoundingClientRect();
-                        const clickX = e.clientX - rect.left; // X position relative to the element
+                        const clickX = e.clientX - rect.left;
                         const middle = rect.width / 2;
 
                         if (clickX < middle) {
-                          // Left side clicked - decrease time
                           if (timerType === 'focus') {
                             setHomepageFocusMinutes(prev => Math.max(timerIncrement, prev - timerIncrement));
                           } else {
                             setHomepageBreakMinutes(prev => Math.max(timerIncrement, prev - timerIncrement));
                           }
                         } else {
-                          // Right side clicked - increase time
                           if (timerType === 'focus') {
                             setHomepageFocusMinutes(prev => prev + timerIncrement);
                           } else {
@@ -1511,7 +1551,7 @@ const Index = () => {
                           }}
                           className="w-16 h-8 text-center pr-0" 
                           min={timerIncrement} 
-                          max={69 * 60} // 69 hours in minutes
+                          max={69 * 60}
                           step={timerIncrement}
                           onFocus={(e) => e.target.select()}
                           data-name="Focus Duration Input"
@@ -1546,7 +1586,7 @@ const Index = () => {
                           }}
                           className="w-16 h-8 text-center pr-0" 
                           min={timerIncrement} 
-                          max={420} // 420 minutes
+                          max={420}
                           step={timerIncrement}
                           onFocus={(e) => e.target.select()}
                           data-name="Break Duration Input"
@@ -1595,7 +1635,7 @@ const Index = () => {
 
             <Card>
               <CardHeader className="pb-2">
-                <div className="flex items-center gap-2"> {/* Flex container for title and notes */}
+                <div className="flex items-center gap-2">
                   {isEditingSeshTitle ? (
                     <Input
                       ref={titleInputRef}
@@ -1603,7 +1643,7 @@ const Index = () => {
                       onChange={(e) => setSeshTitle(e.target.value)}
                       onKeyDown={handleTitleInputKeyDown}
                       onBlur={handleTitleInputBlur}
-                      placeholder={getDefaultSeshTitle()} // Use getDefaultSeshTitle as placeholder
+                      placeholder={getDefaultSeshTitle()}
                       className="text-lg font-semibold h-auto py-1 px-2" 
                       onFocus={(e) => e.target.select()}
                       data-name="Sesh Title Input"
@@ -1612,7 +1652,7 @@ const Index = () => {
                     <CardTitle 
                       className={cn(
                         "text-lg cursor-pointer select-none",
-                        isDefaultTitleAnimating && "animate-fade-in-out" // Apply animation class
+                        isDefaultTitleAnimating && "animate-fade-in-out"
                       )}
                       onClick={handleTitleClick}
                       onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
@@ -1675,7 +1715,7 @@ const Index = () => {
                               sociabilityTooltipTimeoutRef.current = setTimeout(() => {
                                 setOpenSociabilityTooltipId(null);
                                 sociabilityTooltipTimeoutRef.current = null;
-                              }, 1000); // Changed to 1000ms (1 second)
+                              }, 1000);
                             } else {
                               if (openSociabilityTooltipId === person.id) {
                                 setOpenSociabilityTooltipId(null);
@@ -1690,12 +1730,12 @@ const Index = () => {
                           <PopoverTrigger asChild>
                             <span
                               className="cursor-pointer"
-                              onClick={(e) => e.stopPropagation()} // Prevent parent div's onClick
+                              onClick={(e) => e.stopPropagation()}
                             >
                               {person.sociability}%
                             </span>
                           </PopoverTrigger>
-                          <PopoverContent className="select-none p-1 text-xs w-fit"> {/* Added w-fit here */}
+                          <PopoverContent className="select-none p-1 text-xs w-fit">
                             Focus preference
                           </PopoverContent>
                         </Popover>
