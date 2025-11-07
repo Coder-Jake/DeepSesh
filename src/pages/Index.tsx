@@ -1350,7 +1350,10 @@ const Index = () => {
               onClick={() => setIsFriendsSessionsOpen(prev => !prev)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
-              <h3>Friends</h3>
+              <div className="flex items-center gap-2">
+                <Users size={16} className="text-blue-500" />
+                <h3>Friends</h3>
+              </div>
               <div className="flex items-center gap-2">
                 {hiddenFriendsCount > 0 && (
                   <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
