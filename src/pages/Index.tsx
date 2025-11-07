@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users } from "lucide-react";
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin } from "lucide-react"; // NEW: Import MapPin
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate } from "react-router-dom";
@@ -286,6 +286,8 @@ const Index = () => {
     playSound,
     triggerVibration,
     areToastsEnabled,
+    getLocation, // NEW: Import getLocation
+    geolocationPermissionStatus, // NEW: Import geolocationPermissionStatus
   } = useTimer();
   
   console.log("Index.tsx: Value from useTimer hook:", {
@@ -468,7 +470,7 @@ const Index = () => {
     setActiveJoinedSessionCoworkerCount(0);
 
     if (user?.id && !isGlobalPrivate) {
-      const { latitude, longitude } = await (useTimer() as any).getLocation(); // Get location
+      const { latitude, longitude } = await getLocation(); // Get location
       const currentPhaseDuration = timerType === 'focus' ? focusMinutes : breakMinutes;
       const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
       try {
@@ -1237,7 +1239,32 @@ const Index = () => {
               onClick={() => setIsNearbySessionsOpen(prev => !prev)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
-              <h3>Nearby</h3>
+              <div className="flex items-center gap-2">
+                <h3>Nearby</h3>
+                {geolocationPermissionStatus !== 'granted' && ( // NEW: Conditionally render MapPin
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <MapPin 
+                        size={16} 
+                        className={cn(
+                          "text-muted-foreground cursor-pointer hover:text-primary",
+                          geolocationPermissionStatus === 'denied' && "text-destructive" // Red if denied
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent accordion from toggling
+                          getLocation(); // Request location on click
+                        }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                      {geolocationPermissionStatus === 'denied' ? 
+                        "Location access denied. Click to re-enable." : 
+                        "Click to enable location for nearby sessions."
+                      }
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 {hiddenNearbyCount > 0 && (
                   <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>

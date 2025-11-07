@@ -133,6 +133,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   // NEW: State to store the ID of the active session record in Supabase
   const [activeSessionRecordId, setActiveSessionRecordId] = useState<string | null>(null);
 
+  // NEW: State to track geolocation permission status
+  const [geolocationPermissionStatus, setGeolocationPermissionStatus] = useState<PermissionState>('prompt');
+
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
 
@@ -269,6 +272,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          setGeolocationPermissionStatus('granted'); // Update status on success
           resolve({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -281,6 +285,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             if (error.code === error.PERMISSION_DENIED) {
               errorMessage = "Location access denied. Your session has been set to private.";
               setIsGlobalPrivate(true); // Automatically switch to private
+              setGeolocationPermissionStatus('denied'); // Update status on denial
             } else if (error.code === error.POSITION_UNAVAILABLE) {
               errorMessage = "Location information is unavailable.";
             } else if (error.code === error.TIMEOUT) {
@@ -300,6 +305,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       );
     });
   }, [areToastsEnabled, setIsGlobalPrivate]);
+
+  // NEW: Effect to query and listen for geolocation permission changes
+  useEffect(() => {
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+        setGeolocationPermissionStatus(permissionStatus.state);
+        permissionStatus.onchange = () => {
+          setGeolocationPermissionStatus(permissionStatus.state);
+        };
+      });
+    }
+  }, []);
 
   // NEW: Function to sync session data to Supabase
   const syncSessionToSupabase = useCallback(async () => {
@@ -1350,6 +1367,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setShowSessionsWhileActive: setShowSessionsWhileActive, // MODIFIED: Changed 'yes' to 'all'
     hasWonPrize,
     setHasWonPrize,
+    geolocationPermissionStatus, // NEW: Expose geolocationPermissionStatus
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
