@@ -39,7 +39,7 @@ import { Accordion } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/contexts/Theme/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -1928,7 +1928,7 @@ const Index = () => {
           <DialogContent className="sm:max-w-[425px]">
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="discovery-display-name">Your Display Name</Label>
+                <Label htmlFor="discovery-display-name">Name</Label>
                 <Input
                   id="discovery-display-name"
                   placeholder={hostCode || "Your Host Code"}
