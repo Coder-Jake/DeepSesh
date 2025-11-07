@@ -61,7 +61,7 @@ const Profile = () => {
     bio: "",
     intention: "",
     canHelpWith: "",
-    needHelpWith: "",
+        needHelpWith: "",
     sociability: 50, // Changed to number
     organization: "",
     linkedinUrl: "",
@@ -383,7 +383,7 @@ const Profile = () => {
       linkedin_url: (linkedinUrl === null || linkedinUrl.trim() === "") ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`,
       host_code: trimmedHostCode,
       bio_visibility: bioVisibility,
-      intention_visibility: intentionVisibility,
+      intended_visibility: intentionVisibility,
       linkedin_visibility: linkedinVisibility,
       can_help_with_visibility: canHelpWithVisibility,
       need_help_with_visibility: needHelpWithVisibility,
@@ -876,7 +876,7 @@ const Profile = () => {
         )}
       
       {hasChanges && (
-        <div className="fixed bottom-4 left-4 z-50 transition-opacity duration-300 opacity-100 pointer-events-auto">
+        <div className="fixed bottom-4 left-4 z-50">
           <Button 
             onClick={handleCancel}
             className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel/80"

@@ -360,6 +360,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   // NEW: Function to sync session data to Supabase
   const syncSessionToSupabase = useCallback(async () => {
+    // Only update if there's an authenticated user and an active session record
     if (!user?.id || isGlobalPrivate || !activeSessionRecordId) {
       return;
     }
@@ -423,14 +424,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   ]);
 
   const resetSchedule = useCallback(async () => {
-    // NEW: Delete active session from Supabase if it exists
+    // NEW: Delete active session from Supabase if it exists and is owned by the current user
     if (activeSessionRecordId && user?.id && !isGlobalPrivate) {
       try {
         const { error } = await supabase
           .from('active_sessions')
           .delete()
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id);
+          .eq('user_id', user.id); // Ensure only the owner can delete
 
         if (error) {
           console.error("Error deleting active session from Supabase:", error);
@@ -589,8 +590,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 
-    // NEW: Insert into active_sessions if not private
-    if (user?.id && !isGlobalPrivate) {
+    // NEW: Insert into active_sessions if not private (user_id can be null)
+    if (!isGlobalPrivate) {
       const { latitude, longitude } = await getLocation(); // Get location
       const currentScheduleItem = schedule[0];
       const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
@@ -598,7 +599,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         const { data, error } = await supabase
           .from('active_sessions')
           .insert({
-            user_id: user.id,
+            user_id: user?.id || null, // Pass user.id or null if not logged in
             host_name: localFirstName,
             session_title: scheduleTitle,
             visibility: 'public', // Always public if not isGlobalPrivate
@@ -713,8 +714,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 
-    // NEW: Insert into active_sessions if not private
-    if (user?.id && !isGlobalPrivate) {
+    // NEW: Insert into active_sessions if not private (user_id can be null)
+    if (!isGlobalPrivate) {
       const { latitude, longitude } = await getLocation(); // Get location
       const currentScheduleItem = templateToCommence.schedule[0];
       const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
@@ -722,7 +723,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         const { data, error } = await supabase
           .from('active_sessions')
           .insert({
-            user_id: user.id,
+            user_id: user?.id || null, // Pass user.id or null if not logged in
             host_name: localFirstName,
             session_title: templateToCommence.title,
             visibility: 'public', // Always public if not isGlobalPrivate

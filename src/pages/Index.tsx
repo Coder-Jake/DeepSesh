@@ -94,7 +94,7 @@ interface SupabaseSessionData {
   location_lat: number | null;
   focus_duration: number;
   break_duration: number;
-  user_id: string;
+  user_id: string | null; // Changed to nullable
   host_name: string;
   current_phase_type: 'focus' | 'break';
   current_phase_end_time: string;
@@ -173,7 +173,7 @@ const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
   }
 
   return data.map((session: SupabaseSessionData) => {
-    const participants = [{ id: session.user_id, name: session.host_name, sociability: 50 }]; // Default sociability for now
+    const participants = [{ id: session.user_id || `anon-${session.id}`, name: session.host_name, sociability: 50 }]; // Default sociability for now
 
     let fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
     if (session.schedule_data && Array.isArray(session.schedule_data) && session.schedule_data.length > 0) {
@@ -381,7 +381,11 @@ const Index = () => {
 
     // Add host if current user is a coworker
     if (currentSessionRole === 'coworker' && currentSessionHostName) {
-      const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName); // Assuming getPublicProfile can fetch by name or ID
+      // For unauthenticated hosts, their ID might be a generated string, not a real user ID.
+      // We need to handle this gracefully. If currentSessionHostName is not a real user ID,
+      // getPublicProfile might return a generic profile.
+      const hostId = user?.id || currentSessionHostName; // Use user.id if available, otherwise hostName as ID
+      const hostProfile = getPublicProfile(hostId, currentSessionHostName); 
       if (hostProfile && !participantsMap.has(hostProfile.id)) {
         participantsMap.set(hostProfile.id, {
           id: hostProfile.id,
@@ -526,7 +530,8 @@ const Index = () => {
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 
-    if (user?.id && !isGlobalPrivate) {
+    // NEW: Insert into active_sessions if not private (user_id can be null)
+    if (!isGlobalPrivate) {
       const { latitude, longitude } = await getLocation();
       const currentPhaseDuration = timerType === 'focus' ? focusMinutes : breakMinutes;
       const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
@@ -534,7 +539,7 @@ const Index = () => {
         const { data, error } = await supabase
           .from('active_sessions')
           .insert({
-            user_id: user.id,
+            user_id: user?.id || null, // Pass user.id or null if not logged in
             host_name: localFirstName,
             session_title: seshTitle,
             visibility: 'public',
