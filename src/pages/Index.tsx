@@ -374,8 +374,7 @@ const Index = () => {
 
     // Add host if current user is a coworker
     if (currentSessionRole === 'coworker' && currentSessionHostName) {
-      const hostId = user?.id || currentSessionHostName; 
-      const hostProfile = getPublicProfile(hostId, currentSessionHostName); 
+      const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName); // Use hostName as ID for mock profiles
       if (hostProfile && !participantsMap.has(hostProfile.id)) {
         participantsMap.set(hostProfile.id, {
           id: hostProfile.id,
@@ -1731,8 +1730,8 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            {/* Only render Coworkers card if there's an active timer/schedule */}
-            {isActiveTimer && allParticipantsToDisplayInCard.length > 0 && (
+            {/* Only render Coworkers card if there's an active timer/schedule AND more than just the user */}
+            {isActiveTimer && allParticipantsToDisplayInCard.length > 1 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Coworkers</CardTitle>
