@@ -1300,7 +1300,7 @@ const Index = () => {
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
                       {geolocationPermissionStatus === 'denied' ? 
-                        "Location access denied. Click to re-enable." : 
+                        "Click to enable Location access." : 
                         "Click to enable location for nearby sessions."
                       }
                     </TooltipContent>
