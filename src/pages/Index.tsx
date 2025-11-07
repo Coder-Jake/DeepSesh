@@ -1260,10 +1260,10 @@ const Index = () => {
       }
     } else {
       setIsGlobalPrivate(false); // Still allow friends/org sessions
-      setShowSessionsWhileActive('friends'); // Default to friends if location not granted
+      setShowSessionsWhileActive('hidden'); // Default to hidden if location not granted
       if (areToastsEnabled) {
         toast.info("Discovery Activated!", {
-          description: "Location not enabled. Showing friends and organization sessions.",
+          description: "Location not enabled. Sessions are currently hidden.",
         });
       }
     }
@@ -1840,8 +1840,8 @@ const Index = () => {
                           {(provided) => (
                             <div
                               ref={provided.innerRef}
-                              {...provided.draggableProps}
                               {...provided.dragHandleProps}
+                              {...provided.draggableProps}
                             >
                               {renderSection(sectionId)}
                             </div>
