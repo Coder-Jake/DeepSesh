@@ -35,7 +35,8 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ScheduledTimerTemplate } from "@/types/timer";
 import { DAYS_OF_WEEK } from "@/lib/constants";
-import { Accordion } from "@/components/ui/accordion";
+import { Accordion }
+ from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
@@ -1253,29 +1254,15 @@ const Index = () => {
     setIsDiscoveryActivated(true);
     setIsDiscoverySetupOpen(false);
 
-    // The logic for setting isGlobalPrivate and showSessionsWhileActive based on geolocationPermissionStatus
-    // is now primarily handled within getLocation itself, or by the useEffect that listens to geolocationPermissionStatus.
-    // I'll simplify this part here to just call getLocation and let its side effects manage the state.
-    const { latitude, longitude } = await getLocation(); // Call getLocation to trigger permission check/request
+    // Call getLocation to trigger permission check/request
+    await getLocation(); 
 
-    // Check the *updated* status after getLocation call
-    if (geolocationPermissionStatus === 'granted') { 
-      setIsGlobalPrivate(false);
-      setShowSessionsWhileActive('nearby'); 
-      if (areToastsEnabled) {
-        toast.success("Discovery Activated!", {
-          description: "Nearby sessions are now visible.",
-        });
-      }
-    } else {
-      // If permission is still not granted (e.g., denied or prompt but user didn't respond)
-      setIsGlobalPrivate(true);
-      setShowSessionsWhileActive('hidden'); 
-      if (areToastsEnabled) {
-        toast.info("Discovery Activated!", {
-          description: "Location not enabled. Sessions are currently hidden.",
-        });
-      }
+    // isGlobalPrivate will be set by getLocation's side effects or the useEffect listening to geolocationPermissionStatus.
+    // showSessionsWhileActive will retain its current value, as requested.
+    if (areToastsEnabled) {
+      toast.success("Discovery Activated!", {
+        description: "Discovery is now active. Check your settings to adjust session visibility.",
+      });
     }
   };
 
