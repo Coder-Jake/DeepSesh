@@ -303,6 +303,8 @@ const Index = () => {
     joinSessionAsCoworker, // NEW: Get joinSessionAsCoworker from context
     leaveSession, // NEW: Get leaveSession from context
     transferHostRole, // NEW: Get transferHostRole from context
+    stopTimer, // NEW: Get stopTimer from context
+    resetSessionStates, // NEW: Get resetSessionStates from context
   } = useTimer();
   
   // Removed previous diagnostic log
@@ -544,7 +546,7 @@ const Index = () => {
           .from('active_sessions')
           .insert({
             user_id: hostParticipant.userId, // Pass user.id or null if not logged in
-            host_name: localFirstName,
+            host_name: hostParticipant.userName,
             session_title: seshTitle,
             visibility: 'public',
             focus_duration: focusMinutes,
@@ -611,109 +613,12 @@ const Index = () => {
     setIsTimeLeftManagedBySession(true);
   };
   
-  const stopTimer = async () => {
-    if (currentSessionRole === 'host') {
-      // If host, try to transfer role
-      await transferHostRole();
-    } else if (currentSessionRole === 'coworker') {
-      // If coworker, just leave the session
-      await leaveSession();
-    } else {
-      // No active session role, just reset local timer
-      let finalAccumulatedFocus = accumulatedFocusSeconds;
-      let finalAccumulatedBreak = accumulatedBreakSeconds;
-
-      if (isRunning && currentPhaseStartTime !== null) {
-        const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
-        if (timerType === 'focus') {
-          finalAccumulatedFocus += elapsed;
-        } else {
-          finalAccumulatedBreak += elapsed;
-        }
-      }
-      const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
-
-      const performStopActions = async () => {
-        setIsRunning(false);
-        setIsPaused(false);
-        setIsFlashing(false);
-        setTimerType('focus');
-        setTimeLeft(defaultFocusMinutes * 60);
-        setActiveJoinedSession(null);
-        if (isScheduleActive || isSchedulePrepared) await resetSchedule();
-        setSessionStartTime(null);
-        setCurrentPhaseStartTime(null);
-        setAccumulatedFocusSeconds(0);
-        setAccumulatedBreakSeconds(0);
-        setSeshTitle(getDefaultSeshTitle());
-        setActiveAsks([]);
-
-        setCurrentSessionRole(null);
-        setCurrentSessionHostName(null);
-        setCurrentSessionOtherParticipants([]);
-        setIsTimeLeftManagedBySession(false);
-
-        setHomepageFocusMinutes(defaultFocusMinutes);
-        setHomepageBreakMinutes(defaultBreakMinutes);
-      };
-
-      const handleSaveAndStop = async () => {
-        console.log("Index: Calling saveSession with activeAsks:", activeAsks);
-        await performStopActions();
-        playSound();
-        triggerVibration();
-      };
-
-      if (longPressRef.current) {
-        await handleSaveAndStop();
-      } else {
-        if (confirm('Are you sure you want to stop the timer?')) {
-          await handleSaveAndStop();
-        }
-      }
-    }
-  };
-  
   const resetTimer = async () => {
     if (longPressRef.current) {
-      setIsRunning(false);
-      setIsPaused(false);
-      setIsFlashing(false);
-      const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
-      setTimeLeft(initialTime);
-      setActiveJoinedSession(null);
-      if (isScheduleActive || isSchedulePrepared) await resetSchedule();
-      setSessionStartTime(null);
-      setCurrentPhaseStartTime(null);
-      setAccumulatedFocusSeconds(0);
-      setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle());
-      setActiveAsks([]);
-
-      setCurrentSessionRole(null);
-      setCurrentSessionHostName(null);
-      setCurrentSessionOtherParticipants([]);
-      setIsTimeLeftManagedBySession(false);
+      resetSessionStates(); // Use context's reset
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
-        setIsRunning(false);
-        setIsPaused(false);
-        setIsFlashing(false);
-        const initialTime = timerType === 'focus' ? defaultFocusMinutes * 60 : defaultBreakMinutes * 60;
-        setTimeLeft(initialTime);
-        setActiveJoinedSession(null);
-        if (isScheduleActive || isSchedulePrepared) await resetSchedule();
-        setSessionStartTime(null);
-        setCurrentPhaseStartTime(null);
-        setAccumulatedFocusSeconds(0);
-        setAccumulatedBreakSeconds(0);
-      setSeshTitle(getDefaultSeshTitle());
-      setActiveAsks([]);
-
-      setCurrentSessionRole(null);
-      setCurrentSessionHostName(null);
-      setCurrentSessionOtherParticipants([]);
-      setIsTimeLeftManagedBySession(false);
+        resetSessionStates(); // Use context's reset
       }
     }
     playSound();
@@ -1569,12 +1474,12 @@ const Index = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onMouseDown={() => handleLongPressStart(stopTimer)}
+                          onMouseDown={() => handleLongPressStart(() => stopTimer(false, true))} // Pass false for confirm, true for long press
                           onMouseUp={handleLongPressEnd}
                           onMouseLeave={handleLongPressEnd}
-                          onTouchStart={() => handleLongPressStart(stopTimer)}
+                          onTouchStart={() => handleLongPressStart(() => stopTimer(false, true))} // Pass false for confirm, true for long press
                           onTouchEnd={handleLongPressEnd}
-                          onClick={stopTimer}
+                          onClick={() => stopTimer(true, false)} // Pass true for confirm, false for long press
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-transparent",
                             isPaused ? "text-red-500" : "text-secondary-foreground"

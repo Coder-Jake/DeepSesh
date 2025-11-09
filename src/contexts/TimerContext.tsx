@@ -594,6 +594,63 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     resetSessionStates();
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates, transferHostRole]);
 
+  // NEW: Centralized stopTimer function
+  const stopTimer = useCallback(async (confirmPrompt: boolean, isLongPress: boolean) => {
+    // Handle roles first, they will manage their own state resets
+    if (currentSessionRole === 'host') {
+      await transferHostRole();
+      return;
+    } else if (currentSessionRole === 'coworker') {
+      await leaveSession();
+      return;
+    }
+
+    // Logic for local timer (no active session role)
+    if (confirmPrompt && !isLongPress) {
+      if (!confirm('Are you sure you want to stop the timer?')) {
+        return;
+      }
+    }
+
+    let finalAccumulatedFocus = accumulatedFocusSeconds;
+    let finalAccumulatedBreak = accumulatedBreakSeconds;
+
+    if (isRunning && currentPhaseStartTime !== null) {
+      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+      if (timerType === 'focus') {
+        finalAccumulatedFocus += elapsed;
+      } else {
+        finalAccumulatedBreak += elapsed;
+      }
+    }
+    const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
+
+    // Save session data before resetting states
+    console.log("TimerContext: Calling saveSessionToDatabase with activeAsks:", activeAsks);
+    await saveSessionToDatabase(
+      user?.id,
+      _seshTitle,
+      notes,
+      finalAccumulatedFocus,
+      finalAccumulatedBreak,
+      totalSessionSeconds,
+      activeJoinedSessionCoworkerCount,
+      sessionStartTime || Date.now(),
+      activeAsks,
+      allParticipantsToDisplay,
+      areToastsEnabled
+    );
+
+    // Reset all timer-related states
+    resetSessionStates();
+    playSound();
+    triggerVibration();
+  }, [
+    currentSessionRole, transferHostRole, leaveSession, accumulatedFocusSeconds, accumulatedBreakSeconds,
+    isRunning, currentPhaseStartTime, timerType, user?.id, _seshTitle, notes, activeJoinedSessionCoworkerCount,
+    sessionStartTime, activeAsks, allParticipantsToDisplay, areToastsEnabled, resetSessionStates, playSound, triggerVibration
+  ]);
+
 
   const startSessionCommonLogic = useCallback(async (
     sessionType: 'manual' | 'schedule',
@@ -1658,6 +1715,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     joinSessionAsCoworker,
     leaveSession,
     transferHostRole,
+    stopTimer,
+    resetSessionStates,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
