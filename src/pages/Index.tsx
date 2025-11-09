@@ -41,7 +41,7 @@ import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordio
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -317,7 +317,7 @@ const Index = () => {
     resetSessionStates,
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
@@ -1130,8 +1130,10 @@ const Index = () => {
   }, [hostCode, areToastsEnabled]);
 
   const handleActivateDiscovery = async () => {
-    if (discoveryDisplayName.trim() !== "" && discoveryDisplayName !== localFirstName) {
-      setLocalFirstName(discoveryDisplayName.trim());
+    const newDisplayName = discoveryDisplayName.trim();
+    if (newDisplayName !== "" && newDisplayName !== localFirstName) {
+      // Await the profile update to ensure it completes before proceeding
+      await updateProfile({ first_name: newDisplayName }, "Display name updated.");
     }
 
     setIsDiscoveryActivated(true);
