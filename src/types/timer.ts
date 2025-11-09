@@ -264,6 +264,8 @@ export type TimerContextType = {
   joinSessionAsCoworker: (sessionId: string, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>; // NEW: Add joinSessionAsCoworker
   leaveSession: () => Promise<void>; // NEW: Add leaveSession
   transferHostRole: () => Promise<void>; // NEW: Add transferHostRole
+  stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>; // NEW: Add stopTimer
+  resetSessionStates: () => void; // NEW: Add resetSessionStates
 };
 
 // Define the structure for a saved session
