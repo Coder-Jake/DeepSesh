@@ -359,7 +359,7 @@ const Index = () => {
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
-  const [discoveryDisplayName, setDiscoveryDisplayName] = useState(localFirstName || hostCode || "You");
+  const [discoveryDisplayName, setDiscoveryDisplayName] = useState(localFirstName || hostCode || ""); // Removed "You"
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
@@ -1820,13 +1820,12 @@ const Index = () => {
         </Dialog>
 
         <Dialog open={isDiscoverySetupOpen} onOpenChange={setIsDiscoverySetupOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto top-[5%] translate-y-0 md:top-1/2 md:-translate-y-1/2">
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="discovery-display-name">Name</Label>
                 <Input
                   id="discovery-display-name"
-                  // Removed placeholder prop
                   value={discoveryDisplayName}
                   onChange={(e) => setDiscoveryDisplayName(e.target.value)}
                   onFocus={(e) => e.target.select()}
