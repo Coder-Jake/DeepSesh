@@ -1830,7 +1830,7 @@ const Index = () => {
                   value={discoveryDisplayName}
                   onChange={(e) => setDiscoveryDisplayName(e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  onBlur={handleDiscoveryDisplayNameBlur} {/* Added onBlur handler */}
+                  onBlur={handleDiscoveryDisplayNameBlur} 
                 />
               </div>
 
