@@ -1332,7 +1332,7 @@ const Index = () => {
                           {seshTitle}
                         </h2>
                       ) : (
-                        <p className="text-xl font-bold text-muted-foreground">
+                        <p className="text-base font-bold text-muted-foreground">
                           Sync focus with nearby coworkers
                         </p>
                       )}
