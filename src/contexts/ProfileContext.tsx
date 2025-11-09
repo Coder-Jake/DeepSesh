@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { toast } from 'sonner';
 import { useAuth } from "./AuthContext";
 import { supabase } from '@/integrations/supabase/client';
-import { useTimer } from "./TimerContext";
+// Removed: import { useTimer } from "./TimerContext"; // This import is removed
 import { colors, animals } from '@/lib/constants';
 
 // Define a simplified Profile type for local storage
@@ -95,7 +95,7 @@ interface ProfileProviderProps {
 
 export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areToastsEnabled }) => {
   const { user, loading: authLoading } = useAuth();
-  const { resetSessionStates } = useTimer(); // Use resetSessionStates from TimerContext
+  // Removed: const { resetSessionStates } = useTimer(); // This line is removed
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -364,7 +364,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           };
           setProfile(defaultProfile);
           setLocalFirstName(defaultProfile.first_name);
-          setHostCode(defaultHostCode);
+          setHostCode(defaultProfile.host_code);
           setFocusPreference(defaultProfile.focus_preference);
           setBioVisibility(defaultProfile.bio_visibility);
           setIntentionVisibility(defaultProfile.intention_visibility);
@@ -527,9 +527,9 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     setFriendStatuses({});
     setBlockedUsers([]);
     setRecentCoworkers([]);
-    resetSessionStates(); // Reset timer states as well
+    // Removed: resetSessionStates(); // This line is removed
     window.location.reload(); // Force a full reload to clear all states
-  }, [resetSessionStates]);
+  }, []); // Removed resetSessionStates from dependencies
 
   const value = useMemo(() => ({
     profile,

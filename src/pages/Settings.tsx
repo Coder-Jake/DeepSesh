@@ -85,6 +85,7 @@ const Settings = () => {
     geolocationPermissionStatus, // NEW: Get geolocationPermissionStatus from TimerContext
     isDiscoveryActivated, // NEW: Get isDiscoveryActivated from TimerContext
     setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from TimerContext
+    resetSessionStates, // NEW: Get resetSessionStates from TimerContext
   } = useTimer();
 
   const { user, logout } = useAuth(); // Get logout from AuthContext
@@ -463,7 +464,8 @@ const Settings = () => {
 
   const handleLogout = () => {
     logout(); // Call Supabase logout
-    resetProfile(); // Clear all local storage and reload the page
+    resetProfile(); // Clear all local storage for profile
+    resetSessionStates(); // Clear all local storage for timer
     if (areToastsEnabled) {
       toast.success("Logged Out", {
         description: "You have been successfully logged out and your local profile cleared.",
