@@ -239,7 +239,8 @@ const ProfilePopUpCard: React.FC = () => {
       (!targetProfile.need_help_with || !isFieldVisible(targetProfile.need_help_with_visibility)) &&
       (!targetProfile.linkedin_url || !isFieldVisible(targetProfile.linkedin_visibility));
 
-    if (!isCurrentUserProfile && allFieldsPrivate) {
+    // MODIFIED: Only show "This profile is private" if ALL fields (including sociability) are private/null
+    if (!isCurrentUserProfile && allFieldsPrivate && targetProfile.sociability === null) {
       return (
         <div className="text-center space-y-2">
           <User className="h-8 w-8 text-muted-foreground mx-auto" />
@@ -366,15 +367,16 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.sociability !== null && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
+        {/* MODIFIED: Always show sociability if it exists, regardless of other field visibilities */}
+        {targetProfile.sociability !== null && (
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Users size={16} /> Focus Preference
             </h4>
             <div className="w-full bg-secondary rounded-full h-2 mt-1">
               <div
-                className="h-2 rounded-full" // Removed bg-primary
-                style={{ width: `${targetProfile.sociability}%`, backgroundColor: getSociabilityGradientColor(targetProfile.sociability) }} // MODIFIED
+                className="h-2 rounded-full" 
+                style={{ width: `${targetProfile.sociability}%`, backgroundColor: getSociabilityGradientColor(targetProfile.sociability) }} 
               ></div>
             </div>
             <p className="text-xs text-muted-foreground mt-1 text-right">{targetProfile.sociability}%</p>
