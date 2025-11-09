@@ -1064,7 +1064,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []);
+  }, [DAYS_OF_WEEK]); // Added DAYS_OF_WEEK to dependencies
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
@@ -1161,7 +1161,11 @@ const Index = () => {
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
-        return shouldShowNearbySessions && (
+        const hasNearbySessions = (supabaseNearbySessions && supabaseNearbySessions.length > 0) || (showDemoSessions && mockNearbySessions.length > 0);
+        if (!shouldShowNearbySessions || !hasNearbySessions) {
+          return null;
+        }
+        return (
           <div className="mb-6" data-name="Nearby Sessions Section">
             <button
               onClick={() => setIsNearbySessionsOpen(prev => !prev)}
@@ -1221,7 +1225,11 @@ const Index = () => {
           </div>
         );
       case 'friends':
-        return shouldShowFriendsSessions && (
+        const hasFriendsSessions = showDemoSessions && mockFriendsSessions.length > 0;
+        if (!shouldShowFriendsSessions || !hasFriendsSessions) {
+          return null;
+        }
+        return (
           <div data-name="Friends Sessions Section">
             <button
               onClick={() => setIsFriendsSessionsOpen(prev => !prev)}
@@ -1252,7 +1260,11 @@ const Index = () => {
           </div>
         );
       case 'organization':
-        return shouldShowOrganizationSessions && mockOrganizationSessions.length > 0 && (
+        const hasOrganizationSessions = mockOrganizationSessions.length > 0;
+        if (!shouldShowOrganizationSessions || !hasOrganizationSessions) {
+          return null;
+        }
+        return (
           <div data-name="Organization Sessions Section">
             <button
               onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
