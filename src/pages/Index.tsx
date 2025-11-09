@@ -1286,7 +1286,7 @@ const Index = () => {
                 <ScheduleForm />
               ) : (
                 <>
-                  <div className="flex justify-between items-start mb-2"> {/* Adjusted margin-bottom */}
+                  <div className="flex justify-between items-start mb-6">
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -1354,37 +1354,6 @@ const Index = () => {
                     </div>
                   </div>
                   
-                  {/* Sesh Title moved here */}
-                  {isEditingSeshTitle ? (
-                    <Input
-                      ref={titleInputRef}
-                      value={seshTitle}
-                      onChange={(e) => setSeshTitle(e.target.value)}
-                      onKeyDown={handleTitleInputKeyDown}
-                      onBlur={handleTitleInputBlur}
-                      placeholder={getDefaultSeshTitle()}
-                      className="text-xl font-semibold h-auto py-1 px-2 text-center mb-4" // Adjusted styling
-                      onFocus={(e) => e.target.select()}
-                      data-name="Sesh Title Input"
-                    />
-                  ) : (
-                    <h3 
-                      className={cn(
-                        "text-xl font-semibold cursor-pointer select-none mb-4", // Adjusted styling
-                        isDefaultTitleAnimating && "animate-fade-in-out"
-                      )}
-                      onClick={handleTitleClick}
-                      onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
-                      onMouseUp={handleLongPressEnd}
-                      onMouseLeave={handleLongPressEnd}
-                      onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
-                      onTouchEnd={handleLongPressEnd}
-                      data-name="Sesh Title Display"
-                    >
-                      {seshTitle}
-                    </h3>
-                  )}
-
                   <div 
                     className="relative flex flex-col items-center mb-4"
                     onClick={(e) => {
@@ -1613,7 +1582,35 @@ const Index = () => {
             <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
-                  {/* Removed Sesh Title from here */}
+                  {isEditingSeshTitle ? (
+                    <Input
+                      ref={titleInputRef}
+                      value={seshTitle}
+                      onChange={(e) => setSeshTitle(e.target.value)}
+                      onKeyDown={handleTitleInputKeyDown}
+                      onBlur={handleTitleInputBlur}
+                      placeholder={getDefaultSeshTitle()}
+                      className="text-lg font-semibold h-auto py-1 px-2" 
+                      onFocus={(e) => e.target.select()}
+                      data-name="Sesh Title Input"
+                    />
+                  ) : (
+                    <CardTitle 
+                      className={cn(
+                        "text-lg cursor-pointer select-none",
+                        isDefaultTitleAnimating && "animate-fade-in-out"
+                      )}
+                      onClick={handleTitleClick}
+                      onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
+                      onMouseUp={handleLongPressEnd}
+                      onMouseLeave={handleLongPressEnd}
+                      onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
+                      onTouchEnd={handleLongPressEnd}
+                      data-name="Sesh Title Display"
+                    >
+                      {seshTitle}
+                    </CardTitle>
+                  )}
                   <span className="text-lg font-semibold text-black">Notes</span>
                 </div>
               </CardHeader>
