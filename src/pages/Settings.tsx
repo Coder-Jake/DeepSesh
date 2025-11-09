@@ -1196,13 +1196,7 @@ const Settings = () => {
         </Button>
       </div>
 
-      {user && (
-        <div className="fixed bottom-4 left-4 z-50">
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
-          </Button>
-        </div>
-      )}
+      {/* Removed the logout button */}
     </main>
   );
 };
