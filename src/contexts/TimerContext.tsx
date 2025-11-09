@@ -760,8 +760,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       joinTime: Date.now(),
       role: 'host',
       focusPreference: userFocusPreference || 50,
-      intention: profile?.profile_data.intention.value || undefined,
-      bio: profile?.profile_data.bio.value || undefined,
+      intention: profile?.profile_data?.intention?.value || undefined,
+      bio: profile?.profile_data?.bio?.value || undefined,
     };
     setCurrentSessionParticipantsData([hostParticipant]);
     setCurrentSessionRole('host');
@@ -823,7 +823,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
-    userFocusPreference, profile?.profile_data.intention.value, profile?.profile_data.bio.value, isGlobalPrivate, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized
+    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, isGlobalPrivate, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1027,8 +1027,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       joinTime: Date.now(),
       role: 'coworker',
       focusPreference: userFocusPreference || 50,
-      intention: profile?.profile_data.intention.value || undefined,
-      bio: profile?.profile_data.bio.value || undefined,
+      intention: profile?.profile_data?.intention?.value || undefined,
+      bio: profile?.profile_data?.bio?.value || undefined,
     };
 
     const { data: existingSession, error: fetchError } = await supabase
@@ -1086,7 +1086,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsTimeLeftManagedBySession, setTimeLeft, setSessionStartTime, setCurrentPhaseStartTime,
     setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
     setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
-    userFocusPreference, profile?.profile_data.intention.value, profile?.profile_data.bio.value, _defaultBreakMinutes, _defaultFocusMinutes,
+    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, _defaultBreakMinutes, _defaultFocusMinutes,
     playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates
   ]);
 
