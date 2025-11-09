@@ -317,7 +317,7 @@ const Index = () => {
     resetSessionStates,
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
@@ -1130,8 +1130,10 @@ const Index = () => {
   }, [hostCode, areToastsEnabled]);
 
   const handleActivateDiscovery = async () => {
-    if (discoveryDisplayName.trim() !== "" && discoveryDisplayName !== localFirstName) {
-      setLocalFirstName(discoveryDisplayName.trim());
+    const trimmedDisplayName = discoveryDisplayName.trim();
+    if (trimmedDisplayName !== "" && trimmedDisplayName !== localFirstName) {
+      // Use updateProfile to ensure the profile context is properly updated and persisted
+      await updateProfile({ first_name: trimmedDisplayName }, "Display name updated.");
     }
 
     setIsDiscoveryActivated(true);
