@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown } from "lucide-react";
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -1638,7 +1638,7 @@ const Index = () => {
                     <div 
                       key={person.id}
                       className={cn(
-                        "relative flex items-center justify-between p-2 rounded-md select-none", // Added 'relative'
+                        "flex items-center justify-between p-2 rounded-md select-none",
                         person.role === 'self' ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
                         "hover:bg-muted cursor-pointer"
@@ -1646,10 +1646,7 @@ const Index = () => {
                       data-name={`Coworker: ${person.name}`}
                       onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
-                      {person.role === 'host' && (
-                        <Crown size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-yellow-500" /> // Absolute positioned
-                      )}
-                      <span className="font-medium text-foreground flex items-center gap-2 pl-6"> {/* Added pl-6 */}
+                      <span className="font-medium text-foreground">
                         {person.role === 'self' ? localFirstName || "You" : person.name}
                       </span>
                       <span className="text-sm text-muted-foreground">
