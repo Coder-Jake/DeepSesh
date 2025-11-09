@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from 'sonner';
 import { useTheme } from "@/contexts/ThemeContext";
 import { useProfile } from "@/contexts/ProfileContext";
+import { supabase } from '@/integrations/supabase/client'; // NEW: Import supabase client
 
 const Settings = () => {
   const { 
@@ -88,7 +89,7 @@ const Settings = () => {
     resetSessionStates, // NEW: Get resetSessionStates from TimerContext
   } = useTimer();
 
-  const { user, logout } = useAuth(); // Get logout from AuthContext
+  const { user } = useAuth(); // Removed 'logout' from destructuring
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile } = useProfile(); // NEW: Get resetProfile
@@ -462,8 +463,8 @@ const Settings = () => {
     setHasChanges(false);
   };
 
-  const handleLogout = () => {
-    logout(); // Call Supabase logout
+  const handleLogout = async () => { // Made async
+    await supabase.auth.signOut(); // Call Supabase signOut directly
     resetProfile(); // Clear all local storage for profile
     resetSessionStates(); // Clear all local storage for timer
     if (areToastsEnabled) {

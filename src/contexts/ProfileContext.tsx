@@ -31,6 +31,9 @@ export type Profile = {
 // Simplified ProfileUpdate type for local storage
 export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at'>>;
 
+// NEW: Type for inserting a new profile (requires id, but not updated_at)
+export type ProfileInsert = Omit<Profile, 'updated_at'>;
+
 // Helper to generate a random host code
 export const generateRandomHostCode = () => {
   const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -265,11 +268,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         if (error && error.code === 'PGRST116') { // No rows found
           console.log("No profile found, creating a new one.");
           const newHostCode = generateRandomHostCode();
-          const newProfileData: ProfileUpdate = {
-            id: user.id,
+          const newProfileData: ProfileInsert = { // Changed type to ProfileInsert
+            id: user.id, 
             first_name: user.user_metadata.first_name || "You",
             host_code: newHostCode,
-            updated_at: new Date().toISOString(),
             focus_preference: 50,
             bio_visibility: ['public'],
             intention_visibility: ['public'],
