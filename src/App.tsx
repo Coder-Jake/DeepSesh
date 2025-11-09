@@ -18,8 +18,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TimerProvider } from './contexts/TimerContext'; // Moved import
-import { ProfileProvider } from './contexts/ProfileContext'; // Moved import
+import { TimerProvider } from './contexts/TimerContext';
+import { ProfileProvider } from './contexts/ProfileContext';
 
 const queryClient = new QueryClient();
 
@@ -32,9 +32,9 @@ function App() {
         <Router>
           <ThemeProvider>
             <AuthProvider>
-              {/* ProfileProvider now wraps TimerProvider to allow TimerContext to access ProfileContext values */}
-              <ProfileProvider areToastsEnabled={areToastsEnabled}>
-                <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
+              {/* TimerProvider now wraps ProfileProvider */}
+              <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
+                <ProfileProvider areToastsEnabled={areToastsEnabled}>
                   <ProfilePopUpProvider>
                     <Routes>
                       <Route path="/" element={<AppLayout />}>
@@ -50,8 +50,8 @@ function App() {
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </ProfilePopUpProvider>
-                </TimerProvider>
-              </ProfileProvider>
+                </ProfileProvider>
+              </TimerProvider>
             </AuthProvider>
           </ThemeProvider>
         </Router>
