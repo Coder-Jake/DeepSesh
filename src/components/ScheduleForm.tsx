@@ -48,18 +48,8 @@ const ScheduleForm: React.FC = () => {
     getDefaultSeshTitle, // NEW: Import getDefaultSeshTitle
   } = useTimer();
 
-  useEffect(() => {
-    if (schedule.length === 0) {
-      setSchedule([
-        { id: crypto.randomUUID(), title: "Beginning", type: "focus", durationMinutes: 25 },
-        { id: crypto.randomUUID(), title: "Short Break", type: "break", durationMinutes: 5 },
-        { id: crypto.randomUUID(), title: "Middle", type: "focus", durationMinutes: 60 },
-        { id: crypto.randomUUID(), title: "Long Break", type: "break", durationMinutes: 30 },
-        { id: crypto.randomUUID(), title: "End", type: "focus", durationMinutes: 45 },
-        { id: crypto.randomUUID(), title: "Networking", type: "break", durationMinutes: 15 },
-      ]);
-    }
-  }, [schedule, setSchedule]);
+  // REMOVED: The useEffect that initialized the schedule with default timers.
+  // The schedule will now start empty.
 
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
@@ -200,6 +190,20 @@ const ScheduleForm: React.FC = () => {
     setVisibleTrashId(null);
     if (trashTimeoutRef.current) {
       clearTimeout(trashTimeoutRef.current);
+    }
+  };
+
+  // NEW: Function to trash all timers
+  const handleTrashAllTimers = () => {
+    setSchedule([]);
+    setVisibleTrashId(null);
+    if (trashTimeoutRef.current) {
+      clearTimeout(trashTimeoutRef.current);
+    }
+    if (areToastsEnabled) {
+      toast.info("Schedule Cleared", {
+        description: "All timers have been removed from the schedule.",
+      });
     }
   };
 
@@ -504,7 +508,21 @@ const ScheduleForm: React.FC = () => {
                   </span>
                 )}
               </span>
-              <div className="w-8 h-8" />
+              {/* NEW: Trash All button, visible when a single trash icon is visible */}
+              {visibleTrashId && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleTrashAllTimers}
+                  className="h-8 w-8 text-destructive hover:text-destructive/80"
+                  aria-label="Trash all schedule lines"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+              {!visibleTrashId && (
+                <div className="w-8 h-8" /> // Spacer if trash all is not visible
+              )}
             </div>
           )}
 
