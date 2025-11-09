@@ -1638,7 +1638,7 @@ const Index = () => {
                     <div 
                       key={person.id}
                       className={cn(
-                        "flex items-center justify-between p-2 rounded-md select-none",
+                        "relative flex items-center justify-between p-2 rounded-md select-none", // Added 'relative'
                         person.role === 'self' ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
                         "hover:bg-muted cursor-pointer"
@@ -1646,8 +1646,10 @@ const Index = () => {
                       data-name={`Coworker: ${person.name}`}
                       onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
-                      <span className="font-medium text-foreground flex items-center gap-2">
-                        {person.role === 'host' && <Crown size={16} className="text-yellow-500" />}
+                      {person.role === 'host' && (
+                        <Crown size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-yellow-500" /> // Absolute positioned
+                      )}
+                      <span className="font-medium text-foreground flex items-center gap-2 pl-6"> {/* Added pl-6 */}
                         {person.role === 'self' ? localFirstName || "You" : person.name}
                       </span>
                       <span className="text-sm text-muted-foreground">
