@@ -1286,7 +1286,7 @@ const Index = () => {
                 <ScheduleForm />
               ) : (
                 <>
-                  <div className="flex justify-between items-start mb-6">
+                  <div className="flex justify-between items-center mb-6"> {/* Changed items-start to items-center */}
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -1299,7 +1299,7 @@ const Index = () => {
                     </Button>
                     {/* NEW: seshTitle H2 */}
                     {isActiveTimer && (
-                      <h2 className="text-xl font-bold text-foreground text-center flex-grow mt-1">
+                      <h2 className="text-xl font-bold text-foreground text-center flex-grow"> {/* Removed mt-1 */}
                         {seshTitle}
                       </h2>
                     )}
