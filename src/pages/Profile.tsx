@@ -500,7 +500,7 @@ const Profile = () => {
   console.log("Rendering Profile. Host Code:", hostCode); // Add this log
 
   return (
-    <main className="max-w-4xl mx-auto pt-16 px-4 pb-[50px] lg:pt-20 lg:px-6 lg:pb-[50px]">
+    <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
       <div className="mb-6 flex justify-between items-center relative">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
         {hasChanges && (
