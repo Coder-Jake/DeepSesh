@@ -1296,9 +1296,7 @@ const Index = () => {
   return (
     <TooltipProvider>
       <main className="max-w-4xl mx-auto pt-12 px-1 pb-4 lg:pt-15 lg:px-1 lg:pb-6">
-        <div className="mb-3">
-          <p className="text-muted-foreground">Sync focus with nearby coworkers</p>
-        </div>
+        {/* Removed the original div containing the <p> tag */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div className={cn(
@@ -1322,18 +1320,24 @@ const Index = () => {
                       <CalendarPlus size={16} />
                       <span className="text-sm font-medium">Schedule</span>
                     </Button>
-                    {isActiveTimer && (
-                      <h2
-                        className="text-xl font-bold text-foreground text-center flex-grow self-center"
-                        onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
-                        onMouseUp={handleLongPressEnd}
-                        onMouseLeave={handleLongPressEnd}
-                        onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
-                        onTouchEnd={handleLongPressEnd}
-                      >
-                        {seshTitle}
-                      </h2>
-                    )}
+                    <div className="flex-grow self-center text-center transition-opacity duration-300 ease-in-out">
+                      {isActiveTimer ? (
+                        <h2
+                          className="text-xl font-bold text-foreground"
+                          onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
+                          onMouseUp={handleLongPressEnd}
+                          onMouseLeave={handleLongPressEnd}
+                          onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
+                          onTouchEnd={handleLongPressEnd}
+                        >
+                          {seshTitle}
+                        </h2>
+                      ) : (
+                        <p className="text-xl font-bold text-muted-foreground">
+                          Sync focus with nearby coworkers
+                        </p>
+                      )}
+                    </div>
                     <div className="flex flex-col items-end gap-2">
                       <button
                         onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
