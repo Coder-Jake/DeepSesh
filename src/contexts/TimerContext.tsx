@@ -751,6 +751,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 
+    console.log("--- Debugging Session Title before Supabase Insert ---");
+    console.log("User ID:", user?.id);
+    console.log("localFirstName (from ProfileContext):", localFirstName);
+    console.log("isSeshTitleCustomized (from TimerContext):", isSeshTitleCustomized);
+    console.log("getDefaultSeshTitle():", getDefaultSeshTitle());
+    console.log("initialScheduleTitle (value being sent to Supabase):", initialScheduleTitle);
+    console.log("--- End Debugging Session Title ---");
+
     if (!isGlobalPrivate) {
       const { latitude, longitude } = await getLocation();
       const currentScheduleItem = initialSchedule[0];
@@ -797,7 +805,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
-    userFocusPreference, userIntention, userBio, isGlobalPrivate, getLocation, getDefaultSeshTitle // Changed from sociability
+    userFocusPreference, userIntention, userBio, isGlobalPrivate, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized // Added scheduleTitle, _seshTitle, isSeshTitleCustomized to dependencies
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1183,6 +1191,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       _setSeshTitle(activeScheduleDisplayTitle);
     }
   }, [activeScheduleDisplayTitle, isSeshTitleCustomized]);
+
+  // NEW: Effect to update _seshTitle when localFirstName changes, if not customized
+  useEffect(() => {
+    if (!isSeshTitleCustomized) {
+      _setSeshTitle(getDefaultSeshTitle());
+    }
+  }, [localFirstName, isSeshTitleCustomized, getDefaultSeshTitle]);
 
 
   const addAsk = useCallback((ask: ActiveAskItem) => {
