@@ -383,14 +383,17 @@ const Index = () => {
         id: p.userId,
         name: p.userName,
         focusPreference: p.focusPreference || 50, // Changed from sociability
-        role: role,
+        role: role, // The returned object has a 'role' that can be 'self'
       };
     }).sort((a, b) => {
       // Sort 'self' first, then 'host', then alphabetically by name for 'coworker'
       if (a.role === 'self') return -1;
       if (b.role === 'self') return 1;
-      if (a.role === 'host' && b.role !== 'self') return -1;
-      if (b.role === 'host' && a.role !== 'self') return 1;
+      // At this point, neither a.role nor b.role can be 'self'.
+      // Their types are effectively narrowed to 'host' | 'coworker'.
+      if (a.role === 'host') return -1; 
+      if (b.role === 'host') return 1;
+      // At this point, if neither a nor b is 'self' or 'host', they must both be 'coworker'.
       return a.name.localeCompare(b.name);
     });
   }, [currentSessionParticipantsData, user?.id]);
