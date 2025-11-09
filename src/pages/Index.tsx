@@ -1826,7 +1826,7 @@ const Index = () => {
                 <Label htmlFor="discovery-display-name">Name</Label>
                 <Input
                   id="discovery-display-name"
-                  placeholder={hostCode || "Your Host Code"}
+                  // Removed placeholder prop
                   value={discoveryDisplayName}
                   onChange={(e) => setDiscoveryDisplayName(e.target.value)}
                   onFocus={(e) => e.target.select()}
