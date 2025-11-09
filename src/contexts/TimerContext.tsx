@@ -244,11 +244,36 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, []);
 
-  const setSeshTitle = useCallback((newTitle: string) => {
+  const setSeshTitle = useCallback(async (newTitle: string) => {
     const defaultTitle = getDefaultSeshTitle();
     _setSeshTitle(newTitle);
-    setIsSeshTitleCustomized(newTitle.trim() !== "" && newTitle !== defaultTitle);
-  }, [getDefaultSeshTitle]);
+    const isCustom = newTitle.trim() !== "" && newTitle !== defaultTitle;
+    setIsSeshTitleCustomized(isCustom);
+
+    // If a session is active and published to Supabase, update its title
+    if (user?.id && activeSessionRecordId && currentSessionRole === 'host') {
+      try {
+        const { error } = await supabase
+          .from('active_sessions')
+          .update({ session_title: newTitle })
+          .eq('id', activeSessionRecordId)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error("Error updating session title in Supabase:", error);
+          if (areToastsEnabled) {
+            toast.error("Supabase Update Error", {
+              description: `Failed to update session title: ${error.message}`,
+            });
+          }
+        } else {
+          console.log("Session title updated in Supabase:", newTitle);
+        }
+      } catch (error) {
+        console.error("Unexpected error during Supabase title update:", error);
+      }
+    }
+  }, [getDefaultSeshTitle, user?.id, activeSessionRecordId, currentSessionRole, areToastsEnabled]);
 
   const updateSeshTitleWithSchedule = useCallback((currentScheduleTitle: string) => {
     if (!isSeshTitleCustomized) {
@@ -561,7 +586,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         toast.info("Session Ended", {
           description: "No other participants to transfer host role to. Session ended.",
         });
-      }
+      });
       await resetSchedule();
     }
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
@@ -970,7 +995,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
-      _setSeshTitle(getDefaultSeshTitle());
+      setSeshTitle(getDefaultSeshTitle());
       setActiveAsks([]);
       setHasWonPrize(false);
       setIsHomepageFocusCustomized(false);
@@ -1062,7 +1087,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     user?.id, areToastsEnabled, isRunning, isPaused, isScheduleActive, isSchedulePrepared,
     resetSchedule, setIsRunning, setIsPaused, setIsFlashing, setAccumulatedFocusSeconds,
-    setAccumulatedBreakSeconds, _setSeshTitle, setActiveAsks, setHasWonPrize,
+    setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setHasWonPrize,
     setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setActiveSessionRecordId,
     setActiveSchedule, setActiveScheduleDisplayTitleInternal, setTimerType,
     setIsTimeLeftManagedBySession, setTimeLeft, setSessionStartTime, setCurrentPhaseStartTime,
