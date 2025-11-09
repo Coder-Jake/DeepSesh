@@ -764,7 +764,7 @@ const Index = () => {
     if (showSessionsWhileActive === 'hidden') {
       return false;
     }
-    if (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all') {
+    if (showSessionsWhileActive === 'friends' || showSessionsWhileWhileActive === 'all') {
       return true;
     }
     return false;
@@ -1145,6 +1145,13 @@ const Index = () => {
       toast.success("Discovery Activated!", {
         description: "Discovery is now active. Check your settings to adjust session visibility.",
       });
+    }
+  };
+
+  const handleDiscoveryDisplayNameBlur = async () => {
+    const trimmedDisplayName = discoveryDisplayName.trim();
+    if (trimmedDisplayName !== "" && trimmedDisplayName !== localFirstName) {
+      await updateProfile({ first_name: trimmedDisplayName }, "Display name updated.");
     }
   };
 
@@ -1823,6 +1830,7 @@ const Index = () => {
                   value={discoveryDisplayName}
                   onChange={(e) => setDiscoveryDisplayName(e.target.value)}
                   onFocus={(e) => e.target.select()}
+                  onBlur={handleDiscoveryDisplayNameBlur} {/* Added onBlur handler */}
                 />
               </div>
 
