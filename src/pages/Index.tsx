@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData, DemoSession } from "@/types/timer"; // NEW: Import DemoSession and ParticipantSessionData
+import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData, DemoSession } from "@/types/timer";
 import { Accordion
  } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
@@ -42,11 +42,11 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { useTheme } from '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext'; // Corrected import path
+import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Profile as ProfileType } from '@/contexts/ProfileContext'; // Import ProfileType from correct path
+import { Profile as ProfileType } from '@/contexts/ProfileContext';
 
 interface ExtendSuggestion {
   id: string;
@@ -74,8 +74,6 @@ interface Poll {
 
 type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
-
-// REMOVED: interface DemoSession { ... }
 
 // NEW: Define a type for Supabase fetched sessions
 interface SupabaseSessionData {
@@ -142,7 +140,7 @@ const mockFriendsSessions: DemoSession[] = [
       { userId: "mock-user-id-jung", userName: "Jung", role: 'coworker', joinTime: Date.now(), focusPreference: 70, intention: "Summarizing archetypal concepts." },
       { userId: "mock-user-id-maslow", userName: "Maslow", role: 'coworker', joinTime: Date.now(), focusPreference: 90, intention: "Creating hierarchy of needs flashcards." },
       { userId: "mock-user-id-rogers", userName: "Rogers", role: 'coworker', joinTime: Date.now(), focusPreference: 95, intention: "Discussing humanistic approaches." },
-      { userId: "mock-user-id-bandura", userName: "Bandura", role: 'coworker', joinTime: Date.now(), focusPreference: 75, intention: "Collaborating on social learning theory guide." },
+      // Removed Bandura from mock sessions
       { userId: "mock-user-id-pavlov", userName: "Pavlov", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Peer teaching classical conditioning." },
     ],
     fullSchedule: [
@@ -313,7 +311,7 @@ const Index = () => {
     transferHostRole,
     stopTimer,
     resetSessionStates,
-    showDemoSessions, // NEW: Get showDemoSessions
+    showDemoSessions,
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
@@ -332,7 +330,7 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const notesTextareaRef = useRef<HTMLTextAreaAreaElement>(null);
 
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
@@ -355,7 +353,7 @@ const Index = () => {
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(
@@ -775,7 +773,7 @@ const Index = () => {
   }, [profile?.organization, isDiscoveryActivated]);
 
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
-    if (!profile?.organization || !showDemoSessions) return []; // NEW: Conditionally render mock org sessions
+    if (!profile?.organization || !showDemoSessions) return [];
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
@@ -873,7 +871,7 @@ const Index = () => {
     });
 
     return sessions;
-  }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions]); // NEW: Add showDemoSessions to dependencies
+  }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions]);
 
 
   const handleExtendSubmit = (minutes: number) => {
@@ -1063,7 +1061,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []); // Removed DAYS_OF_WEEK from dependencies as it's not directly used in the logic
+  }, []);
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
@@ -1212,7 +1210,7 @@ const Index = () => {
                     onJoinSession={handleJoinSession}
                   />
                 ))}
-                {showDemoSessions && mockNearbySessions.map(session => ( // NEW: Conditionally render mockNearbySessions
+                {showDemoSessions && mockNearbySessions.map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -1247,7 +1245,7 @@ const Index = () => {
             </button>
             {isFriendsSessionsOpen && (
               <div className="space-y-3">
-                {showDemoSessions && mockFriendsSessions.map(session => ( // NEW: Conditionally render mockFriendsSessions
+                {showDemoSessions && mockFriendsSessions.map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -1444,7 +1442,7 @@ const Index = () => {
                     </CircularProgress>
                   </div>
 
-                  <div className="flex gap-3 justify-center mb-4"> {/* Changed mb-6 to mb-4 */}
+                  <div className="flex gap-3 justify-center mb-4">
                     {isFlashing ? (
                       <Button
                         size="lg"
