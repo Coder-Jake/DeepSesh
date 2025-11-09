@@ -481,7 +481,7 @@ const ScheduleForm: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsRecurring(prev => !prev)}
+                onClick={() => setIsRecurring(prev => !prev)} // Corrected usage
                 className={cn(
                   "h-8 w-8 rounded-full hover:bg-transparent focus:bg-transparent active:bg-transparent", // Removed hover:bg-muted and added transparent backgrounds
                   isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground" // Removed hover:bg-muted

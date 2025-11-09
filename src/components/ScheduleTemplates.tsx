@@ -45,7 +45,7 @@ const ScheduleTemplates: React.FC<ScheduleTemplatesProps> = ({ setActiveTab }) =
     setCommenceTime("09:00");
     setCommenceDay(new Date().getDay());
     setScheduleStartOption('now');
-    setIsRecurring(false);
+    setIsRecurring(false); // Corrected usage
     setRecurrenceFrequency('daily');
     setActiveTab('plan'); // Switch to plan tab
   };

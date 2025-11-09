@@ -49,7 +49,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [commenceTime, setCommenceTime] = useState("");
   const [commenceDay, setCommenceDay] = useState<number | null>(null);
   const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
-  const [isRecurring, setIsRecurring] = useState(false);
+  const [isRecurring, setIsRecurring] = useState<boolean>(false); // Corrected type
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now');
 
@@ -73,9 +73,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const [currentSessionRole, setCurrentSessionRole] = useState<'host' | 'coworker' | null>(null);
   const [currentSessionHostName, setCurrentSessionHostName] = useState<string | null>(null);
-  const [currentSessionOtherParticipants, setCurrentSessionOtherParticipants] = useState<{ id: string; name: string; sociability?: number; intention?: string; bio?: string }[]>([]);
+  const [currentSessionOtherParticipants, setCurrentSessionOtherParticipants] = useState<ParticipantSessionData[]>([]); // Corrected type
 
-  const [currentSessionParticipantsData, setCurrentSessionParticipantsData] = useState<ParticipantSessionData[]>([]);
+  const [currentSessionParticipantsData, setCurrentSessionParticipantsData] = useState<ParticipantSessionData[]>([]); // Added state
 
   const allParticipantsToDisplay = useMemo(() => {
     const participants: string[] = [];
@@ -92,8 +92,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     currentSessionOtherParticipants.forEach(p => {
-      if (p.name !== currentUserName && p.name !== currentSessionHostName) {
-        uniqueNames.add(p.name);
+      if (p.userName !== currentUserName && p.userName !== currentSessionHostName) {
+        uniqueNames.add(p.userName);
       }
     });
 
@@ -772,7 +772,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     sessionId: string,
     sessionTitle: string,
     hostName: string,
-    participants: { id: string; name: string; sociability?: number; intention?: string; bio?: string }[],
+    participants: ParticipantSessionData[], // Corrected type
     fullSchedule: ScheduledTimer[],
     currentPhaseType: 'focus' | 'break',
     currentPhaseDurationMinutes: number,
@@ -825,7 +825,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     setCurrentSessionRole('coworker');
     setCurrentSessionHostName(hostName);
-    setCurrentSessionOtherParticipants(participants.filter(p => p.id !== user.id));
+    setCurrentSessionOtherParticipants(participants.filter(p => p.userId !== user.id));
 
     const newCoworker: ParticipantSessionData = {
       userId: user.id,
@@ -930,7 +930,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
     }
     resetSessionStates();
-  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates]);
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates, transferHostRole]);
 
   const transferHostRole = useCallback(async () => {
     if (!user?.id || !activeSessionRecordId || currentSessionRole !== 'host') {
@@ -1206,7 +1206,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(intervalId);
       }
     };
-  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule]);
+  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, activeAsks, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes]);
 
   // NEW: Effect to update lastActivityTime whenever the timer is active
   useEffect(() => {
@@ -1586,6 +1586,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
+    currentSessionParticipantsData,
+    setCurrentSessionParticipantsData,
     allParticipantsToDisplay,
 
     isSchedulePending,

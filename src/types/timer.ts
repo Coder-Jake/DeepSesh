@@ -144,7 +144,7 @@ export type TimerContextType = {
   isGlobalPrivate: boolean;
   setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>;
   isRecurring: boolean;
-  setIsRecurring: React.SetStateAction<boolean>;
+  setIsRecurring: React.Dispatch<React.SetStateAction<boolean>>;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
   setRecurrenceFrequency: React.Dispatch<React.SetStateAction<'daily' | 'weekly' | 'monthly'>>;
   scheduleStartOption: 'now' | 'manual' | 'custom_time';
@@ -188,8 +188,10 @@ export type TimerContextType = {
   setCurrentSessionRole: React.Dispatch<React.SetStateAction<'host' | 'coworker' | null>>;
   currentSessionHostName: string | null;
   setCurrentSessionHostName: React.Dispatch<React.SetStateAction<string | null>>;
-  currentSessionOtherParticipants: { id: string; name: string; sociability?: number; intention?: string; bio?: string }[];
-  setCurrentSessionOtherParticipants: React.Dispatch<React.SetStateAction<{ id: string; name: string; sociability?: number; intention?: string; bio?: string }[]>>;
+  currentSessionOtherParticipants: ParticipantSessionData[]; // Changed to ParticipantSessionData[]
+  setCurrentSessionOtherParticipants: React.Dispatch<React.SetStateAction<ParticipantSessionData[]>>; // Changed to ParticipantSessionData[]
+  currentSessionParticipantsData: ParticipantSessionData[]; // NEW: Added to TimerContextType
+  setCurrentSessionParticipantsData: React.Dispatch<React.SetStateAction<ParticipantSessionData[]>>; // NEW: Added to TimerContextType
   allParticipantsToDisplay: string[];
 
   isSchedulePending: boolean;
@@ -259,7 +261,7 @@ export type TimerContextType = {
   setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsDiscoveryActivated
   activeSessionRecordId: string | null; // NEW: Expose activeSessionRecordId
   setActiveSessionRecordId: React.Dispatch<React.SetStateAction<string | null>>; // NEW: Expose setActiveSessionRecordId
-  joinSessionAsCoworker: (sessionId: string, sessionTitle: string, hostName: string, participants: { id: string; name: string; sociability?: number; intention?: string; bio?: string }[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>; // NEW: Add joinSessionAsCoworker
+  joinSessionAsCoworker: (sessionId: string, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>; // NEW: Add joinSessionAsCoworker
   leaveSession: () => Promise<void>; // NEW: Add leaveSession
   transferHostRole: () => Promise<void>; // NEW: Add transferHostRole
 };

@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ScheduledTimerTemplate, ScheduledTimer } from "@/types/timer";
+import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData } from "@/types/timer";
 import { DAYS_OF_WEEK } from "@/lib/constants";
 import { Accordion
  } from "@/components/ui/accordion";
@@ -176,14 +176,18 @@ const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
   return data.map((session: SupabaseSessionData) => {
     const participants = [{ id: session.user_id || `anon-${session.id}`, name: session.host_name, sociability: 50 }]; // Default sociability for now
 
-    let fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
+    let fullSchedule: ScheduledTimer[]; // Changed to ScheduledTimer[]
     if (session.schedule_data && Array.isArray(session.schedule_data) && session.schedule_data.length > 0) {
       fullSchedule = session.schedule_data.map((item: any) => ({
+        id: item.id || crypto.randomUUID(), // Ensure id is present
+        title: item.title || item.type, // Ensure title is present
         type: item.type,
         durationMinutes: item.durationMinutes,
       }));
     } else {
       fullSchedule = [{
+        id: crypto.randomUUID(), // Ensure id is present
+        title: session.current_phase_type, // Ensure title is present
         type: session.current_phase_type,
         durationMinutes: session.current_phase_type === 'focus' ? session.focus_duration : session.break_duration,
       }];
@@ -283,7 +287,6 @@ const Index = () => {
     setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
-    // allParticipantsToDisplay, // This is for the summary, not for the card
     currentSessionParticipantsData, // NEW: Get currentSessionParticipantsData from context
     setCurrentSessionParticipantsData, // NEW: Get setCurrentSessionParticipantsData from context
 
@@ -388,10 +391,10 @@ const Index = () => {
 
     // Add other participants
     currentSessionOtherParticipants.forEach(p => {
-      if (!participantsMap.has(p.id)) {
-        participantsMap.set(p.id, {
-          id: p.id,
-          name: p.name,
+      if (!participantsMap.has(p.userId)) { // Use p.userId for the key
+        participantsMap.set(p.userId, {
+          id: p.userId, // Use p.userId
+          name: p.userName, // Use p.userName
           sociability: p.sociability || 50,
           role: 'coworker', // Assuming others are coworkers
         });
@@ -515,7 +518,7 @@ const Index = () => {
     setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     setIsTimeLeftManagedBySession(true);
 
-    const hostParticipant = {
+    const hostParticipant: ParticipantSessionData = { // Explicitly type hostParticipant
       userId: user?.id || `anon-${crypto.randomUUID()}`,
       userName: localFirstName,
       joinTime: Date.now(),
@@ -765,8 +768,23 @@ const Index = () => {
     const sessionId = session.id;
     const sessionTitle = session.title;
     const hostName = session.participants[0]?.name || session.title; // Assuming first participant is host for demo
-    const participants = session.participants;
-    const fullSchedule = session.fullSchedule;
+    
+    // Map DemoSession participants to ParticipantSessionData
+    const participants: ParticipantSessionData[] = session.participants.map(p => ({
+      userId: p.id,
+      userName: p.name,
+      joinTime: Date.now(), // Placeholder, actual join time would be from backend
+      role: p.id === session.participants[0]?.id ? 'host' : 'coworker', // Assume first is host
+      sociability: p.sociability,
+      intention: p.intention,
+      bio: p.bio,
+    }));
+
+    const fullSchedule = session.fullSchedule.map(item => ({
+      id: crypto.randomUUID(), // Generate new ID for each item
+      title: item.type === 'focus' ? 'Focus' : 'Break', // Default title
+      ...item,
+    }));
 
     const now = Date.now();
     const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
@@ -1155,7 +1173,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, [template.commenceTime, template.commenceDay, template.isRecurring, template.recurrenceFrequency]);
+  }, []); // Removed template from dependencies
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
