@@ -1299,7 +1299,7 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div className={cn(
-              "relative rounded-lg border border-border pt-1 pb-8 px-1 text-center transition-colors",
+              "relative rounded-lg border border-border pt-1 pb-4 px-1 text-center transition-colors", // Changed pb-8 to pb-4
               !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
               !isGlobalPrivate && !isDarkMode && "bg-[hsl(var(--public-bg))]",
               isGlobalPrivate && "bg-[hsl(var(--private-bg))]"
