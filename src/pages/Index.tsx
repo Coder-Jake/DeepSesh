@@ -946,12 +946,13 @@ const Index = () => {
     });
   };
 
-  const handleVotePoll = (pollId: string, selectedOptionIdsFromCard: string[], customOptionText?: string, isCustomOptionSelected?: boolean) => {
+  // NEW: Function to handle voting on an existing poll
+  const handleVoteOnExistingPoll = (pollId: string, optionIds: string[], customOptionText?: string, isCustomOptionSelected?: boolean) => {
     const currentAsk = activeAsks.find(ask => ask.id === pollId);
     if (!currentAsk || !('options' in currentAsk)) return;
 
     let currentPoll = currentAsk as Poll;
-    let finalOptionIdsToVote: string[] = [...selectedOptionIdsFromCard];
+    let finalOptionIdsToVote: string[] = [...optionIds];
 
     const trimmedCustomText = customOptionText?.trim();
     let userCustomOptionId: string | null = null;
@@ -998,8 +999,9 @@ const Index = () => {
       return { ...option, votes: newVotes };
     });
 
+    // Filter out custom options that no longer have votes and are not the current user's active custom response
     updatedOptions = updatedOptions.filter(option =>
-      !option.id.startsWith('custom-') || option.votes.length > 0
+      !option.id.startsWith('custom-') || option.votes.length > 0 || (option.id === userCustomOptionId && isCustomOptionSelected)
     );
 
     updateAsk({ ...currentPoll, options: updatedOptions });
@@ -1561,7 +1563,7 @@ const Index = () => {
             <ActiveAskSection 
               activeAsks={activeAsks} 
               onVoteExtend={handleVoteExtend} 
-              onVotePoll={handlePollSubmit}
+              onVotePoll={handleVoteOnExistingPoll} {/* Changed to handleVoteOnExistingPoll */}
               currentUserId={currentUserId} 
             />
           </div>
