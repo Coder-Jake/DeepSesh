@@ -359,7 +359,9 @@ const Index = () => {
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
-  const [discoveryDisplayName, setDiscoveryDisplayName] = useState(localFirstName || hostCode || ""); // Removed "You"
+  const [discoveryDisplayName, setDiscoveryDisplayName] = useState(
+    localFirstName === "You" ? (hostCode || "") : (localFirstName || hostCode || "")
+  );
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
