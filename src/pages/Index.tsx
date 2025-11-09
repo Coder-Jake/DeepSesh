@@ -43,7 +43,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { useTheme } from '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query'; // Corrected: Added useQuery import
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider'; // Import Slider
