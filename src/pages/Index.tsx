@@ -1295,7 +1295,7 @@ const Index = () => {
 
   return (
     <TooltipProvider>
-      <main className="max-w-4xl mx-auto pt-16 px-1 pb-4 lg:pt-20 lg:px-1 lg:pb-6">
+      <main className="max-w-4xl mx-auto pt-8 px-1 pb-4 lg:pt-10 lg:px-1 lg:pb-6">
         <div className="mb-3">
           <p className="text-muted-foreground">Sync your focus with nearby coworkers</p>
         </div>
