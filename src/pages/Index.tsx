@@ -857,7 +857,7 @@ const Index = () => {
 
       sessions.push({
         id: `org-session-${orgName.replace(/\s/g, '-')}`,
-        title: `${orgName} Focus Sesh`,
+        title: `${orgName} DeepSesh`,
         startTime: staggeredStartTime,
         location: `${orgName} HQ - Study Room`,
         workspaceImage: "/api/placeholder/200/120",
@@ -1060,7 +1060,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []);
+  }, [getEffectiveStartTime]);
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();

@@ -45,6 +45,7 @@ const ScheduleForm: React.FC = () => {
     areToastsEnabled,
     formatTime, 
     is24HourFormat, 
+    getDefaultSeshTitle, // NEW: Import getDefaultSeshTitle
   } = useTimer();
 
   useEffect(() => {
@@ -151,7 +152,7 @@ const ScheduleForm: React.FC = () => {
       setIsEditingScheduleTitle(false);
       e.currentTarget.blur();
       if (scheduleTitle.trim() === "") {
-        setScheduleTitle("My Schedule");
+        setScheduleTitle(getDefaultSeshTitle());
       }
       handleEnterKeyNavigation(e);
     }
@@ -160,7 +161,7 @@ const ScheduleForm: React.FC = () => {
   const handleScheduleTitleInputBlur = () => {
     setIsEditingScheduleTitle(false);
     if (scheduleTitle.trim() === "") {
-      setScheduleTitle("My Schedule");
+      setScheduleTitle(getDefaultSeshTitle());
     }
   };
 
@@ -372,7 +373,7 @@ const ScheduleForm: React.FC = () => {
                 onChange={(e) => setScheduleTitle(e.target.value)}
                 onKeyDown={handleScheduleTitleInputKeyDown}
                 onBlur={handleScheduleTitleInputBlur}
-                placeholder="Schedule Title"
+                placeholder={getDefaultSeshTitle()}
                 className="text-2xl font-bold h-auto py-2"
                 onFocus={(e) => e.target.select()}
                 data-input-type="schedule-title"
@@ -382,7 +383,7 @@ const ScheduleForm: React.FC = () => {
                 className="text-2xl font-bold h-auto py-2 cursor-pointer select-none"
                 onClick={handleScheduleTitleClick}
               >
-                {scheduleTitle || "My Schedule"}
+                {scheduleTitle || getDefaultSeshTitle()}
               </CardTitle>
             )
           ) : (

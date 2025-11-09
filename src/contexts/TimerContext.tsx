@@ -45,7 +45,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
   const [isSchedulingMode, setIsSchedulingMode] = useState(false);
   const [isScheduleActive, setIsScheduleActive] = useState(false);
-  const [scheduleTitle, setScheduleTitle] = useState("My Focus Sesh");
+  const [scheduleTitle, setScheduleTitle] = useState("My DeepSesh");
   const [commenceTime, setCommenceTime] = useState("");
   const [commenceDay, setCommenceDay] = useState<number | null>(null);
   const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
@@ -55,7 +55,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const [activeSchedule, setActiveSchedule] = useState<ScheduledTimer[]>([]);
   const [activeTimerColors, setActiveTimerColors] = useState<Record<string, string>>({});
-  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitleInternal] = useState("My Focus Sesh");
+  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitleInternal] = useState("My DeepSesh");
 
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]);
   
@@ -177,7 +177,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [_defaultBreakMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, breakMinutes, isHomepageBreakCustomized]);
 
   const getDefaultSeshTitle = useCallback(() => {
-    return (localFirstName && localFirstName !== "You") ? `${localFirstName}'s Focus Sesh` : "My Focus Sesh";
+    return (localFirstName && localFirstName !== "You") ? `${localFirstName}'s DeepSesh` : "My DeepSesh";
   }, [localFirstName]);
 
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
@@ -419,7 +419,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsScheduleActive(false);
     setCurrentScheduleIndex(0);
     setSchedule([]);
-    setScheduleTitle("My Focus Sesh");
+    setScheduleTitle(getDefaultSeshTitle());
     setCommenceTime("");
     setCommenceDay(null);
     setIsSchedulePending(false);
@@ -442,7 +442,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setTimerColors({});
     setActiveSchedule([]);
     setActiveTimerColors({});
-    setActiveScheduleDisplayTitleInternal("My Focus Sesh");
+    setActiveScheduleDisplayTitleInternal(getDefaultSeshTitle());
     setPreparedSchedules([]);
     setActiveAsks([]);
     console.log("TimerContext: resetSessionStates called. activeAsks cleared.");
@@ -1399,7 +1399,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
       setIsScheduleActive(loadedIsScheduleActive);
-      setScheduleTitle(data.scheduleTitle ?? "My Focus Sesh");
+      setScheduleTitle(data.scheduleTitle ?? getDefaultSeshTitle());
       setCommenceTime(data.commenceTime ?? "");
       setCommenceDay(data.commenceDay ?? null);
       setIsRecurring(data.isRecurring ?? false);
@@ -1439,7 +1439,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setTimerColors(data.timerColors ?? {});
       setActiveSchedule(loadedActiveSchedule);
       setActiveTimerColors(data.activeTimerColors ?? {});
-      setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? "My Focus Sesh");
+      setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? getDefaultSeshTitle());
       setIs24HourFormat(data.is24HourFormat ?? true);
       setAreToastsEnabled(data.areToastsEnabled ?? false);
       setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false });
