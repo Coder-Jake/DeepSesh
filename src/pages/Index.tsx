@@ -1506,79 +1506,82 @@ const Index = () => {
                     </div>
                   )}
 
-                  {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && (
-                    <div className="flex justify-center gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "text-muted-foreground cursor-pointer select-none",
-                            timerType === 'focus' && "font-bold text-foreground"
-                          )}
-                          onClick={() => handleModeToggle('focus')}
-                          data-name="Focus Mode Toggle"
-                        >
-                          Focus:
-                        </span>
-                        <Input
-                          type="number"
-                          value={focusMinutes === 0 ? "" : focusMinutes}
-                          onChange={e => {
-                            const value = e.target.value;
-                            if (value === "") {
-                              setHomepageFocusMinutes(0);
-                            } else {
-                              setHomepageFocusMinutes(parseFloat(value) || 0);
-                            }
-                          }}
-                          onBlur={() => {
-                            if (focusMinutes === 0) {
-                              setHomepageFocusMinutes(defaultFocusMinutes);
-                            }
-                          }}
-                          min={timerIncrement}
-                          max={69 * 60}
-                          step={timerIncrement}
-                          onFocus={(e) => e.target.select()}
-                          data-name="Focus Duration Input"
-                        />
+                  {/* Container to maintain consistent height for AskMenu or duration inputs */}
+                  <div className="min-h-[120px] flex flex-col justify-center items-center">
+                    {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && (
+                      <div className="flex justify-center gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "text-muted-foreground cursor-pointer select-none",
+                              timerType === 'focus' && "font-bold text-foreground"
+                            )}
+                            onClick={() => handleModeToggle('focus')}
+                            data-name="Focus Mode Toggle"
+                          >
+                            Focus:
+                          </span>
+                          <Input
+                            type="number"
+                            value={focusMinutes === 0 ? "" : focusMinutes}
+                            onChange={e => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                setHomepageFocusMinutes(0);
+                              } else {
+                                setHomepageFocusMinutes(parseFloat(value) || 0);
+                              }
+                            }}
+                            onBlur={() => {
+                              if (focusMinutes === 0) {
+                                setHomepageFocusMinutes(defaultFocusMinutes);
+                              }
+                            }}
+                            min={timerIncrement}
+                            max={69 * 60}
+                            step={timerIncrement}
+                            onFocus={(e) => e.target.select()}
+                            data-name="Focus Duration Input"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "text-muted-foreground cursor-pointer select-none",
+                              timerType === 'break' && "font-bold text-foreground"
+                            )}
+                            onClick={() => handleModeToggle('break')}
+                            data-name="Break Mode Toggle"
+                          >
+                            Break:
+                          </span>
+                          <Input
+                            type="number"
+                            value={breakMinutes === 0 ? "" : breakMinutes}
+                            onChange={e => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                setHomepageBreakMinutes(0);
+                              } else {
+                                setHomepageBreakMinutes(parseFloat(value) || 0);
+                              }
+                            }}
+                            onBlur={() => {
+                              if (breakMinutes === 0) {
+                                setHomepageBreakMinutes(defaultBreakMinutes);
+                              }
+                            }}
+                            min={timerIncrement}
+                            max={420}
+                            step={timerIncrement}
+                            onFocus={(e) => e.target.select()}
+                            data-name="Break Duration Input"
+                          />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "text-muted-foreground cursor-pointer select-none",
-                            timerType === 'break' && "font-bold text-foreground"
-                          )}
-                          onClick={() => handleModeToggle('break')}
-                          data-name="Break Mode Toggle"
-                        >
-                          Break:
-                        </span>
-                        <Input
-                          type="number"
-                          value={breakMinutes === 0 ? "" : breakMinutes}
-                          onChange={e => {
-                            const value = e.target.value;
-                            if (value === "") {
-                              setHomepageBreakMinutes(0);
-                            } else {
-                              setHomepageBreakMinutes(parseFloat(value) || 0);
-                            }
-                          }}
-                          onBlur={() => {
-                            if (breakMinutes === 0) {
-                              setHomepageBreakMinutes(defaultBreakMinutes);
-                            }
-                          }}
-                          min={timerIncrement}
-                          max={420}
-                          step={timerIncrement}
-                          onFocus={(e) => e.target.select()}
-                          data-name="Break Duration Input"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {(isRunning || isPaused || isScheduleActive || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
+                    )}
+                    {(isRunning || isPaused || isScheduleActive || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
+                  </div>
                 </>
               )}
             </div>
