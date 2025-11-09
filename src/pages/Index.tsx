@@ -1333,7 +1333,7 @@ const Index = () => {
                         </h2>
                       ) : (
                         <p className="text-base font-bold text-muted-foreground">
-                          Sync focus with nearby coworkers
+                          {isGlobalPrivate ? "Sync focus with known coworkers" : "Sync focus with nearby coworkers"}
                         </p>
                       )}
                     </div>
