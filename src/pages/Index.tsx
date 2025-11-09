@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData } from "@/types/timer";
+import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData, DemoSession } from "@/types/timer"; // NEW: Import DemoSession and ParticipantSessionData
 import { Accordion
  } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
@@ -46,7 +46,7 @@ import { useAuth } from '@/contexts/AuthContext'; // Corrected import path
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { generateRandomHostCode, Profile as ProfileType } from '@/contexts/Profile/ProfileContext'; // Import generateRandomHostCode and ProfileType
+import { Profile as ProfileType } from '@/contexts/ProfileContext'; // Import ProfileType from correct path
 
 interface ExtendSuggestion {
   id: string;
@@ -75,17 +75,7 @@ interface Poll {
 type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
 
-// Updated DemoSession interface to use imported types
-interface DemoSession {
-  id: string;
-  title: string;
-  startTime: number;
-  location: string;
-  workspaceImage: string;
-  workspaceDescription: string;
-  participants: ParticipantSessionData[]; // Use ParticipantSessionData
-  fullSchedule: ScheduledTimer[]; // Use ScheduledTimer
-}
+// REMOVED: interface DemoSession { ... }
 
 // NEW: Define a type for Supabase fetched sessions
 interface SupabaseSessionData {
@@ -392,8 +382,8 @@ const Index = () => {
         role = 'self';
       }
       return {
-        id: p.userId,
-        name: p.userName,
+        userId: p.userId,
+        userName: p.userName,
         focusPreference: p.focusPreference || 50,
         role: role,
       };
@@ -402,7 +392,7 @@ const Index = () => {
       if (b.role === 'self') return 1;
       if (a.role === 'host') return -1;
       if (b.role === 'host') return 1;
-      return a.name.localeCompare(b.name);
+      return a.userName.localeCompare(b.userName);
     });
   }, [currentSessionParticipantsData, user?.id]);
 
@@ -1683,26 +1673,26 @@ const Index = () => {
                 <CardContent className="space-y-2">
                   {allParticipantsToDisplayInCard.map(person => (
                     <div
-                      key={person.id}
+                      key={person.userId}
                       className={cn(
                         "flex items-center justify-between p-2 rounded-md select-none",
                         person.role === 'self' ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
                         "hover:bg-muted cursor-pointer"
                       )}
-                      data-name={`Coworker: ${person.name}`}
-                      onClick={(e) => handleNameClick(person.id, person.name, e)}
+                      data-name={`Coworker: ${person.userName}`}
+                      onClick={(e) => handleNameClick(person.userId, person.userName, e)}
                     >
                       <span className="font-medium text-foreground flex items-center gap-1">
-                        {person.role === 'self' ? localFirstName || "You" : person.name}
+                        {person.role === 'self' ? localFirstName || "You" : person.userName}
                         {person.role === 'host' && <Crown size={16} className="text-yellow-500" />}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         <Popover
-                          open={openFocusPreferenceTooltipId === person.id}
+                          open={openFocusPreferenceTooltipId === person.userId}
                           onOpenChange={(isOpen) => {
                             if (isOpen) {
-                              setOpenFocusPreferenceTooltipId(person.id);
+                              setOpenFocusPreferenceTooltipId(person.userId);
                               if (focusPreferenceTooltipTimeoutRef.current) {
                                 clearTimeout(focusPreferenceTooltipTimeoutRef.current);
                               }
@@ -1711,7 +1701,7 @@ const Index = () => {
                                 focusPreferenceTooltipTimeoutRef.current = null;
                               }, 1000);
                             } else {
-                              if (openFocusPreferenceTooltipId === person.id) {
+                              if (openFocusPreferenceTooltipId === person.userId) {
                                 setOpenFocusPreferenceTooltipId(null);
                                 if (focusPreferenceTooltipTimeoutRef.current) {
                                   clearTimeout(focusPreferenceTooltipTimeoutRef.current);

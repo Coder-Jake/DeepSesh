@@ -92,6 +92,18 @@ export interface ParticipantSessionData {
   bio?: string;
 }
 
+// NEW: Canonical DemoSession interface
+export interface DemoSession {
+  id: string;
+  title: string;
+  startTime: number;
+  location: string;
+  workspaceImage: string;
+  workspaceDescription: string;
+  participants: ParticipantSessionData[]; // Use ParticipantSessionData
+  fullSchedule: ScheduledTimer[]; // Use ScheduledTimer
+}
+
 // Define the structure for the TimerContext value
 export type TimerContextType = {
   focusMinutes: number;

@@ -7,17 +7,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { getSociabilityGradientColor } from '@/lib/utils';
+import { DemoSession, ParticipantSessionData } from '@/types/timer'; // NEW: Import DemoSession and ParticipantSessionData
 
-interface DemoSession {
-  id: string;
-  title: string;
-  startTime: number;
-  location: string;
-  workspaceImage: string;
-  workspaceDescription: string;
-  participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[];
-  fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
-}
+// REMOVED: interface DemoSession { ... }
 
 interface SessionCardProps {
   session: DemoSession;
@@ -46,7 +38,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
   // Calculate average focusPreference of participants
   const averageFocusPreference = useMemo(() => {
     if (session.participants.length === 0) return 0;
-    const totalFocusPreference = session.participants.reduce((sum, p) => sum + p.focusPreference, 0);
+    const totalFocusPreference = session.participants.reduce((sum, p) => sum + (p.focusPreference || 0), 0);
     return totalFocusPreference / session.participants.length;
   }, [session.participants]);
 
@@ -210,19 +202,19 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
               <PopoverContent className="select-none">
                 <div className="space-y-3">
                   {session.participants.map(p => (
-                    <div key={p.id} className="flex items-center justify-between gap-4">
+                    <div key={p.userId} className="flex items-center justify-between gap-4">
                       <span
                         className={cn(
                           "min-w-0",
-                          p.id !== "mock-user-id-123" && "cursor-pointer hover:text-primary"
+                          p.userId !== "mock-user-id-123" && "cursor-pointer hover:text-primary"
                         )}
-                        onClick={(e) => handleParticipantNameClick(p.id, p.name, e)}
+                        onClick={(e) => handleParticipantNameClick(p.userId, p.userName, e)}
                       >
-                        {p.name}
+                        {p.userName}
                       </span>
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{width: `${p.focusPreference}%`, backgroundColor: getSociabilityGradientColor(p.focusPreference)}}></div>
+                          <div className="h-full rounded-full" style={{width: `${p.focusPreference || 0}%`, backgroundColor: getSociabilityGradientColor(p.focusPreference || 0)}}></div>
                         </div>
                       </div>
                     </div>
