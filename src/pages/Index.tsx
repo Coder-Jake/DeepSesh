@@ -43,7 +43,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { useTheme } from '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -356,7 +356,7 @@ const Index = () => {
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(linkCopiedTimeoutRef);
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(localFirstName || hostCode || "You");
@@ -781,80 +781,81 @@ const Index = () => {
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
 
-    const getDeterministicOffset = (name: string) => {
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        const char = name.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash |= 0;
-      }
-      return Math.abs(hash);
-    };
-
-    const hashValue = getDeterministicOffset(orgName);
-    const minuteOffset = (hashValue % 12) * 5;
-
-    const now = new Date();
-    const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
-
-    const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
-
-    const participantNames: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] = [];
-    const usedIndices = new Set<number>();
-
-    for (let i = 0; i < 3; i++) {
-      let randomIndex = (hashValue + i) % famousNamesWithIds.length;
-      while (usedIndices.has(randomIndex)) {
-        randomIndex = (randomIndex + 1) % famousNamesWithIds.length;
-      }
-      usedIndices.add(randomIndex);
-      const { id, name } = famousNamesWithIds[randomIndex];
-
-      const focusPreferenceOffset = Math.floor(Math.random() * 15) - 7;
-      const variedFocusPreference = Math.max(0, Math.min(100, (focusPreference || 50) + focusPreferenceOffset));
-
-      participantNames.push({
-        id: id,
-        name: name,
-        focusPreference: variedFocusPreference,
-        intention: `Deep work on ${name}'s theories.`,
-        bio: `A dedicated member of ${orgName}.`,
-      });
-    }
+    const famousNamesWithIds = [
+      { id: "mock-user-id-aristotle", name: "Aristotle" },
+      { id: "mock-user-id-plato", name: "Plato" },
+      { id: "mock-user-id-socrates", name: "Socrates" },
+      { id: "mock-user-id-descartes", name: "Descartes" },
+      { id: "mock-user-id-kant", name: "Kant" },
+      { id: "mock-user-id-locke", name: "Locke" },
+      { id: "mock-user-id-hume", name: "Hume" },
+      { id: "mock-user-id-rousseau", name: "Rousseau" },
+      { id: "mock-user-id-newton", name: "Newton" },
+      { id: "mock-user-id-einstein", name: "Einstein" },
+      { id: "mock-user-id-curie", name: "Curie" },
+      { id: "mock-user-id-darwin", name: "Darwin" },
+      { id: "mock-user-id-galileo", name: "Galileo" },
+      { id: "mock-user-id-hawking", name: "Hawking" },
+      { id: "mock-user-id-turing", name: "Turing" },
+      { id: "mock-user-id-hypatia", name: "Hypatia" },
+      { id: "mock-user-id-copernicus", name: "Copernicus" },
+      { id: "mock-user-id-kepler", name: "Kepler" },
+      { id: "mock-user-id-bohr", name: "Bohr" },
+      { id: "mock-user-id-heisenberg", name: "Heisenberg" },
+      { id: "mock-user-id-schrodinger", name: "Schrödinger" },
+      { id: "mock-user-id-maxwell", name: "Maxwell" },
+      { id: "mock-user-id-faraday", name: "Faraday" },
+      { id: "mock-user-id-pascal", name: "Pascal" },
+      { id: "mock-user-id-leibniz", name: "Leibniz" },
+      { id: "mock-user-id-pythagoras", name: "Pythagoras" },
+      { id: "mock-user-id-euclid", name: "Euclid" },
+      { id: "mock-user-id-archimedes", name: "Archimedes" },
+      { id: "mock-user-id-davinci", name: "Da Vinci" },
+      { id: "mock-user-id-franklin", name: "Franklin" }
+    ];
 
     organizationNames.forEach((orgName) => {
-      const famousNamesWithIds = [
-        { id: "mock-user-id-aristotle", name: "Aristotle" },
-        { id: "mock-user-id-plato", name: "Plato" },
-        { id: "mock-user-id-socrates", name: "Socrates" },
-        { id: "mock-user-id-descartes", name: "Descartes" },
-        { id: "mock-user-id-kant", name: "Kant" },
-        { id: "mock-user-id-locke", name: "Locke" },
-        { id: "mock-user-id-hume", name: "Hume" },
-        { id: "mock-user-id-rousseau", name: "Rousseau" },
-        { id: "mock-user-id-newton", name: "Newton" },
-        { id: "mock-user-id-einstein", name: "Einstein" },
-        { id: "mock-user-id-curie", name: "Curie" },
-        { id: "mock-user-id-darwin", name: "Darwin" },
-        { id: "mock-user-id-galileo", name: "Galileo" },
-        { id: "mock-user-id-hawking", name: "Hawking" },
-        { id: "mock-user-id-turing", name: "Turing" },
-        { id: "mock-user-id-hypatia", name: "Hypatia" },
-        { id: "mock-user-id-copernicus", name: "Copernicus" },
-        { id: "mock-user-id-kepler", name: "Kepler" },
-        { id: "mock-user-id-bohr", name: "Bohr" },
-        { id: "mock-user-id-heisenberg", name: "Heisenberg" },
-        { id: "mock-user-id-schrodinger", name: "Schrödinger" },
-        { id: "mock-user-id-maxwell", name: "Maxwell" },
-        { id: "mock-user-id-faraday", name: "Faraday" },
-        { id: "mock-user-id-pascal", name: "Pascal" },
-        { id: "mock-user-id-leibniz", name: "Leibniz" },
-        { id: "mock-user-id-pythagoras", name: "Pythagoras" },
-        { id: "mock-user-id-euclid", name: "Euclid" },
-        { id: "mock-user-id-archimedes", name: "Archimedes" },
-        { id: "mock-user-id-davinci", name: "Da Vinci" },
-        { id: "mock-user-id-franklin", name: "Franklin" }
-      ];
+      const getDeterministicOffset = (name: string) => {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+          const char = name.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash |= 0;
+        }
+        return Math.abs(hash);
+      };
+
+      const hashValue = getDeterministicOffset(orgName);
+      const minuteOffset = (hashValue % 12) * 5;
+
+      const now = new Date();
+      const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
+
+      const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
+
+      const participantNames: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] = [];
+      const usedIndices = new Set<number>();
+
+      for (let i = 0; i < 3; i++) {
+        let randomIndex = (hashValue + i) % famousNamesWithIds.length;
+        while (usedIndices.has(randomIndex)) {
+          randomIndex = (randomIndex + 1) % famousNamesWithIds.length;
+        }
+        usedIndices.add(randomIndex);
+        const { id, name } = famousNamesWithIds[randomIndex];
+
+        const focusPreferenceOffset = Math.floor(Math.random() * 15) - 7;
+        const variedFocusPreference = Math.max(0, Math.min(100, (focusPreference || 50) + focusPreferenceOffset));
+
+        participantNames.push({
+          id: id,
+          name: name,
+          focusPreference: variedFocusPreference,
+          intention: `Deep work on ${name}'s theories.`,
+          bio: `A dedicated member of ${orgName}.`,
+        });
+      }
+
       sessions.push({
         id: `org-session-${orgName.replace(/\s/g, '-')}`,
         title: `${orgName} DeepSesh`,
