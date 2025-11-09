@@ -328,7 +328,7 @@ const Profile = () => {
           description: "Host code must be between 4 and 20 characters.",
         });
       }
-      setHostCode(originalValues.hostCode); // Revert to original
+      // Removed: setHostCode(originalValues.hostCode); // Revert to original
       return;
     }
     await updateProfile({ host_code: trimmedCode }, "Host Code Saved!");
@@ -383,7 +383,7 @@ const Profile = () => {
       linkedin_url: (linkedinUrl === null || linkedinUrl.trim() === "") ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`,
       host_code: trimmedHostCode,
       bio_visibility: bioVisibility,
-      intended_visibility: intentionVisibility,
+      intention_visibility: intentionVisibility, // Fixed typo here
       linkedin_visibility: linkedinVisibility,
       can_help_with_visibility: canHelpWithVisibility,
       need_help_with_visibility: needHelpWithVisibility,
