@@ -177,10 +177,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [_defaultBreakMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, breakMinutes, isHomepageBreakCustomized]);
 
   const getDefaultSeshTitle = useCallback(() => {
-    // Generate a random 4-digit number
-    const uniqueNumber = Math.floor(1000 + Math.random() * 9000);
-    return `DeepSesh ${uniqueNumber}`;
-  }, []);
+    return (localFirstName && localFirstName !== "You") ? `${localFirstName}'s Focus Sesh` : "My Focus Sesh";
+  }, [localFirstName]);
 
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
 
