@@ -79,6 +79,9 @@ const ScheduleForm: React.FC = () => {
   const [visibleTrashId, setVisibleTrashId] = useState<string | null>(null);
   const trashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // NEW: State to track if any item has been trashed
+  const [hasTrashedAnyItem, setHasTrashedAnyItem] = useState(false);
+
   // NEW: State to control visibility of total duration
   const [showTotalDuration, setShowTotalDuration] = useState(false);
 
@@ -191,6 +194,7 @@ const ScheduleForm: React.FC = () => {
     if (trashTimeoutRef.current) {
       clearTimeout(trashTimeoutRef.current);
     }
+    setHasTrashedAnyItem(true); // NEW: Set to true after an item is trashed
   };
 
   // NEW: Function to trash all timers
@@ -205,6 +209,7 @@ const ScheduleForm: React.FC = () => {
         description: "All timers have been removed from the schedule.",
       });
     }
+    setHasTrashedAnyItem(false); // NEW: Reset after all items are trashed
   };
 
   const handleCommenceSchedule = () => {
@@ -508,8 +513,8 @@ const ScheduleForm: React.FC = () => {
                   </span>
                 )}
               </span>
-              {/* NEW: Trash All button, visible when a single trash icon is visible */}
-              {visibleTrashId && (
+              {/* NEW: Trash All button, visible when hasTrashedAnyItem is true and there are still items */}
+              {hasTrashedAnyItem && schedule.length > 0 && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -520,7 +525,7 @@ const ScheduleForm: React.FC = () => {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
-              {!visibleTrashId && (
+              {(!hasTrashedAnyItem || schedule.length === 0) && (
                 <div className="w-8 h-8" /> // Spacer if trash all is not visible
               )}
             </div>
