@@ -1296,7 +1296,6 @@ const Index = () => {
   return (
     <TooltipProvider>
       <main className="max-w-4xl mx-auto pt-12 px-1 pb-4 lg:pt-15 lg:px-1 lg:pb-6">
-        {/* Removed the original div containing the <p> tag */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div className={cn(
@@ -1450,7 +1449,7 @@ const Index = () => {
                     {isFlashing ? (
                       <Button
                         size="lg"
-                        className="px-8"
+                        className="w-36"
                         onClick={timerType === 'focus' ? switchToBreak : switchToFocus}
                         data-name={`Start ${timerType === 'focus' ? 'Break' : 'Focus'} Button`}
                       >
@@ -1459,7 +1458,7 @@ const Index = () => {
                     ) : (
                       <Button
                         size="lg"
-                        className="px-8"
+                        className="w-36"
                         onClick={() => {
                           if (isSchedulePrepared) {
                             startNewManualTimer();
