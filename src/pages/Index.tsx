@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin } from "lucide-react";
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -1646,7 +1646,8 @@ const Index = () => {
                       data-name={`Coworker: ${person.name}`}
                       onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
-                      <span className="font-medium text-foreground">
+                      <span className="font-medium text-foreground flex items-center gap-2">
+                        {person.role === 'host' && <Crown size={16} className="text-yellow-500" />}
                         {person.role === 'self' ? localFirstName || "You" : person.name}
                       </span>
                       <span className="text-sm text-muted-foreground">
