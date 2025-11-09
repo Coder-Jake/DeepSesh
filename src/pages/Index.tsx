@@ -1452,7 +1452,7 @@ const Index = () => {
                     )}
                   </div>
 
-                  {(isPaused || isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending) && (
+                  {(isPaused || isRunning || isScheduleActive || isSchedulePending) && (
                     <div className="absolute bottom-4 left-4 flex flex-col gap-1">
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
@@ -1643,7 +1643,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            {isActiveTimer && allParticipantsToDisplayInCard.length > 0 && (
+            {isActiveTimer && allParticipantsToDisplayInCard.length > 1 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Coworkers</CardTitle>
