@@ -117,7 +117,7 @@ const beginningOfMostRecentHour = new Date(now.getFullYear(), now.getMonth(), no
 const mockNearbySessions: DemoSession[] = [
   {
     id: "102",
-    title: "Silicon Syndicate Study Sesh",
+    title: "DeepSesh 1", // Changed title
     startTime: Date.now() - (76.8 * 60 * 1000),
     location: "Science Building - Computer Lab 2B",
     workspaceImage: "/api/placeholder/200/120",
