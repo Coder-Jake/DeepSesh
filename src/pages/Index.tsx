@@ -1299,7 +1299,7 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div className={cn(
-              "relative rounded-lg border border-border pt-1 pb-4 px-1 text-center transition-colors", // Changed pb-8 to pb-4
+              "relative rounded-lg border border-border pt-1 pb-4 px-1 text-center transition-colors",
               !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
               !isGlobalPrivate && !isDarkMode && "bg-[hsl(var(--public-bg))]",
               isGlobalPrivate && "bg-[hsl(var(--private-bg))]"
@@ -1449,7 +1449,7 @@ const Index = () => {
                     {isFlashing ? (
                       <Button
                         size="lg"
-                        className="w-36"
+                        className="w-28"
                         onClick={timerType === 'focus' ? switchToBreak : switchToFocus}
                         data-name={`Start ${timerType === 'focus' ? 'Break' : 'Focus'} Button`}
                       >
@@ -1458,7 +1458,7 @@ const Index = () => {
                     ) : (
                       <Button
                         size="lg"
-                        className="w-36"
+                        className="w-28"
                         onClick={() => {
                           if (isSchedulePrepared) {
                             startNewManualTimer();
