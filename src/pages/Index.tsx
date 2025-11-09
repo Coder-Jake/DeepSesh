@@ -315,6 +315,7 @@ const Index = () => {
     transferHostRole,
     stopTimer,
     resetSessionStates,
+    showDemoSessions, // NEW: Get showDemoSessions
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
@@ -766,7 +767,7 @@ const Index = () => {
     if (showSessionsWhileActive === 'hidden') {
       return false;
     }
-    if (showSessionsWhileActive === 'friends' || showSessionsWhileWhileActive === 'all') {
+    if (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all') {
       return true;
     }
     return false;
@@ -778,7 +779,7 @@ const Index = () => {
   }, [profile?.organization, isDiscoveryActivated]);
 
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
-    if (!profile?.organization) return [];
+    if (!profile?.organization || !showDemoSessions) return []; // NEW: Conditionally render mock org sessions
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
@@ -874,7 +875,7 @@ const Index = () => {
     });
 
     return sessions;
-  }, [profile, currentUserId, currentUserName, focusPreference]);
+  }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions]); // NEW: Add showDemoSessions to dependencies
 
 
   const handleExtendSubmit = (minutes: number) => {
@@ -1208,7 +1209,7 @@ const Index = () => {
                     onJoinSession={handleJoinSession}
                   />
                 ))}
-                {mockNearbySessions.map(session => (
+                {showDemoSessions && mockNearbySessions.map(session => ( // NEW: Conditionally render mockNearbySessions
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -1239,7 +1240,7 @@ const Index = () => {
             </button>
             {isFriendsSessionsOpen && (
               <div className="space-y-3">
-                {mockFriendsSessions.map(session => (
+                {showDemoSessions && mockFriendsSessions.map(session => ( // NEW: Conditionally render mockFriendsSessions
                   <SessionCard
                     key={session.id}
                     session={session}

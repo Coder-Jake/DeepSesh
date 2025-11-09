@@ -87,6 +87,8 @@ const Settings = () => {
     isDiscoveryActivated, // NEW: Get isDiscoveryActivated from TimerContext
     setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from TimerContext
     resetSessionStates, // NEW: Get resetSessionStates from TimerContext
+    showDemoSessions, // NEW: Get showDemoSessions
+    setShowDemoSessions, // NEW: Get setShowDemoSessions
   } = useTimer();
 
   const { user } = useAuth(); // Removed 'logout' from destructuring
@@ -141,6 +143,7 @@ const Settings = () => {
     blockedUsers,
     startStopNotifications,
     isDiscoveryActivated, // NEW: Add to saved settings
+    showDemoSessions, // NEW: Add to saved settings
   });
 
   // Update currentTimerIncrement when global timerIncrement changes
@@ -186,6 +189,7 @@ const Settings = () => {
       blockedUsers,
       startStopNotifications,
       isDiscoveryActivated, // NEW: Add to current UI settings
+      showDemoSessions, // NEW: Add to current UI settings
     };
 
     const savedValRef = savedSettingsRef.current; // Capture current ref value
@@ -215,6 +219,7 @@ const Settings = () => {
     blockedUsers,
     startStopNotifications,
     isDiscoveryActivated, // NEW: Add to dependencies
+    showDemoSessions, // NEW: Add to dependencies
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -425,6 +430,7 @@ const Settings = () => {
     setAreToastsEnabled(areToastsEnabled);
     setStartStopNotifications(startStopNotifications);
     setIsDiscoveryActivated(isDiscoveryActivated); // NEW: Save isDiscoveryActivated
+    setShowDemoSessions(showDemoSessions); // NEW: Save showDemoSessions
 
     savedSettingsRef.current = {
       showSessionsWhileActive,
@@ -459,6 +465,7 @@ const Settings = () => {
       blockedUsers,
       startStopNotifications,
       isDiscoveryActivated, // NEW: Save isDiscoveryActivated
+      showDemoSessions, // NEW: Save showDemoSessions
     };
     setHasChanges(false);
   };
@@ -548,6 +555,25 @@ const Settings = () => {
                 >
                   {manualTransition ? "Manual" : "Auto"}
                 </Button>
+              </div>
+
+              {/* NEW: Demo Sessions Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="show-demo-sessions-toggle" className="cursor-help">Demo Sessions</Label>
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                      <p>Show mock sessions for demonstration purposes.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Switch
+                  id="show-demo-sessions-toggle"
+                  checked={showDemoSessions}
+                  onCheckedChange={setShowDemoSessions}
+                />
               </div>
 
               <div className="flex items-center justify-between">

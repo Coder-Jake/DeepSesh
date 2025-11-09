@@ -139,6 +139,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const [lastActivityTime, setLastActivityTime] = useState<number | null>(null);
 
+  const [showDemoSessions, setShowDemoSessions] = useState(true); // NEW: State for demo sessions
+
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
 
@@ -1463,6 +1465,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setGeolocationPermissionStatus(data.geolocationPermissionStatus ?? 'prompt');
       setCurrentSessionParticipantsData(data.currentSessionParticipantsData ?? []);
       setLastActivityTime(loadedLastActivityTime);
+      setShowDemoSessions(data.showDemoSessions ?? true); // NEW: Load showDemoSessions
 
       initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
@@ -1541,6 +1544,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       geolocationPermissionStatus,
       currentSessionParticipantsData,
       lastActivityTime,
+      showDemoSessions, // NEW: Save showDemoSessions
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -1573,6 +1577,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     geolocationPermissionStatus,
     currentSessionParticipantsData,
     lastActivityTime,
+    showDemoSessions, // NEW: Add showDemoSessions to dependencies
   ]);
 
   const value: TimerContextType = {
@@ -1751,6 +1756,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     transferHostRole,
     stopTimer,
     resetSessionStates,
+    showDemoSessions, // NEW: Provide showDemoSessions
+    setShowDemoSessions, // NEW: Provide setShowDemoSessions
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

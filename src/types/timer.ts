@@ -267,6 +267,7 @@ export type TimerContextType = {
   transferHostRole: () => Promise<void>;
   stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>;
   resetSessionStates: () => void;
+  showDemoSessions: boolean; // NEW: Add showDemoSessions
 };
 
 // Define the structure for a saved session
