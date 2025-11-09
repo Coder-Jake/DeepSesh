@@ -28,7 +28,7 @@ const ProfilePopUpCard: React.FC = () => {
     intention: currentUserIntention,
     canHelpWith: currentUserCanHelpWith,
     needHelpWith: currentUserNeedHelpWith,
-    sociability: currentUserSociability,
+    focusPreference: currentUserFocusPreference, // Changed from sociability
     organization: currentUserOrganization,
     linkedinUrl: currentUserLinkedinUrl,
     friendStatuses, // NEW: Import friendStatuses directly
@@ -96,7 +96,7 @@ const ProfilePopUpCard: React.FC = () => {
             linkedin_url: currentUserLinkedinUrl,
             can_help_with: currentUserCanHelpWith,
             need_help_with: currentUserNeedHelpWith,
-            sociability: currentUserSociability,
+            focus_preference: currentUserFocusPreference, // Changed from sociability
             organization: currentUserOrganization,
             pronouns: currentUserPronouns,
             bio_visibility: bioVisibility,
@@ -131,7 +131,7 @@ const ProfilePopUpCard: React.FC = () => {
     isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, 
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, 
     currentUserPronouns, currentUserBio, currentUserIntention, currentUserCanHelpWith, currentUserNeedHelpWith,
-    currentUserSociability, currentUserOrganization, currentUserLinkedinUrl
+    currentUserFocusPreference, currentUserOrganization, currentUserLinkedinUrl // Changed from sociability
   ]);
 
   useLayoutEffect(() => {
@@ -239,8 +239,8 @@ const ProfilePopUpCard: React.FC = () => {
       (!targetProfile.need_help_with || !isFieldVisible(targetProfile.need_help_with_visibility)) &&
       (!targetProfile.linkedin_url || !isFieldVisible(targetProfile.linkedin_visibility));
 
-    // MODIFIED: Only show "This profile is private" if ALL fields (including sociability) are private/null
-    if (!isCurrentUserProfile && allFieldsPrivate && targetProfile.sociability === null) {
+    // MODIFIED: Only show "This profile is private" if ALL fields (including focusPreference) are private/null
+    if (!isCurrentUserProfile && allFieldsPrivate && targetProfile.focus_preference === null) { // Changed from sociability
       return (
         <div className="text-center space-y-2">
           <User className="h-8 w-8 text-muted-foreground mx-auto" />
@@ -367,8 +367,8 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {/* MODIFIED: Always show sociability if it exists, regardless of other field visibilities */}
-        {targetProfile.sociability !== null && (
+        {/* MODIFIED: Always show focusPreference if it exists, regardless of other field visibilities */}
+        {targetProfile.focus_preference !== null && ( // Changed from sociability
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Users size={16} /> Focus Preference
@@ -376,10 +376,10 @@ const ProfilePopUpCard: React.FC = () => {
             <div className="w-full bg-secondary rounded-full h-2 mt-1">
               <div
                 className="h-2 rounded-full" 
-                style={{ width: `${targetProfile.sociability}%`, backgroundColor: getSociabilityGradientColor(targetProfile.sociability) }} 
+                style={{ width: `${targetProfile.focus_preference}%`, backgroundColor: getSociabilityGradientColor(targetProfile.focus_preference) }} // Changed from sociability
               ></div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 text-right">{targetProfile.sociability}%</p>
+            <p className="text-xs text-muted-foreground mt-1 text-right">{targetProfile.focus_preference}%</p> {/* Changed from sociability */}
           </div>
         )}
 

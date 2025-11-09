@@ -82,7 +82,7 @@ interface DemoSession {
   location: string;
   workspaceImage: "/api/placeholder/200/120";
   workspaceDescription: string;
-  participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
+  participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[]; // Changed from sociability
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
 }
 
@@ -123,11 +123,11 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "mock-user-id-bezos", name: "Altman", sociability: 15, intention: "Optimizing cloud infrastructure." },
-      { id: "mock-user-id-musk", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
-      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
-      { id: "mock-user-id-gates", name: "Amodei", sociability: 20, intention: "Refining operating system architecture." },
-      { id: "mock-user-id-jobs", name: "Huang", sociability: 30, intention: "Innovating user interface design." },
+      { id: "mock-user-id-bezos", name: "Altman", focusPreference: 15, intention: "Optimizing cloud infrastructure." }, // Changed from sociability
+      { id: "mock-user-id-musk", name: "Musk", focusPreference: 10, intention: "Designing reusable rocket components." }, // Changed from sociability
+      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", focusPreference: 20, intention: "Developing new social algorithms." }, // Changed from sociability
+      { id: "mock-user-id-gates", name: "Amodei", focusPreference: 20, intention: "Refining operating system architecture." }, // Changed from sociability
+      { id: "mock-user-id-jobs", name: "Huang", focusPreference: 30, intention: "Innovating user interface design." }, // Changed from sociability
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 55 },
@@ -145,14 +145,14 @@ const mockFriendsSessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
     participants: [
-      { id: "mock-user-id-freud", name: "Freud", sociability: 70, intention: "Reviewing psychoanalytic theories." },
-      { id: "mock-user-id-skinner", name: "Skinner", sociability: 70, intention: "Memorizing behavioral principles." },
-      { id: "mock-user-id-piaget", name: "Piaget", sociability: 80, intention: "Practicing cognitive development questions." },
-      { id: "mock-user-id-jung", name: "Jung", sociability: 70, intention: "Summarizing archetypal concepts." },
-      { id: "mock-user-id-maslow", name: "Maslow", sociability: 90, intention: "Creating hierarchy of needs flashcards." },
-      { id: "mock-user-id-rogers", name: "Rogers", sociability: 95, intention: "Discussing humanistic approaches." },
-      { id: "mock-user-id-bandura", name: "Bandura", sociability: 75, intention: "Collaborating on social learning theory guide." },
-      { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 80, intention: "Peer teaching classical conditioning." },
+      { id: "mock-user-id-freud", name: "Freud", focusPreference: 70, intention: "Reviewing psychoanalytic theories." }, // Changed from sociability
+      { id: "mock-user-id-skinner", name: "Skinner", focusPreference: 70, intention: "Memorizing behavioral principles." }, // Changed from sociability
+      { id: "mock-user-id-piaget", name: "Piaget", focusPreference: 80, intention: "Practicing cognitive development questions." }, // Changed from sociability
+      { id: "mock-user-id-jung", name: "Jung", focusPreference: 70, intention: "Summarizing archetypal concepts." }, // Changed from sociability
+      { id: "mock-user-id-maslow", name: "Maslow", focusPreference: 90, intention: "Creating hierarchy of needs flashcards." }, // Changed from sociability
+      { id: "mock-user-id-rogers", name: "Rogers", focusPreference: 95, intention: "Discussing humanistic approaches." }, // Changed from sociability
+      { id: "mock-user-id-bandura", name: "Bandura", focusPreference: 75, intention: "Collaborating on social learning theory guide." }, // Changed from sociability
+      { id: "mock-user-id-pavlov", name: "Pavlov", focusPreference: 80, intention: "Peer teaching classical conditioning." }, // Changed from sociability
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 25 },
@@ -176,11 +176,11 @@ const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
 
   return data.map((session: SupabaseSessionData) => {
     // Use participants_data from Supabase directly
-    const participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[] = 
+    const participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] = // Changed from sociability
       (session.participants_data || []).map(p => ({
         id: p.userId,
         name: p.userName,
-        sociability: p.sociability || 50, // Fallback to 50 if not present
+        focusPreference: p.focusPreference || 50, // Changed from sociability
         intention: p.intention || undefined,
         bio: p.bio || undefined,
       }));
@@ -316,7 +316,7 @@ const Index = () => {
     resetSessionStates,
   } = useTimer();
   
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, sociability, setSociability } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference } = useProfile(); // Changed from sociability
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
@@ -349,8 +349,8 @@ const Index = () => {
     ['nearby', 'friends', 'organization']
   );
 
-  const [openSociabilityTooltipId, setOpenSociabilityTooltipId] = useState<string | null>(null);
-  const sociabilityTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [openFocusPreferenceTooltipId, setOpenFocusPreferenceTooltipId] = useState<string | null>(null); // Changed from sociability
+  const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Changed from sociability
 
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
@@ -382,7 +382,7 @@ const Index = () => {
       return {
         id: p.userId,
         name: p.userName,
-        sociability: p.sociability || 50,
+        focusPreference: p.focusPreference || 50, // Changed from sociability
         role: role,
       };
     }).sort((a, b) => {
@@ -510,7 +510,7 @@ const Index = () => {
       userName: localFirstName,
       joinTime: Date.now(),
       role: 'host',
-      sociability: sociability || 50,
+      focusPreference: focusPreference || 50, // Changed from sociability
       intention: profile?.intention || undefined,
       bio: profile?.bio || undefined,
     };
@@ -662,7 +662,7 @@ const Index = () => {
       userName: p.name,
       joinTime: Date.now(),
       role: p.id === session.participants[0]?.id ? 'host' : 'coworker',
-      sociability: p.sociability,
+      focusPreference: p.focusPreference, // Changed from sociability
       intention: p.intention,
       bio: p.bio,
     }));
@@ -833,7 +833,7 @@ const Index = () => {
       
       const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
 
-      const participantNames: { id: string; name: string; sociability: number; intention?: string; bio?: string }[] = [];
+      const participantNames: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] = []; // Changed from sociability
       const usedIndices = new Set<number>();
 
       for (let i = 0; i < 3; i++) {
@@ -844,13 +844,13 @@ const Index = () => {
         usedIndices.add(randomIndex);
         const { id, name } = famousNamesWithIds[randomIndex];
         
-        const sociabilityOffset = Math.floor(Math.random() * 15) - 7;
-        const variedSociability = Math.max(0, Math.min(100, (sociability || 50) + sociabilityOffset));
+        const focusPreferenceOffset = Math.floor(Math.random() * 15) - 7; // Changed from sociability
+        const variedFocusPreference = Math.max(0, Math.min(100, (focusPreference || 50) + focusPreferenceOffset)); // Changed from sociability
 
         participantNames.push({ 
           id: id,
           name: name, 
-          sociability: variedSociability,
+          focusPreference: variedFocusPreference, // Changed from sociability
           intention: `Deep work on ${name}'s theories.` 
         });
       }
@@ -871,7 +871,7 @@ const Index = () => {
     });
 
     return sessions;
-  }, [profile, currentUserId, currentUserName, sociability]);
+  }, [profile, currentUserId, currentUserName, focusPreference]); // Changed from sociability
 
 
   const handleExtendSubmit = (minutes: number) => {
@@ -1652,23 +1652,23 @@ const Index = () => {
                       </span>
                       <span className="text-sm text-muted-foreground">
                         <Popover
-                          open={openSociabilityTooltipId === person.id}
+                          open={openFocusPreferenceTooltipId === person.id} // Changed from sociability
                           onOpenChange={(isOpen) => {
                             if (isOpen) {
-                              setOpenSociabilityTooltipId(person.id);
-                              if (sociabilityTooltipTimeoutRef.current) {
-                                clearTimeout(sociabilityTooltipTimeoutRef.current);
+                              setOpenFocusPreferenceTooltipId(person.id); // Changed from sociability
+                              if (focusPreferenceTooltipTimeoutRef.current) { // Changed from sociability
+                                clearTimeout(focusPreferenceTooltipTimeoutRef.current); // Changed from sociability
                               }
-                              sociabilityTooltipTimeoutRef.current = setTimeout(() => {
-                                setOpenSociabilityTooltipId(null);
-                                sociabilityTooltipTimeoutRef.current = null;
+                              focusPreferenceTooltipTimeoutRef.current = setTimeout(() => { // Changed from sociability
+                                setOpenFocusPreferenceTooltipId(null); // Changed from sociability
+                                focusPreferenceTooltipTimeoutRef.current = null; // Changed from sociability
                               }, 1000);
                             } else {
-                              if (openSociabilityTooltipId === person.id) {
-                                setOpenSociabilityTooltipId(null);
-                                if (sociabilityTooltipTimeoutRef.current) {
-                                  clearTimeout(sociabilityTooltipTimeoutRef.current);
-                                  sociabilityTooltipTimeoutRef.current = null;
+                              if (openFocusPreferenceTooltipId === person.id) { // Changed from sociability
+                                setOpenFocusPreferenceTooltipId(null); // Changed from sociability
+                                if (focusPreferenceTooltipTimeoutRef.current) { // Changed from sociability
+                                  clearTimeout(focusPreferenceTooltipTimeoutRef.current); // Changed from sociability
+                                  focusPreferenceTooltipTimeoutRef.current = null; // Changed from sociability
                                 }
                               }
                             }
@@ -1679,7 +1679,7 @@ const Index = () => {
                               className="cursor-pointer"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {person.sociability}%
+                              {person.focusPreference}% {/* Changed from sociability */}
                             </span>
                           </PopoverTrigger>
                           <PopoverContent className="select-none p-1 text-xs w-fit">
@@ -1829,21 +1829,21 @@ const Index = () => {
                   </div>
                   <div className="relative group">
                     <Slider
-                      value={[sociability]}
-                      onValueChange={(val) => setSociability(val[0])}
+                      value={[focusPreference]}
+                      onValueChange={(val) => setFocusPreference(val[0])}
                       max={100}
                       min={0}
                       step={1}
                       className="w-full"
-                      rangeColor={getSociabilityGradientColor(sociability)}
+                      rangeColor={getSociabilityGradientColor(focusPreference)}
                     />
                   </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground select-none">
-                    {sociability <= 20 && "Looking to collaborate/brainstorm"}
-                    {sociability > 20 && sociability <= 40 && "Happy to chat while we work"}
-                    {sociability > 40 && sociability <= 60 && "I don't mind"}
-                    {sociability > 60 && sociability <= 80 && "Socialise only during breaks"}
-                    {sociability > 80 && "Minimal interaction even during breaks"}
+                    {focusPreference <= 20 && "Looking to collaborate/brainstorm"}
+                    {focusPreference > 20 && focusPreference <= 40 && "Happy to chat while we work"}
+                    {focusPreference > 40 && focusPreference <= 60 && "I don't mind"}
+                    {focusPreference > 60 && focusPreference <= 80 && "Socialise only during breaks"}
+                    {focusPreference > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
               </div>

@@ -86,7 +86,7 @@ export interface ParticipantSessionData {
   userName: string;
   joinTime: number; // Unix timestamp
   role: 'host' | 'coworker';
-  sociability?: number;
+  focusPreference?: number; // Changed from sociability
   intention?: string;
   bio?: string;
 }
@@ -280,5 +280,5 @@ export interface SavedSession {
   startTime: number; // Timestamp of when the session started
   endTime: number; // Timestamp of when the session ended
   asks: ActiveAskItem[]; // Store the state of asks at the end of the session
-  participants: Array<{ id: string; name: string; sociability: number; role: 'host' | 'coworker'; intention?: string; bio?: string }>; // Store participants
+  participants: Array<{ id: string; name: string; focusPreference: number; role: 'host' | 'coworker'; intention?: string; bio?: string }>; // Changed from sociability
 }

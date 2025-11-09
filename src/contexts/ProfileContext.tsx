@@ -14,7 +14,7 @@ export type Profile = {
   last_name: string | null
   linkedin_url: string | null
   organization: string | null
-  sociability: number | null
+  focus_preference: number | null // Changed from sociability
   updated_at: string | null
   host_code: string | null
   bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null
@@ -338,7 +338,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Leading AI research and development for beneficial general intelligence.",
     intention: "Focusing on safe and broadly distributed AGI.",
-    sociability: 20,
+    focus_preference: 20, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "OpenAI",
     linkedin_url: "https://www.linkedin.com/in/samaltman",
@@ -359,7 +359,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Designing reusable rocket components and electric vehicles.",
     intention: "Innovating space travel and sustainable energy.",
-    sociability: 10,
+    focus_preference: 10, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "SpaceX",
     linkedin_url: "https://www.linkedin.com/in/elonmusk",
@@ -380,7 +380,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing new social algorithms and metaverse experiences.",
     intention: "Connecting the world through virtual reality.",
-    sociability: 20,
+    focus_preference: 20, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Meta",
     linkedin_url: "https://www.linkedin.com/in/zuck",
@@ -401,7 +401,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Co-founder of Anthropic, focusing on AI safety and responsible development.",
     intention: "Building reliable, interpretable, and steerable AI systems.",
-    sociability: 20,
+    focus_preference: 20, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Anthropic",
     linkedin_url: "https://www.linkedin.com/in/daniela-amodei-0b1b3b1b",
@@ -422,7 +422,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "CEO of NVIDIA, pioneering accelerated computing and AI.",
     intention: "Driving innovation in graphics processing and artificial intelligence.",
-    sociability: 30,
+    focus_preference: 30, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "NVIDIA",
     linkedin_url: "https://www.linkedin.com/in/jensenhuang",
@@ -444,7 +444,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Reviewing psychoanalytic theories and the unconscious mind.",
     intention: "Unraveling the complexities of human behavior.",
-    sociability: 60,
+    focus_preference: 60, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Psychology Dept.",
     linkedin_url: "https://www.linkedin.com/in/sigmundfreud",
@@ -465,7 +465,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Memorizing behavioral principles and operant conditioning.",
     intention: "Understanding learned responses and reinforcement.",
-    sociability: 60,
+    focus_preference: 60, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Behavioral Science Institute",
     linkedin_url: "https://www.linkedin.com/in/bfskinner",
@@ -486,7 +486,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Practicing cognitive development questions and child psychology.",
     intention: "Exploring the stages of intellectual growth.",
-    sociability: 70,
+    focus_preference: 70, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Child Development Center",
     linkedin_url: "https://www.linkedin.com/in/jeanpiaget",
@@ -507,7 +507,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Summarizing archetypal concepts and analytical psychology.",
     intention: "Delving into the collective unconscious.",
-    sociability: 60,
+    focus_preference: 60, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Analytical Psychology Group",
     linkedin_url: "https://www.linkedin.com/in/carljung",
@@ -528,7 +528,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Creating hierarchy of needs flashcards and humanistic psychology.",
     intention: "Promoting self-actualization and personal growth.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Human Potential Institute",
     linkedin_url: "https://www.linkedin.com/in/abrahammaslow",
@@ -549,7 +549,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Discussing humanistic approaches and client-centered therapy.",
     intention: "Fostering empathy and unconditional positive regard.",
-    sociability: 55,
+    focus_preference: 55, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Person-Centered Therapy Clinic",
     linkedin_url: "https://www.linkedin.com/in/carlrogers",
@@ -570,7 +570,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Collaborating on social learning theory guide and observational learning.",
     intention: "Exploring the power of modeling and self-efficacy.",
-    sociability: 65,
+    focus_preference: 65, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Social Cognitive Research",
     linkedin_url: "https://www.linkedin.com/in/albertbandura",
@@ -591,7 +591,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Peer teaching classical conditioning and behavioral responses.",
     intention: "Investigating conditioned reflexes.",
-    sociability: 70,
+    focus_preference: 70, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Physiology Lab",
     linkedin_url: "https://www.linkedin.com/in/ivanpavlov",
@@ -613,7 +613,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Studying logic, metaphysics, ethics, and politics.",
     intention: "Deep work on Aristotle's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Ancient Philosophy Guild",
     linkedin_url: null,
@@ -634,7 +634,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Exploring the theory of Forms and ideal states.",
     intention: "Deep work on Plato's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Ancient Philosophy Guild",
     linkedin_url: null,
@@ -655,7 +655,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Engaging in dialectic and ethical inquiry.",
     intention: "Deep work on Socrates' theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Ancient Philosophy Guild",
     linkedin_url: null,
@@ -676,7 +676,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Meditating on first philosophy and rationalism.",
     intention: "Deep work on Descartes' theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Rationalist Thinkers",
     linkedin_url: null,
@@ -697,7 +697,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing critical philosophy and transcendental idealism.",
     intention: "Deep work on Kant's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Critical Philosophy Society",
     linkedin_url: null,
@@ -718,7 +718,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Advocating for empiricism and natural rights.",
     intention: "Deep work on Locke's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Empiricist Collective",
     linkedin_url: null,
@@ -739,7 +739,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Questioning causality and human understanding.",
     intention: "Deep work on Hume's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Skeptical Inquiry Group",
     linkedin_url: null,
@@ -760,7 +760,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Contemplating the social contract and human nature.",
     intention: "Deep work on Rousseau's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Social Contract Thinkers",
     linkedin_url: null,
@@ -781,7 +781,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Formulating laws of motion and universal gravitation.",
     intention: "Deep work on Newton's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Physics Pioneers",
     linkedin_url: null,
@@ -802,7 +802,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing theories of relativity and quantum mechanics.",
     intention: "Deep work on Einstein's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Physics Pioneers",
     linkedin_url: null,
@@ -823,7 +823,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Pioneering research on radioactivity and discovering new elements.",
     intention: "Deep work on Curie's discoveries.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Chemistry Innovators",
     linkedin_url: null,
@@ -844,7 +844,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Proposing the theory of evolution by natural selection.",
     intention: "Deep work on Darwin's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Biology Explorers",
     linkedin_url: null,
@@ -865,7 +865,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Making astronomical observations and advocating for heliocentrism.",
     intention: "Deep work on Galileo's observations.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Astronomy Guild",
     linkedin_url: null,
@@ -886,7 +886,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Advancing theories of black holes and cosmology.",
     intention: "Deep work on Hawking's theories.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Cosmology Research",
     linkedin_url: null,
@@ -907,7 +907,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Pioneering theoretical computer science and artificial intelligence.",
     intention: "Deep work on Turing's concepts.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "AI Innovators",
     linkedin_url: null,
@@ -928,7 +928,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Teaching philosophy, mathematics, and astronomy in ancient Alexandria.",
     intention: "Deep work on Hypatia's teachings.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Alexandrian Scholars",
     linkedin_url: null,
@@ -949,7 +949,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Proposing the heliocentric model of the universe.",
     intention: "Deep work on Copernicus' model.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Astronomy Guild",
     linkedin_url: null,
@@ -970,7 +970,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Formulating laws of planetary motion.",
     intention: "Deep work on Kepler's laws.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Astronomy Guild",
     linkedin_url: null,
@@ -991,7 +991,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing the atomic model and quantum theory.",
     intention: "Deep work on Bohr's model.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Quantum Physics Group",
     linkedin_url: null,
@@ -1012,7 +1012,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Formulating the uncertainty principle in quantum mechanics.",
     intention: "Deep work on Heisenberg's principle.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Quantum Physics Group",
     linkedin_url: null,
@@ -1033,7 +1033,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing wave mechanics and the Schrödinger equation.",
     intention: "Deep work on Schrödinger's equation.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Quantum Physics Group",
     linkedin_url: null,
@@ -1054,7 +1054,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Formulating classical theory of electromagnetic radiation.",
     intention: "Deep work on Maxwell's equations.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Electromagnetism Research",
     linkedin_url: null,
@@ -1075,7 +1075,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Discovering electromagnetic induction and diamagnetism.",
     intention: "Deep work on Faraday's experiments.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Electromagnetism Research",
     linkedin_url: null,
@@ -1096,7 +1096,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Contributing to probability theory and fluid mechanics.",
     intention: "Deep work on Pascal's principles.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Mathematics & Physics Society",
     linkedin_url: null,
@@ -1117,7 +1117,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing calculus and philosophical optimism.",
     intention: "Deep work on Leibniz's philosophy.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Mathematics & Philosophy Society",
     linkedin_url: null,
@@ -1138,7 +1138,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Exploring mathematics, music, and philosophy.",
     intention: "Deep work on Pythagorean theorem.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Ancient Mathematics Guild",
     linkedin_url: null,
@@ -1159,7 +1159,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Systematizing geometry in 'Elements'.",
     intention: "Deep work on Euclidean geometry.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Ancient Mathematics Guild",
     linkedin_url: null,
@@ -1180,7 +1180,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Innovating in mathematics, physics, and engineering.",
     intention: "Deep work on Archimedes' principles.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Ancient Engineering Guild",
     linkedin_url: null,
@@ -1201,7 +1201,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Mastering art, science, and invention.",
     intention: "Deep work on Da Vinci's inventions.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Renaissance Innovators",
     linkedin_url: null,
@@ -1222,7 +1222,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Experimenting with electricity and civic engagement.",
     intention: "Deep work on Franklin's experiments.",
-    sociability: 50,
+    focus_preference: 50, // Changed from sociability
     updated_at: new Date().toISOString(),
     organization: "Enlightenment Thinkers",
     linkedin_url: null,
@@ -1287,8 +1287,8 @@ interface ProfileContextType {
   setCanHelpWith: React.Dispatch<React.SetStateAction<string | null>>;
   needHelpWith: string | null;
   setNeedHelpWith: React.Dispatch<React.SetStateAction<string | null>>;
-  sociability: number;
-  setSociability: React.Dispatch<React.SetStateAction<number>>;
+  focusPreference: number; // Changed from sociability
+  setFocusPreference: React.Dispatch<React.SetStateAction<number>>; // Changed from sociability
   organization: string | null;
   setOrganization: React.Dispatch<React.SetStateAction<string | null>>;
   linkedinUrl: string | null;
@@ -1337,7 +1337,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
   const [intention, setIntention] = useState<string | null>(null);
   const [canHelpWith, setCanHelpWith] = useState<string | null>(null);
   const [needHelpWith, setNeedHelpWith] = useState<string | null>(null);
-  const [sociability, setSociability] = useState<number>(50);
+  const [focusPreference, setFocusPreference] = useState<number>(50); // Changed from sociability
   const [organization, setOrganization] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   const [pronouns, setPronouns] = useState<string | null>(null);
@@ -1362,21 +1362,21 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
     const mockNearbyParticipants = [
-      { id: "mock-user-id-bezos", name: "Altman", sociability: 20, intention: "Optimizing cloud infrastructure." },
-      { id: "mock-user-id-musk", name: "Musk", sociability: 10, intention: "Designing reusable rocket components." },
-      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", sociability: 20, intention: "Developing new social algorithms." },
-      { id: "mock-user-id-gates", name: "Amodei", sociability: 20, intention: "Refining operating system architecture." },
-      { id: "mock-user-id-jobs", name: "Huang", sociability: 30, intention: "Innovating user interface design." },
+      { id: "mock-user-id-bezos", name: "Altman", focus_preference: 20, intention: "Optimizing cloud infrastructure." }, // Changed from sociability
+      { id: "mock-user-id-musk", name: "Musk", focus_preference: 10, intention: "Designing reusable rocket components." }, // Changed from sociability
+      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", focus_preference: 20, intention: "Developing new social algorithms." }, // Changed from sociability
+      { id: "mock-user-id-gates", name: "Amodei", focus_preference: 20, intention: "Refining operating system architecture." }, // Changed from sociability
+      { id: "mock-user-id-jobs", name: "Huang", focus_preference: 30, intention: "Innovating user interface design." }, // Changed from sociability
     ];
     const mockFriendsParticipants = [
-      { id: "mock-user-id-freud", name: "Freud", sociability: 60, intention: "Reviewing psychoanalytic theories." },
-      { id: "mock-user-id-skinner", name: "Skinner", sociability: 60, intention: "Memorizing behavioral principles." },
-      { id: "mock-user-id-piaget", name: "Piaget", sociability: 70, intention: "Practicing cognitive development questions." },
-      { id: "mock-user-id-jung", name: "Jung", sociability: 60, intention: "Summarizing archetypal concepts." },
-      { id: "mock-user-id-maslow", name: "Maslow", sociability: 50, intention: "Creating hierarchy of needs flashcards." },
-      { id: "mock-user-id-rogers", name: "Rogers", sociability: 55, intention: "Discussing humanistic approaches." },
-      { id: "mock-user-id-bandura", name: "Bandura", sociability: 65, intention: "Collaborating on social learning theory guide." },
-      { id: "mock-user-id-pavlov", name: "Pavlov", sociability: 70, intention: "Peer teaching classical conditioning." },
+      { id: "mock-user-id-freud", name: "Freud", focus_preference: 60, intention: "Reviewing psychoanalytic theories." }, // Changed from sociability
+      { id: "mock-user-id-skinner", name: "Skinner", focus_preference: 60, intention: "Memorizing behavioral principles." }, // Changed from sociability
+      { id: "mock-user-id-piaget", name: "Piaget", focus_preference: 70, intention: "Practicing cognitive development questions." }, // Changed from sociability
+      { id: "mock-user-id-jung", name: "Jung", focus_preference: 60, intention: "Summarizing archetypal concepts." }, // Changed from sociability
+      { id: "mock-user-id-maslow", name: "Maslow", focus_preference: 50, intention: "Creating hierarchy of needs flashcards." }, // Changed from sociability
+      { id: "mock-user-id-rogers", name: "Rogers", focus_preference: 55, intention: "Discussing humanistic approaches." }, // Changed from sociability
+      { id: "mock-user-id-bandura", name: "Bandura", focus_preference: 65, intention: "Collaborating on social learning theory guide." }, // Changed from sociability
+      { id: "mock-user-id-pavlov", name: "Pavlov", focus_preference: 70, intention: "Peer teaching classical conditioning." }, // Changed from sociability
     ];
 
     [...mockNearbyParticipants, ...mockFriendsParticipants].forEach(p => uniqueNames.add(p.name));
@@ -1485,7 +1485,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
       setIntention(null);
       setCanHelpWith(null);
       setNeedHelpWith(null);
-      setSociability(50);
+      setFocusPreference(50); // Changed from sociability
       setOrganization(null);
       setLinkedinUrl(null);
       setPronouns(null);
@@ -1527,7 +1527,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
         setIntention(newProfileData.intention);
         setCanHelpWith(newProfileData.can_help_with);
         setNeedHelpWith(newProfileData.need_help_with);
-        setSociability(newProfileData.sociability || 50);
+        setFocusPreference(newProfileData.focus_preference || 50); // Changed from sociability
         setOrganization(newProfileData.organization);
         setLinkedinUrl(newProfileData.linkedin_url);
         setPronouns(newProfileData.pronouns);
@@ -1547,7 +1547,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
         setIntention(data.intention);
         setCanHelpWith(data.can_help_with);
         setNeedHelpWith(data.need_help_with);
-        setSociability(data.sociability || 50);
+        setFocusPreference(data.focus_preference || 50); // Changed from sociability
         setOrganization(data.organization);
         setLinkedinUrl(data.linkedin_url);
         setPronouns(data.pronouns);
@@ -1609,7 +1609,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
       setIntention(updatedData.intention);
       setCanHelpWith(updatedData.can_help_with);
       setNeedHelpWith(updatedData.need_help_with);
-      setSociability(updatedData.sociability || 50);
+      setFocusPreference(updatedData.focus_preference || 50); // Changed from sociability
       setOrganization(updatedData.organization);
       setLinkedinUrl(updatedData.linkedin_url);
       setPronouns(updatedData.pronouns);
@@ -1654,7 +1654,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
       avatar_url: null,
       bio: null,
       intention: null,
-      sociability: 50,
+      focus_preference: 50, // Changed from sociability
       updated_at: new Date().toISOString(),
       organization: null,
       linkedin_url: null,
@@ -1684,7 +1684,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
         setIntention(null);
         setCanHelpWith(null);
         setNeedHelpWith(null);
-        setSociability(50);
+        setFocusPreference(50); // Changed from sociability
         setOrganization(null);
         setLinkedinUrl(null);
         setPronouns(null);
@@ -1713,7 +1713,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
     localStorage.removeItem('deepsesh_pronouns');
     localStorage.removeItem('deepsesh_bio');
     localStorage.removeItem('deepsesh_intention');
-    localStorage.removeItem('deepsesh_sociability');
+    localStorage.removeItem('deepsesh_sociability'); // Changed from sociability
     localStorage.removeItem('deepsesh_linkedin_url');
 
     // Blocked users and friend statuses can remain local for now if not synced to backend
@@ -1779,7 +1779,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
     intention, setIntention,
     canHelpWith, setCanHelpWith,
     needHelpWith, setNeedHelpWith,
-    sociability, setSociability,
+    focusPreference, setFocusPreference, // Changed from sociability
     organization, setOrganization,
     linkedinUrl, setLinkedinUrl,
   };

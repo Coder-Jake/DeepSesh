@@ -15,7 +15,7 @@ interface DemoSession {
   location: string;
   workspaceImage: string;
   workspaceDescription: string;
-  participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
+  participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[]; // Changed from sociability
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
 }
 
@@ -43,11 +43,11 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
     return session.fullSchedule.filter(phase => phase.type === 'break').reduce((sum, phase) => sum + phase.durationMinutes, 0);
   }, [session.fullSchedule]);
 
-  // Calculate average sociability of participants
-  const averageSociability = useMemo(() => {
+  // Calculate average focusPreference of participants
+  const averageFocusPreference = useMemo(() => { // Changed from sociability
     if (session.participants.length === 0) return 0;
-    const totalSociability = session.participants.reduce((sum, p) => sum + p.sociability, 0);
-    return totalSociability / session.participants.length;
+    const totalFocusPreference = session.participants.reduce((sum, p) => sum + p.focusPreference, 0); // Changed from sociability
+    return totalFocusPreference / session.participants.length;
   }, [session.participants]);
 
   // State for dynamically calculated current phase and remaining time
@@ -186,7 +186,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <div className="flex justify-between items-center">
-          {/* Group for Location, Coworkers Popovers, and Average Sociability Bar */}
+          {/* Group for Location, Coworkers Popovers, and Average Focus Preference Bar */} {/* Changed from sociability */}
           <div className="flex items-center gap-4 flex-grow mr-4">
             <Popover>
               <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
@@ -223,7 +223,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                       </span>
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{width: `${p.sociability}%`, backgroundColor: getSociabilityGradientColor(p.sociability)}}></div>
+                          <div className="h-full rounded-full" style={{width: `${p.focusPreference}%`, backgroundColor: getSociabilityGradientColor(p.focusPreference)}}></div> {/* Changed from sociability */}
                         </div>
                       </div>
                     </div>
@@ -231,9 +231,9 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                 </div>
               </PopoverContent>
             </Popover>
-            {/* Average Sociability Bar - now inside this flex container */}
+            {/* Average Focus Preference Bar - now inside this flex container */} {/* Changed from sociability */}
             <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow px-1 max-w-[150px]">
-              <div className="h-full rounded-full" style={{width: `${averageSociability}%`, backgroundColor: getSociabilityGradientColor(averageSociability)}}></div>
+              <div className="h-full rounded-full" style={{width: `${averageFocusPreference}%`, backgroundColor: getSociabilityGradientColor(averageFocusPreference)}}></div> {/* Changed from sociability */}
             </div>
           </div>
           

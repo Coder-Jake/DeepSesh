@@ -37,7 +37,7 @@ const Profile = () => {
     intention, setIntention,
     canHelpWith, setCanHelpWith,
     needHelpWith, setNeedHelpWith,
-    sociability, setSociability,
+    focusPreference, setFocusPreference, // Changed from sociability
     organization, setOrganization,
     linkedinUrl, setLinkedinUrl,
   } = useProfile();
@@ -62,7 +62,7 @@ const Profile = () => {
     intention: "",
     canHelpWith: "",
         needHelpWith: "",
-    sociability: 50, // Changed to number
+    focusPreference: 50, // Changed from sociability
     organization: "",
     linkedinUrl: "",
     hostCode: "",
@@ -156,7 +156,7 @@ const Profile = () => {
     isLongPress.current = false;
   };
 
-  const handleSociabilityLongPress = () => {
+  const handleFocusPreferenceLongPress = () => { // Changed from handleSociabilityLongPress
     if (isLongPress.current) {
       navigate('/profile#social-preferences');
     }
@@ -226,7 +226,7 @@ const Profile = () => {
         intention: intention || "",
         canHelpWith: canHelpWith || "",
         needHelpWith: needHelpWith || "",
-        sociability: sociability || 50,
+        focusPreference: focusPreference || 50, // Changed from sociability
         organization: organization || "",
         linkedinUrl: linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : "",
         hostCode: hostCode || "", // This line is important
@@ -247,7 +247,7 @@ const Profile = () => {
       setHasChanges(false);
     }
   }, [
-    loading, localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode,
+    loading, localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, pronouns
   ]);
 
@@ -276,7 +276,7 @@ const Profile = () => {
                    intention !== originalValues.intention || 
                    canHelpWith !== originalValues.canHelpWith ||
                    needHelpWith !== originalValues.needHelpWith ||
-                   sociability !== originalValues.sociability || // Changed to single value
+                   focusPreference !== originalValues.focusPreference || // Changed from sociability
                    organization !== originalValues.organization ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
                    hostCode !== originalValues.hostCode ||
@@ -288,7 +288,7 @@ const Profile = () => {
                    pronouns !== originalValues.pronouns;
     setHasChanges(changed);
   }, [
-    localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode,
+    localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
     pronouns,
     originalValues
@@ -297,7 +297,7 @@ const Profile = () => {
   useEffect(() => {
     checkForChanges();
   }, [
-    localFirstName, bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl, hostCode,
+    localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
     pronouns,
     checkForChanges
@@ -378,7 +378,7 @@ const Profile = () => {
       intention,
       can_help_with: canHelpWith,
       need_help_with: needHelpWith,
-      sociability,
+      focus_preference: focusPreference, // Changed from sociability
       organization: organization?.trim() === "" ? null : organization?.trim(),
       linkedin_url: (linkedinUrl === null || linkedinUrl.trim() === "") ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`,
       host_code: trimmedHostCode,
@@ -433,7 +433,7 @@ const Profile = () => {
     setIntention(originalValues.intention);
     setCanHelpWith(originalValues.canHelpWith);
     setNeedHelpWith(originalValues.needHelpWith);
-    setSociability(originalValues.sociability);
+    setFocusPreference(originalValues.focusPreference); // Changed from sociability
     setOrganization(originalValues.organization);
     setLinkedinUrl(originalValues.linkedinUrl);
     setHostCode(originalValues.hostCode);
@@ -458,7 +458,7 @@ const Profile = () => {
     setHasChanges(false);
     setLongPressedFriendId(null);
   }, [
-    originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setSociability,
+    originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference, // Changed from sociability
     setOrganization, setLinkedinUrl, setHostCode, setPronouns, setCurrentPronounIndex,
     setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility,
     setBioLabelColorIndex, setIntentionLabelColorIndex, setLinkedinLabelColorIndex, setCanHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex
@@ -716,33 +716,33 @@ const Profile = () => {
                   </div>
                   <div className="relative group">
                     <Slider
-                      value={[sociability]} // Slider expects an array, so wrap sociability
-                      onValueChange={(val) => setSociability(val[0])} // Extract single value from array
+                      value={[focusPreference]} // Changed from sociability
+                      onValueChange={(val) => setFocusPreference(val[0])} // Changed from sociability
                       max={100}
                       min={0}
                       step={1}
                       className="w-full"
-                      rangeColor={getSociabilityGradientColor(sociability)} // NEW: Apply dynamic color to the slider range
+                      rangeColor={getSociabilityGradientColor(focusPreference)} // Changed from sociability
                     />
                   </div>
                   {/* REMOVED: Visual bar for sociability */}
                   <div 
                     className="text-center mt-3 text-sm text-muted-foreground cursor-pointer select-none"
-                    onMouseDown={() => handleLongPressStart(handleSociabilityLongPress)}
+                    onMouseDown={() => handleLongPressStart(handleFocusPreferenceLongPress)} // Changed from handleSociabilityLongPress
                     onMouseUp={handleLongPressEnd}
                     onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(handleSociabilityLongPress)}
+                    onTouchStart={() => handleLongPressStart(handleFocusPreferenceLongPress)} // Changed from handleSociabilityLongPress
                     onTouchEnd={handleLongPressEnd}
                     onClick={() => {
                       if (!isLongPress.current) {
                       }
                     }}
                   >
-                    {sociability <= 20 && "Looking to collaborate/brainstorm"}
-                    {sociability > 20 && sociability <= 40 && "Happy to chat while we work"}
-                    {sociability > 40 && sociability <= 60 && "I don't mind"}
-                    {sociability > 60 && sociability <= 80 && "Socialise only during breaks"}
-                    {sociability > 80 && "Minimal interaction even during breaks"}
+                    {focusPreference <= 20 && "Looking to collaborate/brainstorm"}
+                    {focusPreference > 20 && focusPreference <= 40 && "Happy to chat while we work"}
+                    {focusPreference > 40 && focusPreference <= 60 && "I don't mind"}
+                    {focusPreference > 60 && focusPreference <= 80 && "Socialise only during breaks"}
+                    {focusPreference > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
               </div>

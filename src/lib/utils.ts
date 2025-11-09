@@ -35,19 +35,19 @@ export const getPrivacyColorClassFromIndex = (index: number): string => {
   return labelColors[index % labelColors.length];
 };
 
-// NEW: Helper function to calculate dynamic sociability gradient colors
-export const getSociabilityGradientColor = (sociability: number): string => {
-  const clampedSociability = Math.max(0, Math.min(100, sociability));
+// NEW: Helper function to calculate dynamic focusPreference gradient colors
+export const getSociabilityGradientColor = (focusPreference: number): string => { // Changed from sociability
+  const clampedFocusPreference = Math.max(0, Math.min(100, focusPreference)); // Changed from sociability
   const saturation = 90; // Fixed saturation
   const minLightness = 10; // Minimum lightness value
 
-  if (clampedSociability > 50) {
+  if (clampedFocusPreference > 50) { // Changed from sociability
     // Purpleish gradient for Deep Focus: H=260, L from minLightness (at 50%) to 50% (at 100%)
-    const lightness = minLightness + (clampedSociability - 50) * ((50 - minLightness) / 50);
+    const lightness = minLightness + (clampedFocusPreference - 50) * ((50 - minLightness) / 50); // Changed from sociability
     return `hsl(260 ${saturation}% ${lightness}%)`;
-  } else if (clampedSociability < 50) {
+  } else if (clampedFocusPreference < 50) { // Changed from sociability
     // Blueish gradient for Banter: H=220, L from minLightness (at 50%) to 50% (at 0%)
-    const lightness = minLightness + (50 - clampedSociability) * ((50 - minLightness) / 50);
+    const lightness = minLightness + (50 - clampedFocusPreference) * ((50 - minLightness) / 50); // Changed from sociability
     return `hsl(220 ${saturation}% ${lightness}%)`;
   } else {
     // Exactly 50%, lightness is minLightness. Use the purpleish hue as a default for the midpoint.

@@ -20,7 +20,7 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user } = useAuth();
-  const { localFirstName, profile, sociability: userSociability, intention: userIntention, bio: userBio } = useProfile();
+  const { localFirstName, profile, focusPreference: userFocusPreference, intention: userIntention, bio: userBio } = useProfile(); // Changed from sociability
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
@@ -370,7 +370,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       total_session_duration_seconds: isScheduleActive ? activeSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60 : currentPhaseDuration * 60,
       schedule_id: isScheduleActive ? activeSchedule[0]?.id : null,
       current_schedule_index: isScheduleActive ? currentScheduleIndex : 0,
-      schedule_data: isScheduleActive ? activeSchedule : null,
+      schedule_data: activeSchedule,
       visibility: isGlobalPrivate ? 'private' : 'public',
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
@@ -741,7 +741,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       userName: localFirstName,
       joinTime: Date.now(),
       role: 'host',
-      sociability: userSociability || 50,
+      focusPreference: userFocusPreference || 50, // Changed from sociability
       intention: userIntention || undefined,
       bio: userBio || undefined,
     };
@@ -797,7 +797,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
-    userSociability, userIntention, userBio, isGlobalPrivate, getLocation, getDefaultSeshTitle
+    userFocusPreference, userIntention, userBio, isGlobalPrivate, getLocation, getDefaultSeshTitle // Changed from sociability
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1000,7 +1000,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       userName: localFirstName,
       joinTime: Date.now(),
       role: 'coworker',
-      sociability: userSociability || 50,
+      focusPreference: userFocusPreference || 50, // Changed from sociability
       intention: userIntention || undefined,
       bio: userBio || undefined,
     };
@@ -1060,7 +1060,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsTimeLeftManagedBySession, setTimeLeft, setSessionStartTime, setCurrentPhaseStartTime,
     setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
     setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
-    userSociability, userIntention, userBio, _defaultBreakMinutes, _defaultFocusMinutes,
+    userFocusPreference, userIntention, userBio, _defaultBreakMinutes, _defaultFocusMinutes, // Changed from sociability
     playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates
   ]);
 

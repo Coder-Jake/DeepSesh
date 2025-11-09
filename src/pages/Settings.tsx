@@ -186,9 +186,11 @@ const Settings = () => {
       isDiscoveryActivated, // NEW: Add to current UI settings
     };
 
+    const savedValRef = savedSettingsRef.current; // Capture current ref value
+
     const changed = Object.keys(currentUiSettings).some(key => {
       const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
-      const savedVal = savedSettingsRef.current[key as keyof typeof savedSettingsRef.current]; // Corrected type reference
+      const savedVal = savedValRef[key as keyof typeof savedValRef]; // Use captured ref value
 
       if (typeof currentVal === 'object' && currentVal !== null) {
         return JSON.stringify(currentVal) !== JSON.stringify(savedVal);
