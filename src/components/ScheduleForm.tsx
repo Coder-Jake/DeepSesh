@@ -45,11 +45,8 @@ const ScheduleForm: React.FC = () => {
     areToastsEnabled,
     formatTime, 
     is24HourFormat, 
-    getDefaultSeshTitle, // NEW: Import getDefaultSeshTitle
+    getDefaultSeshTitle, 
   } = useTimer();
-
-  // REMOVED: The useEffect that initialized the schedule with default timers.
-  // The schedule will now start empty.
 
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
@@ -79,8 +76,9 @@ const ScheduleForm: React.FC = () => {
   const [visibleTrashId, setVisibleTrashId] = useState<string | null>(null);
   const trashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // NEW: State to track if any item has been trashed
-  const [hasTrashedAnyItem, setHasTrashedAnyItem] = useState(false);
+  // NEW: State to control visibility of the "Trash All" button
+  const [showTrashAllButton, setShowTrashAllButton] = useState(false);
+  const trashAllTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // NEW: State to control visibility of total duration
   const [showTotalDuration, setShowTotalDuration] = useState(false);
@@ -194,7 +192,15 @@ const ScheduleForm: React.FC = () => {
     if (trashTimeoutRef.current) {
       clearTimeout(trashTimeoutRef.current);
     }
-    setHasTrashedAnyItem(true); // NEW: Set to true after an item is trashed
+    
+    // Logic for "Trash All" button visibility
+    if (trashAllTimeoutRef.current) {
+      clearTimeout(trashAllTimeoutRef.current);
+    }
+    setShowTrashAllButton(true);
+    trashAllTimeoutRef.current = setTimeout(() => {
+      setShowTrashAllButton(false);
+    }, 3000); // Show for 3 seconds
   };
 
   // NEW: Function to trash all timers
@@ -209,7 +215,11 @@ const ScheduleForm: React.FC = () => {
         description: "All timers have been removed from the schedule.",
       });
     }
-    setHasTrashedAnyItem(false); // NEW: Reset after all items are trashed
+    // Hide "Trash All" button immediately
+    if (trashAllTimeoutRef.current) {
+      clearTimeout(trashAllTimeoutRef.current);
+    }
+    setShowTrashAllButton(false);
   };
 
   const handleCommenceSchedule = () => {
@@ -491,14 +501,14 @@ const ScheduleForm: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsRecurring(prev => !prev)} // Corrected usage
+                onClick={() => setIsRecurring(prev => !prev)} 
                 className={cn(
-                  "h-8 w-8 rounded-full hover:bg-transparent focus:bg-transparent active:bg-transparent", // Removed hover:bg-muted and added transparent backgrounds
-                  isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground" // Removed hover:bg-muted
+                  "h-8 w-8 rounded-full hover:bg-transparent focus:bg-transparent active:bg-transparent", 
+                  isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground" 
                 )}
                 aria-label="Toggle schedule loop"
               >
-                <Repeat className="h-4 w-4" strokeWidth={isRecurring ? 3 : 2} /> {/* Added conditional strokeWidth */}
+                <Repeat className="h-4 w-4" strokeWidth={isRecurring ? 3 : 2} /> 
               </Button>
               <span className="flex-grow text-center">
                 {showTotalDuration && totalDurationMinutes > 0 && (
@@ -513,8 +523,8 @@ const ScheduleForm: React.FC = () => {
                   </span>
                 )}
               </span>
-              {/* NEW: Trash All button, visible when hasTrashedAnyItem is true and there are still items */}
-              {hasTrashedAnyItem && schedule.length > 0 && (
+              {/* NEW: Trash All button, visible for 3 seconds after an item is trashed and there are still items */}
+              {showTrashAllButton && schedule.length > 0 && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -525,8 +535,8 @@ const ScheduleForm: React.FC = () => {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
-              {(!hasTrashedAnyItem || schedule.length === 0) && (
-                <div className="w-8 h-8" /> // Spacer if trash all is not visible
+              {(!showTrashAllButton || schedule.length === 0) && (
+                <div className="w-8 h-8" /> {/* Spacer if trash all is not visible */}
               )}
             </div>
           )}
