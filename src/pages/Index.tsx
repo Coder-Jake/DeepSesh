@@ -355,7 +355,7 @@ const Index = () => {
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const linkCopiedTimeoutRef = useRef<Node aJS.Timeout | null>(null);
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(localFirstName || hostCode || "You");
@@ -1060,7 +1060,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, [getEffectiveStartTime]);
+  }, []); // Removed getEffectiveStartTime from its own dependency array
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
