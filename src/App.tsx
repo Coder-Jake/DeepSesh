@@ -32,9 +32,9 @@ function App() {
         <Router>
           <ThemeProvider>
             <AuthProvider>
-              {/* TimerProvider now wraps ProfileProvider */}
-              <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
-                <ProfileProvider areToastsEnabled={areToastsEnabled}>
+              {/* ProfileProvider now wraps TimerProvider */}
+              <ProfileProvider areToastsEnabled={areToastsEnabled}>
+                <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
                   <ProfilePopUpProvider>
                     <Routes>
                       <Route path="/" element={<AppLayout />}>
@@ -50,8 +50,8 @@ function App() {
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </ProfilePopUpProvider>
-                </ProfileProvider>
-              </TimerProvider>
+                </TimerProvider>
+              </ProfileProvider>
             </AuthProvider>
           </ThemeProvider>
         </Router>
