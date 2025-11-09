@@ -493,6 +493,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [activeSessionRecordId, user?.id, currentSessionRole, areToastsEnabled, resetSessionStates]);
 
   const transferHostRole = useCallback(async () => {
+    // If we are a host, but the session was never successfully published (activeSessionRecordId is null),
+    // then we just need to reset the local state.
+    if (currentSessionRole === 'host' && !activeSessionRecordId) {
+      console.log("transferHostRole: Host session was not published to Supabase. Resetting local state.");
+      await resetSchedule(); // This will call resetSessionStates
+      return;
+    }
+
     if (!user?.id || !activeSessionRecordId || currentSessionRole !== 'host') {
       console.warn("Attempted to transfer host role without being the host or having an active session.");
       return;
