@@ -1563,7 +1563,7 @@ const Index = () => {
             <ActiveAskSection 
               activeAsks={activeAsks} 
               onVoteExtend={handleVoteExtend} 
-              onVotePoll={handleVoteOnExistingPoll} {/* Changed to handleVoteOnExistingPoll */}
+              onVotePoll={handleVoteOnExistingPoll} 
               currentUserId={currentUserId} 
             />
           </div>
