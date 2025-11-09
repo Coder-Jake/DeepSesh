@@ -813,7 +813,7 @@ const Profile = () => {
                     onMouseDown={() => handleFriendLongPressStart(friendId)}
                     onMouseUp={handleFriendLongPressEnd}
                     onMouseLeave={handleFriendLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(handleFriendLongPressStart(friendId))}
+                    onTouchStart={() => handleLongPressStart(() => handleFriendLongPressStart(friendId))} // FIX HERE
                     onTouchEnd={handleFriendLongPressEnd}
                   >
                     <p className="font-medium">{friendId}</p>

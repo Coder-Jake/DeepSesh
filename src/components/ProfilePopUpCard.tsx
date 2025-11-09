@@ -64,24 +64,8 @@ const ProfilePopUpCard: React.FC = () => {
     }
   }, []);
 
-  const handleLabelClick = useCallback(async (
-    currentVisibility: ("public" | "friends" | "organisation" | "private")[],
-    visibilitySetter: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>,
-    fieldName: keyof ProfileDataJsonb
-  ) => {
-    const currentIndex = getIndexFromVisibility(currentVisibility);
-    const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
-    const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ("public" | "friends" | "organisation" | "private")[];
-
-    visibilitySetter(newVisibility);
-
-    if (areToastsEnabled) {
-      const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
-      toast.success("Privacy Setting Changed", {
-        description: successMessage,
-      });
-    }
-  }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus]);
+  // REMOVED: handleLabelClick function as it's for editing, not viewing.
+  // The ProfilePopUpCard should only display, not allow editing of the current user's profile.
 
   useEffect(() => {
     const fetchTargetProfile = () => {
@@ -299,10 +283,9 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
+                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetBio.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(bioVisibility, setBioVisibility, 'bio') : undefined}
             >
               <MessageSquare size={16} /> Bio
             </h4>
@@ -315,10 +298,9 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
+                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetIntention.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(intentionVisibility, setIntentionVisibility, 'intention') : undefined}
             >
               <Lightbulb size={16} /> Intention
             </h4>
@@ -331,10 +313,9 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
+                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetCanHelpWith.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with') : undefined}
             >
               <Handshake size={16} /> Can Help With
             </h4>
@@ -347,10 +328,9 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
+                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetNeedHelpWith.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with') : undefined}
             >
               <HelpCircle size={16} /> Need Help With
             </h4>
@@ -387,10 +367,9 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                isCurrentUserProfile && "cursor-pointer select-none",
+                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetLinkedinUrl.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(linkedinVisibility, setLinkedinVisibility, 'linkedin_url') : undefined}
             >
               <Linkedin size={16} /> LinkedIn
             </h4>
