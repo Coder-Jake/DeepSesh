@@ -33,17 +33,17 @@ const AppLayout = () => {
           event.preventDefault();
           navigate('/');
           break;
-        case '2':
-        case 's': // Added 's' for Settings
-        case 'S': // Added 'S' for Settings
-          event.preventDefault();
-          navigate('/settings');
-          break;
-        case '3':
+        case '2': // Changed to '2' for Profile
         case 'p': // Added 'p' for Profile
         case 'P': // Added 'P' for Profile
           event.preventDefault();
           navigate('/profile');
+          break;
+        case '3': // Changed to '3' for Settings
+        case 's': // Added 's' for Settings
+        case 'S': // Added 'S' for Settings
+          event.preventDefault();
+          navigate('/settings');
           break;
         case '4':
           event.preventDefault();

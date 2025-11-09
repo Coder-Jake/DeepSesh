@@ -10,9 +10,9 @@ const Navigation = () => {
   const { localFirstName } = useProfile(); // Get localFirstName from ProfileContext
 
   const navigationItems = [
-    { name: "Settings", href: "/settings", icon: Settings }, // Settings moved to top
-    { name: localFirstName, href: "/profile", icon: User }, // Profile changed to localFirstName
-    { name: "Vibes", href: "/vibes", icon: Sparkles }, // NEW: Added Vibes page
+    { name: localFirstName, href: "/profile", icon: User }, // Profile moved to top
+    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Vibes", href: "/vibes", icon: Sparkles },
     { name: "Chip In", href: "/chip-in", icon: Heart },
   ];
 
