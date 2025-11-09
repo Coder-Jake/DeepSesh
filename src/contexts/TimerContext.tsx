@@ -509,10 +509,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const newHost = otherCoworkers[0];
       const updatedParticipants = currentSessionParticipantsData.map(p => {
         if (p.userId === newHost.userId) {
-          return { ...p, role: 'host' };
+          return { ...p, role: 'host' as const }; // Explicitly cast to literal type
         }
         if (p.userId === currentHostId) {
-          return { ...p, role: 'coworker' };
+          return { ...p, role: 'coworker' as const }; // Explicitly cast to literal type
         }
         return p;
       });
@@ -957,7 +957,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return;
     }
 
-    let updatedParticipantsData: ParticipantSessionData[] = existingSession?.participants_data || [];
+    let updatedParticipantsData: ParticipantSessionData[] = (existingSession?.participants_data as ParticipantSessionData[] | undefined) || [];
     if (!updatedParticipantsData.some(p => p.userId === user.id)) {
       updatedParticipantsData.push(newCoworker);
     }
