@@ -34,7 +34,6 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData } from "@/types/timer";
-import { DAYS_OF_WEEK } from "@/lib/constants";
 import { Accordion
  } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
@@ -76,6 +75,7 @@ interface Poll {
 type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
 
+// Updated DemoSession interface to use imported types
 interface DemoSession {
   id: string;
   title: string;
@@ -83,8 +83,8 @@ interface DemoSession {
   location: string;
   workspaceImage: string;
   workspaceDescription: string;
-  participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[];
-  fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
+  participants: ParticipantSessionData[]; // Use ParticipantSessionData
+  fullSchedule: ScheduledTimer[]; // Use ScheduledTimer
 }
 
 // NEW: Define a type for Supabase fetched sessions
@@ -124,15 +124,15 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "mock-user-id-bezos", name: "Altman", focusPreference: 15, intention: "Optimizing cloud infrastructure." },
-      { id: "mock-user-id-musk", name: "Musk", focusPreference: 10, intention: "Designing reusable rocket components." },
-      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", focusPreference: 20, intention: "Developing new social algorithms." },
-      { id: "mock-user-id-gates", name: "Amodei", focusPreference: 20, intention: "Refining operating system architecture." },
-      { id: "mock-user-id-jobs", name: "Huang", focusPreference: 30, intention: "Innovating user interface design." },
+      { userId: "mock-user-id-bezos", userName: "Altman", role: 'host', joinTime: Date.now(), focusPreference: 15, intention: "Optimizing cloud infrastructure." },
+      { userId: "mock-user-id-musk", userName: "Musk", role: 'coworker', joinTime: Date.now(), focusPreference: 10, intention: "Designing reusable rocket components." },
+      { userId: "mock-user-id-zuckerberg", userName: "Zuckerberg", role: 'coworker', joinTime: Date.now(), focusPreference: 20, intention: "Developing new social algorithms." },
+      { userId: "mock-user-id-gates", userName: "Amodei", role: 'coworker', joinTime: Date.now(), focusPreference: 20, intention: "Refining operating system architecture." },
+      { userId: "mock-user-id-jobs", userName: "Huang", role: 'coworker', joinTime: Date.now(), focusPreference: 30, intention: "Innovating user interface design." },
     ],
     fullSchedule: [
-      { type: "focus", durationMinutes: 55 },
-      { type: "break", durationMinutes: 5 },
+      { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 55 },
+      { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 5 },
     ],
   },
 ];
@@ -146,18 +146,18 @@ const mockFriendsSessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
     participants: [
-      { id: "mock-user-id-freud", name: "Freud", focusPreference: 70, intention: "Reviewing psychoanalytic theories." },
-      { id: "mock-user-id-skinner", name: "Skinner", focusPreference: 70, intention: "Memorizing behavioral principles." },
-      { id: "mock-user-id-piaget", name: "Piaget", focusPreference: 80, intention: "Practicing cognitive development questions." },
-      { id: "mock-user-id-jung", name: "Jung", focusPreference: 70, intention: "Summarizing archetypal concepts." },
-      { id: "mock-user-id-maslow", name: "Maslow", focusPreference: 90, intention: "Creating hierarchy of needs flashcards." },
-      { id: "mock-user-id-rogers", name: "Rogers", focusPreference: 95, intention: "Discussing humanistic approaches." },
-      { id: "mock-user-id-bandura", name: "Bandura", focusPreference: 75, intention: "Collaborating on social learning theory guide." },
-      { id: "mock-user-id-pavlov", name: "Pavlov", focusPreference: 80, intention: "Peer teaching classical conditioning." },
+      { userId: "mock-user-id-freud", userName: "Freud", role: 'host', joinTime: Date.now(), focusPreference: 70, intention: "Reviewing psychoanalytic theories." },
+      { userId: "mock-user-id-skinner", userName: "Skinner", role: 'coworker', joinTime: Date.now(), focusPreference: 70, intention: "Memorizing behavioral principles." },
+      { userId: "mock-user-id-piaget", userName: "Piaget", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Practicing cognitive development questions." },
+      { userId: "mock-user-id-jung", userName: "Jung", role: 'coworker', joinTime: Date.now(), focusPreference: 70, intention: "Summarizing archetypal concepts." },
+      { userId: "mock-user-id-maslow", userName: "Maslow", role: 'coworker', joinTime: Date.now(), focusPreference: 90, intention: "Creating hierarchy of needs flashcards." },
+      { userId: "mock-user-id-rogers", userName: "Rogers", role: 'coworker', joinTime: Date.now(), focusPreference: 95, intention: "Discussing humanistic approaches." },
+      { userId: "mock-user-id-bandura", userName: "Bandura", role: 'coworker', joinTime: Date.now(), focusPreference: 75, intention: "Collaborating on social learning theory guide." },
+      { userId: "mock-user-id-pavlov", userName: "Pavlov", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Peer teaching classical conditioning." },
     ],
     fullSchedule: [
-      { type: "focus", durationMinutes: 25 },
-      { type: "break", durationMinutes: 5 },
+      { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 25 },
+      { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 5 },
     ],
   },
 ];
@@ -176,30 +176,38 @@ const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
   }
 
   return data.map((session: SupabaseSessionData) => {
-    // Use participants_data from Supabase directly
-    const participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] =
-      (session.participants_data || []).map(p => ({
-        id: p.userId,
-        name: p.userName,
-        focusPreference: p.focusPreference || 50,
-        intention: p.intention || undefined,
-        bio: p.bio || undefined,
-      }));
+    // Ensure participants_data is an array, even if null/undefined
+    const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
+    const participants: ParticipantSessionData[] = rawParticipantsData.map(p => ({
+      userId: p.userId,
+      userName: p.userName,
+      joinTime: p.joinTime,
+      role: p.role,
+      focusPreference: p.focusPreference || 50,
+      intention: p.intention || undefined,
+      bio: p.bio || undefined,
+    }));
 
+    // Ensure schedule_data is an array, even if null/undefined
+    const rawScheduleData = (session.schedule_data || []) as ScheduledTimer[];
     let fullSchedule: ScheduledTimer[];
-    if (session.schedule_data && Array.isArray(session.schedule_data) && session.schedule_data.length > 0) {
-      fullSchedule = session.schedule_data.map((item: any) => ({
+    if (rawScheduleData.length > 0) {
+      fullSchedule = rawScheduleData.map((item: any) => ({
         id: item.id || crypto.randomUUID(),
         title: item.title || item.type,
         type: item.type,
         durationMinutes: item.durationMinutes,
+        isCustom: item.isCustom || false,
+        customTitle: item.customTitle || undefined,
       }));
     } else {
+      // Fallback to a single timer based on current_phase_type if schedule_data is empty
       fullSchedule = [{
         id: crypto.randomUUID(),
-        title: session.current_phase_type,
+        title: session.current_phase_type === 'focus' ? 'Focus' : 'Break',
         type: session.current_phase_type,
         durationMinutes: session.current_phase_type === 'focus' ? session.focus_duration : session.break_duration,
+        isCustom: false,
       }];
     }
 
@@ -208,7 +216,7 @@ const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
       title: session.session_title,
       startTime: new Date(session.created_at).getTime(),
       location: session.location_long && session.location_lat ? `Lat: ${session.location_lat}, Long: ${session.location_lat}` : "Unknown Location",
-      workspaceImage: "/api/placeholder/200/120",
+      workspaceImage: "/api/placeholder/200/120", // Placeholder
       workspaceDescription: "Live session from Supabase",
       participants: participants,
       fullSchedule: fullSchedule,
@@ -656,77 +664,75 @@ const Index = () => {
   };
 
   const handleJoinSession = async (session: DemoSession) => {
-    const sessionId = session.id;
-    const sessionTitle = session.title;
-    const hostName = session.participants[0]?.name || session.title;
+    try {
+      const sessionId = session.id;
+      const sessionTitle = session.title;
+      // Find the host from the participants array, or fallback to session title
+      const hostName = session.participants.find(p => p.role === 'host')?.userName || session.title;
 
-    const participants: ParticipantSessionData[] = session.participants.map(p => ({
-      userId: p.id,
-      userName: p.name,
-      joinTime: Date.now(),
-      role: p.id === session.participants[0]?.id ? 'host' : 'coworker',
-      focusPreference: p.focusPreference,
-      intention: p.intention,
-      bio: p.bio,
-    }));
+      // Participants and fullSchedule are already robustly constructed by fetchSupabaseSessions
+      const participants = session.participants;
+      const fullSchedule = session.fullSchedule;
 
-    const fullSchedule = session.fullSchedule.map(item => ({
-      id: crypto.randomUUID(),
-      title: item.type === 'focus' ? 'Focus' : 'Break',
-      ...item,
-    }));
+      const now = Date.now();
+      const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
 
-    const now = Date.now();
-    const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
+      const totalScheduleDurationSeconds = fullSchedule.reduce(
+        (sum, phase) => sum + phase.durationMinutes * 60,
+        0
+      );
 
-    const totalScheduleDurationSeconds = session.fullSchedule.reduce(
-      (sum, phase) => sum + phase.durationMinutes * 60,
-      0
-    );
+      let currentPhaseType: 'focus' | 'break' = 'focus';
+      let remainingSecondsInPhase = 0;
+      let currentPhaseDurationMinutes = 0;
 
-    let currentPhaseType: 'focus' | 'break' = 'focus';
-    let remainingSecondsInPhase = 0;
-    let currentPhaseDurationMinutes = 0;
+      const cycleDurationSeconds = fullSchedule.reduce((sum, phase) => sum + phase.durationMinutes * 60, 0);
+      const effectiveElapsedSeconds = cycleDurationSeconds > 0 ? elapsedSecondsSinceSessionStart % cycleDurationSeconds : 0;
 
-    const cycleDurationSeconds = session.fullSchedule.reduce((sum, phase) => sum + phase.durationMinutes * 60, 0);
-    const effectiveElapsedSeconds = cycleDurationSeconds > 0 ? elapsedSecondsSinceSessionStart % cycleDurationSeconds : 0;
+      if (totalScheduleDurationSeconds === 0) {
+        currentPhaseType = 'focus';
+        remainingSecondsInPhase = 0;
+        currentPhaseDurationMinutes = 0;
+      } else if (elapsedSecondsSinceSessionStart < 0) {
+        currentPhaseType = fullSchedule[0]?.type || 'focus';
+        currentPhaseDurationMinutes = fullSchedule[0]?.durationMinutes || 0;
+        remainingSecondsInPhase = -elapsedSecondsSinceSessionStart;
+      } else {
+        let accumulatedDurationSecondsInCycle = 0;
+        for (let i = 0; i < fullSchedule.length; i++) {
+          const phase = fullSchedule[i];
+          const phaseDurationSeconds = phase.durationMinutes * 60;
 
-
-    if (totalScheduleDurationSeconds === 0) {
-      currentPhaseType = 'focus';
-      remainingSecondsInPhase = 0;
-      currentPhaseDurationMinutes = 0;
-    } else if (elapsedSecondsSinceSessionStart < 0) {
-      currentPhaseType = session.fullSchedule[0]?.type || 'focus';
-      currentPhaseDurationMinutes = session.fullSchedule[0]?.durationMinutes || 0;
-      remainingSecondsInPhase = -elapsedSecondsSinceSessionStart;
-    } else {
-      let accumulatedDurationSecondsInCycle = 0;
-      for (let i = 0; i < session.fullSchedule.length; i++) {
-        const phase = session.fullSchedule[i];
-        const phaseDurationSeconds = phase.durationMinutes * 60;
-
-        if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
-          const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle;
-          remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
-          currentPhaseDurationMinutes = phase.durationMinutes;
-          currentPhaseType = phase.type;
-          break;
+          if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
+            const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle;
+            remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
+            currentPhaseDurationMinutes = phase.durationMinutes;
+            currentPhaseType = phase.type;
+            break;
+          }
+          accumulatedDurationSecondsInCycle += phaseDurationSeconds;
         }
-        accumulatedDurationSecondsInCycle += phaseDurationSeconds;
       }
-    }
 
-    await joinSessionAsCoworker(
-      sessionId,
-      sessionTitle,
-      hostName,
-      participants,
-      fullSchedule,
-      currentPhaseType,
-      currentPhaseDurationMinutes,
-      remainingSecondsInPhase
-    );
+      await joinSessionAsCoworker(
+        sessionId,
+        sessionTitle,
+        hostName,
+        participants,
+        fullSchedule,
+        currentPhaseType,
+        currentPhaseDurationMinutes,
+        remainingSecondsInPhase
+      );
+    } catch (error: any) {
+      console.error("Error in handleJoinSession:", error);
+      if (areToastsEnabled) {
+        toast.error("Failed to Join Session", {
+          description: `An unexpected error occurred: ${error.message || String(error)}.`,
+        });
+      }
+      resetSessionStates(); // Ensure states are reset on error
+    }
   };
 
   const handleJoinCodeSubmit = () => {
@@ -836,7 +842,7 @@ const Index = () => {
 
       const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
 
-      const participantNames: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] = [];
+      const participantNames: ParticipantSessionData[] = [];
       const usedIndices = new Set<number>();
 
       for (let i = 0; i < 3; i++) {
@@ -851,8 +857,10 @@ const Index = () => {
         const variedFocusPreference = Math.max(0, Math.min(100, (focusPreference || 50) + focusPreferenceOffset));
 
         participantNames.push({
-          id: id,
-          name: name,
+          userId: id,
+          userName: name,
+          joinTime: Date.now(),
+          role: i === 0 ? 'host' : 'coworker', // Assign first participant as host
           focusPreference: variedFocusPreference,
           intention: `Deep work on ${name}'s theories.`,
           bio: `A dedicated member of ${orgName}.`,
@@ -868,8 +876,8 @@ const Index = () => {
         workspaceDescription: "Dedicated study space for organization members",
         participants: participantNames,
         fullSchedule: [
-          { type: "focus", durationMinutes: 50 },
-          { type: "break", durationMinutes: 10 },
+          { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 50 },
+          { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 10 },
         ],
       });
     });
@@ -1038,9 +1046,10 @@ const Index = () => {
     const [hours, minutes] = template.commenceTime.split(':').map(Number);
     let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
-    const currentDay = now.getDay();
+    const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, etc.
     const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
-    const daysToAdd = (templateDay - currentDay + 7) % 7;
+    
+    let daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
 
     if (targetDate.getTime() < now.getTime() && !template.isRecurring) {
@@ -1064,7 +1073,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, [DAYS_OF_WEEK]); // Added DAYS_OF_WEEK to dependencies
+  }, []); // Removed DAYS_OF_WEEK from dependencies as it's not directly used in the logic
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();

@@ -1033,52 +1033,62 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       bio: profile?.profile_data?.bio?.value || undefined,
     };
 
-    const { data: existingSession, error: fetchError } = await supabase
-      .from('active_sessions')
-      .select('participants_data')
-      .eq('id', sessionId)
-      .single();
+    try {
+      const { data: existingSession, error: fetchError } = await supabase
+        .from('active_sessions')
+        .select('participants_data')
+        .eq('id', sessionId)
+        .single();
 
-    if (fetchError) {
-      console.error("Error fetching existing session for join:", fetchError);
+      if (fetchError) {
+        console.error("Error fetching existing session for join:", fetchError);
+        if (areToastsEnabled) {
+          toast.error("Join Session Failed", {
+            description: `Could not fetch session details: ${fetchError.message}`,
+          });
+        }
+        resetSessionStates();
+        return;
+      }
+
+      let updatedParticipantsData: ParticipantSessionData[] = (existingSession?.participants_data || []) as ParticipantSessionData[];
+      if (!updatedParticipantsData.some(p => p.userId === user.id)) {
+        updatedParticipantsData.push(newCoworker);
+      }
+      setCurrentSessionParticipantsData(updatedParticipantsData);
+
+      const { error: updateError } = await supabase
+        .from('active_sessions')
+        .update({ participants_data: updatedParticipantsData })
+        .eq('id', sessionId);
+
+      if (updateError) {
+        console.error("Error updating participants in Supabase:", updateError);
+        if (areToastsEnabled) {
+          toast.error("Join Session Failed", {
+            description: `Failed to update session participants: ${updateError.message}`,
+          });
+        }
+        resetSessionStates();
+        return;
+      }
+
+      if (areToastsEnabled) {
+        toast.success("Sesh Joined!", {
+          description: `You've joined "${sessionTitle}".`,
+        });
+      }
+      playSound();
+      triggerVibration();
+    } catch (error: any) {
+      console.error("Unexpected error during joinSessionAsCoworker:", error);
       if (areToastsEnabled) {
         toast.error("Join Session Failed", {
-          description: `Could not fetch session details: ${fetchError.message}`,
+          description: `An unexpected error occurred: ${error.message || String(error)}.`,
         });
       }
       resetSessionStates();
-      return;
     }
-
-    let updatedParticipantsData: ParticipantSessionData[] = (existingSession?.participants_data as ParticipantSessionData[] | undefined) || [];
-    if (!updatedParticipantsData.some(p => p.userId === user.id)) {
-      updatedParticipantsData.push(newCoworker);
-    }
-    setCurrentSessionParticipantsData(updatedParticipantsData);
-
-    const { error: updateError } = await supabase
-      .from('active_sessions')
-      .update({ participants_data: updatedParticipantsData })
-      .eq('id', sessionId);
-
-    if (updateError) {
-      console.error("Error updating participants in Supabase:", updateError);
-      if (areToastsEnabled) {
-        toast.error("Join Session Failed", {
-          description: `Failed to update session participants: ${updateError.message}`,
-        });
-      }
-      resetSessionStates();
-      return;
-    }
-
-    if (areToastsEnabled) {
-      toast.success("Sesh Joined!", {
-        description: `You've joined "${sessionTitle}".`,
-      });
-    }
-    playSound();
-    triggerVibration();
   }, [
     user?.id, areToastsEnabled, isRunning, isPaused, isScheduleActive, isSchedulePrepared,
     resetSchedule, setIsRunning, setIsPaused, setIsFlashing, setAccumulatedFocusSeconds,
