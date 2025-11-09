@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Poll, ActiveAskItem, ExtendSuggestion } from "@/types/timer";
 import { useAuth } from "./AuthContext";
 import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
+import { useTimer } from "./TimerContext"; // NEW: Import useTimer
 
 // Define a simplified Profile type for local storage
 export type Profile = {
@@ -14,7 +15,7 @@ export type Profile = {
   last_name: string | null
   linkedin_url: string | null
   organization: string | null
-  focus_preference: number | null // Changed from sociability
+  focus_preference: number | null
   updated_at: string | null
   host_code: string | null
   bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null
@@ -338,7 +339,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Leading AI research and development for beneficial general intelligence.",
     intention: "Focusing on safe and broadly distributed AGI.",
-    focus_preference: 20, // Changed from sociability
+    focus_preference: 20,
     updated_at: new Date().toISOString(),
     organization: "OpenAI",
     linkedin_url: "https://www.linkedin.com/in/samaltman",
@@ -359,7 +360,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Designing reusable rocket components and electric vehicles.",
     intention: "Innovating space travel and sustainable energy.",
-    focus_preference: 10, // Changed from sociability
+    focus_preference: 10,
     updated_at: new Date().toISOString(),
     organization: "SpaceX",
     linkedin_url: "https://www.linkedin.com/in/elonmusk",
@@ -380,7 +381,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing new social algorithms and metaverse experiences.",
     intention: "Connecting the world through virtual reality.",
-    focus_preference: 20, // Changed from sociability
+    focus_preference: 20,
     updated_at: new Date().toISOString(),
     organization: "Meta",
     linkedin_url: "https://www.linkedin.com/in/zuck",
@@ -401,7 +402,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Co-founder of Anthropic, focusing on AI safety and responsible development.",
     intention: "Building reliable, interpretable, and steerable AI systems.",
-    focus_preference: 20, // Changed from sociability
+    focus_preference: 20,
     updated_at: new Date().toISOString(),
     organization: "Anthropic",
     linkedin_url: "https://www.linkedin.com/in/daniela-amodei-0b1b3b1b",
@@ -422,7 +423,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "CEO of NVIDIA, pioneering accelerated computing and AI.",
     intention: "Driving innovation in graphics processing and artificial intelligence.",
-    focus_preference: 30, // Changed from sociability
+    focus_preference: 30,
     updated_at: new Date().toISOString(),
     organization: "NVIDIA",
     linkedin_url: "https://www.linkedin.com/in/jensenhuang",
@@ -444,7 +445,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Reviewing psychoanalytic theories and the unconscious mind.",
     intention: "Unraveling the complexities of human behavior.",
-    focus_preference: 60, // Changed from sociability
+    focus_preference: 60,
     updated_at: new Date().toISOString(),
     organization: "Psychology Dept.",
     linkedin_url: "https://www.linkedin.com/in/sigmundfreud",
@@ -465,7 +466,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Memorizing behavioral principles and operant conditioning.",
     intention: "Understanding learned responses and reinforcement.",
-    focus_preference: 60, // Changed from sociability
+    focus_preference: 60,
     updated_at: new Date().toISOString(),
     organization: "Behavioral Science Institute",
     linkedin_url: "https://www.linkedin.com/in/bfskinner",
@@ -486,7 +487,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Practicing cognitive development questions and child psychology.",
     intention: "Exploring the stages of intellectual growth.",
-    focus_preference: 70, // Changed from sociability
+    focus_preference: 70,
     updated_at: new Date().toISOString(),
     organization: "Child Development Center",
     linkedin_url: "https://www.linkedin.com/in/jeanpiaget",
@@ -507,7 +508,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Summarizing archetypal concepts and analytical psychology.",
     intention: "Delving into the collective unconscious.",
-    focus_preference: 60, // Changed from sociability
+    focus_preference: 60,
     updated_at: new Date().toISOString(),
     organization: "Analytical Psychology Group",
     linkedin_url: "https://www.linkedin.com/in/carljung",
@@ -528,7 +529,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Creating hierarchy of needs flashcards and humanistic psychology.",
     intention: "Promoting self-actualization and personal growth.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Human Potential Institute",
     linkedin_url: "https://www.linkedin.com/in/abrahammaslow",
@@ -549,7 +550,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Discussing humanistic approaches and client-centered therapy.",
     intention: "Fostering empathy and unconditional positive regard.",
-    focus_preference: 55, // Changed from sociability
+    focus_preference: 55,
     updated_at: new Date().toISOString(),
     organization: "Person-Centered Therapy Clinic",
     linkedin_url: "https://www.linkedin.com/in/carlrogers",
@@ -570,7 +571,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Collaborating on social learning theory guide and observational learning.",
     intention: "Exploring the power of modeling and self-efficacy.",
-    focus_preference: 65, // Changed from sociability
+    focus_preference: 65,
     updated_at: new Date().toISOString(),
     organization: "Social Cognitive Research",
     linkedin_url: "https://www.linkedin.com/in/albertbandura",
@@ -591,7 +592,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Peer teaching classical conditioning and behavioral responses.",
     intention: "Investigating conditioned reflexes.",
-    focus_preference: 70, // Changed from sociability
+    focus_preference: 70,
     updated_at: new Date().toISOString(),
     organization: "Physiology Lab",
     linkedin_url: "https://www.linkedin.com/in/ivanpavlov",
@@ -613,7 +614,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Studying logic, metaphysics, ethics, and politics.",
     intention: "Deep work on Aristotle's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Ancient Philosophy Guild",
     linkedin_url: null,
@@ -634,7 +635,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Exploring the theory of Forms and ideal states.",
     intention: "Deep work on Plato's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Ancient Philosophy Guild",
     linkedin_url: null,
@@ -655,7 +656,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Engaging in dialectic and ethical inquiry.",
     intention: "Deep work on Socrates' theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Ancient Philosophy Guild",
     linkedin_url: null,
@@ -676,7 +677,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Meditating on first philosophy and rationalism.",
     intention: "Deep work on Descartes' theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Rationalist Thinkers",
     linkedin_url: null,
@@ -697,7 +698,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing critical philosophy and transcendental idealism.",
     intention: "Deep work on Kant's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Critical Philosophy Society",
     linkedin_url: null,
@@ -718,7 +719,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Advocating for empiricism and natural rights.",
     intention: "Deep work on Locke's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Empiricist Collective",
     linkedin_url: null,
@@ -739,7 +740,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Questioning causality and human understanding.",
     intention: "Deep work on Hume's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Skeptical Inquiry Group",
     linkedin_url: null,
@@ -760,7 +761,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Contemplating the social contract and human nature.",
     intention: "Deep work on Rousseau's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Social Contract Thinkers",
     linkedin_url: null,
@@ -781,7 +782,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Formulating laws of motion and universal gravitation.",
     intention: "Deep work on Newton's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Physics Pioneers",
     linkedin_url: null,
@@ -802,7 +803,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing theories of relativity and quantum mechanics.",
     intention: "Deep work on Einstein's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Physics Pioneers",
     linkedin_url: null,
@@ -823,7 +824,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Pioneering research on radioactivity and discovering new elements.",
     intention: "Deep work on Curie's discoveries.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Chemistry Innovators",
     linkedin_url: null,
@@ -844,7 +845,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Proposing the theory of evolution by natural selection.",
     intention: "Deep work on Darwin's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Biology Explorers",
     linkedin_url: null,
@@ -865,7 +866,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Making astronomical observations and advocating for heliocentrism.",
     intention: "Deep work on Galileo's observations.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Astronomy Guild",
     linkedin_url: null,
@@ -886,7 +887,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Advancing theories of black holes and cosmology.",
     intention: "Deep work on Hawking's theories.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Cosmology Research",
     linkedin_url: null,
@@ -907,7 +908,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Pioneering theoretical computer science and artificial intelligence.",
     intention: "Deep work on Turing's concepts.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "AI Innovators",
     linkedin_url: null,
@@ -928,7 +929,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Teaching philosophy, mathematics, and astronomy in ancient Alexandria.",
     intention: "Deep work on Hypatia's teachings.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Alexandrian Scholars",
     linkedin_url: null,
@@ -949,7 +950,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Proposing the heliocentric model of the universe.",
     intention: "Deep work on Copernicus' model.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Astronomy Guild",
     linkedin_url: null,
@@ -970,7 +971,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Formulating laws of planetary motion.",
     intention: "Deep work on Kepler's laws.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Astronomy Guild",
     linkedin_url: null,
@@ -991,7 +992,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing the atomic model and quantum theory.",
     intention: "Deep work on Bohr's model.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Quantum Physics Group",
     linkedin_url: null,
@@ -1012,7 +1013,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Formulating the uncertainty principle in quantum mechanics.",
     intention: "Deep work on Heisenberg's principle.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Quantum Physics Group",
     linkedin_url: null,
@@ -1033,7 +1034,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing wave mechanics and the Schrödinger equation.",
     intention: "Deep work on Schrödinger's equation.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Quantum Physics Group",
     linkedin_url: null,
@@ -1054,7 +1055,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Formulating classical theory of electromagnetic radiation.",
     intention: "Deep work on Maxwell's equations.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Electromagnetism Research",
     linkedin_url: null,
@@ -1075,7 +1076,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Discovering electromagnetic induction and diamagnetism.",
     intention: "Deep work on Faraday's experiments.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Electromagnetism Research",
     linkedin_url: null,
@@ -1096,7 +1097,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Contributing to probability theory and fluid mechanics.",
     intention: "Deep work on Pascal's principles.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Mathematics & Physics Society",
     linkedin_url: null,
@@ -1117,7 +1118,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Developing calculus and philosophical optimism.",
     intention: "Deep work on Leibniz's philosophy.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Mathematics & Philosophy Society",
     linkedin_url: null,
@@ -1138,7 +1139,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Exploring mathematics, music, and philosophy.",
     intention: "Deep work on Pythagorean theorem.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Ancient Mathematics Guild",
     linkedin_url: null,
@@ -1159,7 +1160,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Systematizing geometry in 'Elements'.",
     intention: "Deep work on Euclidean geometry.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Ancient Mathematics Guild",
     linkedin_url: null,
@@ -1180,7 +1181,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Innovating in mathematics, physics, and engineering.",
     intention: "Deep work on Archimedes' principles.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Ancient Engineering Guild",
     linkedin_url: null,
@@ -1201,7 +1202,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Mastering art, science, and invention.",
     intention: "Deep work on Da Vinci's inventions.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Renaissance Innovators",
     linkedin_url: null,
@@ -1222,7 +1223,7 @@ const mockProfiles: Profile[] = [
     avatar_url: null,
     bio: "Experimenting with electricity and civic engagement.",
     intention: "Deep work on Franklin's experiments.",
-    focus_preference: 50, // Changed from sociability
+    focus_preference: 50,
     updated_at: new Date().toISOString(),
     organization: "Enlightenment Thinkers",
     linkedin_url: null,
@@ -1287,8 +1288,8 @@ interface ProfileContextType {
   setCanHelpWith: React.Dispatch<React.SetStateAction<string | null>>;
   needHelpWith: string | null;
   setNeedHelpWith: React.Dispatch<React.SetStateAction<string | null>>;
-  focusPreference: number; // Changed from sociability
-  setFocusPreference: React.Dispatch<React.SetStateAction<number>>; // Changed from sociability
+  focusPreference: number;
+  setFocusPreference: React.Dispatch<React.SetStateAction<number>>;
   organization: string | null;
   setOrganization: React.Dispatch<React.SetStateAction<string | null>>;
   linkedinUrl: string | null;
@@ -1320,63 +1321,114 @@ const safeJSONParse = <T extends unknown>(key: string, defaultValue: T): T => {
     return storedValue ? JSON.parse(storedValue) : defaultValue;
   } catch (e) {
     console.error(`Error parsing localStorage key "${key}":`, e);
-    localStorage.removeItem(key); // Clear bad data
+    // localStorage.removeItem(key); // Clear bad data - REMOVED
     return defaultValue;
   }
 };
 
+// Helper to generate random host code
+const generateRandomHostCode = () => {
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+  return `${randomColor}${randomAnimal}`;
+};
+
 export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderProps) => {
   const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { isGlobalPrivate, setProfileVisibility: setGlobalProfileVisibility } = useTimer(); // NEW: Access isGlobalPrivate and setProfileVisibility from TimerContext
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Individual profile states
-  const [localFirstName, setLocalFirstName] = useState("You"); // This will be derived from Supabase profile
-  const [bio, setBio] = useState<string | null>(null);
-  const [intention, setIntention] = useState<string | null>(null);
-  const [canHelpWith, setCanHelpWith] = useState<string | null>(null);
-  const [needHelpWith, setNeedHelpWith] = useState<string | null>(null);
-  const [focusPreference, setFocusPreference] = useState<number>(50); // Changed from sociability
-  const [organization, setOrganization] = useState<string | null>(null);
-  const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
-  const [pronouns, setPronouns] = useState<string | null>(null);
-  const [hostCode, setHostCode] = useState("");
+  // Individual state variables (Initialize from local storage)
+  const [localFirstName, setLocalFirstName] = useState<string>(safeJSONParse('deepsesh_local_first_name', "You"));
+  const [bio, setBio] = useState<string | null>(safeJSONParse('deepsesh_bio', null));
+  const [intention, setIntention] = useState<string | null>(safeJSONParse('deepsesh_intention', null));
+  const [canHelpWith, setCanHelpWith] = useState<string | null>(safeJSONParse('deepsesh_can_help_with', null));
+  const [needHelpWith, setNeedHelpWith] = useState<string | null>(safeJSONParse('deepsesh_need_help_with', null));
+  const [focusPreference, setFocusPreference] = useState<number>(safeJSONParse('deepsesh_focus_preference', 50));
+  const [organization, setOrganization] = useState<string | null>(safeJSONParse('deepsesh_organization', null));
+  const [linkedinUrl, setLinkedinUrl] = useState<string | null>(safeJSONParse('deepsesh_linkedin_url', null));
+  const [pronouns, setPronouns] = useState<string | null>(safeJSONParse('deepsesh_pronouns', null));
+  const [hostCode, setHostCode] = useState<string>(safeJSONParse('deepsesh_host_code', generateRandomHostCode()));
 
-  const statsData = useMemo(() => ({
-    week: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
-    month: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
-    all: { totalFocusTime: "0h 0m", sessionsCompleted: 0, coworkers: 0, focusRank: "N/A", coworkerRank: "N/A" },
-  }), []);
+  const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(safeJSONParse('deepsesh_bio_visibility', ['public']));
+  const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(safeJSONParse('deepsesh_intention_visibility', ['public']));
+  const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(safeJSONParse('deepsesh_linkedin_visibility', ['public']));
+  const [canHelpWithVisibility, setCanHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(safeJSONParse('deepsesh_can_help_with_visibility', ['public']));
+  const [needHelpWithVisibility, setNeedHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(safeJSONParse('deepsesh_need_help_with_visibility', ['public']));
 
-  const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
-  const [bioVisibility, setBioVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
-  const [intentionVisibility, setIntentionVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
-  const [linkedinVisibility, setLinkedinVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
-  const [canHelpWithVisibility, setCanHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
-  const [needHelpWithVisibility, setNeedHelpWithVisibility] = useState<('public' | 'friends' | 'organisation' | 'private')[]>(['public']);
-
+  const [blockedUsers, setBlockedUsers] = useState<string[]>(safeJSONParse(BLOCKED_USERS_KEY, []));
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'friends'>>({});
   const friendRequestTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Computed profile object for consistency
+  const profile = useMemo<Profile>(() => ({
+    id: user?.id || "anon-user", // Use Supabase ID if available, otherwise a placeholder
+    first_name: localFirstName,
+    last_name: null, // Not currently managed
+    avatar_url: null, // Not currently managed
+    bio,
+    intention,
+    linkedin_url: linkedinUrl,
+    organization,
+    focus_preference: focusPreference,
+    updated_at: new Date().toISOString(), // Always update on change
+    host_code: hostCode,
+    bio_visibility: bioVisibility,
+    intention_visibility: intentionVisibility,
+    linkedin_visibility: linkedinVisibility,
+    can_help_with: canHelpWith,
+    can_help_with_visibility: canHelpWithVisibility,
+    need_help_with: needHelpWith,
+    need_help_with_visibility: needHelpWithVisibility,
+    pronouns,
+  }), [
+    user?.id, localFirstName, bio, intention, linkedinUrl, organization, focusPreference, hostCode,
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWith, canHelpWithVisibility,
+    needHelpWith, needHelpWithVisibility, pronouns
+  ]);
+
+  // Effects to save individual states to local storage
+  useEffect(() => { localStorage.setItem('deepsesh_local_first_name', JSON.stringify(localFirstName)); }, [localFirstName]);
+  useEffect(() => { localStorage.setItem('deepsesh_bio', JSON.stringify(bio)); }, [bio]);
+  useEffect(() => { localStorage.setItem('deepsesh_intention', JSON.stringify(intention)); }, [intention]);
+  useEffect(() => { localStorage.setItem('deepsesh_can_help_with', JSON.stringify(canHelpWith)); }, [canHelpWith]);
+  useEffect(() => { localStorage.setItem('deepsesh_need_help_with', JSON.stringify(needHelpWith)); }, [needHelpWith]);
+  useEffect(() => { localStorage.setItem('deepsesh_focus_preference', JSON.stringify(focusPreference)); }, [focusPreference]);
+  useEffect(() => { localStorage.setItem('deepsesh_organization', JSON.stringify(organization)); }, [organization]);
+  useEffect(() => { localStorage.setItem('deepsesh_linkedin_url', JSON.stringify(linkedinUrl)); }, [linkedinUrl]);
+  useEffect(() => { localStorage.setItem('deepsesh_pronouns', JSON.stringify(pronouns)); }, [pronouns]);
+  useEffect(() => { localStorage.setItem('deepsesh_host_code', JSON.stringify(hostCode)); }, [hostCode]);
+  useEffect(() => { localStorage.setItem('deepsesh_bio_visibility', JSON.stringify(bioVisibility)); }, [bioVisibility]);
+  useEffect(() => { localStorage.setItem('deepsesh_intention_visibility', JSON.stringify(intentionVisibility)); }, [intentionVisibility]);
+  useEffect(() => { localStorage.setItem('deepsesh_linkedin_visibility', JSON.stringify(linkedinVisibility)); }, [linkedinVisibility]);
+  useEffect(() => { localStorage.setItem('deepsesh_can_help_with_visibility', JSON.stringify(canHelpWithVisibility)); }, [canHelpWithVisibility]);
+  useEffect(() => { localStorage.setItem('deepsesh_need_help_with_visibility', JSON.stringify(needHelpWithVisibility)); }, [needHelpWithVisibility]);
+
+  // Sync global profile visibility from TimerContext to local state
+  useEffect(() => {
+    setGlobalProfileVisibility(bioVisibility);
+  }, [bioVisibility, setGlobalProfileVisibility]);
 
   const recentCoworkers = useMemo(() => {
     const uniqueNames = new Set<string>();
     const mockNearbyParticipants = [
-      { id: "mock-user-id-bezos", name: "Altman", focus_preference: 20, intention: "Optimizing cloud infrastructure." }, // Changed from sociability
-      { id: "mock-user-id-musk", name: "Musk", focus_preference: 10, intention: "Designing reusable rocket components." }, // Changed from sociability
-      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", focus_preference: 20, intention: "Developing new social algorithms." }, // Changed from sociability
-      { id: "mock-user-id-gates", name: "Amodei", focus_preference: 20, intention: "Refining operating system architecture." }, // Changed from sociability
-      { id: "mock-user-id-jobs", name: "Huang", focus_preference: 30, intention: "Innovating user interface design." }, // Changed from sociability
+      { id: "mock-user-id-bezos", name: "Altman", focus_preference: 20, intention: "Optimizing cloud infrastructure." },
+      { id: "mock-user-id-musk", name: "Musk", focus_preference: 10, intention: "Designing reusable rocket components." },
+      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", focus_preference: 20, intention: "Developing new social algorithms." },
+      { id: "mock-user-id-gates", name: "Amodei", focus_preference: 20, intention: "Refining operating system architecture." },
+      { id: "mock-user-id-jobs", name: "Huang", focus_preference: 30, intention: "Innovating user interface design." },
     ];
     const mockFriendsParticipants = [
-      { id: "mock-user-id-freud", name: "Freud", focus_preference: 60, intention: "Reviewing psychoanalytic theories." }, // Changed from sociability
-      { id: "mock-user-id-skinner", name: "Skinner", focus_preference: 60, intention: "Memorizing behavioral principles." }, // Changed from sociability
-      { id: "mock-user-id-piaget", name: "Piaget", focus_preference: 70, intention: "Practicing cognitive development questions." }, // Changed from sociability
-      { id: "mock-user-id-jung", name: "Jung", focus_preference: 60, intention: "Summarizing archetypal concepts." }, // Changed from sociability
-      { id: "mock-user-id-maslow", name: "Maslow", focus_preference: 50, intention: "Creating hierarchy of needs flashcards." }, // Changed from sociability
-      { id: "mock-user-id-rogers", name: "Rogers", focus_preference: 55, intention: "Discussing humanistic approaches." }, // Changed from sociability
-      { id: "mock-user-id-bandura", name: "Bandura", focus_preference: 65, intention: "Collaborating on social learning theory guide." }, // Changed from sociability
-      { id: "mock-user-id-pavlov", name: "Pavlov", focus_preference: 70, intention: "Peer teaching classical conditioning." }, // Changed from sociability
+      { id: "mock-user-id-freud", name: "Freud", focus_preference: 60, intention: "Reviewing psychoanalytic theories." },
+      { id: "mock-user-id-skinner", name: "Skinner", focus_preference: 60, intention: "Memorizing behavioral principles." },
+      { id: "mock-user-id-piaget", name: "Piaget", focus_preference: 70, intention: "Practicing cognitive development questions." },
+      { id: "mock-user-id-jung", name: "Jung", focus_preference: 60, intention: "Summarizing archetypal concepts." },
+      { id: "mock-user-id-maslow", name: "Maslow", focus_preference: 50, intention: "Creating hierarchy of needs flashcards." },
+      { id: "mock-user-id-rogers", name: "Rogers", focus_preference: 55, intention: "Discussing humanistic approaches." },
+      { id: "mock-user-id-bandura", name: "Bandura", focus_preference: 65, intention: "Collaborating on social learning theory guide." },
+      { id: "mock-user-id-pavlov", name: "Pavlov", focus_preference: 70, intention: "Peer teaching classical conditioning." },
     ];
 
     [...mockNearbyParticipants, ...mockFriendsParticipants].forEach(p => uniqueNames.add(p.name));
@@ -1472,181 +1524,136 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
     }
   }, [areToastsEnabled]);
 
-
-  const fetchProfile = async () => {
+  // This function now primarily ensures local state is consistent and conditionally syncs to Supabase
+  const updateProfile = useCallback(async (data: ProfileUpdate, successMessage?: string) => {
     setLoading(true);
     setError(null);
 
-    if (!user) {
-      // If no user, ensure local states are reset to defaults for unauthenticated experience
-      setProfile(null);
-      setLocalFirstName("You");
-      setBio(null);
-      setIntention(null);
-      setCanHelpWith(null);
-      setNeedHelpWith(null);
-      setFocusPreference(50); // Changed from sociability
-      setOrganization(null);
-      setLinkedinUrl(null);
-      setPronouns(null);
-      setHostCode(generateRandomHostCode()); // Generate a host code for local user
-      setBioVisibility(['public']);
-      setIntentionVisibility(['public']);
-      setLinkedinVisibility(['public']);
-      setCanHelpWithVisibility(['public']);
-      setNeedHelpWithVisibility(['public']);
-      setLoading(false);
-      return; // Exit early if no user
-    }
+    // Update local states directly
+    if (data.first_name !== undefined) setLocalFirstName(data.first_name || "You");
+    if (data.bio !== undefined) setBio(data.bio);
+    if (data.intention !== undefined) setIntention(data.intention);
+    if (data.can_help_with !== undefined) setCanHelpWith(data.can_help_with);
+    if (data.need_help_with !== undefined) setNeedHelpWith(data.need_help_with);
+    if (data.focus_preference !== undefined) setFocusPreference(data.focus_preference);
+    if (data.organization !== undefined) setOrganization(data.organization);
+    if (data.linkedin_url !== undefined) setLinkedinUrl(data.linkedin_url);
+    if (data.pronouns !== undefined) setPronouns(data.pronouns);
+    if (data.host_code !== undefined) setHostCode(data.host_code);
 
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    // Update visibility states
+    if (data.bio_visibility !== undefined) setBioVisibility(data.bio_visibility);
+    if (data.intention_visibility !== undefined) setIntentionVisibility(data.intention_visibility);
+    if (data.linkedin_visibility !== undefined) setLinkedinVisibility(data.linkedin_visibility);
+    if (data.can_help_with_visibility !== undefined) setCanHelpWithVisibility(data.can_help_with_visibility);
+    if (data.need_help_with_visibility !== undefined) setNeedHelpWithVisibility(data.need_help_with_visibility);
 
-      if (error && error.code === 'PGRST116') { // No rows found
-        // Create a new profile if one doesn't exist
-        const { data: newProfileData, error: insertError } = await supabase
-          .from('profiles')
-          .insert({ 
-            id: user.id, 
-            first_name: user.user_metadata.first_name || user.email?.split('@')[0] || "You",
-            last_name: user.user_metadata.last_name || null,
-            avatar_url: user.user_metadata.avatar_url || null,
-            host_code: generateRandomHostCode(),
-          })
-          .select()
-          .single();
+    // Conditionally sync to Supabase
+    if (user?.id) {
+      const isProfilePrivate = isGlobalPrivate || bioVisibility.includes('private'); // Check global and specific bio visibility
+      const profileDataForSupabase = {
+        id: user.id,
+        first_name: data.first_name ?? localFirstName,
+        last_name: data.last_name ?? null, // Assuming last_name is not locally managed
+        avatar_url: data.avatar_url ?? null, // Assuming avatar_url is not locally managed
+        bio: data.bio ?? bio,
+        intention: data.intention ?? intention,
+        linkedin_url: data.linkedin_url ?? linkedinUrl,
+        organization: data.organization ?? organization,
+        focus_preference: data.focus_preference ?? focusPreference,
+        host_code: data.host_code ?? hostCode,
+        bio_visibility: data.bio_visibility ?? bioVisibility,
+        intention_visibility: data.intention_visibility ?? intentionVisibility,
+        linkedin_visibility: data.linkedin_visibility ?? linkedinVisibility,
+        can_help_with: data.can_help_with ?? canHelpWith,
+        can_help_with_visibility: data.can_help_with_visibility ?? canHelpWithVisibility,
+        need_help_with: data.need_help_with ?? needHelpWith,
+        need_help_with_visibility: data.need_help_with_visibility ?? needHelpWithVisibility,
+        pronouns: data.pronouns ?? pronouns,
+        updated_at: new Date().toISOString(),
+      };
 
-        if (insertError) throw insertError;
-        setProfile(newProfileData);
-        setLocalFirstName(newProfileData.first_name || "You");
-        setBio(newProfileData.bio);
-        setIntention(newProfileData.intention);
-        setCanHelpWith(newProfileData.can_help_with);
-        setNeedHelpWith(newProfileData.need_help_with);
-        setFocusPreference(newProfileData.focus_preference || 50); // Changed from sociability
-        setOrganization(newProfileData.organization);
-        setLinkedinUrl(newProfileData.linkedin_url);
-        setPronouns(newProfileData.pronouns);
-        setHostCode(newProfileData.host_code || generateRandomHostCode());
-        setBioVisibility(newProfileData.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        setIntentionVisibility(newProfileData.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        setLinkedinVisibility(newProfileData.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        setCanHelpWithVisibility(newProfileData.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        setNeedHelpWithVisibility(newProfileData.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        console.log("New profile created for user:", newProfileData.first_name);
-      } else if (error) {
-        throw error;
+      if (isProfilePrivate) {
+        // If profile is private, delete it from Supabase
+        try {
+          const { error: deleteError } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', user.id);
+
+          if (deleteError && deleteError.code !== 'PGRST116') { // PGRST116 means "no rows found", which is fine for delete
+            throw deleteError;
+          }
+          console.log("Profile removed from Supabase due to privacy settings.");
+        } catch (err: any) {
+          console.error("Error deleting profile from Supabase:", err.message);
+          setError(err.message);
+        }
       } else {
-        setProfile(data);
-        setLocalFirstName(data.first_name || "You");
-        setBio(data.bio);
-        setIntention(data.intention);
-        setCanHelpWith(data.can_help_with);
-        setNeedHelpWith(data.need_help_with);
-        setFocusPreference(data.focus_preference || 50); // Changed from sociability
-        setOrganization(data.organization);
-        setLinkedinUrl(data.linkedin_url);
-        setPronouns(data.pronouns);
-        setHostCode(data.host_code || generateRandomHostCode());
-        setBioVisibility(data.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        setIntentionVisibility(data.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        setLinkedinVisibility(data.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        setCanHelpWithVisibility(data.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        setNeedHelpWithVisibility(data.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-        console.log("Profile fetched for user:", data.first_name);
+        // Upsert (insert or update) profile to Supabase
+        try {
+          const { error: upsertError } = await supabase
+            .from('profiles')
+            .upsert(profileDataForSupabase, { onConflict: 'id' });
+
+          if (upsertError) throw upsertError;
+          console.log("Profile synced to Supabase:", profileDataForSupabase.first_name);
+        } catch (err: any) {
+          console.error("Error syncing profile to Supabase:", err.message);
+          setError(err.message);
+        }
       }
-    } catch (err: any) {
-      console.error("Error fetching/creating profile:", err.message);
-      setError(err.message);
-      setProfile(null);
-    } finally {
-      setLoading(false);
     }
-  };
 
-  // Add an effect to ensure hostCode is never empty after initial load
-  useEffect(() => {
-    if (!loading && !hostCode && user) {
-      const newHostCode = generateRandomHostCode();
-      setHostCode(newHostCode);
-      updateProfile({ host_code: newHostCode }, "Host code generated.");
-      console.log("Generated and set new host code because it was empty:", newHostCode);
+    if (areToastsEnabled) {
+      toast.success(successMessage || "Profile updated!", {
+        description: "Your profile has been successfully saved locally.",
+      });
     }
-  }, [loading, hostCode, user]);
+    setLoading(false);
+  }, [
+    user?.id, areToastsEnabled, isGlobalPrivate, localFirstName, bio, intention, canHelpWith, needHelpWith,
+    focusPreference, organization, linkedinUrl, pronouns, hostCode, bioVisibility, intentionVisibility,
+    linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility
+  ]);
 
-  const updateProfile = async (data: ProfileUpdate, successMessage?: string) => {
+  // This function is now simplified as local state is the source of truth
+  const fetchProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
+    // All profile data is already loaded from local storage via useState initializers
+    // No need to fetch from Supabase for the current user's profile here.
+    setLoading(false);
+  }, []);
 
-    if (!user) {
-      setError("User not authenticated. Cannot update profile.");
-      setLoading(false);
-      if (areToastsEnabled) {
-        toast.error("Profile Update Failed", {
-          description: "You must be logged in to save changes.",
-        });
-      }
-      return;
-    }
-
-    try {
-      const { data: updatedData, error } = await supabase
-        .from('profiles')
-        .update({ ...data, updated_at: new Date().toISOString() })
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setProfile(updatedData);
-      setLocalFirstName(updatedData.first_name || "You");
-      setBio(updatedData.bio);
-      setIntention(updatedData.intention);
-      setCanHelpWith(updatedData.can_help_with);
-      setNeedHelpWith(updatedData.need_help_with);
-      setFocusPreference(updatedData.focus_preference || 50); // Changed from sociability
-      setOrganization(updatedData.organization);
-      setLinkedinUrl(updatedData.linkedin_url);
-      setPronouns(updatedData.pronouns);
-      setHostCode(updatedData.host_code || generateRandomHostCode());
-      setBioVisibility(updatedData.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-      setIntentionVisibility(updatedData.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-      setLinkedinVisibility(updatedData.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-      setCanHelpWithVisibility(updatedData.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-      setNeedHelpWithVisibility(updatedData.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[] || ['public']);
-
-      console.log("Profile updated in Supabase and context:", updatedData);
-      if (areToastsEnabled) {
-        toast.success(successMessage || "Profile updated!", {
-          description: "Your profile has been successfully saved.",
-        });
-      }
-    } catch (err: any) {
-      console.error("Error updating profile:", err.message);
-      setError(err.message);
-      if (areToastsEnabled) {
-        toast.error("Profile Update Failed", {
-          description: `Failed to save profile changes. ${err.message}`,
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getPublicProfile = useCallback((userId: string, userName: string): Profile | null => {
+  const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
     // First, check mock profiles
     const mockProfile = mockProfiles.find(p => p.id === userId || p.first_name === userName);
     if (mockProfile) {
       return mockProfile;
     }
 
-    // If not found in mocks, return a basic profile (Supabase query would go here in a real app)
+    // If not found in mocks, try to fetch from Supabase (for other users)
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found", which is fine
+        throw error;
+      }
+
+      if (data) {
+        return data as Profile;
+      }
+    } catch (err: any) {
+      console.error("Error fetching public profile from Supabase:", err.message);
+      // Continue to return a basic profile even if Supabase fetch fails
+    }
+
+    // Fallback to a basic profile if not found in mocks or Supabase
     return {
       id: userId,
       first_name: userName,
@@ -1654,7 +1661,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
       avatar_url: null,
       bio: null,
       intention: null,
-      focus_preference: 50, // Changed from sociability
+      focus_preference: 50,
       updated_at: new Date().toISOString(),
       organization: null,
       linkedin_url: null,
@@ -1670,59 +1677,20 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
     };
   }, []);
 
+  const resetProfile = useCallback(() => {
+    localStorage.clear(); // Clear all local storage for a full reset
+    window.location.reload(); // Reload the app to re-initialize all contexts
+  }, []);
 
   useEffect(() => {
-    if (!authLoading) {
-      // Only fetch profile if a user is authenticated
-      if (user) {
-        fetchProfile();
-      } else {
-        // If no user, ensure local states are reset to defaults for unauthenticated experience
-        setProfile(null);
-        setLocalFirstName("You");
-        setBio(null);
-        setIntention(null);
-        setCanHelpWith(null);
-        setNeedHelpWith(null);
-        setFocusPreference(50); // Changed from sociability
-        setOrganization(null);
-        setLinkedinUrl(null);
-        setPronouns(null);
-        setHostCode(generateRandomHostCode()); // Generate a host code for local user
-        setBioVisibility(['public']);
-        setIntentionVisibility(['public']);
-        setLinkedinVisibility(['public']);
-        setCanHelpWithVisibility(['public']);
-        setNeedHelpWithVisibility(['public']);
-        setLoading(false); // Ensure loading is false when no user
-      }
-    }
-
-    // Clear local storage keys that are now managed by Supabase
-    localStorage.removeItem('deepsesh_profile_data');
-    localStorage.removeItem('deepsesh_local_first_name');
-    localStorage.removeItem('deepsesh_host_code');
-    localStorage.removeItem('deepsesh_bio_visibility');
-    localStorage.removeItem('deepsesh_intention_visibility');
-    localStorage.removeItem('deepsesh_linkedin_visibility');
-    localStorage.removeItem('deepsesh_can_help_with_visibility');
-    localStorage.removeItem('deepsesh_need_help_with_visibility');
-    localStorage.removeItem('deepsesh_organization');
-    localStorage.removeItem('deepsesh_can_help_with');
-    localStorage.removeItem('deepsesh_need_help_with');
-    localStorage.removeItem('deepsesh_pronouns');
-    localStorage.removeItem('deepsesh_bio');
-    localStorage.removeItem('deepsesh_intention');
-    localStorage.removeItem('deepsesh_sociability'); // Changed from sociability
-    localStorage.removeItem('deepsesh_linkedin_url');
-
-    // Blocked users and friend statuses can remain local for now if not synced to backend
-    setBlockedUsers(safeJSONParse(BLOCKED_USERS_KEY, []));
+    // Initialize friend statuses from local storage
     setFriendStatuses(safeJSONParse(LOCAL_STORAGE_FRIEND_STATUSES_KEY, {}));
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === BLOCKED_USERS_KEY || event.key === LOCAL_STORAGE_FRIEND_STATUSES_KEY) {
+      if (event.key === BLOCKED_USERS_KEY) {
         setBlockedUsers(safeJSONParse(BLOCKED_USERS_KEY, []));
+      }
+      if (event.key === LOCAL_STORAGE_FRIEND_STATUSES_KEY) {
         setFriendStatuses(safeJSONParse(LOCAL_STORAGE_FRIEND_STATUSES_KEY, {}));
       }
     };
@@ -1733,7 +1701,7 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
       friendRequestTimeouts.current.forEach(timeoutId => clearTimeout(timeoutId));
       friendRequestTimeouts.current.clear();
     };
-  }, [user, authLoading]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(BLOCKED_USERS_KEY, JSON.stringify(blockedUsers));
@@ -1742,6 +1710,17 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
   }, [friendStatuses]);
+
+  // Ensure hostCode is never empty after initial load
+  useEffect(() => {
+    if (!hostCode) {
+      const newHostCode = generateRandomHostCode();
+      setHostCode(newHostCode);
+      // No need to call updateProfile here, as setHostCode will trigger local storage save
+      // and subsequent sync if profile is public.
+      console.log("Generated and set new host code because it was empty:", newHostCode);
+    }
+  }, [hostCode]);
 
   const value = {
     profile,
@@ -1774,14 +1753,14 @@ export const ProfileProvider = ({ children, areToastsEnabled }: ProfileProviderP
     sendFriendRequest,
     acceptFriendRequest,
     removeFriend,
-    // Individual profile fields
     bio, setBio,
     intention, setIntention,
     canHelpWith, setCanHelpWith,
     needHelpWith, setNeedHelpWith,
-    focusPreference, setFocusPreference, // Changed from sociability
+    focusPreference, setFocusPreference,
     organization, setOrganization,
     linkedinUrl, setLinkedinUrl,
+    resetProfile,
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

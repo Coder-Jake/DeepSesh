@@ -87,10 +87,10 @@ const Settings = () => {
     setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from TimerContext
   } = useTimer();
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // Get logout from AuthContext
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading } = useProfile();
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile } = useProfile(); // NEW: Get resetProfile
 
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
   const [userNameToBlock, setUserNameToBlock] = useState("");
@@ -462,12 +462,13 @@ const Settings = () => {
   };
 
   const handleLogout = () => {
+    logout(); // Call Supabase logout
+    resetProfile(); // Clear all local storage and reload the page
     if (areToastsEnabled) {
       toast.success("Logged Out", {
-        description: "You have been successfully logged out.",
+        description: "You have been successfully logged out and your local profile cleared.",
       });
     }
-    navigate('/');
   };
 
   const cycleSessionVisibility = () => {

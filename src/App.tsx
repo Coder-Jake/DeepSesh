@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Index from './pages/Index';
 import './index.css';
-import { TimerProvider } from './contexts/TimerContext';
 import AppLayout from './layouts/AppLayout';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
@@ -16,10 +15,11 @@ import Credits from './pages/Credits';
 import Vibes from './pages/Vibes';
 import NotFound from './pages/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
-import { ProfileProvider } from './contexts/ProfileContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TimerProvider } from './contexts/TimerContext'; // Moved import
+import { ProfileProvider } from './contexts/ProfileContext'; // Moved import
 
 const queryClient = new QueryClient();
 
@@ -32,6 +32,7 @@ function App() {
         <Router>
           <ThemeProvider>
             <AuthProvider>
+              {/* ProfileProvider now wraps TimerProvider to allow TimerContext to access ProfileContext values */}
               <ProfileProvider areToastsEnabled={areToastsEnabled}>
                 <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
                   <ProfilePopUpProvider>
