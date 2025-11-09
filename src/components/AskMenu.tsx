@@ -30,7 +30,7 @@ const AskMenu: React.FC<AskMenuProps> = ({ onExtendSubmit, onPollSubmit }) => {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="absolute bottom-0 right-0">
+        <Button variant="outline" size="default"> {/* MODIFIED: Removed absolute positioning and changed size to default for consistent height */}
           <HelpCircle className="mr-2 h-4 w-4" />
           Ask
         </Button>

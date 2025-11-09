@@ -329,7 +329,7 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const notesTextareaRef = useRef<HTMLTextAreaAreaElement>(null);
 
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
@@ -1473,8 +1473,10 @@ const Index = () => {
                     )}
                   </div>
 
-                  {(isPaused || isRunning || isScheduleActive || isSchedulePending) && (
-                    <div className="absolute bottom-4 left-4 flex flex-col gap-1">
+                  {/* NEW: Container for Stop and Ask buttons */}
+                  {(isRunning || isPaused || isScheduleActive || isSchedulePending) && (
+                    <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between px-4 pb-4">
+                      {/* Stop button container */}
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
                         isRunning && "opacity-50",
@@ -1499,6 +1501,8 @@ const Index = () => {
                           <Square size={16} fill="currentColor" />
                         </Button>
                       </div>
+                      {/* AskMenu component */}
+                      <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />
                     </div>
                   )}
 
@@ -1574,7 +1578,6 @@ const Index = () => {
                       </div>
                     </div>
                   )}
-                  {(isRunning || isPaused || isScheduleActive || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
                 </>
               )}
             </div>
