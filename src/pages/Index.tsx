@@ -1060,7 +1060,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []);
+  }, [getEffectiveStartTime]);
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
@@ -1297,6 +1297,10 @@ const Index = () => {
                       <CalendarPlus size={16} />
                       <span className="text-sm font-medium">Schedule</span>
                     </Button>
+                    {/* NEW: seshTitle H2 */}
+                    <h2 className="text-xl font-bold text-foreground text-center flex-grow mt-1">
+                      {seshTitle}
+                    </h2>
                     <div className="flex flex-col items-end gap-2">
                       <button 
                         onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
