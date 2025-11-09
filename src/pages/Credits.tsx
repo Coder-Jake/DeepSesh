@@ -70,7 +70,17 @@ const Credits = () => {
              <div>
               <h3 className="font-medium text-foreground mb-2">Helpful people</h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                Angie S.
+                <li>Angie S.</li>
+                <li>
+                  <a 
+                    href="https://www.linkedin.com/in/theo-adis-270b6516/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-blue-500 hover:underline"
+                  >
+                    Theo Adis
+                  </a>
+                </li>
               </ul>
             </div>
             
