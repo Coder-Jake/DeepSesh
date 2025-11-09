@@ -47,6 +47,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { generateRandomHostCode } from '@/contexts/ProfileContext'; // Import generateRandomHostCode
 
 interface ExtendSuggestion {
   id: string;
