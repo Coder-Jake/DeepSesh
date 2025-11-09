@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
-import { cn, getSociabilityGradientColor } from "@/lib/utils";
+import { cn, getSociabilityGradientColor } from "@/lib/utils"; // Import getSociabilityGradientColor
 import AskMenu from "@/components/AskMenu";
 import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
@@ -44,9 +44,9 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query'; // Corrected: Added useQuery import
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
+import { Slider } from '@/components/ui/slider'; // Import Slider
 
 interface ExtendSuggestion {
   id: string;
@@ -84,7 +84,6 @@ interface DemoSession {
   workspaceDescription: string;
   participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
-  notes: string | null; // NEW: Added notes field
 }
 
 // NEW: Define a type for Supabase fetched sessions
@@ -96,17 +95,16 @@ interface SupabaseSessionData {
   location_lat: number | null;
   focus_duration: number;
   break_duration: number;
-  user_id: string | null;
+  user_id: string | null; // Changed to nullable
   host_name: string;
   current_phase_type: 'focus' | 'break';
   current_phase_end_time: string;
   total_session_duration_seconds: number;
-  schedule_data: any;
+  schedule_data: any; // JSONB type
   is_active: boolean;
   is_paused: boolean;
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
-  notes: string | null; // NEW: Added notes field
 }
 
 const now = new Date();
@@ -134,7 +132,6 @@ const mockNearbySessions: DemoSession[] = [
       { type: "focus", durationMinutes: 55 },
       { type: "break", durationMinutes: 5 },
     ],
-    notes: "Working on the new AI model architecture. Looking for collaborators on data pipeline optimization.", // NEW: Added notes
   },
 ];
 
@@ -160,7 +157,6 @@ const mockFriendsSessions: DemoSession[] = [
       { type: "focus", durationMinutes: 25 },
       { type: "break", durationMinutes: 5 },
     ],
-    notes: "Final review for the Psychology 101 exam. Focusing on cognitive biases and social psychology.", // NEW: Added notes
   },
 ];
 
@@ -180,18 +176,18 @@ const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
   return data.map((session: SupabaseSessionData) => {
     const participants = [{ id: session.user_id || `anon-${session.id}`, name: session.host_name, sociability: 50 }]; // Default sociability for now
 
-    let fullSchedule: ScheduledTimer[];
+    let fullSchedule: ScheduledTimer[]; // Changed to ScheduledTimer[]
     if (session.schedule_data && Array.isArray(session.schedule_data) && session.schedule_data.length > 0) {
       fullSchedule = session.schedule_data.map((item: any) => ({
-        id: item.id || crypto.randomUUID(),
-        title: item.title || item.type,
+        id: item.id || crypto.randomUUID(), // Ensure id is present
+        title: item.title || item.type, // Ensure title is present
         type: item.type,
         durationMinutes: item.durationMinutes,
       }));
     } else {
       fullSchedule = [{
-        id: crypto.randomUUID(),
-        title: session.current_phase_type,
+        id: crypto.randomUUID(), // Ensure id is present
+        title: session.current_phase_type, // Ensure title is present
         type: session.current_phase_type,
         durationMinutes: session.current_phase_type === 'focus' ? session.focus_duration : session.break_duration,
       }];
@@ -206,7 +202,6 @@ const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
       workspaceDescription: "Live session from Supabase",
       participants: participants,
       fullSchedule: fullSchedule,
-      notes: session.notes, // NEW: Map notes from Supabase
     };
   });
 };
@@ -292,8 +287,8 @@ const Index = () => {
     setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
-    currentSessionParticipantsData,
-    setCurrentSessionParticipantsData,
+    currentSessionParticipantsData, // NEW: Get currentSessionParticipantsData from context
+    setCurrentSessionParticipantsData, // NEW: Get setCurrentSessionParticipantsData from context
 
     startStopNotifications,
     playSound,
@@ -301,18 +296,21 @@ const Index = () => {
     areToastsEnabled,
     getLocation,
     geolocationPermissionStatus,
-    isDiscoveryActivated,
-    setIsDiscoveryActivated,
-    activeSessionRecordId,
-    setActiveSessionRecordId,
-    joinSessionAsCoworker,
-    leaveSession,
-    transferHostRole,
-    stopTimer,
-    resetSessionStates,
+    isDiscoveryActivated, // NEW: Get isDiscoveryActivated from context
+    setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from context
+    activeSessionRecordId, // NEW: Get activeSessionRecordId from context
+    setActiveSessionRecordId, // NEW: Get setActiveSessionRecordId from context
+    joinSessionAsCoworker, // NEW: Get joinSessionAsCoworker from context
+    leaveSession, // NEW: Get leaveSession from context
+    transferHostRole, // NEW: Get transferHostRole from context
+    stopTimer, // NEW: Get stopTimer from context
+    resetSessionStates, // NEW: Get resetSessionStates from context
   } = useTimer();
   
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, sociability, setSociability } = useProfile();
+  // Removed previous diagnostic log
+  // console.log("Index.tsx: Value from useTimer hook:", { ... });
+
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, sociability, setSociability } = useProfile(); // Added sociability, setSociability
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
@@ -353,6 +351,8 @@ const Index = () => {
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // NEW: State for Discovery Activation
+  // const [isDiscoveryActivated, setIsDiscoveryActivated] = useState(false); // Now managed by context
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(localFirstName || hostCode || "You");
 
@@ -360,8 +360,8 @@ const Index = () => {
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
     queryKey: ['supabaseActiveSessions'],
     queryFn: fetchSupabaseSessions,
-    refetchInterval: 5000,
-    enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'),
+    refetchInterval: 5000, // Refetch every 5 seconds
+    enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'), // Only fetch if discovery is activated and not private
   });
 
   // NEW: Define allParticipantsToDisplayInCard
@@ -372,15 +372,15 @@ const Index = () => {
     if (profile?.id && (currentSessionRole === 'host' || currentSessionRole === 'coworker')) {
       participantsMap.set(profile.id, {
         id: profile.id,
-        name: localFirstName || "You",
-        sociability: sociability,
+        name: localFirstName || "You", // Use localFirstName, defaulting to "You"
+        sociability: sociability, // Use current user's sociability
         role: (currentSessionRole === 'host' && profile.id === user?.id) ? 'host' : 'self',
       });
     }
 
     // Add host if current user is a coworker
     if (currentSessionRole === 'coworker' && currentSessionHostName) {
-      const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName);
+      const hostProfile = getPublicProfile(currentSessionHostName, currentSessionHostName); // Use hostName as ID for mock profiles
       if (hostProfile && !participantsMap.has(hostProfile.id)) {
         participantsMap.set(hostProfile.id, {
           id: hostProfile.id,
@@ -392,13 +392,13 @@ const Index = () => {
     }
 
     // Add other participants
-    currentSessionParticipantsData.forEach(p => { // Use currentSessionParticipantsData
-      if (!participantsMap.has(p.userId)) {
+    currentSessionOtherParticipants.forEach(p => {
+      if (!participantsMap.has(p.userId)) { // Use p.userId for the key
         participantsMap.set(p.userId, {
-          id: p.userId,
-          name: p.userName,
+          id: p.userId, // Use p.userId
+          name: p.userName, // Use p.userName
           sociability: p.sociability || 50,
-          role: p.role,
+          role: 'coworker', // Assuming others are coworkers
         });
       }
     });
@@ -406,7 +406,7 @@ const Index = () => {
     return Array.from(participantsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [
     profile, localFirstName, sociability, currentSessionRole, currentSessionHostName,
-    currentSessionParticipantsData, getPublicProfile, user?.id
+    currentSessionOtherParticipants, getPublicProfile, user?.id
   ]);
 
   useEffect(() => {
@@ -448,12 +448,13 @@ const Index = () => {
   };
   
   const handlePublicPrivateToggle = async () => {
-    if (isGlobalPrivate && !isLongPress.current) {
+    if (isGlobalPrivate && !isLongPress.current) { // If currently private and not a long press (i.e., trying to go public)
       if (geolocationPermissionStatus === 'denied' || geolocationPermissionStatus === 'prompt') {
-        setIsDiscoverySetupOpen(true);
-        return;
+        setIsDiscoverySetupOpen(true); // Open discovery setup dialog
+        return; // Prevent toggling to public immediately
       }
     }
+    // If already public, or if location is granted, or if it's a long press, or if going from public to private
     setIsGlobalPrivate((prev: boolean) => !prev);
   };
 
@@ -519,7 +520,7 @@ const Index = () => {
     setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
     setIsTimeLeftManagedBySession(true);
 
-    const hostParticipant: ParticipantSessionData = {
+    const hostParticipant: ParticipantSessionData = { // Explicitly type hostParticipant
       userId: user?.id || `anon-${crypto.randomUUID()}`,
       userName: localFirstName,
       joinTime: Date.now(),
@@ -533,8 +534,9 @@ const Index = () => {
     setCurrentSessionHostName(localFirstName);
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
-    setCurrentSessionParticipantsData([hostParticipant]);
+    setCurrentSessionParticipantsData([hostParticipant]); // Update full list
 
+    // NEW: Insert into active_sessions if not private (user_id can be null)
     if (!isGlobalPrivate) {
       const { latitude, longitude } = await getLocation();
       const currentPhaseDuration = timerType === 'focus' ? focusMinutes : breakMinutes;
@@ -543,7 +545,7 @@ const Index = () => {
         const { data, error } = await supabase
           .from('active_sessions')
           .insert({
-            user_id: hostParticipant.userId,
+            user_id: hostParticipant.userId, // Pass user.id or null if not logged in
             host_name: hostParticipant.userName,
             session_title: seshTitle,
             visibility: 'public',
@@ -556,8 +558,7 @@ const Index = () => {
             is_paused: false,
             location_lat: latitude,
             location_long: longitude,
-            participants_data: [hostParticipant],
-            notes: notes, // NEW: Include notes when creating session
+            participants_data: [hostParticipant], // NEW: Initialize participants_data
           })
           .select('id')
           .single();
@@ -614,10 +615,10 @@ const Index = () => {
   
   const resetTimer = async () => {
     if (longPressRef.current) {
-      resetSessionStates();
+      resetSessionStates(); // Use context's reset
     } else {
       if (confirm('Are you sure you want to reset the timer?')) {
-        resetSessionStates();
+        resetSessionStates(); // Use context's reset
       }
     }
     playSound();
@@ -668,23 +669,25 @@ const Index = () => {
   };
 
   const handleJoinSession = async (session: DemoSession) => {
+    // Extract relevant data from DemoSession to pass to joinSessionAsCoworker
     const sessionId = session.id;
     const sessionTitle = session.title;
-    const hostName = session.participants[0]?.name || session.title;
+    const hostName = session.participants[0]?.name || session.title; // Assuming first participant is host for demo
     
+    // Map DemoSession participants to ParticipantSessionData
     const participants: ParticipantSessionData[] = session.participants.map(p => ({
       userId: p.id,
       userName: p.name,
-      joinTime: Date.now(),
-      role: p.id === session.participants[0]?.id ? 'host' : 'coworker',
+      joinTime: Date.now(), // Placeholder, actual join time would be from backend
+      role: p.id === session.participants[0]?.id ? 'host' : 'coworker', // Assume first is host
       sociability: p.sociability,
       intention: p.intention,
       bio: p.bio,
     }));
 
     const fullSchedule = session.fullSchedule.map(item => ({
-      id: crypto.randomUUID(),
-      title: item.type === 'focus' ? 'Focus' : 'Break',
+      id: crypto.randomUUID(), // Generate new ID for each item
+      title: item.type === 'focus' ? 'Focus' : 'Break', // Default title
       ...item,
     }));
 
@@ -882,7 +885,6 @@ const Index = () => {
           { type: "focus", durationMinutes: 50 },
           { type: "break", durationMinutes: 10 },
         ],
-        notes: `Collaborative session for ${orgName} members. Discussing recent breakthroughs.`, // NEW: Added notes
       });
     });
 
@@ -1051,7 +1053,7 @@ const Index = () => {
     let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
     const currentDay = now.getDay();
-    const templateDay = template.commenceDay === null ? currentDay : currentDay;
+    const templateDay = template.commenceDay === null ? currentDay : currentDay; // Default to current day if null
     const daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
 
@@ -1076,7 +1078,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []);
+  }, []); // Removed template from dependencies
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
@@ -1145,15 +1147,21 @@ const Index = () => {
   }, [hostCode, areToastsEnabled]);
 
   const handleActivateDiscovery = async () => {
+    // Update localFirstName if user changed it in the dialog
     if (discoveryDisplayName.trim() !== "" && discoveryDisplayName !== localFirstName) {
       setLocalFirstName(discoveryDisplayName.trim());
+      // Optionally, update profile in backend here if user is logged in
+      // await updateProfile({ first_name: discoveryDisplayName.trim() });
     }
 
     setIsDiscoveryActivated(true);
     setIsDiscoverySetupOpen(false);
 
+    // Call getLocation to trigger permission check/request
     await getLocation(); 
 
+    // isGlobalPrivate will be set by getLocation's side effects or the useEffect listening to geolocationPermissionStatus.
+    // showSessionsWhileActive will retain its current value, as requested.
     if (areToastsEnabled) {
       toast.success("Discovery Activated!", {
         description: "Discovery is now active. Check your settings to adjust session visibility.",
@@ -1171,18 +1179,19 @@ const Index = () => {
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
+                {/* Moved MapPin to the left */}
                 <Tooltip>
                     <TooltipTrigger asChild>
                       <MapPin 
                         size={16} 
                         className={cn(
                           "cursor-pointer hover:text-primary",
-                          geolocationPermissionStatus === 'granted' && "text-green-600",
+                          geolocationPermissionStatus === 'granted' && "text-green-600", // Green when granted
                           geolocationPermissionStatus === 'denied' && "text-destructive"
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
-                          getLocation();
+                          getLocation(); // Trigger location request/check
                         }}
                       />
                     </TooltipTrigger>
@@ -1212,6 +1221,7 @@ const Index = () => {
                     onJoinSession={handleJoinSession} 
                   />
                 ))}
+                {/* Mock sessions are now positioned at the bottom */}
                 {mockNearbySessions.map(session => (
                   <SessionCard 
                     key={session.id} 
@@ -1464,12 +1474,12 @@ const Index = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onMouseDown={() => handleLongPressStart(() => stopTimer(false, true))}
+                          onMouseDown={() => handleLongPressStart(() => stopTimer(false, true))} // Pass false for confirm, true for long press
                           onMouseUp={handleLongPressEnd}
                           onMouseLeave={handleLongPressEnd}
-                          onTouchStart={() => handleLongPressStart(() => stopTimer(false, true))}
+                          onTouchStart={() => handleLongPressStart(() => stopTimer(false, true))} // Pass false for confirm, true for long press
                           onTouchEnd={handleLongPressEnd}
-                          onClick={() => stopTimer(true, false)}
+                          onClick={() => stopTimer(true, false)} // Pass true for confirm, false for long press
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-transparent",
                             isPaused ? "text-red-500" : "text-secondary-foreground"
@@ -1644,6 +1654,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
+            {/* Only render Coworkers card if there's an active timer/schedule AND more than just the user */}
             {isActiveTimer && allParticipantsToDisplayInCard.length > 1 && (
               <Card>
                 <CardHeader>
@@ -1663,7 +1674,7 @@ const Index = () => {
                       onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
                       <span className="font-medium text-foreground">
-                        {person.role === 'self' ? localFirstName || "You" : person.name}
+                        {person.role === 'self' ? localFirstName || "You" : person.name} {/* Use localFirstName here */}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         <Popover
@@ -1708,6 +1719,7 @@ const Index = () => {
               </Card>
             )}
 
+            {/* NEW: Conditional rendering for Discovery sections */}
             {!isDiscoveryActivated ? (
               <Card className="p-6 text-center">
                 <CardContent className="flex flex-col items-center justify-center p-0">
@@ -1814,6 +1826,7 @@ const Index = () => {
           </DialogContent>
         </Dialog>
 
+        {/* NEW: Discovery Setup Dialog */}
         <Dialog open={isDiscoverySetupOpen} onOpenChange={setIsDiscoverySetupOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <div className="grid gap-4 py-4">
@@ -1828,6 +1841,7 @@ const Index = () => {
                 />
               </div>
 
+              {/* NEW: Focus Preferences */}
               <div className="space-y-2">
                 <Tooltip>
                   <TooltipTrigger asChild>

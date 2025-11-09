@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { useTimer } from "@/contexts/TimerContext";
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
-import { useProfile } from '@/contexts/ProfileContext';
-import { getSociabilityGradientColor } from '@/lib/utils';
+import { useProfilePopUp } from '@/contexts/ProfilePopUpContext'; // Import useProfilePopUp
+import { useProfile } from '@/contexts/ProfileContext'; // Import useProfile to get getPublicProfile
+import { getSociabilityGradientColor } from '@/lib/utils'; // NEW: Import getSociabilityGradientColor
 
 interface DemoSession {
   id: string;
@@ -17,7 +17,6 @@ interface DemoSession {
   workspaceDescription: string;
   participants: { id: string; name: string; sociability: number; intention?: string; bio?: string }[];
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
-  notes: string | null; // NEW: Added notes field
 }
 
 interface SessionCardProps {
@@ -27,7 +26,7 @@ interface SessionCardProps {
 
 const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => {
   const { formatTime } = useTimer();
-  const { toggleProfilePopUp } = useProfilePopUp();
+  const { toggleProfilePopUp } = useProfilePopUp(); // Use toggleProfilePopUp
   const { getPublicProfile } = useProfile(); 
   
   // Calculate total duration from fullSchedule
@@ -162,7 +161,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg">{session.notes || session.title}</CardTitle> {/* MODIFIED: Display notes or title */}
+            <CardTitle className="text-lg">{session.title}</CardTitle>
           </div>
           <div 
             className="text-sm text-muted-foreground cursor-pointer select-none flex flex-col items-end"
