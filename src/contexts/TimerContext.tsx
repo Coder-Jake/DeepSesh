@@ -492,6 +492,109 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     resetSessionStates();
   }, [activeSessionRecordId, user?.id, currentSessionRole, areToastsEnabled, resetSessionStates]);
 
+  const transferHostRole = useCallback(async () => {
+    if (!user?.id || !activeSessionRecordId || currentSessionRole !== 'host') {
+      console.warn("Attempted to transfer host role without being the host or having an active session.");
+      return;
+    }
+
+    const currentHostId = user.id;
+    const currentHostName = localFirstName;
+
+    const otherCoworkers = currentSessionParticipantsData
+      .filter(p => p.role === 'coworker')
+      .sort((a, b) => a.joinTime - b.joinTime);
+
+    if (otherCoworkers.length > 0) {
+      const newHost = otherCoworkers[0];
+      const updatedParticipants = currentSessionParticipantsData.map(p => {
+        if (p.userId === newHost.userId) {
+          return { ...p, role: 'host' };
+        }
+        if (p.userId === currentHostId) {
+          return { ...p, role: 'coworker' };
+        }
+        return p;
+      });
+
+      const { error } = await supabase
+        .from('active_sessions')
+        .update({
+          user_id: newHost.userId,
+          host_name: newHost.userName,
+          participants_data: updatedParticipants,
+        })
+        .eq('id', activeSessionRecordId);
+
+      if (error) {
+        console.error("Error transferring host role in Supabase:", error);
+        if (areToastsEnabled) {
+          toast.error("Host Transfer Failed", {
+            description: `Failed to transfer host role: ${error.message}`,
+          });
+        }
+        return;
+      }
+
+      if (areToastsEnabled) {
+        toast.success("Host Role Transferred", {
+          description: `Host role transferred to ${newHost.userName}. You are now a coworker.`,
+        });
+      }
+      setCurrentSessionRole('coworker');
+      setCurrentSessionHostName(newHost.userName);
+      setCurrentSessionOtherParticipants(updatedParticipants.filter(p => p.userId !== user.id && p.userId !== newHost.userId));
+      setCurrentSessionParticipantsData(updatedParticipants);
+      setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
+
+    } else {
+      console.log("transferHostRole: No other coworkers to transfer to. Ending session.");
+      if (areToastsEnabled) {
+        toast.info("Session Ended", {
+          description: "No other participants to transfer host role to. Session ended.",
+        });
+      }
+      await resetSchedule();
+    }
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
+
+  const leaveSession = useCallback(async () => {
+    if (!user?.id || !activeSessionRecordId || currentSessionRole === null) {
+      console.warn("Attempted to leave session without active session or user ID.");
+      return;
+    }
+
+    if (currentSessionRole === 'host') {
+      await transferHostRole();
+      return;
+    }
+
+    const updatedParticipants = currentSessionParticipantsData.filter(p => p.userId !== user.id);
+    setCurrentSessionParticipantsData(updatedParticipants);
+
+    const { error } = await supabase
+      .from('active_sessions')
+      .update({ participants_data: updatedParticipants })
+      .eq('id', activeSessionRecordId);
+
+    if (error) {
+      console.error("Error removing coworker from Supabase session:", error);
+      if (areToastsEnabled) {
+        toast.error("Leave Session Failed", {
+          description: `Failed to update session participants: ${error.message}`,
+        });
+      }
+    } else {
+      if (areToastsEnabled) {
+        toast.info("Session Left", {
+          description: "You have left the session.",
+        });
+      }
+    }
+    resetSessionStates();
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates, transferHostRole]);
+
+
   const startSessionCommonLogic = useCallback(async (
     sessionType: 'manual' | 'schedule',
     initialSchedule: ScheduledTimer[],
@@ -895,109 +998,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     userSociability, userIntention, userBio, _defaultBreakMinutes, _defaultFocusMinutes,
     playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates
   ]);
-
-  const leaveSession = useCallback(async () => {
-    if (!user?.id || !activeSessionRecordId || currentSessionRole === null) {
-      console.warn("Attempted to leave session without active session or user ID.");
-      return;
-    }
-
-    if (currentSessionRole === 'host') {
-      await transferHostRole();
-      return;
-    }
-
-    const updatedParticipants = currentSessionParticipantsData.filter(p => p.userId !== user.id);
-    setCurrentSessionParticipantsData(updatedParticipants);
-
-    const { error } = await supabase
-      .from('active_sessions')
-      .update({ participants_data: updatedParticipants })
-      .eq('id', activeSessionRecordId);
-
-    if (error) {
-      console.error("Error removing coworker from Supabase session:", error);
-      if (areToastsEnabled) {
-        toast.error("Leave Session Failed", {
-          description: `Failed to update session participants: ${error.message}`,
-        });
-      }
-    } else {
-      if (areToastsEnabled) {
-        toast.info("Session Left", {
-          description: "You have left the session.",
-        });
-      }
-    }
-    resetSessionStates();
-  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates, transferHostRole]);
-
-  const transferHostRole = useCallback(async () => {
-    if (!user?.id || !activeSessionRecordId || currentSessionRole !== 'host') {
-      console.warn("Attempted to transfer host role without being the host or having an active session.");
-      return;
-    }
-
-    const currentHostId = user.id;
-    const currentHostName = localFirstName;
-
-    const otherCoworkers = currentSessionParticipantsData
-      .filter(p => p.role === 'coworker')
-      .sort((a, b) => a.joinTime - b.joinTime);
-
-    if (otherCoworkers.length > 0) {
-      const newHost = otherCoworkers[0];
-      const updatedParticipants = currentSessionParticipantsData.map(p => {
-        if (p.userId === newHost.userId) {
-          return { ...p, role: 'host' };
-        }
-        if (p.userId === currentHostId) {
-          return { ...p, role: 'coworker' };
-        }
-        return p;
-      });
-
-      const { error } = await supabase
-        .from('active_sessions')
-        .update({
-          user_id: newHost.userId,
-          host_name: newHost.userName,
-          participants_data: updatedParticipants,
-        })
-        .eq('id', activeSessionRecordId);
-
-      if (error) {
-        console.error("Error transferring host role in Supabase:", error);
-        if (areToastsEnabled) {
-          toast.error("Host Transfer Failed", {
-            description: `Failed to transfer host role: ${error.message}`,
-          });
-        }
-        return;
-      }
-
-      if (areToastsEnabled) {
-        toast.success("Host Role Transferred", {
-          description: `Host role transferred to ${newHost.userName}. You are now a coworker.`,
-        });
-      }
-      setCurrentSessionRole('coworker');
-      setCurrentSessionHostName(newHost.userName);
-      setCurrentSessionOtherParticipants(updatedParticipants.filter(p => p.userId !== user.id && p.userId !== newHost.userId));
-      setCurrentSessionParticipantsData(updatedParticipants);
-      setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
-
-    } else {
-      console.log("transferHostRole: No other coworkers to transfer to. Ending session.");
-      if (areToastsEnabled) {
-        toast.info("Session Ended", {
-          description: "No other participants to transfer host role to. Session ended.",
-        });
-      }
-      await resetSchedule();
-    }
-  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
-
 
   useEffect(() => {
     if (isRunning && !isPaused && timeLeft > 0) {
