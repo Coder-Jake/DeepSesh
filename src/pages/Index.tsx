@@ -1035,7 +1035,7 @@ const Index = () => {
     let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
     const currentDay = now.getDay();
-    const templateDay = template.commenceDay === null ? currentDay : currentDay;
+    const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
     const daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
 
@@ -1060,7 +1060,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, [getEffectiveStartTime]);
+  }, []); // Removed getEffectiveStartTime from its own dependency array
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
@@ -1553,7 +1553,7 @@ const Index = () => {
                       </div>
                     </div>
                   )}
-                  {(isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
+                  {(isRunning || isPaused || isScheduleActive || isSchedulePending) && <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />}
                 </>
               )}
             </div>
