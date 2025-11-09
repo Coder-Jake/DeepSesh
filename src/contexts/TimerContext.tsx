@@ -1134,6 +1134,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const checkAndCommenceSchedules = () => {
       const now = new Date();
       for (const template of preparedSchedules) {
+        if (!template) { // Defensive check for null/undefined template
+          console.warn("Skipping undefined or null template in preparedSchedules array.");
+          continue;
+        }
         if (template.scheduleStartOption === 'custom_time') {
           const [hours, minutes] = template.commenceTime.split(':').map(Number);
           let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
@@ -1148,22 +1152,21 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
               discardPreparedSchedule(template.id);
               continue;
             } else {
-              if (template.recurrenceFrequency === 'daily') {
-                targetDate.setDate(targetDate.getDate() + 1);
-              } else if (template.recurrenceFrequency === 'weekly') {
-                targetDate.setDate(targetDate.getDate() + 7);
-              } else if (template.recurrenceFrequency === 'monthly') {
-                targetDate.setMonth(targetDate.getMonth() + 1);
-              }
-              while (targetDate.getTime() < now.getTime()) {
+              let nextCommenceDate = new Date(targetDate);
+              while (nextCommenceDate.getTime() < now.getTime()) {
                 if (template.recurrenceFrequency === 'daily') {
-                  targetDate.setDate(targetDate.getDate() + 1);
+                  nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
                 } else if (template.recurrenceFrequency === 'weekly') {
-                  targetDate.setDate(targetDate.getDate() + 7);
+                  nextCommenceDate.setDate(nextCommenceDate.getDate() + 7);
                 } else if (template.recurrenceFrequency === 'monthly') {
-                  targetDate.setMonth(targetDate.getMonth() + 1);
+                  nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
+                } else {
+                  // If recurrenceFrequency is unknown, break to prevent infinite loop
+                  console.warn(`Unknown recurrenceFrequency '${template.recurrenceFrequency}' for template ID '${template.id}'. Skipping recurrence.`);
+                  break;
                 }
               }
+              targetDate = nextCommenceDate; // Update targetDate for the current iteration
             }
           }
 
@@ -1172,7 +1175,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             if (!isScheduleActive && !isSchedulePending) {
               commenceSpecificPreparedSchedule(template.id);
               if (template.isRecurring) {
-                const nextCommenceDate = new Date(targetDate);
+                const nextCommenceDate = new Date(targetDate); // This nextCommenceDate is for updating the *prepared* schedule for its *next* occurrence
                 if (template.recurrenceFrequency === 'daily') {
                   nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
                 } else if (template.recurrenceFrequency === 'weekly') {
