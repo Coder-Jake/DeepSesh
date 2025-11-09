@@ -32,7 +32,16 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
     if (template.scheduleStartOption === 'manual') {
       return "Manual Start";
     } else if (template.scheduleStartOption === 'custom_time') {
-      const [hours, minutes] = template.commenceTime.split(':').map(Number);
+      const timeParts = template.commenceTime.split(':').map(Number);
+      const hours = timeParts[0];
+      const minutes = timeParts[1];
+
+      // Defensive check for NaN or undefined hours/minutes
+      if (isNaN(hours) || isNaN(minutes) || hours === undefined || minutes === undefined) {
+        console.error("Invalid commenceTime format:", template.commenceTime);
+        return "Invalid Time";
+      }
+
       const formattedTime = new Date(0, 0, 0, hours, minutes).toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
@@ -40,8 +49,15 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
       });
       const now = new Date();
       const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+      
+      // Defensive check for Invalid Date object after initial creation
+      if (isNaN(targetDate.getTime())) {
+        console.error("Invalid targetDate created from commenceTime:", template.commenceTime, "Resulting Date:", targetDate);
+        return "Invalid Date";
+      }
+
       const currentDay = now.getDay();
-      const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
+      const templateDay = template.commenceDay === null || template.commenceDay === undefined ? currentDay : template.commenceDay;
       const daysToAdd = (templateDay - currentDay + 7) % 7;
       targetDate.setDate(now.getDate() + daysToAdd);
 
