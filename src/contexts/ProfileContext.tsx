@@ -2,37 +2,59 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { toast } from 'sonner';
 import { useAuth } from "./AuthContext";
 import { supabase } from '@/integrations/supabase/client';
-// Removed: import { useTimer } from "./TimerContext"; // This import is removed
 import { colors, animals } from '@/lib/constants';
 
-// Define a simplified Profile type for local storage
-export type Profile = {
-  avatar_url: string | null
-  bio: string | null
-  first_name: string | null
-  id: string
-  intention: string | null
-  last_name: string | null
-  linkedin_url: string | null
-  organization: string | null
-  focus_preference: number | null
-  updated_at: string | null
-  host_code: string | null
-  bio_visibility: ("public" | "friends" | "organisation" | "private")[] | null
-  intention_visibility: ("public" | "friends" | "organisation" | "private")[] | null
-  linkedin_visibility: ("public" | "friends" | "organisation" | "private")[] | null
-  can_help_with: string | null
-  can_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null
-  need_help_with: string | null
-  need_help_with_visibility: ("public" | "friends" | "organisation" | "private")[] | null
-  pronouns: string | null;
+// Define the structure for a single field within profile_data
+export type ProfileDataField = {
+  value: string | null;
+  visibility: ("public" | "friends" | "organisation" | "private")[];
 };
 
-// Simplified ProfileUpdate type for local storage
-export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at'>>;
+// Define the structure for the profile_data JSONB column
+export type ProfileDataJsonb = {
+  bio: ProfileDataField;
+  intention: ProfileDataField;
+  linkedin_url: ProfileDataField;
+  can_help_with: ProfileDataField;
+  need_help_with: ProfileDataField;
+  pronouns: ProfileDataField;
+};
 
-// NEW: Type for inserting a new profile (requires id, but not updated_at)
-export type ProfileInsert = Omit<Profile, 'updated_at'>;
+// Define the main Profile type reflecting the database schema
+export type Profile = {
+  avatar_url: string | null;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
+  organization: string | null;
+  focus_preference: number | null;
+  updated_at: string | null;
+  host_code: string | null;
+  profile_data: ProfileDataJsonb; // The new JSONB column
+};
+
+// ProfileUpdate type: allows updating direct columns OR specific fields within profile_data
+export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at' | 'profile_data'>> & {
+  // Allow updating individual fields within profile_data
+  bio?: ProfileDataField;
+  intention?: ProfileDataField;
+  linkedin_url?: ProfileDataField;
+  can_help_with?: ProfileDataField;
+  need_help_with?: ProfileDataField;
+  pronouns?: ProfileDataField;
+};
+
+// ProfileInsert type: for creating a new profile
+export type ProfileInsert = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  focus_preference: number | null;
+  host_code: string | null;
+  profile_data: ProfileDataJsonb;
+  organization?: string | null;
+  avatar_url?: string | null;
+};
 
 // Helper to generate a random host code
 export const generateRandomHostCode = () => {
@@ -98,7 +120,6 @@ interface ProfileProviderProps {
 
 export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areToastsEnabled }) => {
   const { user, loading: authLoading } = useAuth();
-  // Removed: const { resetSessionStates } = useTimer(); // This line is removed
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,7 +130,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [intention, setIntention] = useState<string | null>(null);
   const [canHelpWith, setCanHelpWith] = useState<string | null>(null);
   const [needHelpWith, setNeedHelpWith] = useState<string | null>(null);
-  const [focusPreference, setFocusPreference] = useState(50); // Default to 50
+  const [focusPreference, setFocusPreference] = useState(50);
   const [organization, setOrganization] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   const [hostCode, setHostCode] = useState<string | null>(null);
@@ -127,38 +148,63 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [recentCoworkers, setRecentCoworkers] = useState<string[]>([]);
 
-  const mockProfilesRef = useRef<Profile[]>([]); // Ref to store mock profiles
+  const mockProfilesRef = useRef<Profile[]>([]);
+
+  // Helper to get default ProfileDataField
+  const getDefaultProfileDataField = useCallback((value: string | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
+    value,
+    visibility,
+  }), []);
 
   // Function to fetch mock profiles (from Index.tsx)
   const fetchMockProfiles = useCallback(async () => {
-    // Dynamically import Index.tsx to get mockProfiles
-    // This is a workaround for circular dependencies if mockProfiles were directly in Index.tsx
-    // In a real app, mockProfiles would be in a separate data file or fetched from an API.
-    try {
-      const { default: IndexModule } = await import('@/pages/Index');
-      // Assuming mockProfiles is exported from Index.tsx or accessible
-      // For now, I'll hardcode a few mock profiles here to avoid complex dynamic imports
-      // and potential circular dependency issues with the current file structure.
-      // In a real app, these would be fetched from a database or a dedicated mock data file.
-      mockProfilesRef.current = [
-        {
-          id: "mock-user-id-bezos", first_name: "Sam Altman", last_name: null, avatar_url: null, bio: "Leading AI research.", intention: "Focusing on AGI.", focus_preference: 20, updated_at: new Date().toISOString(), organization: "OpenAI", linkedin_url: "https://www.linkedin.com/in/samaltman", bio_visibility: ['public'], intention_visibility: ['public'], linkedin_visibility: ['public'], can_help_with: "AI strategy", can_help_with_visibility: ['public'], need_help_with: "AI safety", need_help_with_visibility: ['private'], host_code: "goldfish", pronouns: "He/Him",
-        },
-        {
-          id: "mock-user-id-musk", first_name: "Musk", last_name: null, avatar_url: null, bio: "Designing rockets.", intention: "Innovating space travel.", focus_preference: 10, updated_at: new Date().toISOString(), organization: "SpaceX", linkedin_url: "https://www.linkedin.com/in/elonmusk", bio_visibility: ['public'], intention_visibility: ['public'], linkedin_visibility: ['public'], can_help_with: "Rocket engineering", can_help_with_visibility: ['public'], need_help_with: "Mars colonization", need_help_with_visibility: ['private'], host_code: "silverfalcon", pronouns: "He/Him",
-        },
-        {
-          id: "mock-user-id-freud", first_name: "Freud", last_name: null, avatar_url: null, bio: "Reviewing psychoanalytic theories.", intention: "Unraveling human behavior.", focus_preference: 60, updated_at: new Date().toISOString(), organization: "Psychology Dept.", linkedin_url: "https://www.linkedin.com/in/sigmundfreud", bio_visibility: ['public'], intention_visibility: ['public'], linkedin_visibility: ['public'], can_help_with: "Psychoanalysis", can_help_with_visibility: ['friends'], need_help_with: "Modern neuroscience", need_help_with_visibility: ['friends'], host_code: "tealshark", pronouns: "He/Him",
-        },
-        {
-          id: "mock-user-id-aristotle", first_name: "Aristotle", last_name: null, avatar_url: null, bio: "Studying logic.", intention: "Deep work on theories.", focus_preference: 50, updated_at: new Date().toISOString(), organization: "Ancient Philosophy Guild", linkedin_url: null, bio_visibility: ['public'], intention_visibility: ['public'], linkedin_visibility: ['public'], can_help_with: "Logic", can_help_with_visibility: ['organisation'], need_help_with: "Modern science", need_help_with_visibility: ['organisation'], host_code: "redphilosopher", pronouns: "He/Him",
-        },
-        // Add more mock profiles as needed
-      ];
-    } catch (e) {
-      console.error("Failed to load mock profiles:", e);
-    }
-  }, []);
+    mockProfilesRef.current = [
+      {
+        id: "mock-user-id-bezos", first_name: "Sam Altman", last_name: null, avatar_url: null, focus_preference: 20, updated_at: new Date().toISOString(), organization: "OpenAI", host_code: "goldfish",
+        profile_data: {
+          bio: getDefaultProfileDataField("Leading AI research.", ['public']),
+          intention: getDefaultProfileDataField("Focusing on AGI.", ['public']),
+          linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/samaltman", ['public']),
+          can_help_with: getDefaultProfileDataField("AI strategy", ['public']),
+          need_help_with: getDefaultProfileDataField("AI safety", ['private']),
+          pronouns: getDefaultProfileDataField("He/Him", ['public']),
+        }
+      },
+      {
+        id: "mock-user-id-musk", first_name: "Musk", last_name: null, avatar_url: null, focus_preference: 10, updated_at: new Date().toISOString(), organization: "SpaceX", host_code: "silverfalcon",
+        profile_data: {
+          bio: getDefaultProfileDataField("Designing rockets.", ['public']),
+          intention: getDefaultProfileDataField("Innovating space travel.", ['public']),
+          linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/elonmusk", ['public']),
+          can_help_with: getDefaultProfileDataField("Rocket engineering", ['public']),
+          need_help_with: getDefaultProfileDataField("Mars colonization", ['private']),
+          pronouns: getDefaultProfileDataField("He/Him", ['public']),
+        }
+      },
+      {
+        id: "mock-user-id-freud", first_name: "Freud", last_name: null, avatar_url: null, focus_preference: 60, updated_at: new Date().toISOString(), organization: "Psychology Dept.", host_code: "tealshark",
+        profile_data: {
+          bio: getDefaultProfileDataField("Reviewing psychoanalytic theories.", ['public']),
+          intention: getDefaultProfileDataField("Unraveling human behavior.", ['public']),
+          linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/sigmundfreud", ['public']),
+          can_help_with: getDefaultProfileDataField("Psychoanalysis", ['friends']),
+          need_help_with: getDefaultProfileDataField("Modern neuroscience", ['friends']),
+          pronouns: getDefaultProfileDataField("He/Him", ['public']),
+        }
+      },
+      {
+        id: "mock-user-id-aristotle", first_name: "Aristotle", last_name: null, avatar_url: null, focus_preference: 50, updated_at: new Date().toISOString(), organization: "Ancient Philosophy Guild", host_code: "redphilosopher",
+        profile_data: {
+          bio: getDefaultProfileDataField("Studying logic.", ['public']),
+          intention: getDefaultProfileDataField("Deep work on theories.", ['public']),
+          linkedin_url: getDefaultProfileDataField(null, ['public']),
+          can_help_with: getDefaultProfileDataField("Logic", ['organisation']),
+          need_help_with: getDefaultProfileDataField("Modern science", ['organisation']),
+          pronouns: getDefaultProfileDataField("He/Him", ['public']),
+        }
+      },
+    ];
+  }, [getDefaultProfileDataField]);
 
   useEffect(() => {
     fetchMockProfiles();
@@ -175,20 +221,23 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       const parsedProfile: Profile = JSON.parse(storedProfile);
       setProfile(parsedProfile);
       setLocalFirstName(parsedProfile.first_name || "You");
-      setBio(parsedProfile.bio);
-      setIntention(parsedProfile.intention);
-      setCanHelpWith(parsedProfile.can_help_with);
-      setNeedHelpWith(parsedProfile.need_help_with);
       setFocusPreference(parsedProfile.focus_preference || 50);
       setOrganization(parsedProfile.organization);
-      setLinkedinUrl(parsedProfile.linkedin_url);
       setHostCode(parsedProfile.host_code);
-      setBioVisibility(parsedProfile.bio_visibility || ['public']);
-      setIntentionVisibility(parsedProfile.intention_visibility || ['public']);
-      setLinkedinVisibility(parsedProfile.linkedin_visibility || ['public']);
-      setCanHelpWithVisibility(parsedProfile.can_help_with_visibility || ['public']);
-      setNeedHelpWithVisibility(parsedProfile.need_help_with_visibility || ['public']);
-      setPronouns(parsedProfile.pronouns);
+
+      // Deconstruct profile_data
+      const pd = parsedProfile.profile_data;
+      setBio(pd.bio?.value || null);
+      setBioVisibility(pd.bio?.visibility || ['public']);
+      setIntention(pd.intention?.value || null);
+      setIntentionVisibility(pd.intention?.visibility || ['public']);
+      setLinkedinUrl(pd.linkedin_url?.value || null);
+      setLinkedinVisibility(pd.linkedin_url?.visibility || ['public']);
+      setCanHelpWith(pd.can_help_with?.value || null);
+      setCanHelpWithVisibility(pd.can_help_with?.visibility || ['public']);
+      setNeedHelpWith(pd.need_help_with?.value || null);
+      setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
+      setPronouns(pd.pronouns?.value || null);
     }
     if (storedFriendStatuses) {
       setFriendStatuses(JSON.parse(storedFriendStatuses));
@@ -200,53 +249,40 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setRecentCoworkers(JSON.parse(storedRecentCoworkers));
     }
     setLoading(false);
-  }, []);
+  }, [getDefaultProfileDataField]);
 
   // Sync local states to profile object and save to local storage
   useEffect(() => {
-    if (!user || loading) return; // Only sync if user is loaded and not initially loading
+    if (!user || loading) return;
+
+    const currentProfileData: ProfileDataJsonb = {
+      bio: getDefaultProfileDataField(bio, bioVisibility),
+      intention: getDefaultProfileDataField(intention, intentionVisibility),
+      linkedin_url: getDefaultProfileDataField(linkedinUrl, linkedinVisibility),
+      can_help_with: getDefaultProfileDataField(canHelpWith, canHelpWithVisibility),
+      need_help_with: getDefaultProfileDataField(needHelpWith, needHelpWithVisibility),
+      pronouns: getDefaultProfileDataField(pronouns, ['public']),
+    };
 
     const currentProfile: Profile = {
       id: user.id,
       first_name: localFirstName,
-      last_name: null, // Not currently managed
-      avatar_url: null, // Not currently managed
-      bio,
-      intention,
-      can_help_with: canHelpWith,
-      need_help_with: needHelpWith,
+      last_name: null,
+      avatar_url: null,
       focus_preference: focusPreference,
       organization,
-      linkedin_url: linkedinUrl,
       host_code: hostCode,
-      bio_visibility: bioVisibility,
-      intention_visibility: intentionVisibility,
-      linkedin_visibility: linkedinVisibility,
-      can_help_with_visibility: canHelpWithVisibility,
-      need_help_with_visibility: needHelpWithVisibility,
-      pronouns,
+      profile_data: currentProfileData,
       updated_at: new Date().toISOString(),
     };
     setProfile(currentProfile);
     localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(currentProfile));
   }, [
     user, loading, localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference,
-    organization, linkedinUrl, hostCode, bioVisibility, intentionVisibility, linkedinVisibility,
-    canHelpWithVisibility, needHelpWithVisibility, pronouns
+    organization, linkedinUrl, hostCode, pronouns,
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
+    getDefaultProfileDataField
   ]);
-
-  // Save social states to local storage
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(friendStatuses));
-  }, [friendStatuses]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_BLOCKED_USERS_KEY, JSON.stringify(blockedUsers));
-  }, [blockedUsers]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY, JSON.stringify(recentCoworkers));
-  }, [recentCoworkers]);
 
   // Fetch profile from Supabase or create if not exists
   useEffect(() => {
@@ -268,17 +304,21 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         if (error && error.code === 'PGRST116') { // No rows found
           console.log("No profile found, creating a new one.");
           const newHostCode = generateRandomHostCode();
-          const newProfileData: ProfileInsert = { // Changed type to ProfileInsert
-            id: user.id, 
+          const defaultProfileData: ProfileDataJsonb = {
+            bio: getDefaultProfileDataField(null, ['public']),
+            intention: getDefaultProfileDataField(null, ['public']),
+            linkedin_url: getDefaultProfileDataField(null, ['public']),
+            can_help_with: getDefaultProfileDataField(null, ['public']),
+            need_help_with: getDefaultProfileDataField(null, ['public']),
+            pronouns: getDefaultProfileDataField(null, ['public']),
+          };
+          const newProfileData: ProfileInsert = {
+            id: user.id,
             first_name: user.user_metadata.first_name || "You",
             host_code: newHostCode,
             focus_preference: 50,
-            bio_visibility: ['public'],
-            intention_visibility: ['public'],
-            linkedin_visibility: ['public'],
-            can_help_with_visibility: ['public'],
-            need_help_with_visibility: ['public'],
-            pronouns: null,
+            profile_data: defaultProfileData,
+            last_name: null, avatar_url: null, organization: null,
           };
           const { data: newProfile, error: insertError } = await supabase
             .from('profiles')
@@ -292,12 +332,19 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
             setLocalFirstName(newProfile.first_name || "You");
             setHostCode(newProfile.host_code);
             setFocusPreference(newProfile.focus_preference || 50);
-            setBioVisibility(newProfile.bio_visibility || ['public']);
-            setIntentionVisibility(newProfile.intention_visibility || ['public']);
-            setLinkedinVisibility(newProfile.linkedin_visibility || ['public']);
-            setCanHelpWithVisibility(newProfile.can_help_with_visibility || ['public']);
-            setNeedHelpWithVisibility(newProfile.need_help_with_visibility || ['public']);
-            setPronouns(newProfile.pronouns);
+            // Deconstruct profile_data
+            const pd = newProfile.profile_data;
+            setBio(pd.bio?.value || null);
+            setBioVisibility(pd.bio?.visibility || ['public']);
+            setIntention(pd.intention?.value || null);
+            setIntentionVisibility(pd.intention?.visibility || ['public']);
+            setLinkedinUrl(pd.linkedin_url?.value || null);
+            setLinkedinVisibility(pd.linkedin_url?.visibility || ['public']);
+            setCanHelpWith(pd.can_help_with?.value || null);
+            setCanHelpWithVisibility(pd.can_help_with?.visibility || ['public']);
+            setNeedHelpWith(pd.need_help_with?.value || null);
+            setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
+            setPronouns(pd.pronouns?.value || null);
             localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(newProfile));
           }
         } else if (error) {
@@ -306,20 +353,22 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           if (isMounted) {
             setProfile(data);
             setLocalFirstName(data.first_name || "You");
-            setBio(data.bio);
-            setIntention(data.intention);
-            setCanHelpWith(data.can_help_with);
-            setNeedHelpWith(data.need_help_with);
-            setFocusPreference(data.focus_preference || 50);
             setOrganization(data.organization);
-            setLinkedinUrl(data.linkedin_url);
+            setFocusPreference(data.focus_preference || 50);
             setHostCode(data.host_code);
-            setBioVisibility(data.bio_visibility || ['public']);
-            setIntentionVisibility(data.intention_visibility || ['public']);
-            setLinkedinVisibility(data.linkedin_visibility || ['public']);
-            setCanHelpWithVisibility(data.can_help_with_visibility || ['public']);
-            setNeedHelpWithVisibility(data.need_help_with_visibility || ['public']);
-            setPronouns(data.pronouns);
+            // Deconstruct profile_data
+            const pd = data.profile_data;
+            setBio(pd.bio?.value || null);
+            setBioVisibility(pd.bio?.visibility || ['public']);
+            setIntention(pd.intention?.value || null);
+            setIntentionVisibility(pd.intention?.visibility || ['public']);
+            setLinkedinUrl(pd.linkedin_url?.value || null);
+            setLinkedinVisibility(pd.linkedin_url?.visibility || ['public']);
+            setCanHelpWith(pd.can_help_with?.value || null);
+            setCanHelpWithVisibility(pd.can_help_with?.visibility || ['public']);
+            setNeedHelpWith(pd.need_help_with?.value || null);
+            setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
+            setPronouns(pd.pronouns?.value || null);
             localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(data));
           }
         }
@@ -336,44 +385,56 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           const parsedProfile: Profile = JSON.parse(storedProfile);
           setProfile(parsedProfile);
           setLocalFirstName(parsedProfile.first_name || "You");
-          setBio(parsedProfile.bio);
-          setIntention(parsedProfile.intention);
-          setCanHelpWith(parsedProfile.can_help_with);
-          setNeedHelpWith(parsedProfile.need_help_with);
-          setFocusPreference(parsedProfile.focus_preference || 50);
           setOrganization(parsedProfile.organization);
-          setLinkedinUrl(parsedProfile.linkedin_url);
+          setFocusPreference(parsedProfile.focus_preference || 50);
           setHostCode(parsedProfile.host_code);
-          setBioVisibility(parsedProfile.bio_visibility || ['public']);
-          setIntentionVisibility(parsedProfile.intention_visibility || ['public']);
-          setLinkedinVisibility(parsedProfile.linkedin_visibility || ['public']);
-          setCanHelpWithVisibility(parsedProfile.can_help_with_visibility || ['public']);
-          setNeedHelpWithVisibility(parsedProfile.need_help_with_visibility || ['public']);
-          setPronouns(parsedProfile.pronouns);
+          // Deconstruct profile_data
+          const pd = parsedProfile.profile_data;
+          setBio(pd.bio?.value || null);
+          setBioVisibility(pd.bio?.visibility || ['public']);
+          setIntention(pd.intention?.value || null);
+          setIntentionVisibility(pd.intention?.visibility || ['public']);
+          setLinkedinUrl(pd.linkedin_url?.value || null);
+          setLinkedinVisibility(pd.linkedin_url?.visibility || ['public']);
+          setCanHelpWith(pd.can_help_with?.value || null);
+          setCanHelpWithVisibility(pd.can_help_with?.visibility || ['public']);
+          setNeedHelpWith(pd.need_help_with?.value || null);
+          setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
+          setPronouns(pd.pronouns?.value || null);
         } else {
           // If no Supabase and no local storage, create a minimal default
           const defaultHostCode = generateRandomHostCode();
+          const defaultProfileData: ProfileDataJsonb = {
+            bio: getDefaultProfileDataField(null, ['public']),
+            intention: getDefaultProfileDataField(null, ['public']),
+            linkedin_url: getDefaultProfileDataField(null, ['public']),
+            can_help_with: getDefaultProfileDataField(null, ['public']),
+            need_help_with: getDefaultProfileDataField(null, ['public']),
+            pronouns: getDefaultProfileDataField(null, ['public']),
+          };
           const defaultProfile: Profile = {
             id: user.id,
             first_name: user.user_metadata.first_name || "You",
-            last_name: null, avatar_url: null, bio: null, intention: null,
-            focus_preference: 50, updated_at: new Date().toISOString(), organization: null,
-            linkedin_url: null, host_code: defaultHostCode, bio_visibility: ['public'],
-            intention_visibility: ['public'], linkedin_visibility: ['public'],
-            can_help_with: null, can_help_with_visibility: ['public'],
-            need_help_with: null, need_help_with_visibility: ['public'],
-            pronouns: null,
+            last_name: null, avatar_url: null, organization: null,
+            focus_preference: 50, updated_at: new Date().toISOString(),
+            host_code: defaultHostCode,
+            profile_data: defaultProfileData,
           };
           setProfile(defaultProfile);
           setLocalFirstName(defaultProfile.first_name);
           setHostCode(defaultProfile.host_code);
           setFocusPreference(defaultProfile.focus_preference);
-          setBioVisibility(defaultProfile.bio_visibility);
-          setIntentionVisibility(defaultProfile.intention_visibility);
-          setLinkedinVisibility(defaultProfile.linkedin_visibility);
-          setCanHelpWithVisibility(defaultProfile.can_help_with_visibility);
-          setNeedHelpWithVisibility(defaultProfile.need_help_with_visibility);
-          setPronouns(defaultProfile.pronouns);
+          setBio(defaultProfile.profile_data.bio.value);
+          setBioVisibility(defaultProfile.profile_data.bio.visibility);
+          setIntention(defaultProfile.profile_data.intention.value);
+          setIntentionVisibility(defaultProfile.profile_data.intention.visibility);
+          setLinkedinUrl(defaultProfile.profile_data.linkedin_url.value);
+          setLinkedinVisibility(defaultProfile.profile_data.linkedin_url.visibility);
+          setCanHelpWith(defaultProfile.profile_data.can_help_with.value);
+          setCanHelpWithVisibility(defaultProfile.profile_data.can_help_with.visibility);
+          setNeedHelpWith(defaultProfile.profile_data.need_help_with.value);
+          setNeedHelpWithVisibility(defaultProfile.profile_data.need_help_with.visibility);
+          setPronouns(defaultProfile.profile_data.pronouns.value);
           localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
         }
       } finally {
@@ -388,7 +449,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     return () => {
       isMounted = false;
     };
-  }, [user, authLoading, areToastsEnabled]);
+  }, [user, authLoading, areToastsEnabled, getDefaultProfileDataField]);
 
   const updateProfile = useCallback(async (updates: ProfileUpdate, successMessage?: string) => {
     if (!user) {
@@ -402,9 +463,34 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
     setLoading(true);
     try {
+      // Prepare the object to send to Supabase
+      const supabaseUpdates: { [key: string]: any } = { updated_at: new Date().toISOString() };
+      let newProfileData: ProfileDataJsonb = profile?.profile_data || {
+        bio: getDefaultProfileDataField(),
+        intention: getDefaultProfileDataField(),
+        linkedin_url: getDefaultProfileDataField(),
+        can_help_with: getDefaultProfileDataField(),
+        need_help_with: getDefaultProfileDataField(),
+        pronouns: getDefaultProfileDataField(),
+      };
+
+      // Iterate through updates to separate direct column updates from profile_data updates
+      for (const key in updates) {
+        if (key === 'first_name' || key === 'last_name' || key === 'avatar_url' ||
+            key === 'organization' || key === 'focus_preference' || key === 'host_code') {
+          supabaseUpdates[key] = updates[key as keyof Omit<Profile, 'id' | 'updated_at' | 'profile_data'>];
+        } else if (key in newProfileData) { // If it's a field that belongs in profile_data
+          newProfileData = {
+            ...newProfileData,
+            [key]: updates[key as keyof ProfileDataJsonb],
+          };
+        }
+      }
+      supabaseUpdates.profile_data = newProfileData; // Always send the full (merged) profile_data JSONB
+
       const { data, error } = await supabase
         .from('profiles')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update(supabaseUpdates)
         .eq('id', user.id)
         .select('*')
         .single();
@@ -414,20 +500,22 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       if (data) {
         setProfile(data);
         setLocalFirstName(data.first_name || "You");
-        setBio(data.bio);
-        setIntention(data.intention);
-        setCanHelpWith(data.can_help_with);
-        setNeedHelpWith(data.need_help_with);
-        setFocusPreference(data.focus_preference || 50);
         setOrganization(data.organization);
-        setLinkedinUrl(data.linkedin_url);
+        setFocusPreference(data.focus_preference || 50);
         setHostCode(data.host_code);
-        setBioVisibility(data.bio_visibility || ['public']);
-        setIntentionVisibility(data.intention_visibility || ['public']);
-        setLinkedinVisibility(data.linkedin_visibility || ['public']);
-        setCanHelpWithVisibility(data.can_help_with_visibility || ['public']);
-        setNeedHelpWithVisibility(data.need_help_with_visibility || ['public']);
-        setPronouns(data.pronouns);
+        // Deconstruct profile_data back into individual states
+        const pd = data.profile_data;
+        setBio(pd.bio?.value || null);
+        setBioVisibility(pd.bio?.visibility || ['public']);
+        setIntention(pd.intention?.value || null);
+        setIntentionVisibility(pd.intention?.visibility || ['public']);
+        setLinkedinUrl(pd.linkedin_url?.value || null);
+        setLinkedinVisibility(pd.linkedin_url?.visibility || ['public']);
+        setCanHelpWith(pd.can_help_with?.value || null);
+        setCanHelpWithVisibility(pd.can_help_with?.visibility || ['public']);
+        setNeedHelpWith(pd.need_help_with?.value || null);
+        setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
+        setPronouns(pd.pronouns?.value || null);
         localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(data));
         if (areToastsEnabled && successMessage) {
           toast.success("Profile Updated", {
@@ -445,37 +533,34 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     } finally {
       setLoading(false);
     }
-  }, [user, areToastsEnabled]);
+  }, [user, areToastsEnabled, profile, getDefaultProfileDataField]);
 
   const getPublicProfile = useCallback((userId: string, userName: string): Profile | null => {
-    // For now, this is a mock implementation. In a real app, this would query Supabase.
     const foundProfile = mockProfilesRef.current.find(p => p.id === userId);
     if (foundProfile) {
       return foundProfile;
     }
     // Fallback for users not in mock data
+    const defaultProfileData: ProfileDataJsonb = {
+      bio: getDefaultProfileDataField(null, ['public']),
+      intention: getDefaultProfileDataField(null, ['public']),
+      linkedin_url: getDefaultProfileDataField(null, ['public']),
+      can_help_with: getDefaultProfileDataField(null, ['public']),
+      need_help_with: getDefaultProfileDataField(null, ['public']),
+      pronouns: getDefaultProfileDataField(null, ['public']),
+    };
     return {
       id: userId,
       first_name: userName,
       last_name: null,
       avatar_url: null,
-      bio: null,
-      intention: null,
+      organization: null,
       focus_preference: 50,
       updated_at: new Date().toISOString(),
-      organization: null,
-      linkedin_url: null,
       host_code: null,
-      bio_visibility: ['public'],
-      intention_visibility: ['public'],
-      linkedin_visibility: ['public'],
-      can_help_with: null,
-      can_help_with_visibility: ['public'],
-      need_help_with: null,
-      need_help_with_visibility: ['public'],
-      pronouns: null,
+      profile_data: defaultProfileData,
     };
-  }, []);
+  }, [getDefaultProfileDataField]);
 
   const blockUser = useCallback((userName: string) => {
     setBlockedUsers(prev => {
@@ -520,18 +605,18 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     setOrganization(null);
     setLinkedinUrl(null);
     setHostCode(null);
+    setPronouns(null);
+    // Reset profile_data related states
     setBioVisibility(['public']);
     setIntentionVisibility(['public']);
     setLinkedinVisibility(['public']);
     setCanHelpWithVisibility(['public']);
     setNeedHelpWithVisibility(['public']);
-    setPronouns(null);
     setFriendStatuses({});
     setBlockedUsers([]);
     setRecentCoworkers([]);
-    // Removed: resetSessionStates(); // This line is removed
-    window.location.reload(); // Force a full reload to clear all states
-  }, []); // Removed resetSessionStates from dependencies
+    window.location.reload();
+  }, []);
 
   const value = useMemo(() => ({
     profile,

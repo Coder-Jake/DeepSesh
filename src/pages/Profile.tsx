@@ -19,35 +19,38 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils"; // NEW: Import getSociabilityGradientColor
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
+import { ProfileUpdate, ProfileDataJsonb } from "@/contexts/ProfileContext"; // NEW: Import ProfileUpdate and ProfileDataJsonb
 
-const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"]; // Blank, They/Them, She/Her, He/Him
+const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"];
 
 const Profile = () => {
-  const { 
+  const {
     profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
-    bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
-    canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility,
-    pronouns, setPronouns,
-    friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser,
-    // NEW: Individual profile states from context
+    // Individual states from context
     bio, setBio,
     intention, setIntention,
     canHelpWith, setCanHelpWith,
     needHelpWith, setNeedHelpWith,
-    focusPreference, setFocusPreference, // Changed from sociability
+    focusPreference, setFocusPreference,
     organization, setOrganization,
     linkedinUrl, setLinkedinUrl,
+    pronouns, setPronouns,
+    // Visibility states from context
+    bioVisibility, setBioVisibility,
+    intentionVisibility, setIntentionVisibility,
+    linkedinVisibility, setLinkedinVisibility,
+    canHelpWithVisibility, setCanHelpWithVisibility,
+    needHelpWithVisibility, setNeedHelpWithVisibility,
+    friendStatuses, getPublicProfile, blockedUsers, blockUser, unblockUser,
   } = useProfile();
-  const { user } = useAuth(); // Keep user for ID, but not for login/logout UI
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer();
-  const { toggleProfilePopUp } = useProfilePopUp(); // <-- FIX: Changed openProfilePopUp to toggleProfilePopUp
+  const { toggleProfilePopUp } = useProfilePopUp();
 
-  // Use context state directly for inputs
-  // Removed local state declarations for bio, intention, canHelpWith, needHelpWith, sociability, organization, linkedinUrl
   const [currentPronounIndex, setCurrentPronounIndex] = useState(0);
 
   const [isEditingHostCode, setIsEditingHostCode] = useState(false);
@@ -61,16 +64,16 @@ const Profile = () => {
     bio: "",
     intention: "",
     canHelpWith: "",
-        needHelpWith: "",
-    focusPreference: 50, // Changed from sociability
+    needHelpWith: "",
+    focusPreference: 50,
     organization: "",
     linkedinUrl: "",
     hostCode: "",
-    bioVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
-    intentionVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
-    linkedinVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
-    canHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
-    needHelpWithVisibility: ['public'] as ('public' | 'friends' | 'organisation' | 'private')[],
+    bioVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
+    intentionVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
+    linkedinVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
+    canHelpWithVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
+    needHelpWithVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
     pronouns: null as string | null,
   });
 
@@ -93,11 +96,10 @@ const Profile = () => {
   const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
   const friendLongPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // State and ref for the Key icon tooltip
   const [isKeyTooltipOpen, setIsKeyTooltipOpen] = useState(false);
   const keyTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[] | null): string => {
+  const getDisplayVisibilityStatus = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[] | null): string => {
     if (!visibility || visibility.length === 0) return 'public';
     if (visibility.includes('private')) return 'private';
     if (visibility.includes('public')) return 'public';
@@ -107,27 +109,27 @@ const Profile = () => {
     return 'public';
   }, []);
 
-  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'): string => {
+  const getDisplayFieldName = useCallback((fieldName: keyof ProfileDataJsonb): string => {
     switch (fieldName) {
-      case 'bio_visibility': return 'Bio';
-      case 'intention_visibility': return 'Intention';
-      case 'linkedin_visibility': return 'LinkedIn';
-      case 'can_help_with_visibility': return 'Can Help With';
-      case 'need_help_with_visibility': return 'Need Help With';
+      case 'bio': return 'Bio';
+      case 'intention': return 'Intention';
+      case 'linkedin_url': return 'LinkedIn';
+      case 'can_help_with': return 'Can Help With';
+      case 'need_help_with': return 'Need Help With';
+      case 'pronouns': return 'Pronouns';
       default: return '';
     }
   }, []);
 
   const handleLabelClick = useCallback(async (
-    currentIndex: number, 
-    setter: React.Dispatch<React.SetStateAction<number>>,
-    visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
-    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'
+    currentVisibility: ("public" | "friends" | "organisation" | "private")[],
+    visibilitySetter: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>,
+    fieldName: keyof ProfileDataJsonb
   ) => {
+    const currentIndex = getIndexFromVisibility(currentVisibility);
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
-    const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
-    
-    setter(nextIndex);
+    const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ("public" | "friends" | "organisation" | "private")[];
+
     visibilitySetter(newVisibility);
 
     if (areToastsEnabled) {
@@ -138,8 +140,11 @@ const Profile = () => {
     }
 
     // Update profile context immediately
-    await updateProfile({ [fieldName]: newVisibility });
-  }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus, updateProfile]);
+    const updatePayload: ProfileUpdate = {
+      [fieldName]: { value: profile?.profile_data[fieldName]?.value || null, visibility: newVisibility }
+    };
+    await updateProfile(updatePayload);
+  }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus, updateProfile, profile]);
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
@@ -156,7 +161,7 @@ const Profile = () => {
     isLongPress.current = false;
   };
 
-  const handleFocusPreferenceLongPress = () => { // Changed from handleSociabilityLongPress
+  const handleFocusPreferenceLongPress = () => {
     if (isLongPress.current) {
       navigate('/profile#social-preferences');
     }
@@ -202,34 +207,33 @@ const Profile = () => {
     setLongPressedFriendId(null);
   }, [areToastsEnabled]);
 
-  // NEW: Handle pronoun cycling
   const handlePronounCycle = useCallback(async () => {
     const nextIndex = (currentPronounIndex + 1) % PRONOUN_OPTIONS.length;
     const newPronoun = PRONOUN_OPTIONS[nextIndex];
     setCurrentPronounIndex(nextIndex);
-    setPronouns(newPronoun === "" ? null : newPronoun); // Set to null if blank
+    setPronouns(newPronoun === "" ? null : newPronoun);
 
     if (areToastsEnabled) {
       toast.info("Pronouns Updated", {
         description: newPronoun === "" ? "Your pronouns are now hidden." : `Your pronouns are set to '${newPronoun}'.`,
       });
     }
-    await updateProfile({ pronouns: newPronoun === "" ? null : newPronoun });
+    await updateProfile({ pronouns: { value: newPronoun === "" ? null : newPronoun, visibility: ['public'] } }); // Assuming pronouns are always public
   }, [currentPronounIndex, setPronouns, areToastsEnabled, updateProfile]);
 
   // Effect to initialize originalValues and color indices from context states
   useEffect(() => {
-    if (!loading) { // Ensure profile data is loaded from context
+    if (!loading && profile) {
       setOriginalValues({
         firstName: localFirstName || "You",
         bio: bio || "",
         intention: intention || "",
         canHelpWith: canHelpWith || "",
         needHelpWith: needHelpWith || "",
-        focusPreference: focusPreference || 50, // Changed from sociability
+        focusPreference: focusPreference || 50,
         organization: organization || "",
         linkedinUrl: linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : "",
-        hostCode: hostCode || "", // This line is important
+        hostCode: hostCode || "",
         bioVisibility: bioVisibility || ['public'],
         intentionVisibility: intentionVisibility || ['public'],
         linkedinVisibility: linkedinVisibility || ['public'],
@@ -247,10 +251,9 @@ const Profile = () => {
       setHasChanges(false);
     }
   }, [
-    loading, localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
+    loading, profile, localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, pronouns
   ]);
-
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -267,16 +270,16 @@ const Profile = () => {
   }, [isEditingHostCode]);
 
   const checkForChanges = useCallback(() => {
-    const currentLinkedinUsername = linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") 
-                                    ? linkedinUrl.substring("https://www.linkedin.com/in/".length) 
+    const currentLinkedinUsername = linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/")
+                                    ? linkedinUrl.substring("https://www.linkedin.com/in/".length)
                                     : linkedinUrl) : "";
 
     const changed = localFirstName !== originalValues.firstName ||
-                   bio !== originalValues.bio || 
-                   intention !== originalValues.intention || 
+                   bio !== originalValues.bio ||
+                   intention !== originalValues.intention ||
                    canHelpWith !== originalValues.canHelpWith ||
                    needHelpWith !== originalValues.needHelpWith ||
-                   focusPreference !== originalValues.focusPreference || // Changed from sociability
+                   focusPreference !== originalValues.focusPreference ||
                    organization !== originalValues.organization ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
                    hostCode !== originalValues.hostCode ||
@@ -328,7 +331,6 @@ const Profile = () => {
           description: "Host code must be between 4 and 20 characters.",
         });
       }
-      // Removed: setHostCode(originalValues.hostCode); // Revert to original
       return;
     }
     await updateProfile({ host_code: trimmedCode }, "Host Code Saved!");
@@ -361,7 +363,7 @@ const Profile = () => {
 
   const handleSave = async () => {
     const nameToSave = localFirstName.trim() === "" ? "You" : localFirstName.trim();
-    
+
     const trimmedHostCode = hostCode?.trim() || "";
     if (trimmedHostCode.length < 4 || trimmedHostCode.length > 20) {
       if (areToastsEnabled) {
@@ -372,39 +374,23 @@ const Profile = () => {
       return;
     }
 
-    const dataToUpdate = {
+    const dataToUpdate: ProfileUpdate = {
       first_name: nameToSave,
-      bio,
-      intention,
-      can_help_with: canHelpWith,
-      need_help_with: needHelpWith,
-      focus_preference: focusPreference, // Changed from sociability
+      focus_preference: focusPreference,
       organization: organization?.trim() === "" ? null : organization?.trim(),
-      linkedin_url: (linkedinUrl === null || linkedinUrl.trim() === "") ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`,
       host_code: trimmedHostCode,
-      bio_visibility: bioVisibility,
-      intention_visibility: intentionVisibility, // Fixed typo here
-      linkedin_visibility: linkedinVisibility,
-      can_help_with_visibility: canHelpWithVisibility,
-      need_help_with_visibility: needHelpWithVisibility,
-      pronouns: pronouns,
-      updated_at: new Date().toISOString(),
+      // Update profile_data fields
+      bio: { value: bio, visibility: bioVisibility },
+      intention: { value: intention, visibility: intentionVisibility },
+      linkedin_url: { value: (linkedinUrl === null || linkedinUrl.trim() === "") ? null : `https://www.linkedin.com/in/${linkedinUrl.trim()}`, visibility: linkedinVisibility },
+      can_help_with: { value: canHelpWith, visibility: canHelpWithVisibility },
+      need_help_with: { value: needHelpWith, visibility: needHelpWithVisibility },
+      pronouns: { value: pronouns, visibility: ['public'] }, // Assuming pronouns are always public
     };
 
     await updateProfile(dataToUpdate);
     setHasChanges(false);
   };
-
-  // Removed handleLogout as there's no explicit logout anymore
-  // const handleLogout = async () => {
-  //   logout();
-  //   if (areToastsEnabled) {
-  //     toast.success("Logged Out", {
-  //       description: "You have been successfully logged out.",
-  //     });
-  //   }
-  //   navigate('/');
-  // };
 
   const handleCopyHostCode = useCallback(async () => {
     try {
@@ -433,7 +419,7 @@ const Profile = () => {
     setIntention(originalValues.intention);
     setCanHelpWith(originalValues.canHelpWith);
     setNeedHelpWith(originalValues.needHelpWith);
-    setFocusPreference(originalValues.focusPreference); // Changed from sociability
+    setFocusPreference(originalValues.focusPreference);
     setOrganization(originalValues.organization);
     setLinkedinUrl(originalValues.linkedinUrl);
     setHostCode(originalValues.hostCode);
@@ -451,14 +437,14 @@ const Profile = () => {
     setLinkedinLabelColorIndex(getIndexFromVisibility(originalValues.linkedinVisibility));
     setCanHelpWithLabelColorIndex(getIndexFromVisibility(originalValues.canHelpWithVisibility));
     setNeedHelpWithLabelColorIndex(getIndexFromVisibility(originalValues.needHelpWithVisibility));
-    
+
     setIsEditingFirstName(false);
     setIsEditingHostCode(false);
     setIsCopied(false);
     setHasChanges(false);
     setLongPressedFriendId(null);
   }, [
-    originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference, // Changed from sociability
+    originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference,
     setOrganization, setLinkedinUrl, setHostCode, setPronouns, setCurrentPronounIndex,
     setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility,
     setBioLabelColorIndex, setIntentionLabelColorIndex, setLinkedinLabelColorIndex, setCanHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex
@@ -476,17 +462,16 @@ const Profile = () => {
     unblockUser(userName);
   };
 
-  // Handler for the Key icon tooltip click
   const handleKeyTooltipClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent parent clicks
+    e.stopPropagation();
     setIsKeyTooltipOpen(true);
     if (keyTooltipTimeoutRef.current) {
       clearTimeout(keyTooltipTimeoutRef.current);
     }
     keyTooltipTimeoutRef.current = setTimeout(() => {
       setIsKeyTooltipOpen(false);
-      keyTooltipTimeoutRef.current = null; // Clear the ref after closing
-    }, 2000); // 2 seconds
+      keyTooltipTimeoutRef.current = null;
+    }, 2000);
   };
 
   if (loading) {
@@ -497,15 +482,13 @@ const Profile = () => {
     );
   }
 
-  console.log("Rendering Profile. Host Code:", hostCode); // Add this log
-
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
       <div className="mb-6 flex justify-between items-center relative">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
         {hasChanges && (
           <div className="absolute right-0">
-            <Button 
+            <Button
               onClick={handleSave}
               disabled={loading}
               className="shadow-lg"
@@ -518,9 +501,9 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
             <CardHeader className="relative">
-              <CardTitle 
+              <CardTitle
                 className="flex items-center gap-1 cursor-pointer select-none"
-                onClick={handlePronounCycle} // Trigger pronoun cycle on About click
+                onClick={handlePronounCycle}
               >
                 <span>About</span>
                 {isEditingFirstName ? (
@@ -537,33 +520,31 @@ const Profile = () => {
                   <span
                     className={cn(
                       "cursor-pointer select-none",
-                      localFirstName === "You" && "animate-fade-in-out" // Apply animation if default
+                      localFirstName === "You" && "animate-fade-in-out"
                     )}
-                    onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }} // Prevent pronoun cycle when editing name
+                    onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
                   >
                     {localFirstName || "You"}
                   </span>
                 )}
-                {pronouns && ( // Display pronouns if not blank
+                {pronouns && (
                   <span className="text-sm text-muted-foreground ml-1">({pronouns})</span>
                 )}
               </CardTitle>
-              {/* Removed the dedicated pronoun selector div */}
                 <Tooltip
                   open={isKeyTooltipOpen}
                   onOpenChange={(openState) => {
-                    // Only allow closing if our click-timer is not active
                     if (!openState && keyTooltipTimeoutRef.current) {
                       return;
                     }
                     setIsKeyTooltipOpen(openState);
                   }}
-                  delayDuration={0} // No delay on hover
+                  delayDuration={0}
                 >
                   <TooltipTrigger asChild>
-                    <Key 
-                      className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help" 
-                      onClick={handleKeyTooltipClick} // Attach click handler
+                    <Key
+                      className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help"
+                      onClick={handleKeyTooltipClick}
                     />
                   </TooltipTrigger>
                   <TooltipContent className="p-2 select-none">
@@ -595,10 +576,10 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label 
-                  htmlFor="bio" 
-                  onClick={() => handleLabelClick(bioLabelColorIndex, setBioLabelColorIndex, setBioVisibility, 'bio_visibility')} 
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(bioLabelColorIndex))}
+                <Label
+                  htmlFor="bio"
+                  onClick={() => handleLabelClick(bioVisibility, setBioVisibility, 'bio')}
+                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibility)))}
                 >
                   Brief Bio
                 </Label>
@@ -610,12 +591,12 @@ const Profile = () => {
                   className="mt-2"
                 />
               </div>
-              
+
               <div>
-                <Label 
-                  htmlFor="intention" 
-                  onClick={() => handleLabelClick(intentionLabelColorIndex, setIntentionLabelColorIndex, setIntentionVisibility, 'intention_visibility')} 
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(intentionLabelColorIndex))}
+                <Label
+                  htmlFor="intention"
+                  onClick={() => handleLabelClick(intentionVisibility, setIntentionVisibility, 'intention')}
+                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibility)))}
                 >
                   Statement of Intention
                 </Label>
@@ -628,12 +609,11 @@ const Profile = () => {
                 />
               </div>
 
-              {/* NEW: I can help with */}
               <div>
-                <Label 
-                  htmlFor="can-help-with" 
-                  onClick={() => handleLabelClick(canHelpWithLabelColorIndex, setCanHelpWithLabelColorIndex, setCanHelpWithVisibility, 'can_help_with_visibility')} 
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(canHelpWithLabelColorIndex))}
+                <Label
+                  htmlFor="can-help-with"
+                  onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
+                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
                 >
                   <Handshake size={16} className="inline-block mr-1" /> I can help with
                 </Label>
@@ -646,12 +626,11 @@ const Profile = () => {
                 />
               </div>
 
-              {/* NEW: I need help with */}
               <div>
-                <Label 
-                  htmlFor="need-help-with" 
-                  onClick={() => handleLabelClick(needHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex, setNeedHelpWithVisibility, 'need_help_with_visibility')} 
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(needHelpWithLabelColorIndex))}
+                <Label
+                  htmlFor="need-help-with"
+                  onClick={() => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with')}
+                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibility)))}
                 >
                   <HelpCircle size={16} className="inline-block mr-1" /> I need help with
                 </Label>
@@ -665,10 +644,10 @@ const Profile = () => {
               </div>
 
               <div>
-                <Label 
-                  htmlFor="linkedin-username" 
-                  onClick={() => handleLabelClick(linkedinLabelColorIndex, setLinkedinLabelColorIndex, setLinkedinVisibility, 'linkedin_visibility')} 
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(linkedinLabelColorIndex))}
+                <Label
+                  htmlFor="linkedin-username"
+                  onClick={() => handleLabelClick(linkedinVisibility, setLinkedinVisibility, 'linkedin_url')}
+                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibility)))}
                 >
                   LinkedIn Handle
                 </Label>
@@ -685,10 +664,10 @@ const Profile = () => {
                     className="flex-1 border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-l-none"
                   />
                   {linkedinUrl && (
-                    <a 
+                    <a
                       href={`https://www.linkedin.com/in/${linkedinUrl}`}
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 transition-colors p-2"
                       aria-label="Visit LinkedIn Profile"
                     >
@@ -716,22 +695,21 @@ const Profile = () => {
                   </div>
                   <div className="relative group">
                     <Slider
-                      value={[focusPreference]} // Changed from sociability
-                      onValueChange={(val) => setFocusPreference(val[0])} // Changed from sociability
+                      value={[focusPreference]}
+                      onValueChange={(val) => setFocusPreference(val[0])}
                       max={100}
                       min={0}
                       step={1}
                       className="w-full"
-                      rangeColor={getSociabilityGradientColor(focusPreference)} // Changed from sociability
+                      rangeColor={getSociabilityGradientColor(focusPreference)}
                     />
                   </div>
-                  {/* REMOVED: Visual bar for sociability */}
-                  <div 
+                  <div
                     className="text-center mt-3 text-sm text-muted-foreground cursor-pointer select-none"
-                    onMouseDown={() => handleLongPressStart(handleFocusPreferenceLongPress)} // Changed from handleSociabilityLongPress
+                    onMouseDown={() => handleLongPressStart(handleFocusPreferenceLongPress)}
                     onMouseUp={handleLongPressEnd}
                     onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(handleFocusPreferenceLongPress)} // Changed from handleSociabilityLongPress
+                    onTouchStart={() => handleLongPressStart(handleFocusPreferenceLongPress)}
                     onTouchEnd={handleLongPressEnd}
                     onClick={() => {
                       if (!isLongPress.current) {
@@ -749,7 +727,6 @@ const Profile = () => {
 
               <div className="border-t border-border pt-6 mt-6">
                 <h3 className="text-lg font-semibold mb-2">
-                  {/* Removed TooltipProvider here */}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-help">Hosting Code</span>
@@ -829,8 +806,8 @@ const Profile = () => {
             <CardContent className="space-y-3">
               {friends.length > 0 ? (
                 friends.map((friendId) => (
-                  <div 
-                    key={friendId} 
+                  <div
+                    key={friendId}
                     className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80 relative"
                     onClick={(e) => handleFriendClick(friendId, friendId, e)}
                     onMouseDown={() => handleFriendLongPressStart(friendId)}
@@ -841,9 +818,9 @@ const Profile = () => {
                   >
                     <p className="font-medium">{friendId}</p>
                     {longPressedFriendId === friendId && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:bg-red-100"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -865,7 +842,7 @@ const Profile = () => {
 
         {hasChanges && (
           <div className="fixed bottom-4 right-4 z-50 transition-opacity duration-300 opacity-100 pointer-events-auto">
-            <Button 
+            <Button
               onClick={handleSave}
               disabled={loading}
               className="shadow-lg"
@@ -874,10 +851,10 @@ const Profile = () => {
             </Button>
           </div>
         )}
-      
+
       {hasChanges && (
         <div className="fixed bottom-4 left-4 z-50">
-          <Button 
+          <Button
             onClick={handleCancel}
             className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel/80"
           >

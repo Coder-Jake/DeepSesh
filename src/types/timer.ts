@@ -1,4 +1,5 @@
 import { DAYS_OF_WEEK } from "@/lib/constants";
+import { Profile } from "@/contexts/ProfileContext"; // NEW: Import Profile from ProfileContext
 
 // Define the structure for a single timer item within a schedule
 export type ScheduledTimer = {
@@ -86,7 +87,7 @@ export interface ParticipantSessionData {
   userName: string;
   joinTime: number; // Unix timestamp
   role: 'host' | 'coworker';
-  focusPreference?: number; // Changed from sociability
+  focusPreference?: number;
   intention?: string;
   bio?: string;
 }
@@ -188,16 +189,16 @@ export type TimerContextType = {
   setCurrentSessionRole: React.Dispatch<React.SetStateAction<'host' | 'coworker' | null>>;
   currentSessionHostName: string | null;
   setCurrentSessionHostName: React.Dispatch<React.SetStateAction<string | null>>;
-  currentSessionOtherParticipants: ParticipantSessionData[]; // Changed to ParticipantSessionData[]
-  setCurrentSessionOtherParticipants: React.Dispatch<React.SetStateAction<ParticipantSessionData[]>>; // Changed to ParticipantSessionData[]
-  currentSessionParticipantsData: ParticipantSessionData[]; // NEW: Added to TimerContextType
-  setCurrentSessionParticipantsData: React.Dispatch<React.SetStateAction<ParticipantSessionData[]>>; // NEW: Added to TimerContextType
+  currentSessionOtherParticipants: ParticipantSessionData[];
+  setCurrentSessionOtherParticipants: React.Dispatch<React.SetStateAction<ParticipantSessionData[]>>;
+  currentSessionParticipantsData: ParticipantSessionData[];
+  setCurrentSessionParticipantsData: React.Dispatch<React.SetStateAction<ParticipantSessionData[]>>;
   allParticipantsToDisplay: string[];
 
   isSchedulePending: boolean;
-  setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsSchedulePending
-  isTimeLeftManagedBySession: boolean; // NEW: Added isTimeLeftManagedBySession
-  setIsTimeLeftManagedBySession: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsTimeLeftManagedBySession
+  setIsSchedulePending: React.Dispatch<React.SetStateAction<boolean>>;
+  isTimeLeftManagedBySession: boolean;
+  setIsTimeLeftManagedBySession: React.Dispatch<React.SetStateAction<boolean>>;
 
   shouldPlayEndSound: boolean;
   setShouldPlayEndSound: React.Dispatch<React.SetStateAction<boolean>>;
@@ -251,21 +252,21 @@ export type TimerContextType = {
   setStartStopNotifications: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   playSound: () => void;
   triggerVibration: () => void;
-  showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'all'; // MODIFIED: Changed 'yes' to 'all'
-  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'all'>>; // MODIFIED: Changed 'yes' to 'all'
-  hasWonPrize: boolean; // NEW: Added hasWonPrize
-  setHasWonPrize: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setHasWonPrize
-  getLocation: () => Promise<{ latitude: number | null; longitude: number | null }>; // NEW: Added getLocation
-  geolocationPermissionStatus: PermissionState; // NEW: Added geolocationPermissionStatus
-  isDiscoveryActivated: boolean; // NEW: Added isDiscoveryActivated
-  setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Added setIsDiscoveryActivated
-  activeSessionRecordId: string | null; // NEW: Expose activeSessionRecordId
-  setActiveSessionRecordId: React.Dispatch<React.SetStateAction<string | null>>; // NEW: Expose setActiveSessionRecordId
-  joinSessionAsCoworker: (sessionId: string, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>; // NEW: Add joinSessionAsCoworker
-  leaveSession: () => Promise<void>; // NEW: Add leaveSession
-  transferHostRole: () => Promise<void>; // NEW: Add transferHostRole
-  stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>; // NEW: Add stopTimer
-  resetSessionStates: () => void; // NEW: Add resetSessionStates
+  showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'all';
+  setShowSessionsWhileActive: React.Dispatch<React.SetStateAction<'hidden' | 'nearby' | 'friends' | 'all'>>;
+  hasWonPrize: boolean;
+  setHasWonPrize: React.Dispatch<React.SetStateAction<boolean>>;
+  getLocation: () => Promise<{ latitude: number | null; longitude: number | null }>;
+  geolocationPermissionStatus: PermissionState;
+  isDiscoveryActivated: boolean;
+  setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>;
+  activeSessionRecordId: string | null;
+  setActiveSessionRecordId: React.Dispatch<React.SetStateAction<string | null>>;
+  joinSessionAsCoworker: (sessionId: string, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>;
+  leaveSession: () => Promise<void>;
+  transferHostRole: () => Promise<void>;
+  stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>;
+  resetSessionStates: () => void;
 };
 
 // Define the structure for a saved session
@@ -280,5 +281,5 @@ export interface SavedSession {
   startTime: number; // Timestamp of when the session started
   endTime: number; // Timestamp of when the session ended
   asks: ActiveAskItem[]; // Store the state of asks at the end of the session
-  participants: Array<{ id: string; name: string; focusPreference: number; role: 'host' | 'coworker'; intention?: string; bio?: string }>; // Changed from sociability
+  participants: Array<{ id: string; name: string; focusPreference: number; role: 'host' | 'coworker'; intention?: string; bio?: string }>;
 }

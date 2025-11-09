@@ -6,32 +6,33 @@ import { Button } from '@/components/ui/button';
 import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus, Handshake, HelpCircle } from 'lucide-react';
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
-import { Profile } from '@/contexts/ProfileContext';
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from '@/lib/utils'; // NEW: Import getSociabilityGradientColor
+import { Profile, ProfileDataJsonb } from '@/contexts/ProfileContext'; // NEW: Import ProfileDataJsonb
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const ProfilePopUpCard: React.FC = () => {
   const { isPopUpOpen, targetUserId, targetUserName, popUpPosition, toggleProfilePopUp, closeProfilePopUp, setIsBlockingClicks } = useProfilePopUp();
-  const { 
-    getPublicProfile, 
-    profile: currentUserProfile, 
-    bioVisibility, setBioVisibility, 
-    intentionVisibility, setIntentionVisibility, 
-    linkedinVisibility, setLinkedinVisibility,
-    canHelpWithVisibility, setCanHelpWithVisibility,
-    needHelpWithVisibility, setNeedHelpWithVisibility,
-    pronouns: currentUserPronouns,
+  const {
+    getPublicProfile,
+    profile: currentUserProfile,
     // NEW: Individual profile states from context for current user's profile
-    bio: currentUserBio,
-    intention: currentUserIntention,
-    canHelpWith: currentUserCanHelpWith,
-    needHelpWith: currentUserNeedHelpWith,
-    focusPreference: currentUserFocusPreference, // Changed from sociability
+    bio,
+    intention,
+    linkedinUrl,
+    canHelpWith,
+    needHelpWith,
+    focusPreference: currentUserFocusPreference,
     organization: currentUserOrganization,
-    linkedinUrl: currentUserLinkedinUrl,
-    friendStatuses, // NEW: Import friendStatuses directly
+    pronouns: currentUserPronouns,
+    // Visibility states from context
+    bioVisibility,
+    intentionVisibility,
+    linkedinVisibility,
+    canHelpWithVisibility,
+    needHelpWithVisibility,
+    friendStatuses,
   } = useProfile();
   const { areToastsEnabled } = useTimer();
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
@@ -42,7 +43,7 @@ const ProfilePopUpCard: React.FC = () => {
 
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const getDisplayVisibilityStatus = useCallback((visibility: ('public' | 'friends' | 'organisation' | 'private')[]): string => {
+  const getDisplayVisibilityStatus = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[]): string => {
     if (visibility.includes('private')) return 'private';
     if (visibility.includes('public')) return 'public';
     if (visibility.includes('friends') && visibility.includes('organisation')) return 'friends & organisation only';
@@ -51,28 +52,29 @@ const ProfilePopUpCard: React.FC = () => {
     return 'public';
   }, []);
 
-  const getDisplayFieldName = useCallback((fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'): string => {
+  const getDisplayFieldName = useCallback((fieldName: keyof ProfileDataJsonb): string => {
     switch (fieldName) {
-      case 'bio_visibility': return 'Bio';
-      case 'intention_visibility': return 'Intention';
-      case 'linkedin_visibility': return 'LinkedIn';
-      case 'can_help_with_visibility': return 'Can Help With';
-      case 'need_help_with_visibility': return 'Need Help With';
+      case 'bio': return 'Bio';
+      case 'intention': return 'Intention';
+      case 'linkedin_url': return 'LinkedIn';
+      case 'can_help_with': return 'Can Help With';
+      case 'need_help_with': return 'Need Help With';
+      case 'pronouns': return 'Pronouns';
       default: return '';
     }
   }, []);
 
   const handleLabelClick = useCallback(async (
-    currentVisibility: ('public' | 'friends' | 'organisation' | 'private')[], 
-    visibilitySetter: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>,
-    fieldName: 'bio_visibility' | 'intention_visibility' | 'linkedin_visibility' | 'can_help_with_visibility' | 'need_help_with_visibility'
+    currentVisibility: ("public" | "friends" | "organisation" | "private")[],
+    visibilitySetter: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>,
+    fieldName: keyof ProfileDataJsonb
   ) => {
     const currentIndex = getIndexFromVisibility(currentVisibility);
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
-    const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ('public' | 'friends' | 'organisation' | 'private')[];
-    
+    const newVisibility = VISIBILITY_OPTIONS_MAP[nextIndex] as ("public" | "friends" | "organisation" | "private")[];
+
     visibilitySetter(newVisibility);
-    
+
     if (areToastsEnabled) {
       const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
       toast.success("Privacy Setting Changed", {
@@ -86,24 +88,22 @@ const ProfilePopUpCard: React.FC = () => {
       if (targetUserId) {
         setLoading(true);
         setError(null);
-        
+
         if (currentUserProfile && targetUserId === currentUserProfile.id) {
           // Use individual states from context for current user's profile
           setTargetProfile({
             ...currentUserProfile,
-            bio: currentUserBio,
-            intention: currentUserIntention,
-            linkedin_url: currentUserLinkedinUrl,
-            can_help_with: currentUserCanHelpWith,
-            need_help_with: currentUserNeedHelpWith,
-            focus_preference: currentUserFocusPreference, // Changed from sociability
+            first_name: currentUserProfile.first_name,
             organization: currentUserOrganization,
-            pronouns: currentUserPronouns,
-            bio_visibility: bioVisibility,
-                        intention_visibility: intentionVisibility,
-            linkedin_visibility: linkedinVisibility,
-            can_help_with_visibility: canHelpWithVisibility,
-            need_help_with_visibility: needHelpWithVisibility,
+            focus_preference: currentUserFocusPreference,
+            profile_data: {
+              bio: { value: bio, visibility: bioVisibility },
+              intention: { value: intention, visibility: intentionVisibility },
+              linkedin_url: { value: linkedinUrl, visibility: linkedinVisibility },
+              can_help_with: { value: canHelpWith, visibility: canHelpWithVisibility },
+              need_help_with: { value: needHelpWith, visibility: needHelpWithVisibility },
+              pronouns: { value: currentUserPronouns, visibility: ['public'] },
+            }
           });
           setLoading(false);
         } else {
@@ -128,10 +128,10 @@ const ProfilePopUpCard: React.FC = () => {
       setError(null);
     }
   }, [
-    isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile, 
-    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, 
-    currentUserPronouns, currentUserBio, currentUserIntention, currentUserCanHelpWith, currentUserNeedHelpWith,
-    currentUserFocusPreference, currentUserOrganization, currentUserLinkedinUrl // Changed from sociability
+    isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile,
+    bio, intention, linkedinUrl, canHelpWith, needHelpWith, currentUserPronouns,
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
+    currentUserFocusPreference, currentUserOrganization
   ]);
 
   useLayoutEffect(() => {
@@ -139,18 +139,17 @@ const ProfilePopUpCard: React.FC = () => {
       const cardRect = cardRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const margin = 5; // Reduced margin to 5px
+      const margin = 5;
 
       let newX;
       if (isMobile) {
-        newX = viewportWidth - cardRect.width - margin; // Flush right on mobile
+        newX = viewportWidth - cardRect.width - margin;
       } else {
-        newX = popUpPosition.x + 30; // Increased offset to move it further right on desktop
+        newX = popUpPosition.x + 30;
       }
-      
+
       let newY = popUpPosition.y + 10;
 
-      // Ensure it doesn't go off-screen
       if (newX + cardRect.width + margin > viewportWidth) {
         newX = viewportWidth - cardRect.width - margin;
       }
@@ -172,10 +171,10 @@ const ProfilePopUpCard: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
         closeProfilePopUp();
-        setIsBlockingClicks(true); // Start blocking clicks
+        setIsBlockingClicks(true);
         setTimeout(() => {
-          setIsBlockingClicks(false); // Stop blocking clicks after a short delay
-        }, 100); 
+          setIsBlockingClicks(false);
+        }, 100);
       }
     };
 
@@ -214,33 +213,30 @@ const ProfilePopUpCard: React.FC = () => {
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
     const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
-    // Use the directly imported friendStatuses
     const currentFriendStatus = currentUserProfile?.id && friendStatuses[targetProfile.id] ? friendStatuses[targetProfile.id] : 'none';
 
-    const isFieldVisible = (fieldVisibility: ('public' | 'friends' | 'organisation' | 'private')[] | null | undefined) => {
+    const isFieldVisible = (field: ProfileDataJsonb[keyof ProfileDataJsonb] | null | undefined) => {
       if (isCurrentUserProfile) return true;
-      if (!fieldVisibility || fieldVisibility.includes('private')) return false;
-      
+      if (!field || !field.value || field.visibility.includes('private')) return false;
+
       const isFriend = currentFriendStatus === 'friends';
       const isOrgMember = currentUserProfile?.organization && targetProfile.organization && currentUserProfile.organization === targetProfile.organization;
 
       return (
-        fieldVisibility.includes('public') ||
-        (fieldVisibility.includes('friends') && isFriend) ||
-        (fieldVisibility.includes('organisation') && isOrgMember)
+        field.visibility.includes('public') ||
+        (field.visibility.includes('friends') && isFriend) ||
+        (field.visibility.includes('organisation') && isOrgMember)
       );
     };
 
-    // Check if all fields are private for non-current user
-    const allFieldsPrivate = 
-      (!targetProfile.bio || !isFieldVisible(targetProfile.bio_visibility)) &&
-      (!targetProfile.intention || !isFieldVisible(targetProfile.intention_visibility)) &&
-      (!targetProfile.can_help_with || !isFieldVisible(targetProfile.can_help_with_visibility)) &&
-      (!targetProfile.need_help_with || !isFieldVisible(targetProfile.need_help_with_visibility)) &&
-      (!targetProfile.linkedin_url || !isFieldVisible(targetProfile.linkedin_visibility));
+    const allFieldsPrivate =
+      (!targetProfile.profile_data.bio?.value || !isFieldVisible(targetProfile.profile_data.bio)) &&
+      (!targetProfile.profile_data.intention?.value || !isFieldVisible(targetProfile.profile_data.intention)) &&
+      (!targetProfile.profile_data.can_help_with?.value || !isFieldVisible(targetProfile.profile_data.can_help_with)) &&
+      (!targetProfile.profile_data.need_help_with?.value || !isFieldVisible(targetProfile.profile_data.need_help_with)) &&
+      (!targetProfile.profile_data.linkedin_url?.value || !isFieldVisible(targetProfile.profile_data.linkedin_url));
 
-    // MODIFIED: Only show "This profile is private" if ALL fields (including focusPreference) are private/null
-    if (!isCurrentUserProfile && allFieldsPrivate && targetProfile.focus_preference === null) { // Changed from sociability
+    if (!isCurrentUserProfile && allFieldsPrivate && targetProfile.focus_preference === null) {
       return (
         <div className="text-center space-y-2">
           <User className="h-8 w-8 text-muted-foreground mx-auto" />
@@ -250,21 +246,22 @@ const ProfilePopUpCard: React.FC = () => {
       );
     }
 
-    const currentBioVisibility = isCurrentUserProfile ? bioVisibility : (targetProfile.bio_visibility || ['public']);
-    const currentIntentionVisibility = isCurrentUserProfile ? intentionVisibility : (targetProfile.intention_visibility || ['public']);
-    const currentCanHelpWithVisibility = isCurrentUserProfile ? canHelpWithVisibility : (targetProfile.can_help_with_visibility || ['public']);
-    const currentNeedHelpWithVisibility = isCurrentUserProfile ? needHelpWithVisibility : (targetProfile.need_help_with_visibility || ['public']);
-    const currentLinkedinVisibility = isCurrentUserProfile ? linkedinVisibility : (targetProfile.linkedin_visibility || ['public']);
+    const targetBio = targetProfile.profile_data.bio;
+    const targetIntention = targetProfile.profile_data.intention;
+    const targetCanHelpWith = targetProfile.profile_data.can_help_with;
+    const targetNeedHelpWith = targetProfile.profile_data.need_help_with;
+    const targetLinkedinUrl = targetProfile.profile_data.linkedin_url;
+    const targetPronouns = targetProfile.profile_data.pronouns;
 
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <User className="h-6 w-6 text-primary" />
           <h3 className="font-bold text-xl">{displayName}</h3>
-          {targetProfile.pronouns && ( // Display pronouns if available
-            <span className="text-sm text-muted-foreground ml-1">({targetProfile.pronouns})</span>
+          {targetPronouns?.value && isFieldVisible(targetPronouns) && (
+            <span className="text-sm text-muted-foreground ml-1">({targetPronouns.value})</span>
           )}
-          
+
           {!isCurrentUserProfile && (
             <Button
               variant="ghost"
@@ -277,12 +274,8 @@ const ProfilePopUpCard: React.FC = () => {
               )}
               onClick={() => {
                 if (currentFriendStatus === 'none') {
-                  // Assuming sendFriendRequest is available in useProfile
-                  // sendFriendRequest(targetProfile.id); 
                   if (areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
                 } else if (currentFriendStatus === 'friends') {
-                  // Assuming removeFriend is available in useProfile
-                  // removeFriend(targetProfile.id);
                   if (areToastsEnabled) toast.info("Remove friend functionality not implemented in demo.");
                 }
               }}
@@ -301,89 +294,86 @@ const ProfilePopUpCard: React.FC = () => {
           )}
         </div>
 
-        {targetProfile.bio && isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
+        {targetBio?.value && isFieldVisible(targetBio) && (
           <div>
-            <h4 
+            <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
                 isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentBioVisibility))
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetBio.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentBioVisibility, setBioVisibility, 'bio_visibility') : undefined}
+              onClick={isCurrentUserProfile ? () => handleLabelClick(bioVisibility, setBioVisibility, 'bio') : undefined}
             >
               <MessageSquare size={16} /> Bio
             </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.bio}</p>
+            <p className="text-sm text-foreground mt-1">{targetBio.value}</p>
           </div>
         )}
 
-        {targetProfile.intention && isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
+        {targetIntention?.value && isFieldVisible(targetIntention) && (
           <div>
-            <h4 
+            <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
                 isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentIntentionVisibility))
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetIntention.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentIntentionVisibility, setIntentionVisibility, 'intention_visibility') : undefined}
+              onClick={isCurrentUserProfile ? () => handleLabelClick(intentionVisibility, setIntentionVisibility, 'intention') : undefined}
             >
               <Lightbulb size={16} /> Intention
             </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.intention}</p>
+            <p className="text-sm text-foreground mt-1">{targetIntention.value}</p>
           </div>
         )}
 
-        {/* NEW: Can Help With */}
-        {targetProfile.can_help_with && isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
+        {targetCanHelpWith?.value && isFieldVisible(targetCanHelpWith) && (
           <div>
-            <h4 
+            <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
                 isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentCanHelpWithVisibility))
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetCanHelpWith.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentCanHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with_visibility') : undefined}
+              onClick={isCurrentUserProfile ? () => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with') : undefined}
             >
               <Handshake size={16} /> Can Help With
             </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.can_help_with}</p>
+            <p className="text-sm text-foreground mt-1">{targetCanHelpWith.value}</p>
           </div>
         )}
 
-        {/* NEW: Need Help With */}
-        {targetProfile.need_help_with && isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
+        {targetNeedHelpWith?.value && isFieldVisible(targetNeedHelpWith) && (
           <div>
-            <h4 
+            <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
                 isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentNeedHelpWithVisibility))
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetNeedHelpWith.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentNeedHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with_visibility') : undefined}
+              onClick={isCurrentUserProfile ? () => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with') : undefined}
             >
               <HelpCircle size={16} /> Need Help With
             </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.need_help_with}</p>
+            <p className="text-sm text-foreground mt-1">{targetNeedHelpWith.value}</p>
           </div>
         )}
 
-        {/* MODIFIED: Always show focusPreference if it exists, regardless of other field visibilities */}
-        {targetProfile.focus_preference !== null && ( // Changed from sociability
+        {targetProfile.focus_preference !== null && (
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Users size={16} /> Focus Preference
             </h4>
             <div className="w-full bg-secondary rounded-full h-2 mt-1">
               <div
-                className="h-2 rounded-full" 
-                style={{ width: `${targetProfile.focus_preference}%`, backgroundColor: getSociabilityGradientColor(targetProfile.focus_preference) }} // Changed from sociability
+                className="h-2 rounded-full"
+                style={{ width: `${targetProfile.focus_preference}%`, backgroundColor: getSociabilityGradientColor(targetProfile.focus_preference) }}
               ></div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 text-right">{targetProfile.focus_preference}%</p> {/* Changed from sociability */}
+            <p className="text-xs text-muted-foreground mt-1 text-right">{targetProfile.focus_preference}%</p>
           </div>
         )}
 
-        {targetProfile.organization && (isFieldVisible(targetProfile.bio_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.intention_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.can_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) || isFieldVisible(targetProfile.need_help_with_visibility as ('public' | 'friends' | 'organisation' | 'private')[])) && (
+        {targetProfile.organization && (isFieldVisible(targetBio) || isFieldVisible(targetIntention) || isFieldVisible(targetLinkedinUrl) || isFieldVisible(targetCanHelpWith) || isFieldVisible(targetNeedHelpWith)) && (
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 size={16} /> Organization
@@ -392,25 +382,25 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.linkedin_url && isFieldVisible(targetProfile.linkedin_visibility as ('public' | 'friends' | 'organisation' | 'private')[]) && (
+        {targetLinkedinUrl?.value && isFieldVisible(targetLinkedinUrl) && (
           <div>
-            <h4 
+            <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
                 isCurrentUserProfile && "cursor-pointer select-none",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(currentLinkedinVisibility))
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetLinkedinUrl.visibility))
               )}
-              onClick={isCurrentUserProfile ? () => handleLabelClick(currentLinkedinVisibility, setLinkedinVisibility, 'linkedin_visibility') : undefined}
+              onClick={isCurrentUserProfile ? () => handleLabelClick(linkedinVisibility, setLinkedinVisibility, 'linkedin_url') : undefined}
             >
               <Linkedin size={16} /> LinkedIn
             </h4>
             <a
-              href={targetProfile.linkedin_url}
+              href={targetLinkedinUrl.value}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 hover:underline text-sm mt-1 block"
             >
-              {targetProfile.linkedin_url.replace('https://www.linkedin.com/in/', '')}
+              {targetLinkedinUrl.value.replace('https://www.linkedin.com/in/', '')}
             </a>
           </div>
         )}

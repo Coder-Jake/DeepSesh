@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { useTimer } from "@/contexts/TimerContext";
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useProfilePopUp } from '@/contexts/ProfilePopUpContext'; // Import useProfilePopUp
-import { useProfile } from '@/contexts/ProfileContext'; // Import useProfile to get getPublicProfile
-import { getSociabilityGradientColor } from '@/lib/utils'; // NEW: Import getSociabilityGradientColor
+import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
+import { useProfile } from '@/contexts/ProfileContext';
+import { getSociabilityGradientColor } from '@/lib/utils';
 
 interface DemoSession {
   id: string;
@@ -15,7 +15,7 @@ interface DemoSession {
   location: string;
   workspaceImage: string;
   workspaceDescription: string;
-  participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[]; // Changed from sociability
+  participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[];
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
 }
 
@@ -26,9 +26,9 @@ interface SessionCardProps {
 
 const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => {
   const { formatTime } = useTimer();
-  const { toggleProfilePopUp } = useProfilePopUp(); // Use toggleProfilePopUp
-  const { getPublicProfile } = useProfile(); 
-  
+  const { toggleProfilePopUp } = useProfilePopUp();
+  const { getPublicProfile } = useProfile();
+
   // Calculate total duration from fullSchedule
   const totalDurationMinutes = useMemo(() => {
     return session.fullSchedule.reduce((sum, phase) => sum + phase.durationMinutes, 0);
@@ -44,9 +44,9 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
   }, [session.fullSchedule]);
 
   // Calculate average focusPreference of participants
-  const averageFocusPreference = useMemo(() => { // Changed from sociability
+  const averageFocusPreference = useMemo(() => {
     if (session.participants.length === 0) return 0;
-    const totalFocusPreference = session.participants.reduce((sum, p) => sum + p.focusPreference, 0); // Changed from sociability
+    const totalFocusPreference = session.participants.reduce((sum, p) => sum + p.focusPreference, 0);
     return totalFocusPreference / session.participants.length;
   }, [session.participants]);
 
@@ -79,19 +79,19 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
 
     if (totalScheduleDurationSeconds === 0) {
       return {
-        type: 'focus', // Default type
+        type: 'focus',
         durationMinutes: 0,
         remainingSeconds: 0,
-        isEnded: true, // No schedule, so it's effectively ended
+        isEnded: true,
       };
     }
 
     // If the session hasn't started yet
     if (elapsedSecondsSinceSessionStart < 0) {
       return {
-        type: currentSession.fullSchedule[0]?.type || 'focus', // Default to first phase type or focus
+        type: currentSession.fullSchedule[0]?.type || 'focus',
         durationMinutes: currentSession.fullSchedule[0]?.durationMinutes || 0,
-        remainingSeconds: -elapsedSecondsSinceSessionStart, // Time until it starts
+        remainingSeconds: -elapsedSecondsSinceSessionStart,
         isEnded: false,
       };
     }
@@ -127,7 +127,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       type: lastPhase?.type || 'focus',
       durationMinutes: lastPhase?.durationMinutes || 0,
       remainingSeconds: 0,
-      isEnded: false, // Still not "ended" if it repeats indefinitely
+      isEnded: false,
     };
   }
 
@@ -137,16 +137,16 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [session]); // Recalculate if session prop changes
+  }, [session]);
 
   const { type: currentPhaseType, remainingSeconds, isEnded } = currentPhaseInfo;
 
   if (isEnded) {
-    return null; // Don't render ended sessions
+    return null;
   }
 
   const handleParticipantNameClick = (userId: string, userName: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent event from bubbling up and potentially closing the parent Popover
+    event.stopPropagation();
 
     const targetProfileData = getPublicProfile(userId, userName);
     if (targetProfileData) {
@@ -163,7 +163,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
           <div>
             <CardTitle className="text-lg">{session.title}</CardTitle>
           </div>
-          <div 
+          <div
             className="text-sm text-muted-foreground cursor-pointer select-none flex flex-col items-end"
             onClick={() => setShowPhaseDuration(prev => !prev)}
           >
@@ -186,7 +186,6 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <div className="flex justify-between items-center">
-          {/* Group for Location, Coworkers Popovers, and Average Focus Preference Bar */} {/* Changed from sociability */}
           <div className="flex items-center gap-4 flex-grow mr-4">
             <Popover>
               <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
@@ -195,10 +194,10 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
               <PopoverContent className="select-none">
                 <div className="text-center">
                   <p className="mb-2 font-medium">{session.location}</p>
-                  <img 
-                    src={`https://via.placeholder.com/192x112/f0f0f0/333333?text=Map`} 
-                    alt={`Map of ${session.location}`} 
-                    className="w-48 h-28 object-cover rounded" 
+                  <img
+                    src={`https://via.placeholder.com/192x112/f0f0f0/333333?text=Map`}
+                    alt={`Map of ${session.location}`}
+                    className="w-48 h-28 object-cover rounded"
                   />
                   <p className="text-xs text-muted-foreground mt-1">{session.workspaceDescription}</p>
                 </div>
@@ -212,7 +211,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                 <div className="space-y-3">
                   {session.participants.map(p => (
                     <div key={p.id} className="flex items-center justify-between gap-4">
-                      <span 
+                      <span
                         className={cn(
                           "min-w-0",
                           p.id !== "mock-user-id-123" && "cursor-pointer hover:text-primary"
@@ -223,7 +222,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                       </span>
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{width: `${p.focusPreference}%`, backgroundColor: getSociabilityGradientColor(p.focusPreference)}}></div> {/* Changed from sociability */}
+                          <div className="h-full rounded-full" style={{width: `${p.focusPreference}%`, backgroundColor: getSociabilityGradientColor(p.focusPreference)}}></div>
                         </div>
                       </div>
                     </div>
@@ -231,12 +230,11 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                 </div>
               </PopoverContent>
             </Popover>
-            {/* Average Focus Preference Bar - now inside this flex container */} {/* Changed from sociability */}
             <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow px-1 max-w-[150px]">
-              <div className="h-full rounded-full" style={{width: `${averageFocusPreference}%`, backgroundColor: getSociabilityGradientColor(averageFocusPreference)}}></div> {/* Changed from sociability */}
+              <div className="h-full rounded-full" style={{width: `${averageFocusPreference}%`, backgroundColor: getSociabilityGradientColor(averageFocusPreference)}}></div>
             </div>
           </div>
-          
+
           <Button size="sm" onClick={() => onJoinSession(session)}>Join</Button>
         </div>
       </CardContent>

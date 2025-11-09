@@ -41,13 +41,13 @@ import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordio
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { generateRandomHostCode } from '@/contexts/ProfileContext'; // Import generateRandomHostCode
+import { generateRandomHostCode, Profile as ProfileType } from '@/contexts/ProfileContext'; // Import generateRandomHostCode and ProfileType
 
 interface ExtendSuggestion {
   id: string;
@@ -81,9 +81,9 @@ interface DemoSession {
   title: string;
   startTime: number;
   location: string;
-  workspaceImage: "/api/placeholder/200/120";
+  workspaceImage: string;
   workspaceDescription: string;
-  participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[]; // Changed from sociability
+  participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[];
   fullSchedule: { type: 'focus' | 'break'; durationMinutes: number; }[];
 }
 
@@ -106,7 +106,7 @@ interface SupabaseSessionData {
   is_paused: boolean;
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
-  participants_data: ParticipantSessionData[]; // Ensure this is typed correctly
+  participants_data: ParticipantSessionData[];
 }
 
 const now = new Date();
@@ -124,11 +124,11 @@ const mockNearbySessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Modern lab with dual monitors",
     participants: [
-      { id: "mock-user-id-bezos", name: "Altman", focusPreference: 15, intention: "Optimizing cloud infrastructure." }, // Changed from sociability
-      { id: "mock-user-id-musk", name: "Musk", focusPreference: 10, intention: "Designing reusable rocket components." }, // Changed from sociability
-      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", focusPreference: 20, intention: "Developing new social algorithms." }, // Changed from sociability
-      { id: "mock-user-id-gates", name: "Amodei", focusPreference: 20, intention: "Refining operating system architecture." }, // Changed from sociability
-      { id: "mock-user-id-jobs", name: "Huang", focusPreference: 30, intention: "Innovating user interface design." }, // Changed from sociability
+      { id: "mock-user-id-bezos", name: "Altman", focusPreference: 15, intention: "Optimizing cloud infrastructure." },
+      { id: "mock-user-id-musk", name: "Musk", focusPreference: 10, intention: "Designing reusable rocket components." },
+      { id: "mock-user-id-zuckerberg", name: "Zuckerberg", focusPreference: 20, intention: "Developing new social algorithms." },
+      { id: "mock-user-id-gates", name: "Amodei", focusPreference: 20, intention: "Refining operating system architecture." },
+      { id: "mock-user-id-jobs", name: "Huang", focusPreference: 30, intention: "Innovating user interface design." },
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 55 },
@@ -146,14 +146,14 @@ const mockFriendsSessions: DemoSession[] = [
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Private group study room",
     participants: [
-      { id: "mock-user-id-freud", name: "Freud", focusPreference: 70, intention: "Reviewing psychoanalytic theories." }, // Changed from sociability
-      { id: "mock-user-id-skinner", name: "Skinner", focusPreference: 70, intention: "Memorizing behavioral principles." }, // Changed from sociability
-      { id: "mock-user-id-piaget", name: "Piaget", focusPreference: 80, intention: "Practicing cognitive development questions." }, // Changed from sociability
-      { id: "mock-user-id-jung", name: "Jung", focusPreference: 70, intention: "Summarizing archetypal concepts." }, // Changed from sociability
-      { id: "mock-user-id-maslow", name: "Maslow", focusPreference: 90, intention: "Creating hierarchy of needs flashcards." }, // Changed from sociability
-      { id: "mock-user-id-rogers", name: "Rogers", focusPreference: 95, intention: "Discussing humanistic approaches." }, // Changed from sociability
-      { id: "mock-user-id-bandura", name: "Bandura", focusPreference: 75, intention: "Collaborating on social learning theory guide." }, // Changed from sociability
-      { id: "mock-user-id-pavlov", name: "Pavlov", focusPreference: 80, intention: "Peer teaching classical conditioning." }, // Changed from sociability
+      { id: "mock-user-id-freud", name: "Freud", focusPreference: 70, intention: "Reviewing psychoanalytic theories." },
+      { id: "mock-user-id-skinner", name: "Skinner", focusPreference: 70, intention: "Memorizing behavioral principles." },
+      { id: "mock-user-id-piaget", name: "Piaget", focusPreference: 80, intention: "Practicing cognitive development questions." },
+      { id: "mock-user-id-jung", name: "Jung", focusPreference: 70, intention: "Summarizing archetypal concepts." },
+      { id: "mock-user-id-maslow", name: "Maslow", focusPreference: 90, intention: "Creating hierarchy of needs flashcards." },
+      { id: "mock-user-id-rogers", name: "Rogers", focusPreference: 95, intention: "Discussing humanistic approaches." },
+      { id: "mock-user-id-bandura", name: "Bandura", focusPreference: 75, intention: "Collaborating on social learning theory guide." },
+      { id: "mock-user-id-pavlov", name: "Pavlov", focusPreference: 80, intention: "Peer teaching classical conditioning." },
     ],
     fullSchedule: [
       { type: "focus", durationMinutes: 25 },
@@ -177,11 +177,11 @@ const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
 
   return data.map((session: SupabaseSessionData) => {
     // Use participants_data from Supabase directly
-    const participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] = // Changed from sociability
+    const participants: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] =
       (session.participants_data || []).map(p => ({
         id: p.userId,
         name: p.userName,
-        focusPreference: p.focusPreference || 50, // Changed from sociability
+        focusPreference: p.focusPreference || 50,
         intention: p.intention || undefined,
         bio: p.bio || undefined,
       }));
@@ -245,7 +245,7 @@ const Index = () => {
     setShowSessionsWhileActive,
     timerIncrement,
     getDefaultSeshTitle,
-    
+
     schedule,
     activeSchedule,
     activeTimerColors,
@@ -316,8 +316,8 @@ const Index = () => {
     stopTimer,
     resetSessionStates,
   } = useTimer();
-  
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference } = useProfile(); // Changed from sociability
+
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference } = useProfile();
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
@@ -328,7 +328,7 @@ const Index = () => {
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   const [isHoveringTimer, setIsHoveringTimer] = useState(false);
 
-  const currentUserId = profile?.id || "mock-user-id-123"; 
+  const currentUserId = profile?.id || "mock-user-id-123";
   const currentUserName = profile?.first_name || localFirstName || "You";
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
@@ -350,8 +350,8 @@ const Index = () => {
     ['nearby', 'friends', 'organization']
   );
 
-  const [openFocusPreferenceTooltipId, setOpenFocusPreferenceTooltipId] = useState<string | null>(null); // Changed from sociability
-  const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Changed from sociability
+  const [openFocusPreferenceTooltipId, setOpenFocusPreferenceTooltipId] = useState<string | null>(null);
+  const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
@@ -383,18 +383,14 @@ const Index = () => {
       return {
         id: p.userId,
         name: p.userName,
-        focusPreference: p.focusPreference || 50, // Changed from sociability
-        role: role, // The returned object has a 'role' that can be 'self'
+        focusPreference: p.focusPreference || 50,
+        role: role,
       };
     }).sort((a, b) => {
-      // Sort 'self' first, then 'host', then alphabetically by name for 'coworker'
       if (a.role === 'self') return -1;
       if (b.role === 'self') return 1;
-      // At this point, neither a.role nor b.role can be 'self'.
-      // Their types are effectively narrowed to 'host' | 'coworker'.
-      if (a.role === 'host') return -1; 
+      if (a.role === 'host') return -1;
       if (b.role === 'host') return 1;
-      // At this point, if neither a nor b is 'self' or 'host', they must both be 'coworker'.
       return a.name.localeCompare(b.name);
     });
   }, [currentSessionParticipantsData, user?.id]);
@@ -429,14 +425,14 @@ const Index = () => {
       callback();
     }, 500);
   };
-  
+
   const handleLongPressEnd = () => {
     if (longPressRef.current) {
       clearTimeout(longPressRef.current);
     }
     isLongPress.current = false;
   };
-  
+
   const handlePublicPrivateToggle = async () => {
     if (isGlobalPrivate && !isLongPress.current) {
       if (geolocationPermissionStatus === 'denied' || geolocationPermissionStatus === 'prompt') {
@@ -481,7 +477,7 @@ const Index = () => {
       setIsEditingSeshTitle(true);
     }
   };
-  
+
   const startNewManualTimer = async () => {
     if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
@@ -514,9 +510,9 @@ const Index = () => {
       userName: localFirstName,
       joinTime: Date.now(),
       role: 'host',
-      focusPreference: focusPreference || 50, // Changed from sociability
-      intention: profile?.intention || undefined,
-      bio: profile?.bio || undefined,
+      focusPreference: focusPreference || 50,
+      intention: profile?.profile_data.intention.value || undefined,
+      bio: profile?.profile_data.bio.value || undefined,
     };
 
     setCurrentSessionRole('host');
@@ -583,7 +579,7 @@ const Index = () => {
     }
     setIsTimeLeftManagedBySession(true);
   };
-  
+
   const pauseTimer = () => {
     if (currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
@@ -600,7 +596,7 @@ const Index = () => {
     triggerVibration();
     setIsTimeLeftManagedBySession(true);
   };
-  
+
   const resetTimer = async () => {
     if (longPressRef.current) {
       resetSessionStates();
@@ -660,13 +656,13 @@ const Index = () => {
     const sessionId = session.id;
     const sessionTitle = session.title;
     const hostName = session.participants[0]?.name || session.title;
-    
+
     const participants: ParticipantSessionData[] = session.participants.map(p => ({
       userId: p.id,
       userName: p.name,
       joinTime: Date.now(),
       role: p.id === session.participants[0]?.id ? 'host' : 'coworker',
-      focusPreference: p.focusPreference, // Changed from sociability
+      focusPreference: p.focusPreference,
       intention: p.intention,
       bio: p.bio,
     }));
@@ -679,7 +675,7 @@ const Index = () => {
 
     const now = Date.now();
     const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
-    
+
     const totalScheduleDurationSeconds = session.fullSchedule.reduce(
       (sum, phase) => sum + phase.durationMinutes * 60,
       0
@@ -834,10 +830,10 @@ const Index = () => {
 
       const now = new Date();
       const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
-      
+
       const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
 
-      const participantNames: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] = []; // Changed from sociability
+      const participantNames: { id: string; name: string; focusPreference: number; intention?: string; bio?: string }[] = [];
       const usedIndices = new Set<number>();
 
       for (let i = 0; i < 3; i++) {
@@ -847,15 +843,16 @@ const Index = () => {
         }
         usedIndices.add(randomIndex);
         const { id, name } = famousNamesWithIds[randomIndex];
-        
-        const focusPreferenceOffset = Math.floor(Math.random() * 15) - 7; // Changed from sociability
-        const variedFocusPreference = Math.max(0, Math.min(100, (focusPreference || 50) + focusPreferenceOffset)); // Changed from sociability
 
-        participantNames.push({ 
+        const focusPreferenceOffset = Math.floor(Math.random() * 15) - 7;
+        const variedFocusPreference = Math.max(0, Math.min(100, (focusPreference || 50) + focusPreferenceOffset));
+
+        participantNames.push({
           id: id,
-          name: name, 
-          focusPreference: variedFocusPreference, // Changed from sociability
-          intention: `Deep work on ${name}'s theories.` 
+          name: name,
+          focusPreference: variedFocusPreference,
+          intention: `Deep work on ${name}'s theories.`,
+          bio: `A dedicated member of ${orgName}.`,
         });
       }
 
@@ -875,7 +872,7 @@ const Index = () => {
     });
 
     return sessions;
-  }, [profile, currentUserId, currentUserName, focusPreference]); // Changed from sociability
+  }, [profile, currentUserId, currentUserName, focusPreference]);
 
 
   const handleExtendSubmit = (minutes: number) => {
@@ -928,7 +925,7 @@ const Index = () => {
 
     const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
     const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
-    
+
     const totalParticipants = (activeJoinedSessionCoworkerCount || 0) + (currentSessionRole === 'host' ? 1 : 0);
     const threshold = Math.ceil(totalParticipants / 2);
 
@@ -950,7 +947,6 @@ const Index = () => {
     });
   };
 
-  // NEW: Function to handle voting on an existing poll
   const handleVoteOnExistingPoll = (pollId: string, optionIds: string[], customOptionText?: string, isCustomOptionSelected?: boolean) => {
     const currentAsk = activeAsks.find(ask => ask.id === pollId);
     if (!currentAsk || !('options' in currentAsk)) return;
@@ -1003,7 +999,6 @@ const Index = () => {
       return { ...option, votes: newVotes };
     });
 
-    // Filter out custom options that no longer have votes and are not the current user's active custom response
     updatedOptions = updatedOptions.filter(option =>
       !option.id.startsWith('custom-') || option.votes.length > 0 || (option.id === userCustomOptionId && isCustomOptionSelected)
     );
@@ -1048,7 +1043,7 @@ const Index = () => {
     if (targetDate.getTime() < now.getTime() && !template.isRecurring) {
       return Infinity;
     }
-    
+
     if (targetDate.getTime() < now.getTime() && template.isRecurring) {
       let nextCommenceDate = new Date(targetDate);
       while (nextCommenceDate.getTime() < now.getTime()) {
@@ -1066,7 +1061,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []); // Removed getEffectiveStartTime from its own dependency array
+  }, []);
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
@@ -1142,7 +1137,7 @@ const Index = () => {
     setIsDiscoveryActivated(true);
     setIsDiscoverySetupOpen(false);
 
-    await getLocation(); 
+    await getLocation();
 
     if (areToastsEnabled) {
       toast.success("Discovery Activated!", {
@@ -1156,15 +1151,15 @@ const Index = () => {
       case 'nearby':
         return shouldShowNearbySessions && (
           <div className="mb-6" data-name="Nearby Sessions Section">
-            <button 
+            <button
               onClick={() => setIsNearbySessionsOpen(prev => !prev)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
                 <Tooltip>
                     <TooltipTrigger asChild>
-                      <MapPin 
-                        size={16} 
+                      <MapPin
+                        size={16}
                         className={cn(
                           "cursor-pointer hover:text-primary",
                           geolocationPermissionStatus === 'granted' && "text-green-600",
@@ -1196,17 +1191,17 @@ const Index = () => {
                 {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
                 {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
                 {supabaseNearbySessions?.map(session => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onJoinSession={handleJoinSession} 
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    onJoinSession={handleJoinSession}
                   />
                 ))}
                 {mockNearbySessions.map(session => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onJoinSession={handleJoinSession} 
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    onJoinSession={handleJoinSession}
                   />
                 ))}
               </div>
@@ -1216,7 +1211,7 @@ const Index = () => {
       case 'friends':
         return shouldShowFriendsSessions && (
           <div data-name="Friends Sessions Section">
-            <button 
+            <button
               onClick={() => setIsFriendsSessionsOpen(prev => !prev)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
@@ -1234,10 +1229,10 @@ const Index = () => {
             {isFriendsSessionsOpen && (
               <div className="space-y-3">
                 {mockFriendsSessions.map(session => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onJoinSession={handleJoinSession} 
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    onJoinSession={handleJoinSession}
                   />
                 ))}
               </div>
@@ -1247,7 +1242,7 @@ const Index = () => {
       case 'organization':
         return shouldShowOrganizationSessions && mockOrganizationSessions.length > 0 && (
           <div data-name="Organization Sessions Section">
-            <button 
+            <button
               onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
@@ -1259,10 +1254,10 @@ const Index = () => {
             {isOrganizationSessionsOpen && (
               <div className="space-y-3">
                 {mockOrganizationSessions.map(session => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onJoinSession={handleJoinSession} 
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    onJoinSession={handleJoinSession}
                   />
                 ))}
               </div>
@@ -1292,10 +1287,10 @@ const Index = () => {
                 <ScheduleForm />
               ) : (
                 <>
-                  <div className="flex justify-between items-start mb-6"> {/* Changed items-center to items-start */}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                  <div className="flex justify-between items-start mb-6">
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setIsSchedulingMode(true)}
                       className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
                       data-name="Schedule Button"
@@ -1303,10 +1298,9 @@ const Index = () => {
                       <CalendarPlus size={16} />
                       <span className="text-sm font-medium">Schedule</span>
                     </Button>
-                    {/* NEW: seshTitle H2 */}
                     {isActiveTimer && (
-                      <h2 
-                        className="text-xl font-bold text-foreground text-center flex-grow self-center" 
+                      <h2
+                        className="text-xl font-bold text-foreground text-center flex-grow self-center"
                         onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
                         onMouseUp={handleLongPressEnd}
                         onMouseLeave={handleLongPressEnd}
@@ -1317,7 +1311,7 @@ const Index = () => {
                       </h2>
                     )}
                     <div className="flex flex-col items-end gap-2">
-                      <button 
+                      <button
                         onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
                         onMouseUp={handleLongPressEnd}
                         onMouseLeave={handleLongPressEnd}
@@ -1339,13 +1333,13 @@ const Index = () => {
                             </>
                           )}
                       </button>
-                      
+
                       {isActiveTimer ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
                               data-name="Share Options Button"
                             >
@@ -1372,8 +1366,8 @@ const Index = () => {
                       )}
                     </div>
                   </div>
-                  
-                  <div 
+
+                  <div
                     className="relative flex flex-col items-center mb-4"
                     onClick={(e) => {
                       if (!isActiveTimer) {
@@ -1407,7 +1401,7 @@ const Index = () => {
                       isActiveTimer={isActiveTimer}
                       data-name="Main Circular Timer Progress"
                     >
-                      <div 
+                      <div
                         className={`relative flex flex-col items-center text-4xl font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'scale-110' : ''} select-none`}
                         onMouseEnter={() => setIsHoveringTimer(true)}
                         onMouseLeave={() => setIsHoveringTimer(false)}
@@ -1423,24 +1417,24 @@ const Index = () => {
                       </div>
                     </CircularProgress>
                   </div>
-                  
+
                   <div className="flex gap-3 justify-center mb-6">
                     {isFlashing ? (
-                      <Button 
-                        size="lg" 
-                        className="px-8" 
+                      <Button
+                        size="lg"
+                        className="px-8"
                         onClick={timerType === 'focus' ? switchToBreak : switchToFocus}
                         data-name={`Start ${timerType === 'focus' ? 'Break' : 'Focus'} Button`}
                       >
                         Start {timerType === 'focus' ? 'Break' : 'Focus'}
                       </Button>
                     ) : (
-                      <Button 
-                        size="lg" 
-                        className="px-8" 
+                      <Button
+                        size="lg"
+                        className="px-8"
                         onClick={() => {
                           if (isSchedulePrepared) {
-                            startNewManualTimer(); 
+                            startNewManualTimer();
                           } else if (isRunning) {
                             pauseTimer();
                           } else if (isPaused) {
@@ -1461,12 +1455,12 @@ const Index = () => {
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
                         isRunning && "opacity-50",
-                        "hover:opacity-100", 
-                        isPaused && "text-red-500" 
+                        "hover:opacity-100",
+                        isPaused && "text-red-500"
                       )}>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onMouseDown={() => handleLongPressStart(() => stopTimer(false, true))}
                           onMouseUp={handleLongPressEnd}
                           onMouseLeave={handleLongPressEnd}
@@ -1488,7 +1482,7 @@ const Index = () => {
                   {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && (
                     <div className="flex justify-center gap-4 text-sm">
                       <div className="flex items-center gap-2">
-                        <span 
+                        <span
                           className={cn(
                             "text-muted-foreground cursor-pointer select-none",
                             timerType === 'focus' && "font-bold text-foreground"
@@ -1498,9 +1492,9 @@ const Index = () => {
                         >
                           Focus:
                         </span>
-                        <Input 
-                          type="number" 
-                          value={focusMinutes === 0 ? "" : focusMinutes} 
+                        <Input
+                          type="number"
+                          value={focusMinutes === 0 ? "" : focusMinutes}
                           onChange={e => {
                             const value = e.target.value;
                             if (value === "") {
@@ -1508,14 +1502,13 @@ const Index = () => {
                             } else {
                               setHomepageFocusMinutes(parseFloat(value) || 0);
                             }
-                          }} 
+                          }}
                           onBlur={() => {
                             if (focusMinutes === 0) {
                               setHomepageFocusMinutes(defaultFocusMinutes);
                             }
                           }}
-                          className="w-16 h-8 text-center pr-0" 
-                          min={timerIncrement} 
+                          min={timerIncrement}
                           max={69 * 60}
                           step={timerIncrement}
                           onFocus={(e) => e.target.select()}
@@ -1523,7 +1516,7 @@ const Index = () => {
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span 
+                        <span
                           className={cn(
                             "text-muted-foreground cursor-pointer select-none",
                             timerType === 'break' && "font-bold text-foreground"
@@ -1533,9 +1526,9 @@ const Index = () => {
                         >
                           Break:
                         </span>
-                        <Input 
-                          type="number" 
-                          value={breakMinutes === 0 ? "" : breakMinutes} 
+                        <Input
+                          type="number"
+                          value={breakMinutes === 0 ? "" : breakMinutes}
                           onChange={e => {
                             const value = e.target.value;
                             if (value === "") {
@@ -1543,14 +1536,13 @@ const Index = () => {
                             } else {
                               setHomepageBreakMinutes(parseFloat(value) || 0);
                             }
-                          }} 
+                          }}
                           onBlur={() => {
                             if (breakMinutes === 0) {
                               setHomepageBreakMinutes(defaultBreakMinutes);
                             }
                           }}
-                          className="w-16 h-8 text-center pr-0" 
-                          min={timerIncrement} 
+                          min={timerIncrement}
                           max={420}
                           step={timerIncrement}
                           onFocus={(e) => e.target.select()}
@@ -1564,22 +1556,22 @@ const Index = () => {
               )}
             </div>
 
-            <ActiveAskSection 
-              activeAsks={activeAsks} 
-              onVoteExtend={handleVoteExtend} 
-              onVotePoll={handleVoteOnExistingPoll} 
-              currentUserId={currentUserId} 
+            <ActiveAskSection
+              activeAsks={activeAsks}
+              onVoteExtend={handleVoteExtend}
+              onVotePoll={handleVoteOnExistingPoll}
+              currentUserId={currentUserId}
             />
           </div>
 
           <div className="space-y-6">
-            {profile?.intention && (
+            {profile?.profile_data.intention.value && (
               <Card>
                 <CardHeader>
                   <CardTitle className="lg">My Intention</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p 
+                  <p
                     className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
                     onMouseDown={() => handleLongPressStart(handleIntentionLongPress)}
                     onMouseUp={handleLongPressEnd}
@@ -1592,7 +1584,7 @@ const Index = () => {
                     }}
                     data-name="My Intention Text"
                   >
-                    {profile.intention}
+                    {profile.profile_data.intention.value}
                   </p>
                 </CardContent>
               </Card>
@@ -1609,12 +1601,12 @@ const Index = () => {
                       onKeyDown={handleTitleInputKeyDown}
                       onBlur={handleTitleInputBlur}
                       placeholder={getDefaultSeshTitle()}
-                      className="text-lg font-semibold h-auto py-1 px-2" 
+                      className="text-lg font-semibold h-auto py-1 px-2"
                       onFocus={(e) => e.target.select()}
                       data-name="Sesh Title Input"
                     />
                   ) : (
-                    <CardTitle 
+                    <CardTitle
                       className={cn(
                         "text-lg cursor-pointer select-none",
                         isDefaultTitleAnimating && "animate-fade-in-out"
@@ -1654,40 +1646,40 @@ const Index = () => {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {allParticipantsToDisplayInCard.map(person => (
-                    <div 
+                    <div
                       key={person.id}
                       className={cn(
                         "flex items-center justify-between p-2 rounded-md select-none",
                         person.role === 'self' ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
                         "hover:bg-muted cursor-pointer"
-                      )} 
+                      )}
                       data-name={`Coworker: ${person.name}`}
                       onClick={(e) => handleNameClick(person.id, person.name, e)}
                     >
                       <span className="font-medium text-foreground flex items-center gap-1">
                         {person.role === 'self' ? localFirstName || "You" : person.name}
-                        {person.role === 'host' && <Crown size={16} className="text-yellow-500" />} {/* Crown icon for host */}
+                        {person.role === 'host' && <Crown size={16} className="text-yellow-500" />}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         <Popover
-                          open={openFocusPreferenceTooltipId === person.id} // Changed from sociability
+                          open={openFocusPreferenceTooltipId === person.id}
                           onOpenChange={(isOpen) => {
                             if (isOpen) {
-                              setOpenFocusPreferenceTooltipId(person.id); // Changed from sociability
-                              if (focusPreferenceTooltipTimeoutRef.current) { // Changed from sociability
-                                clearTimeout(focusPreferenceTooltipTimeoutRef.current); // Changed from sociability
+                              setOpenFocusPreferenceTooltipId(person.id);
+                              if (focusPreferenceTooltipTimeoutRef.current) {
+                                clearTimeout(focusPreferenceTooltipTimeoutRef.current);
                               }
-                              focusPreferenceTooltipTimeoutRef.current = setTimeout(() => { // Changed from sociability
-                                setOpenFocusPreferenceTooltipId(null); // Changed from sociability
-                                focusPreferenceTooltipTimeoutRef.current = null; // Changed from sociability
+                              focusPreferenceTooltipTimeoutRef.current = setTimeout(() => {
+                                setOpenFocusPreferenceTooltipId(null);
+                                focusPreferenceTooltipTimeoutRef.current = null;
                               }, 1000);
                             } else {
-                              if (openFocusPreferenceTooltipId === person.id) { // Changed from sociability
-                                setOpenFocusPreferenceTooltipId(null); // Changed from sociability
-                                if (focusPreferenceTooltipTimeoutRef.current) { // Changed from sociability
-                                  clearTimeout(focusPreferenceTooltipTimeoutRef.current); // Changed from sociability
-                                  focusPreferenceTooltipTimeoutRef.current = null; // Changed from sociability
+                              if (openFocusPreferenceTooltipId === person.id) {
+                                setOpenFocusPreferenceTooltipId(null);
+                                if (focusPreferenceTooltipTimeoutRef.current) {
+                                  clearTimeout(focusPreferenceTooltipTimeoutRef.current);
+                                  focusPreferenceTooltipTimeoutRef.current = null;
                                 }
                               }
                             }
@@ -1698,7 +1690,7 @@ const Index = () => {
                               className="cursor-pointer"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {person.focusPreference}% {/* Changed from sociability */}
+                              {person.focusPreference}%
                             </span>
                           </PopoverTrigger>
                           <PopoverContent className="select-none p-1 text-xs w-fit">
@@ -1769,10 +1761,10 @@ const Index = () => {
         {sortedPreparedSchedules.length > 0 && (
           <div className="mt-8" data-name="Upcoming Section">
             <h3 className="text-xl font-bold text-foreground mb-4">Upcoming Schedules</h3>
-            <Accordion 
-              type="multiple" 
-              className="w-full space-y-4" 
-              value={openUpcomingScheduleAccordions} 
+            <Accordion
+              type="multiple"
+              className="w-full space-y-4"
+              value={openUpcomingScheduleAccordions}
               onValueChange={setOpenUpcomingScheduleAccordions}
             >
               {sortedPreparedSchedules.map((template) => (
@@ -1808,8 +1800,8 @@ const Index = () => {
               />
             </div>
             <DialogFooter>
-              <Button 
-                onClick={handleJoinCodeSubmit} 
+              <Button
+                onClick={handleJoinCodeSubmit}
                 disabled={!joinSessionCode.trim()}
               >
                 Join
