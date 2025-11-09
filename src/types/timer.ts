@@ -268,6 +268,7 @@ export type TimerContextType = {
   stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>;
   resetSessionStates: () => void;
   showDemoSessions: boolean; // NEW: Add showDemoSessions
+  setShowDemoSessions: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Add setShowDemoSessions
 };
 
 // Define the structure for a saved session

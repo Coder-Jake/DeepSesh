@@ -536,7 +536,7 @@ const ScheduleForm: React.FC = () => {
                 </Button>
               )}
               {(!showTrashAllButton || schedule.length === 0) && (
-                <div className="w-8 h-8" /> {/* Spacer if trash all is not visible */}
+                <div className="w-8 h-8">{/* Spacer if trash all is not visible */}</div>
               )}
             </div>
           )}
