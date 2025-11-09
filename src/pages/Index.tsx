@@ -46,7 +46,7 @@ import { useAuth } from '@/contexts/AuthContext'; // Corrected import path
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { generateRandomHostCode, Profile as ProfileType } from '@/contexts/ProfileContext'; // Import generateRandomHostCode and ProfileType
+import { generateRandomHostCode, Profile as ProfileType } from '@/contexts/Profile/ProfileContext'; // Import generateRandomHostCode and ProfileType
 
 interface ExtendSuggestion {
   id: string;
@@ -1454,7 +1454,7 @@ const Index = () => {
                     </CircularProgress>
                   </div>
 
-                  <div className="flex gap-3 justify-center mb-6">
+                  <div className="flex gap-3 justify-center mb-4"> {/* Changed mb-6 to mb-4 */}
                     {isFlashing ? (
                       <Button
                         size="lg"
