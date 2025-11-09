@@ -1299,7 +1299,14 @@ const Index = () => {
                     </Button>
                     {/* NEW: seshTitle H2 */}
                     {isActiveTimer && (
-                      <h2 className="text-xl font-bold text-foreground text-center flex-grow self-center"> {/* Added self-center */}
+                      <h2 
+                        className="text-xl font-bold text-foreground text-center flex-grow self-center" 
+                        onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
+                        onMouseUp={handleLongPressEnd}
+                        onMouseLeave={handleLongPressEnd}
+                        onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
+                        onTouchEnd={handleLongPressEnd}
+                      >
                         {seshTitle}
                       </h2>
                     )}
