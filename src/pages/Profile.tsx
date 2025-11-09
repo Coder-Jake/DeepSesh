@@ -500,7 +500,7 @@ const Profile = () => {
   console.log("Rendering Profile. Host Code:", hostCode); // Add this log
 
   return (
-    <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
+    <main className="max-w-4xl mx-auto pt-16 px-4 pb-[50px] lg:pt-20 lg:px-6 lg:pb-[50px]">
       <div className="mb-6 flex justify-between items-center relative">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
         {hasChanges && (
@@ -836,7 +836,7 @@ const Profile = () => {
                     onMouseDown={() => handleFriendLongPressStart(friendId)}
                     onMouseUp={handleFriendLongPressEnd}
                     onMouseLeave={handleFriendLongPressEnd}
-                    onTouchStart={() => handleFriendLongPressStart(friendId)}
+                    onTouchStart={() => handleLongPressStart(handleFriendLongPressStart(friendId))}
                     onTouchEnd={handleFriendLongPressEnd}
                   >
                     <p className="font-medium">{friendId}</p>
