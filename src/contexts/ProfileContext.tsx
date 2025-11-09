@@ -225,8 +225,15 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setOrganization(parsedProfile.organization);
       setHostCode(parsedProfile.host_code);
 
-      // Deconstruct profile_data
-      const pd = parsedProfile.profile_data;
+      // Deconstruct profile_data with a safe fallback
+      const pd = parsedProfile.profile_data || {
+        bio: getDefaultProfileDataField(),
+        intention: getDefaultProfileDataField(),
+        linkedin_url: getDefaultProfileDataField(),
+        can_help_with: getDefaultProfileDataField(),
+        need_help_with: getDefaultProfileDataField(),
+        pronouns: getDefaultProfileDataField(),
+      };
       setBio(pd.bio?.value || null);
       setBioVisibility(pd.bio?.visibility || ['public']);
       setIntention(pd.intention?.value || null);
@@ -389,7 +396,14 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           setFocusPreference(parsedProfile.focus_preference || 50);
           setHostCode(parsedProfile.host_code);
           // Deconstruct profile_data
-          const pd = parsedProfile.profile_data;
+          const pd = parsedProfile.profile_data || {
+            bio: getDefaultProfileDataField(),
+            intention: getDefaultProfileDataField(),
+            linkedin_url: getDefaultProfileDataField(),
+            can_help_with: getDefaultProfileDataField(),
+            need_help_with: getDefaultProfileDataField(),
+            pronouns: getDefaultProfileDataField(),
+          };
           setBio(pd.bio?.value || null);
           setBioVisibility(pd.bio?.visibility || ['public']);
           setIntention(pd.intention?.value || null);
