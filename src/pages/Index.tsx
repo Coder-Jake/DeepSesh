@@ -329,7 +329,7 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaAreaElement>(null);
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
@@ -1475,7 +1475,7 @@ const Index = () => {
 
                   {/* NEW: Container for Stop and Ask buttons */}
                   {(isRunning || isPaused || isScheduleActive || isSchedulePending) && (
-                    <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between px-4 pb-4">
+                    <div className="flex items-end justify-between px-4 pb-4 mt-4"> {/* Removed absolute positioning */}
                       {/* Stop button container */}
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
