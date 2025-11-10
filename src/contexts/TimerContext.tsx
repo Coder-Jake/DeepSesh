@@ -179,8 +179,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [_defaultBreakMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, breakMinutes, isHomepageBreakCustomized]);
 
   const getDefaultSeshTitle = useCallback(() => {
-    return (localFirstName && localFirstName !== "You") ? `${localFirstName}'s DeepSesh` : "My DeepSesh";
-  }, [localFirstName]);
+    const name = user?.user_metadata?.first_name || profile?.first_name || "You";
+    return (name && name !== "You") ? `${name}'s DeepSesh` : "My DeepSesh";
+  }, [user?.user_metadata?.first_name, profile?.first_name]);
 
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
 
@@ -1226,7 +1227,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     if (!isSeshTitleCustomized) {
       _setSeshTitle(getDefaultSeshTitle());
     }
-  }, [localFirstName, isSeshTitleCustomized, getDefaultSeshTitle]);
+  }, [user?.user_metadata?.first_name, profile?.first_name, isSeshTitleCustomized, getDefaultSeshTitle]);
 
 
   const addAsk = useCallback((ask: ActiveAskItem) => {
