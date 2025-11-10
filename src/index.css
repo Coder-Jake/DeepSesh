@@ -34,7 +34,7 @@
 
     --radius: 0.5rem;
 
-    --public-bg: 120 90% 85%; /* Light green for public */
+    --public-bg: 200 90% 85%; /* Light pastel teal for public */
     --private-bg: 270 100% 90%; /* Light purple for private */
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 10%; /* Darker olive for text */
@@ -77,8 +77,8 @@
     --ring: 217.2 32.6% 17.5%;
 
     /* Removed --public-bg from dark mode as it's replaced by gradient variables */
-    --public-gradient-start-dark: 120 30% 45%; /* Start of the public gradient in dark mode */
-    --public-gradient-end-dark: 120 30% 40%;   /* End of the public gradient in dark mode */
+    --public-gradient-start-dark: 220 30% 45%; /* Start of the public gradient in dark mode */
+    --public-gradient-end-dark: 220 30% 40%;   /* End of the public gradient in dark mode */
     --private-bg: 270 30% 45%; /* Darker purple for private (updated) */
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */
