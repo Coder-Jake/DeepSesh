@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings, ParticipantSessionData } from '@/types/timer';
+import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings, ParticipantSessionData, SupabaseSessionData } from '@/types/timer';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
@@ -7,6 +7,7 @@ import { DAYS_OF_WEEK } from '@/lib/constants';
 import { saveSessionToDatabase } from '@/utils/session-utils';
 import { useProfile } from '../contexts/ProfileContext';
 import { supabase } from '@/integrations/supabase/client';
+import { RealtimeChannel } from '@supabase/supabase-js'; // Import RealtimeChannel
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -447,6 +448,41 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     focusMinutes, breakMinutes, isScheduleActive, isGlobalPrivate, activeSessionRecordId, user?.id,
     currentSessionParticipantsData, syncSessionToSupabase
   ]);
+
+  // NEW: Supabase Realtime Subscription for active sessions
+  useEffect(() => {
+    let subscription: RealtimeChannel | null = null;
+
+    if (activeSessionRecordId) {
+      console.log("TimerContext: Subscribing to active_sessions for ID:", activeSessionRecordId);
+      subscription = supabase
+        .channel(`active_sessions:${activeSessionRecordId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'active_sessions',
+            filter: `id=eq.${activeSessionRecordId}`,
+          },
+          (payload) => {
+            console.log("TimerContext: Realtime update received for session:", payload.new.id);
+            const updatedSession = payload.new as SupabaseSessionData;
+            const updatedParticipants = (updatedSession.participants_data || []) as ParticipantSessionData[];
+            setCurrentSessionParticipantsData(updatedParticipants);
+            setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (subscription) {
+        console.log("TimerContext: Unsubscribing from active_sessions for ID:", activeSessionRecordId);
+        supabase.removeChannel(subscription);
+      }
+    };
+  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount]);
 
   const resetSessionStates = useCallback(() => {
     setIsScheduleActive(false);
@@ -1625,8 +1661,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       currentSessionParticipantsData,
       lastActivityTime,
       showDemoSessions,
-      currentPhaseDurationSeconds, // NEW: Save this state
-      remainingTimeAtPause, // NEW: Save this state
+      currentPhaseDurationSeconds, // NEW: Add to dependencies
+      remainingTimeAtPause, // NEW: Add to dependencies
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);

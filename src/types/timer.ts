@@ -104,6 +104,29 @@ export interface DemoSession {
   fullSchedule: ScheduledTimer[]; // Use ScheduledTimer
 }
 
+// NEW: Define a type for Supabase fetched sessions
+export interface SupabaseSessionData {
+  id: string;
+  session_title: string;
+  created_at: string;
+  location_long: number | null;
+  location_lat: number | null;
+  focus_duration: number;
+  break_duration: number;
+  user_id: string | null;
+  host_name: string;
+  current_phase_type: 'focus' | 'break';
+  current_phase_end_time: string;
+  total_session_duration_seconds: number;
+  schedule_id: string | null;
+  schedule_data: ScheduledTimer[];
+  is_active: boolean;
+  is_paused: boolean;
+  current_schedule_index: number;
+  visibility: 'public' | 'friends' | 'organisation' | 'private';
+  participants_data: ParticipantSessionData[];
+}
+
 // Define the structure for the TimerContext value
 export type TimerContextType = {
   focusMinutes: number;
