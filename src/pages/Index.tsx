@@ -14,7 +14,7 @@ import { useNavigate, Link } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskSection"; // Corrected import
+import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
@@ -311,6 +311,7 @@ const Index = () => {
     stopTimer,
     resetSessionStates,
     showDemoSessions,
+    currentPhaseDurationSeconds, // NEW: Get currentPhaseDurationSeconds
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
@@ -500,7 +501,10 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now());
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    setTimeLeft(timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
+    // NEW: Set currentPhaseDurationSeconds for manual timer
+    const initialDurationSeconds = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+    setCurrentPhaseDurationSeconds(initialDurationSeconds);
+    setTimeLeft(initialDurationSeconds); // Initialize timeLeft to full duration
     setIsTimeLeftManagedBySession(true);
 
     const hostParticipant: ParticipantSessionData = {
@@ -509,8 +513,8 @@ const Index = () => {
       joinTime: Date.now(),
       role: 'host',
       focusPreference: focusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || undefined, // Safely access intention
-      bio: profile?.profile_data?.bio?.value || undefined, // Safely access bio
+      intention: profile?.profile_data?.intention?.value || undefined,
+      bio: profile?.profile_data?.bio?.value || undefined,
     };
 
     setCurrentSessionRole('host');
@@ -573,7 +577,12 @@ const Index = () => {
         });
       }
     } else if (currentPhaseStartTime === null) {
+      // This case should ideally not happen if remainingTimeAtPause is correctly set
       setCurrentPhaseStartTime(Date.now());
+      setCurrentPhaseDurationSeconds(timeLeft); // NEW: Set duration to current timeLeft
+    } else {
+      // NEW: When resuming, set currentPhaseStartTime based on remainingTimeAtPause
+      setCurrentPhaseStartTime(Date.now() - (currentPhaseDurationSeconds - remainingTimeAtPause) * 1000);
     }
     setIsTimeLeftManagedBySession(true);
   };
@@ -586,6 +595,8 @@ const Index = () => {
       } else {
         setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
       }
+      // NEW: Store remaining time at pause
+      setRemainingTimeAtPause(timeLeft);
       setCurrentPhaseStartTime(null);
     }
     setIsPaused(true);
@@ -611,12 +622,16 @@ const Index = () => {
       setAccumulatedFocusSeconds((prev: number) => prev + elapsed);
     }
     setTimerType('break');
-    setTimeLeft(breakMinutes * 60);
+    // NEW: Set new phase duration and start time
+    const newBreakDurationSeconds = breakMinutes * 60;
+    setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
+    setTimeLeft(newBreakDurationSeconds);
+    setCurrentPhaseStartTime(Date.now());
+
     setIsFlashing(false);
     setIsRunning(true);
     playSound();
     triggerVibration();
-    setCurrentPhaseStartTime(Date.now());
     setIsTimeLeftManagedBySession(true);
   };
 
@@ -626,12 +641,16 @@ const Index = () => {
       setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
     }
     setTimerType('focus');
-    setTimeLeft(focusMinutes * 60);
+    // NEW: Set new phase duration and start time
+    const newFocusDurationSeconds = focusMinutes * 60;
+    setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
+    setTimeLeft(newFocusDurationSeconds);
+    setCurrentPhaseStartTime(Date.now());
+
     setIsFlashing(false);
     setIsRunning(true);
     playSound();
     triggerVibration();
-    setCurrentPhaseStartTime(Date.now());
     setIsTimeLeftManagedBySession(true);
   };
 
@@ -640,10 +659,14 @@ const Index = () => {
 
     if (mode === 'focus') {
       setTimerType('focus');
-      setTimeLeft(focusMinutes * 60);
+      const newFocusDurationSeconds = focusMinutes * 60;
+      setCurrentPhaseDurationSeconds(newFocusDurationSeconds); // NEW: Update duration
+      setTimeLeft(newFocusDurationSeconds);
     } else {
       setTimerType('break');
-      setTimeLeft(breakMinutes * 60);
+      const newBreakDurationSeconds = breakMinutes * 60;
+      setCurrentPhaseDurationSeconds(newBreakDurationSeconds); // NEW: Update duration
+      setTimeLeft(newBreakDurationSeconds);
     }
     setIsTimeLeftManagedBySession(false);
   };
@@ -1018,9 +1041,8 @@ const Index = () => {
     setCurrentSessionOtherParticipants([]);
   }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, areToastsEnabled, currentUserName]);
 
-  const currentItemDuration = isScheduleActive && activeSchedule[currentScheduleIndex]
-    ? activeSchedule[currentScheduleIndex].durationMinutes
-    : (timerType === 'focus' ? focusMinutes : breakMinutes);
+  // NEW: Use currentPhaseDurationSeconds for currentItemDuration
+  const currentItemDuration = currentPhaseDurationSeconds / 60;
 
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
@@ -1472,7 +1494,7 @@ const Index = () => {
 
                   {/* NEW: Container for Stop and Ask buttons */}
                   {(isRunning || isPaused || isScheduleActive || isSchedulePending) && (
-                    <div className="flex items-end justify-between px-4 mt-4"> {/* Removed absolute positioning */}
+                    <div className="flex items-end justify-between px-4 mt-4">
                       {/* Stop button container */}
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
@@ -1843,7 +1865,7 @@ const Index = () => {
                   value={discoveryDisplayName}
                   onChange={(e) => setDiscoveryDisplayName(e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  onBlur={handleDiscoveryDisplayNameBlur} 
+                  onBlur={handleDiscoveryDisplayNameBlur}
                 />
               </div>
 
