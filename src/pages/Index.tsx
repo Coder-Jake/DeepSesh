@@ -852,7 +852,7 @@ const Index = () => {
           intention: `Deep work on ${name}'s theories.`,
           bio: `A dedicated member of ${orgName}.`,
         });
-      }
+      });
 
       sessions.push({
         id: `org-session-${orgName.replace(/\s/g, '-')}`,
@@ -1475,7 +1475,7 @@ const Index = () => {
 
                   {/* NEW: Container for Stop and Ask buttons */}
                   {(isRunning || isPaused || isScheduleActive || isSchedulePending) && (
-                    <div className="flex items-end justify-between px-4 pb-4 mt-4"> {/* Removed absolute positioning */}
+                    <div className="flex items-end justify-between px-4 mt-4"> {/* Removed absolute positioning */}
                       {/* Stop button container */}
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
