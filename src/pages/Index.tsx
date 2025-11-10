@@ -39,7 +39,7 @@ import { Accordion
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } '@/contexts/ThemeContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -312,7 +312,7 @@ const Index = () => {
     resetSessionStates,
     showDemoSessions,
     currentPhaseDurationSeconds,
-    setCurrentPhaseDurationSeconds, // ADDED: Destructure setCurrentPhaseDurationSeconds
+    setCurrentPhaseDurationSeconds,
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
@@ -354,7 +354,7 @@ const Index = () => {
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(linkCopiedTimeoutRef.current);
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Corrected initialization
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(
