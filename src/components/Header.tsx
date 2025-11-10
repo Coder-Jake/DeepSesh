@@ -61,7 +61,7 @@ const Header = () => {
               alt="DeepSesh Logo" 
               className="h-8 w-8 mr-0 mt-[-6px]"
             />
-            <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-[#8c25f4] to-[#1a8cff] text-transparent bg-clip-text">
+            <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-[#1a8cff] to-[#8c25f4] text-transparent bg-clip-text">
               DeepSesh
               <span className={cn(
                 "ml-0.5 text-[0.6rem] text-gray-400 font-normal transition-opacity duration-200",
