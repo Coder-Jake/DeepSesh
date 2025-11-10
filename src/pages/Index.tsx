@@ -14,7 +14,7 @@ import { useNavigate, Link } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskSection";
+import ActiveAskSection from "@/components/ActiveAskAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
@@ -852,7 +852,7 @@ const Index = () => {
           intention: `Deep work on ${name}'s theories.`,
           bio: `A dedicated member of ${orgName}.`,
         });
-      });
+      } // Corrected: closing the 'for' loop
 
       sessions.push({
         id: `org-session-${orgName.replace(/\s/g, '-')}`,
