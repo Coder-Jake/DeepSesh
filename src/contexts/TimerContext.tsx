@@ -1842,6 +1842,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     resetSessionStates,
     showDemoSessions,
     setShowDemoSessions,
+    currentPhaseDurationSeconds, // ADDED
+    setCurrentPhaseDurationSeconds, // ADDED
+    remainingTimeAtPause, // ADDED
+    setRemainingTimeAtPause, // ADDED
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
