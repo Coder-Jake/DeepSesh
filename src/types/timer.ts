@@ -281,6 +281,10 @@ export type TimerContextType = {
   resetSessionStates: () => void;
   showDemoSessions: boolean; // NEW: Add showDemoSessions
   setShowDemoSessions: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Add setShowDemoSessions
+  currentPhaseDurationSeconds: number; // NEW: Add currentPhaseDurationSeconds
+  setCurrentPhaseDurationSeconds: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setCurrentPhaseDurationSeconds
+  remainingTimeAtPause: number; // NEW: Add remainingTimeAtPause
+  setRemainingTimeAtPause: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setRemainingTimeAtPause
 };
 
 // Define the structure for a saved session
