@@ -213,12 +213,19 @@ const ProfilePopUpCard: React.FC = () => {
       );
     };
 
+    const targetBio = targetProfile.profile_data?.bio; // Use optional chaining
+    const targetIntention = targetProfile.profile_data?.intention; // Use optional chaining
+    const targetCanHelpWith = targetProfile.profile_data?.can_help_with; // Use optional chaining
+    const targetNeedHelpWith = targetProfile.profile_data?.need_help_with; // Use optional chaining
+    const targetLinkedinUrl = targetProfile.profile_data?.linkedin_url; // Use optional chaining
+    const targetPronouns = targetProfile.profile_data?.pronouns; // Use optional chaining
+
     const allFieldsPrivate =
-      (!targetProfile.profile_data.bio?.value || !isFieldVisible(targetProfile.profile_data.bio)) &&
-      (!targetProfile.profile_data.intention?.value || !isFieldVisible(targetProfile.profile_data.intention)) &&
-      (!targetProfile.profile_data.can_help_with?.value || !isFieldVisible(targetProfile.profile_data.can_help_with)) &&
-      (!targetProfile.profile_data.need_help_with?.value || !isFieldVisible(targetProfile.profile_data.need_help_with)) &&
-      (!targetProfile.profile_data.linkedin_url?.value || !isFieldVisible(targetProfile.profile_data.linkedin_url));
+      (!targetBio?.value || !isFieldVisible(targetBio)) &&
+      (!targetIntention?.value || !isFieldVisible(targetIntention)) &&
+      (!targetCanHelpWith?.value || !isFieldVisible(targetCanHelpWith)) &&
+      (!targetNeedHelpWith?.value || !isFieldVisible(targetNeedHelpWith)) &&
+      (!targetLinkedinUrl?.value || !isFieldVisible(targetLinkedinUrl));
 
     if (!isCurrentUserProfile && allFieldsPrivate && targetProfile.focus_preference === null) {
       return (
@@ -229,13 +236,6 @@ const ProfilePopUpCard: React.FC = () => {
         </div>
       );
     }
-
-    const targetBio = targetProfile.profile_data.bio;
-    const targetIntention = targetProfile.profile_data.intention;
-    const targetCanHelpWith = targetProfile.profile_data.can_help_with;
-    const targetNeedHelpWith = targetProfile.profile_data.need_help_with;
-    const targetLinkedinUrl = targetProfile.profile_data.linkedin_url;
-    const targetPronouns = targetProfile.profile_data.pronouns;
 
     return (
       <div className="space-y-4">
@@ -257,11 +257,7 @@ const ProfilePopUpCard: React.FC = () => {
                 currentFriendStatus === 'friends' && "text-green-500 hover:text-green-600"
               )}
               onClick={() => {
-                if (currentFriendStatus === 'none') {
-                  if (areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
-                } else if (currentFriendStatus === 'friends') {
-                  if (areToastsEnabled) toast.info("Remove friend functionality not implemented in demo.");
-                }
+                if (areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
               }}
               disabled={currentFriendStatus === 'pending'}
             >
@@ -283,7 +279,6 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetBio.visibility))
               )}
             >
@@ -298,7 +293,6 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetIntention.visibility))
               )}
             >
@@ -313,7 +307,6 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetCanHelpWith.visibility))
               )}
             >
@@ -328,7 +321,6 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetNeedHelpWith.visibility))
               )}
             >
@@ -367,7 +359,6 @@ const ProfilePopUpCard: React.FC = () => {
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                // Removed onClick handler for isCurrentUserProfile
                 getPrivacyColorClassFromIndex(getIndexFromVisibility(targetLinkedinUrl.visibility))
               )}
             >

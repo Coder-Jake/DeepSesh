@@ -141,7 +141,7 @@ const Profile = () => {
 
     // Update profile context immediately
     const updatePayload: ProfileUpdate = {
-      [fieldName]: { value: profile?.profile_data[fieldName]?.value || null, visibility: newVisibility }
+      [fieldName]: { value: profile?.profile_data?.[fieldName]?.value || null, visibility: newVisibility } // Use optional chaining
     };
     await updateProfile(updatePayload);
   }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus, updateProfile, profile]);

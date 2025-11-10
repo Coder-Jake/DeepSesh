@@ -509,8 +509,8 @@ const Index = () => {
       joinTime: Date.now(),
       role: 'host',
       focusPreference: focusPreference || 50,
-      intention: profile?.profile_data.intention.value || undefined,
-      bio: profile?.profile_data.bio.value || undefined,
+      intention: profile?.profile_data?.intention?.value || undefined, // Safely access intention
+      bio: profile?.profile_data?.bio?.value || undefined, // Safely access bio
     };
 
     setCurrentSessionRole('host');
@@ -1588,7 +1588,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-6">
-            {profile?.profile_data.intention.value && (
+            {profile?.profile_data?.intention?.value && (
               <Card>
                 <CardHeader>
                   <CardTitle className="lg">My Intention</CardTitle>
