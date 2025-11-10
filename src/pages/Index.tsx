@@ -311,7 +311,8 @@ const Index = () => {
     stopTimer,
     resetSessionStates,
     showDemoSessions,
-    currentPhaseDurationSeconds, // NEW: Get currentPhaseDurationSeconds
+    currentPhaseDurationSeconds,
+    setCurrentPhaseDurationSeconds, // ADDED: Destructure setCurrentPhaseDurationSeconds
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
@@ -353,7 +354,7 @@ const Index = () => {
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(linkCopiedTimeoutRef.current);
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(
@@ -596,7 +597,7 @@ const Index = () => {
         setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
       }
       // NEW: Store remaining time at pause
-      setRemainingTimeAtPause(timeLeft);
+      // setRemainingTimeAtPause(timeLeft); // This is now handled in TimerContext
       setCurrentPhaseStartTime(null);
     }
     setIsPaused(true);
