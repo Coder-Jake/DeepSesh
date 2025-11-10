@@ -3,8 +3,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import Navigation from "@/components/Navigation";
-import { useState, useEffect } from "react"; // Import useEffect
-import { cn } from "@/lib/utils"; // Fixed import for cn
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 const Header = () => {
   const location = useLocation();
@@ -13,23 +13,23 @@ const Header = () => {
 
   const [secretTextVisible, setSecretTextVisible] = useState(false);
   const [showSecretTextDiv, setShowSecretTextDiv] = useState(false);
-  const [showDemoText, setShowDemoText] = useState(false); // New state for the demo text visibility
+  const [showDemoText, setShowDemoText] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isHomePage) {
-      setShowDemoText(true); // Show it immediately when on home page
+      setShowDemoText(true);
       timer = setTimeout(() => {
-        setShowDemoText(false); // Hide after 3 seconds
+        setShowDemoText(false);
       }, 3000);
     } else {
-      setShowDemoText(false); // Hide immediately if not on home page
+      setShowDemoText(false);
     }
 
     return () => {
-      clearTimeout(timer); // Clean up the timer on unmount or dependency change
+      clearTimeout(timer);
     };
-  }, [isHomePage]); // Re-run effect when isHomePage changes
+  }, [isHomePage]);
 
   const handleHeaderClick = () => {
     if (isHomePage) {
@@ -61,11 +61,11 @@ const Header = () => {
               alt="DeepSesh Logo" 
               className="h-8 w-8 mr-0 mt-[-6px]"
             />
-            <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
+            <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-[#8c25f4] to-[#1a8cff] text-transparent bg-clip-text">
               DeepSesh
               <span className={cn(
                 "ml-0.5 text-[0.6rem] text-gray-400 font-normal transition-opacity duration-200",
-                isHomePage && showDemoText ? "opacity-100" : "opacity-0 pointer-events-none" // Updated visibility logic
+                isHomePage && showDemoText ? "opacity-100" : "opacity-0 pointer-events-none"
               )}>
                 (demo)
               </span>
