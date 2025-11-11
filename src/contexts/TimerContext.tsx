@@ -1307,7 +1307,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           }
         }
       } else {
-        if (areToastsEnabled) {
+        // Manual timer completion
+        if (shouldShowEndToast && areToastsEnabled) { // MODIFIED: Explicitly check shouldShowEndToast
           toast("Timer Ended!", {
             description: `Your ${timerType} session has finished.`,
           });
@@ -1342,12 +1343,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     timeLeft, isRunning, currentPhaseStartTime, currentPhaseDurationSeconds, // NEW dependencies
     isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle,
-    setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndToast, user?.id, _seshTitle, notes,
+    setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldShowEndToast, user?.id, _seshTitle, notes, // <--- shouldShowEndToast is in dependencies
     accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition,
     focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration,
     isRecurring, setCurrentScheduleIndex, setTimerType, setIsRunning, setIsFlashing, setCurrentPhaseStartTime, setTimeLeft,
     _defaultFocusMinutes, _defaultBreakMinutes, setHomepageFocusMinutes, setHomepageBreakMinutes, getDefaultSeshTitle,
-    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setHasWonPrize
+    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setHasWonPrize, shouldPlayEndSound
   ]);
 
   useEffect(() => {
