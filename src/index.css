@@ -24,7 +24,7 @@
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --secondary-hover: 210 40% 90%; /* Adjusted from 100% to 90% for better visibility */
+    --secondary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
 
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
@@ -34,6 +34,8 @@
     --destructive-hover: 0 84.2% 70.2%; /* 10% lighter */
 
     --ring: 215 20.2% 65.1%;
+
+    --radius: 0.5rem;
 
     /* Public and Private gradients for light mode */
     --public-gradient-start-light: 200 90% 85%;
@@ -89,7 +91,7 @@
 
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --primary-hover: 210 40% 90%; /* Adjusted from 100% to 90% for better visibility */
+    --primary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
