@@ -93,6 +93,8 @@
     --error-fg-light: 0 80% 40%; /* Darker red text */
     --error-border-light: 0 80% 80%; /* Border color */
     --error-hover-light: 0 80% 85%; /* Slightly darker red on hover */
+
+    --radius: 0.5rem; /* Explicitly defining default border radius */
   }
 
   .dark {
