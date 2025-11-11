@@ -635,6 +635,41 @@ const Profile = () => {
                     className="mt-2"
                   />
                 </div>
+                <div className="flex flex-col sm:flex-row gap-4"> {/* Changed to flex-col for small screens, flex-row for sm and up */}
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="can-help-with"
+                      onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
+                      className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
+                    >
+                      <Handshake size={16} className="inline-block mr-1" /> I can help with
+                    </Label>
+                    <Textarea
+                      id="can-help-with"
+                      placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
+                      value={canHelpWith || ""}
+                      onChange={(e) => setCanHelpWith(e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="need-help-with"
+                      onClick={() => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with')}
+                      className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibility)))}
+                    >
+                      <HelpCircle size={16} className="inline-block mr-1" /> I need help with
+                    </Label>
+                    <Textarea
+                      id="need-help-with"
+                      placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
+                      value={needHelpWith || ""}
+                      onChange={(e) => setNeedHelpWith(e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -654,40 +689,6 @@ const Profile = () => {
                     className="mt-2"
                   />
                 </div>
-                <div>
-                  <Label
-                    htmlFor="can-help-with"
-                    onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
-                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
-                  >
-                    <Handshake size={16} className="inline-block mr-1" /> I can help with
-                  </Label>
-                  <Textarea
-                    id="can-help-with"
-                    placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
-                    value={canHelpWith || ""}
-                    onChange={(e) => setCanHelpWith(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-
-                <div>
-                  <Label
-                    htmlFor="need-help-with"
-                    onClick={() => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with')}
-                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibility)))}
-                  >
-                    <HelpCircle size={16} className="inline-block mr-1" /> I need help with
-                  </Label>
-                  <Textarea
-                    id="need-help-with"
-                    placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
-                    value={needHelpWith || ""}
-                    onChange={(e) => setNeedHelpWith(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-
                 <div>
                   <Label
                     htmlFor="linkedin-username"
