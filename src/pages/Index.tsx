@@ -1633,7 +1633,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleExtendSubmit}
+              onVoteExtend={handleVoteExtend} // Corrected: Use handleVoteExtend for voting on existing asks
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
