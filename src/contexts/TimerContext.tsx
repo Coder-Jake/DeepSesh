@@ -657,7 +657,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         toast.info("Session Ended", {
           description: "No other participants to transfer host role to. Session ended.",
         });
-      }
+      });
       await resetSchedule();
     }
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
@@ -1028,8 +1028,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `"${templateToLoad.title}" has been loaded into the editor.`,
         });
       }
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
+      // These lines are intentionally NOT setting setIsHomepageFocusCustomized(false)
+      // or setIsHomepageBreakCustomized(false) as loading a template should not
+      // implicitly reset the homepage timer customization status.
     }
   }, [savedSchedules, areToastsEnabled, toast]);
 
@@ -1677,8 +1678,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
+      // REMOVED: setIsHomepageFocusCustomized(false); // This line was causing the bug
+      // REMOVED: setIsHomepageBreakCustomized(false); // This line was causing the bug
     } else {
       _setFocusMinutes(_defaultFocusMinutes);
       _setBreakMinutes(_defaultBreakMinutes);
@@ -1687,8 +1688,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
+      // REMOVED: setIsHomepageFocusCustomized(false); // This line was causing the bug
+      // REMOVED: setIsHomepageBreakCustomized(false); // This line was causing the bug
     }
   }, [/* Removed getDefaultSeshTitle from dependencies */ _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate]); // Added synchronous state setters to dependencies
 
