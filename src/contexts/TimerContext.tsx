@@ -206,21 +206,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     _setDefaultBreakMinutes(minutes);
   }, []);
 
-  useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession && !isHomepageFocusCustomized) {
-      if (focusMinutes !== _defaultFocusMinutes) {
-        _setFocusMinutes(_defaultFocusMinutes);
-      }
-    }
-  }, [_defaultFocusMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, focusMinutes, isHomepageFocusCustomized]);
-
-  useEffect(() => {
-    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !isTimeLeftManagedBySession && !isHomepageBreakCustomized) {
-      if (breakMinutes !== _defaultBreakMinutes) {
-        _setBreakMinutes(_defaultBreakMinutes);
-      }
-    }
-  }, [_defaultBreakMinutes, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, breakMinutes, isHomepageBreakCustomized]);
+  // REMOVED: useEffect that reset focusMinutes to _defaultFocusMinutes
+  // REMOVED: useEffect that reset breakMinutes to _defaultBreakMinutes
 
   const getDefaultSeshTitle = useCallback(() => {
     const name = user?.user_metadata?.first_name || profile?.first_name || "You";

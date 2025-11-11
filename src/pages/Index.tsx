@@ -14,7 +14,7 @@ import { useNavigate, Link } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskSection";
+import ActiveAskSection from "@/components/ActiveAsk/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
@@ -140,7 +140,7 @@ const mockFriendsSessions: DemoSession[] = [
       { userId: "mock-user-id-jung", userName: "Jung", role: 'coworker', joinTime: Date.now(), focusPreference: 70, intention: "Summarizing archetypal concepts." },
       { userId: "mock-user-id-maslow", userName: "Maslow", role: 'coworker', joinTime: Date.now(), focusPreference: 90, intention: "Creating hierarchy of needs flashcards." },
       { userId: "mock-user-id-rogers", userName: "Rogers", role: 'coworker', joinTime: Date.now(), focusPreference: 95, intention: "Discussing humanistic approaches." },
-      { userId: "mock-user-id-pavlov", userName: "Pavlov", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Peer teaching classical conditioning." },
+      { id: crypto.randomUUID(), userId: "mock-user-id-pavlov", userName: "Pavlov", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Peer teaching classical conditioning." },
     ],
     fullSchedule: [
       { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 25 },
@@ -499,6 +499,10 @@ const Index = () => {
       setActiveAsks([]);
     }
 
+    // Ensure focusMinutes and breakMinutes reflect defaults if not customized
+    const currentFocusDuration = focusMinutes;
+    const currentBreakDuration = breakMinutes;
+
     playSound();
     triggerVibration();
     setIsRunning(true);
@@ -509,7 +513,7 @@ const Index = () => {
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
     // NEW: Set currentPhaseDurationSeconds for manual timer
-    const initialDurationSeconds = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+    const initialDurationSeconds = timerType === 'focus' ? currentFocusDuration * 60 : currentBreakDuration * 60;
     setCurrentPhaseDurationSeconds(initialDurationSeconds);
     setTimeLeft(initialDurationSeconds); // Initialize timeLeft to full duration
     setIsTimeLeftManagedBySession(true);
@@ -532,7 +536,7 @@ const Index = () => {
 
     if (!isGlobalPrivate) {
       const { latitude, longitude } = await getLocation();
-      const currentPhaseDuration = timerType === 'focus' ? focusMinutes : breakMinutes;
+      const currentPhaseDuration = timerType === 'focus' ? currentFocusDuration : currentBreakDuration;
       const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
       try {
         const { data, error } = await supabase
@@ -542,8 +546,8 @@ const Index = () => {
             host_name: hostParticipant.userName,
             session_title: seshTitle,
             visibility: 'public',
-            focus_duration: focusMinutes,
-            break_duration: breakMinutes,
+            focus_duration: currentFocusDuration,
+            break_duration: currentBreakDuration,
             current_phase_type: timerType,
             current_phase_end_time: currentPhaseEndTime,
             total_session_duration_seconds: currentPhaseDuration * 60,
