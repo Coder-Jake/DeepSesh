@@ -30,28 +30,12 @@ export const CircularProgress = ({
   let backgroundFill: string;
   if (!isActiveTimer) {
     backgroundFill = 'hsl(var(--neutral-background))';
-  } else if (timerType === 'break') {
-    // NEW: Use break gradient
-    backgroundFill = 'url(#breakGradient)';
-  } else { // timerType === 'focus'
-    // For focus, we use the gradient defined in SVG defs
-    backgroundFill = 'url(#focusGradient)';
+  } else {
+    backgroundFill = 'hsl(var(--card))'; // Always use card background when active
   }
 
-  // NEW: Determine progress stroke color based on timerType and theme
-  let progressStrokeColor: string;
-  if (timerType === 'break') {
-    progressStrokeColor = isDarkMode ? `hsl(var(--break-gradient-end-dark))` : `hsl(var(--break-gradient-end-light))`;
-  } else { // timerType === 'focus'
-    progressStrokeColor = `hsl(var(--primary))`;
-  }
-
-  // NEW: Determine which CSS variables to use for the gradients based on theme
-  const focusGradientStartVar = isDarkMode ? 'var(--focus-gradient-start-dark)' : 'var(--focus-gradient-start-light)';
-  const focusGradientEndVar = isDarkMode ? 'var(--focus-gradient-end-dark)' : 'var(--focus-gradient-end-light)';
-
-  const breakGradientStartVar = isDarkMode ? 'var(--break-gradient-start-dark)' : 'var(--break-gradient-start-light)';
-  const breakGradientEndVar = isDarkMode ? 'var(--break-gradient-end-dark)' : 'var(--break-gradient-end-light)';
+  // Progress stroke color will always be the foreground color for consistency
+  const progressStrokeColor = 'hsl(var(--foreground))';
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
@@ -60,18 +44,6 @@ export const CircularProgress = ({
         height={size}
         className={`circular-progress-container transform -rotate-90`}
       >
-        <defs>
-          {/* NEW: Define the linear gradient for focus periods */}
-          <linearGradient id="focusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={`hsl(${focusGradientStartVar})`} />
-            <stop offset="100%" stopColor={`hsl(${focusGradientEndVar})`} />
-          </linearGradient>
-          {/* NEW: Define the linear gradient for break periods */}
-          <linearGradient id="breakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={`hsl(${breakGradientStartVar})`} />
-            <stop offset="100%" stopColor={`hsl(${breakGradientEndVar})`} />
-          </linearGradient>
-        </defs>
         {/* Background ring */}
         <circle
           cx={size / 2}
@@ -94,9 +66,7 @@ export const CircularProgress = ({
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
           className="transition-all duration-200 ease-out"
-          style={{
-            filter: `drop-shadow(0 0 4px ${timerType === 'break' ? 'rgba(192, 192, 192, 0.4)' : 'hsl(var(--primary) / 0.2)'})` // Added subtle shadow, adjusted for silver
-          }}
+          // Removed the filter drop-shadow as it was tied to the old coloring
         />
       </svg>
       
