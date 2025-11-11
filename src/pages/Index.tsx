@@ -632,7 +632,7 @@ const Index = () => {
     const newBreakDurationSeconds = breakMinutes * 60;
     setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
     setTimeLeft(newBreakDurationSeconds);
-    setCurrentPhaseStartTime(Date.Now());
+    setCurrentPhaseStartTime(Date.now());
 
     setIsFlashing(false);
     setIsRunning(true);
@@ -643,7 +643,7 @@ const Index = () => {
 
   const switchToFocus = () => {
     if (currentPhaseStartTime !== null) {
-      const elapsed = (Date.Now() - currentPhaseStartTime) / 1000;
+      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
       setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
     }
     setTimerType('focus');
@@ -651,7 +651,7 @@ const Index = () => {
     const newFocusDurationSeconds = focusMinutes * 60;
     setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
     setTimeLeft(newFocusDurationSeconds);
-    setCurrentPhaseStartTime(Date.Now());
+    setCurrentPhaseStartTime(Date.now());
 
     setIsFlashing(false);
     setIsRunning(true);
@@ -1035,7 +1035,7 @@ const Index = () => {
     setIsScheduleActive(true);
     setIsRunning(true);
     setIsPaused(false);
-    setCurrentPhaseStartTime(Date.Now());
+    setCurrentPhaseStartTime(Date.now());
     if (areToastsEnabled) {
       toast("Schedule Commenced!", {
         description: `Your scheduled sesh has now begun.`,
@@ -1636,7 +1636,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleExtendSubmit} // Corrected: Use handleVoteExtend for voting on existing asks
+              onVoteExtend={handleVoteExtend} // Corrected: Use handleVoteExtend for voting on existing asks
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
