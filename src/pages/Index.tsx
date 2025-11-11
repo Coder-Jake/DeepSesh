@@ -332,8 +332,8 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaAreaElement>(null);
-
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null); // Corrected typo
+  
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
 

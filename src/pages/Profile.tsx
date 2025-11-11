@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext"; // Corrected import path
 import { useNavigate } from "react-router-dom";
 import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipHeader, TooltipTitle, TooltipDescription, TooltipFooter, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Removed TooltipHeader, TooltipTitle, TooltipDescription, TooltipFooter
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
