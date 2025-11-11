@@ -575,7 +575,11 @@ const Profile = () => {
                   </span>
                 )}
                 {pronouns && (
-                  <span className="text-sm text-muted-foreground ml-1" onClick={handlePronounCycle}>{`(${pronouns})`}</span> {/* Simplified to directly embed variable */}
+                  <span className="text-sm text-muted-foreground ml-1" onClick={handlePronounCycle}>
+                    (
+                    {pronouns}
+                    )
+                  </span>
                 )}
               </CardTitle>
                 <Tooltip
