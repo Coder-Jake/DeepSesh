@@ -525,6 +525,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     // REMOVED: _setFocusMinutes(_defaultFocusMinutes);
     // REMOVED: _setBreakMinutes(_defaultBreakMinutes);
     setTimeLeft(_defaultFocusMinutes * 60);
+    setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
     setIsRunning(false);
     setIsPaused(false);
     setIsFlashing(false);
@@ -1367,11 +1368,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [activeScheduleDisplayTitle, isSeshTitleCustomized]);
 
+  // NEW: Separate useEffect for updating _seshTitle based on getDefaultSeshTitle
   useEffect(() => {
     if (!isSeshTitleCustomized) {
       _setSeshTitle(getDefaultSeshTitle());
     }
-  }, [user?.user_metadata?.first_name, profile?.first_name, isSeshTitleCustomized, getDefaultSeshTitle]);
+  }, [isSeshTitleCustomized, getDefaultSeshTitle, _setSeshTitle]);
 
 
   const addAsk = useCallback((ask: ActiveAskItem) => {
@@ -1668,8 +1670,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setRecurrenceFrequency(initialScheduleToLoad.recurrenceFrequency);
       setTimerColors(initialScheduleToLoad.timerColors || {});
 
-      _setFocusMinutes(_defaultFocusMinutes);
-      _setBreakMinutes(_defaultBreakMinutes);
+      // REMOVED: _setFocusMinutes(_defaultFocusMinutes);
+      // REMOVED: _setBreakMinutes(_defaultBreakMinutes);
       setTimerType('focus');
       setTimeLeft(_defaultFocusMinutes * 60);
       setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
@@ -1688,7 +1690,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
     }
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate]); // Added synchronous state setters to dependencies
+  }, [/* Removed getDefaultSeshTitle from dependencies */ _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate]); // Added synchronous state setters to dependencies
 
   useEffect(() => {
     const dataToSave = {
