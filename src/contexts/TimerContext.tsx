@@ -203,20 +203,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     // If the homepage focus minutes were not customized, update them to the new default
     if (!isHomepageFocusCustomized) {
       _setFocusMinutes(minutes);
-      setTimeLeft(minutes * 60); // Also update timeLeft if not customized
-      setCurrentPhaseDurationSeconds(minutes * 60); // NEW: Update currentPhaseDurationSeconds
+      // Removed direct updates to timeLeft and currentPhaseDurationSeconds
     }
-  }, [isHomepageFocusCustomized, _setFocusMinutes, setTimeLeft, setCurrentPhaseDurationSeconds]);
+  }, [isHomepageFocusCustomized, _setFocusMinutes]); // Removed setTimeLeft, setCurrentPhaseDurationSeconds from dependencies
 
   const setDefaultBreakMinutes = useCallback((minutes: number) => {
     _setDefaultBreakMinutes(minutes);
     // If the homepage break minutes were not customized, update them to the new default
     if (!isHomepageBreakCustomized) {
       _setBreakMinutes(minutes);
-      setTimeLeft(minutes * 60); // Also update timeLeft if not customized
-      setCurrentPhaseDurationSeconds(minutes * 60); // NEW: Update currentPhaseDurationSeconds
+      // Removed direct updates to timeLeft and currentPhaseDurationSeconds
     }
-  }, [isHomepageBreakCustomized, _setBreakMinutes, setTimeLeft, setCurrentPhaseDurationSeconds]);
+  }, [isHomepageBreakCustomized, _setBreakMinutes]); // Removed setTimeLeft, setCurrentPhaseDurationSeconds from dependencies
 
   const getDefaultSeshTitle = useCallback(() => {
     const name = user?.user_metadata?.first_name || profile?.first_name || "You";
