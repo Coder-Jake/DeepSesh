@@ -271,7 +271,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   // --- NEW: Initial Load Effect (Local-First) ---
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true; // Flag to prevent state updates on unmounted component
     const loadProfile = async () => {
       setLoading(true);
       const storedProfile = localStorage.getItem(LOCAL_STORAGE_PROFILE_KEY);
@@ -376,7 +376,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
 
   // Sync local states to profile object and save to local storage
-  // This useEffect now acts as the "local save" mechanism
+  // This useEffect now acts as the "local save" mechanism, but with an optimization
   useEffect(() => {
     if (!user || loading) return;
 
@@ -389,7 +389,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       pronouns: getDefaultProfileDataField(pronouns, ['public']),
     };
 
-    const currentProfile: Profile = {
+    const newProfileContent: Omit<Profile, 'updated_at'> = {
       id: user.id,
       first_name: localFirstName,
       last_name: null,
@@ -398,15 +398,39 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       organization,
       host_code: hostCode,
       profile_data: currentProfileData,
-      updated_at: new Date().toISOString(),
     };
-    setProfile(currentProfile);
-    localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(currentProfile));
+
+    // Create a comparable version of the existing profile (without updated_at)
+    const existingProfileContentComparable: Omit<Profile, 'updated_at'> | null = profile ? {
+      id: profile.id,
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      avatar_url: profile.avatar_url,
+      focus_preference: profile.focus_preference,
+      organization: profile.organization,
+      host_code: profile.host_code,
+      profile_data: profile.profile_data,
+    } : null;
+
+    // Only update if the content of the profile has actually changed
+    if (JSON.stringify(newProfileContent) !== JSON.stringify(existingProfileContentComparable)) {
+      const updatedProfile: Profile = {
+        ...newProfileContent,
+        updated_at: new Date().toISOString(), // Set updated_at only when content changes
+      };
+      setProfile(updatedProfile);
+      localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(updatedProfile));
+    } else if (profile) {
+      // If content hasn't changed, but profile exists, ensure localStorage has the latest profile object
+      // (which might have a different `updated_at` from the last `setProfile` call, e.g., from initial load or Supabase sync)
+      // This is crucial for `syncProfileToSupabase` to always send the most recent `updated_at` to Supabase.
+      localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(profile));
+    }
   }, [
     user, loading, localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference,
     organization, linkedinUrl, hostCode, pronouns,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    getDefaultProfileDataField
+    getDefaultProfileDataField, profile // `profile` is a dependency because we compare against it
   ]);
 
   // --- MODIFIED: updateProfile function (now local-first) ---
