@@ -359,21 +359,13 @@ const Index = () => {
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(""); // Initialize empty
-  const isDiscoveryDisplayNameInitialized = useRef(false); // NEW: Ref to track initialization
 
   // NEW: Effect to sync discoveryDisplayName with localFirstName when dialog opens
   useEffect(() => {
     if (isDiscoverySetupOpen) {
-      if (!isDiscoveryDisplayNameInitialized.current) { // Only initialize once per dialog open
-        setDiscoveryDisplayName(localFirstName === "You" ? (hostCode || "") : (localFirstName || hostCode || ""));
-        isDiscoveryDisplayNameInitialized.current = true;
-      }
-    } else {
-      // Reset when dialog closes
-      setDiscoveryDisplayName("");
-      isDiscoveryDisplayNameInitialized.current = false; // Reset flag for next open
+      setDiscoveryDisplayName(localFirstName === "You" ? (hostCode || "") : (localFirstName || hostCode || ""));
     }
-  }, [isDiscoverySetupOpen, localFirstName, hostCode]); // Keep localFirstName and hostCode as dependencies for initial value
+  }, [isDiscoverySetupOpen, localFirstName, hostCode]);
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
