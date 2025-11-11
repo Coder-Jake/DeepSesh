@@ -319,6 +319,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           });
         }
         setIsGlobalPrivate(true);
+        setGeolocationPermissionStatus('denied');
         resolve({ latitude: null, longitude: null });
         return;
       }
@@ -1500,8 +1501,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
       setIsDiscoveryActivated(loadedIsDiscoveryActivated);
 
-      const loadedIsGlobalPrivate = loadedIsDiscoveryActivated ? (data.isGlobalPrivate ?? false) : true;
-      setIsGlobalPrivate(loadedIsGlobalPrivate);
+      // NEW: Load geolocationPermissionStatus from storage
+      const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
+      setGeolocationPermissionStatus(loadedGeolocationPermissionStatus);
+
+      // MODIFIED: Determine initial isGlobalPrivate based on loaded states and stored value
+      let initialIsGlobalPrivate = data.isGlobalPrivate ?? false; // Default to public
+
+      if (loadedIsDiscoveryActivated && loadedGeolocationPermissionStatus === 'denied') {
+        initialIsGlobalPrivate = true; // Force private if discovery active but location denied
+      } else if (!loadedIsDiscoveryActivated) {
+        initialIsGlobalPrivate = true; // Force private if discovery is not activated
+      }
+      setIsGlobalPrivate(initialIsGlobalPrivate);
 
       setTimerType(data.timerType ?? 'focus');
 
@@ -1576,7 +1588,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentSessionHostName(data.currentSessionHostName ?? null);
       setCurrentSessionOtherParticipants(data.currentSessionOtherParticipants ?? []);
       setActiveSessionRecordId(data.activeSessionRecordId ?? null);
-      setGeolocationPermissionStatus(data.geolocationPermissionStatus ?? 'prompt');
+      // geolocationPermissionStatus is already set above
       setCurrentSessionParticipantsData(data.currentSessionParticipantsData ?? []);
       setLastActivityTime(loadedLastActivityTime);
       setShowDemoSessions(data.showDemoSessions ?? true);
@@ -1657,7 +1669,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       isHomepageFocusCustomized, isHomepageBreakCustomized,
       activeSessionRecordId,
       isDiscoveryActivated,
-      geolocationPermissionStatus,
+      geolocationPermissionStatus, // NEW: Add to dataToSave
       currentSessionParticipantsData,
       lastActivityTime,
       showDemoSessions,
@@ -1692,7 +1704,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isHomepageFocusCustomized, isHomepageBreakCustomized,
     activeSessionRecordId,
     isDiscoveryActivated,
-    geolocationPermissionStatus,
+    geolocationPermissionStatus, // NEW: Add to dependencies
     currentSessionParticipantsData,
     lastActivityTime,
     showDemoSessions,
