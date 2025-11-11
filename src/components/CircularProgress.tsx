@@ -31,7 +31,15 @@ export const CircularProgress = ({
   if (!isActiveTimer) {
     backgroundFill = 'hsl(var(--neutral-background))';
   } else {
-    backgroundFill = 'hsl(var(--card))'; // Always use card background when active
+    if (timerType === 'focus') {
+      backgroundFill = isDarkMode 
+        ? 'linear-gradient(to bottom right, hsl(var(--focus-gradient-start-dark)), hsl(var(--focus-gradient-end-dark)))'
+        : 'linear-gradient(to bottom right, hsl(var(--focus-gradient-start-light)), hsl(var(--focus-gradient-end-light)))';
+    } else { // timerType === 'break'
+      backgroundFill = isDarkMode 
+        ? 'linear-gradient(to bottom right, hsl(var(--break-gradient-start-dark)), hsl(var(--break-gradient-end-dark)))'
+        : 'linear-gradient(to bottom right, hsl(var(--break-gradient-start-light)), hsl(var(--break-gradient-end-light)))';
+    }
   }
 
   // Progress stroke color will always be the foreground color for consistency
@@ -51,9 +59,19 @@ export const CircularProgress = ({
           r={radius}
           stroke="hsl(var(--muted))"
           strokeWidth={strokeWidth}
-          fill={backgroundFill} // Use conditional fill
+          fill={isActiveTimer ? 'url(#gradientFill)' : backgroundFill} // Use gradientFill for active timer
         />
         
+        {/* Define gradient for active timer background */}
+        {isActiveTimer && (
+          <defs>
+            <linearGradient id="gradientFill" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={isDarkMode ? (timerType === 'focus' ? 'hsl(var(--focus-gradient-start-dark))' : 'hsl(var(--break-gradient-start-dark))') : (timerType === 'focus' ? 'hsl(var(--focus-gradient-start-light))' : 'hsl(var(--break-gradient-start-light))')} />
+              <stop offset="100%" stopColor={isDarkMode ? (timerType === 'focus' ? 'hsl(var(--focus-gradient-end-dark))' : 'hsl(var(--break-gradient-end-dark))') : (timerType === 'focus' ? 'hsl(var(--focus-gradient-end-light))' : 'hsl(var(--break-gradient-end-light))')} />
+            </linearGradient>
+          </defs>
+        )}
+
         {/* Progress ring */}
         <circle
           cx={size / 2}

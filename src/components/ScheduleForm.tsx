@@ -421,7 +421,7 @@ const ScheduleForm: React.FC = () => {
           <div className="space-y-1 pr-2">
             {schedule.map((timer, index) => {
               const defaultFocusBg = isDarkMode ? 'hsl(var(--focus-background-solid-dark))' : 'hsl(var(--focus-background-solid-light))';
-              const defaultBreakBg = isDarkMode ? 'hsl(var(--break-background-dark))' : 'hsl(var(--break-background))';
+              const defaultBreakBg = isDarkMode ? 'hsl(var(--break-background-solid-dark))' : 'hsl(var(--break-background-solid-light))'; // NEW: Use solid break background
               const itemBackgroundColor = timerColors[timer.id] || (timer.type === 'focus' ? defaultFocusBg : defaultBreakBg);
 
               return (
