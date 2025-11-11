@@ -508,7 +508,7 @@ const Profile = () => {
         <div className="absolute right-0">
           <Button
             onClick={handleSave}
-            disabled={loading || !hasChanges} {/* Disabled when no changes */}
+            disabled={loading || !hasChanges} /* Disabled when no changes */
             className="shadow-lg"
           >
             {loading ? "Saving..." : "Save Profile"}
