@@ -47,13 +47,11 @@
     --focus-gradient-start-light: 270 100% 90%;
     --focus-gradient-end-light: 270 100% 95%;
     /* Solid focus background for light mode (midpoint of gradient) */
-    --focus-background-solid-light: 270 100% 90%;
+    --focus-background-solid-light: 270 100% 92.5%;
 
     /* NEW: Break gradients for light mode */
     --break-gradient-start-light: 200 90% 85%;
     --break-gradient-end-light: 200 90% 90%;
-    /* Solid break background for light mode */
-    --break-background-solid-light: 200 90% 85%;
 
     --break-background: 40 100% 80%; /* Light pastel yellow for break */
     --neutral-background: 210 20% 95%; /* Light gray for neutral */
@@ -105,13 +103,11 @@
     --focus-gradient-start-dark: 270 30% 45%;
     --focus-gradient-end-dark: 270 30% 50%;
     /* Solid focus background for dark mode (midpoint of gradient) */
-    --focus-background-solid-dark: 270 30% 45%;
+    --focus-background-solid-dark: 270 30% 47.5%;
 
     /* NEW: Break gradients for dark mode */
     --break-gradient-start-dark: 220 50% 45%;
     --break-gradient-end-dark: 220 50% 50%;
-    /* Solid break background for dark mode */
-    --break-background-solid-dark: 220 50% 45%;
 
     --break-background: 60 40% 25%; /* Dark mode pastel yellow for break */
     --neutral-background: 210 20% 15%; /* Darker gray for neutral */

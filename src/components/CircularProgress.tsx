@@ -34,17 +34,8 @@ export const CircularProgress = ({
     backgroundFill = 'hsl(var(--card))'; // Always use card background when active
   }
 
-  // Determine the progress stroke color based on timerType and theme
-  let progressStrokeColor: string;
-  if (timerType === 'focus') {
-    progressStrokeColor = isDarkMode
-      ? `url(#focus-gradient-dark)`
-      : `url(#focus-gradient-light)`;
-  } else { // timerType === 'break'
-    progressStrokeColor = isDarkMode
-      ? `url(#break-gradient-dark)`
-      : `url(#break-gradient-light)`;
-  }
+  // Progress stroke color will always be the foreground color for consistency
+  const progressStrokeColor = 'hsl(var(--foreground))';
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
@@ -53,29 +44,6 @@ export const CircularProgress = ({
         height={size}
         className={`circular-progress-container transform -rotate-90`}
       >
-        <defs>
-          {/* Focus Gradient - Light Mode */}
-          <linearGradient id="focus-gradient-light" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--focus-gradient-start-light))" />
-            <stop offset="100%" stopColor="hsl(var(--focus-gradient-end-light))" />
-          </linearGradient>
-          {/* Focus Gradient - Dark Mode */}
-          <linearGradient id="focus-gradient-dark" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--focus-gradient-start-dark))" />
-            <stop offset="100%" stopColor="hsl(var(--focus-gradient-end-dark))" />
-          </linearGradient>
-          {/* Break Gradient - Light Mode */}
-          <linearGradient id="break-gradient-light" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--break-gradient-start-light))" />
-            <stop offset="100%" stopColor="hsl(var(--break-gradient-end-light))" />
-          </linearGradient>
-          {/* Break Gradient - Dark Mode */}
-          <linearGradient id="break-gradient-dark" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--break-gradient-start-dark))" />
-            <stop offset="100%" stopColor="hsl(var(--break-gradient-end-dark))" />
-          </linearGradient>
-        </defs>
-
         {/* Background ring */}
         <circle
           cx={size / 2}
@@ -91,7 +59,7 @@ export const CircularProgress = ({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={progressStrokeColor} // Use gradient URL
+          stroke={progressStrokeColor}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={strokeDasharray}
