@@ -616,7 +616,7 @@ const Index = () => {
   const resetTimer = async () => {
     // For solo timers, always stop without confirmation
     // The `stopTimer` function now handles the confirmation logic based on its `confirmPrompt` argument.
-    stopTimer(false); 
+    stopTimer(false, false); // MODIFIED: Added second argument
   };
 
   const switchToBreak = () => {
@@ -1532,7 +1532,7 @@ const Index = () => {
                           variant="ghost"
                           size="icon"
                           // Removed onMouseDown, onMouseUp, onMouseLeave, onTouchStart, onTouchEnd
-                          onClick={() => stopTimer(true)} // Always pass true for confirmation for multi-user, false for solo
+                          onClick={() => stopTimer(true, false)} // MODIFIED: Added second argument
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-primary/5 dark:hover:bg-primary/10",
                             isPaused ? "text-red-500" : "text-secondary-foreground"
@@ -1633,7 +1633,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend}
+              onVoteExtend={handleExtendSubmit}
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
