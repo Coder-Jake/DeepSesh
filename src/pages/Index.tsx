@@ -1698,7 +1698,8 @@ const Index = () => {
                       key={person.userId}
                       className={cn(
                         "flex items-center justify-between p-2 rounded-md select-none",
-                        person.role === 'self' ? "bg-[hsl(var(--focus-background))] text-foreground font-medium" :
+                        // NEW: Use the solid focus background color based on theme
+                        person.role === 'self' ? (isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]") :
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
                         "hover:bg-muted cursor-pointer"
                       )}

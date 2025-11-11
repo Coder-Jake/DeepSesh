@@ -5,6 +5,7 @@ import { ScheduledTimer } from "@/types/timer";
 import { cn } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
+import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 interface TimelineProps {
   schedule: ScheduledTimer[]; // Now represents the active/prepared schedule
@@ -28,6 +29,7 @@ const Timeline: React.FC<TimelineProps> = ({
   timerColors, // NEW: Destructure timerColors
 }) => {
   const { formatTime, isScheduleActive, is24HourFormat, activeScheduleDisplayTitle, setActiveScheduleDisplayTitle, sessionStartTime, isSchedulePrepared, isRecurring } = useTimer(); // Added isRecurring
+  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode
   const [countdownTimeLeft, setCountdownTimeLeft] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -203,7 +205,10 @@ const Timeline: React.FC<TimelineProps> = ({
           const isCurrent = index === currentScheduleIndex && !isSchedulePending; // Only current if not pending
           const isCompleted = index < currentScheduleIndex && !isSchedulePending; // Only completed if not pending
           const progress = isCurrent ? (timeLeft / (item.durationMinutes * 60)) * 100 : 0;
-          const itemBackgroundColor = timerColors[item.id] || (item.type === 'focus' ? 'hsl(var(--focus-background))' : ''); // Get custom color or default focus background
+          
+          // NEW: Use the solid focus background color based on theme
+          const defaultFocusBg = isDarkMode ? 'hsl(var(--focus-background-solid-dark))' : 'hsl(var(--focus-background-solid-light))';
+          const itemBackgroundColor = timerColors[item.id] || (item.type === 'focus' ? defaultFocusBg : 'hsl(var(--break-background))');
 
           return (
             <div

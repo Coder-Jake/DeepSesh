@@ -5,6 +5,7 @@ import { ScheduledTimer } from "@/types/timer";
 import { useTimer } from "@/contexts/TimerContext";
 import { cn } from "@/lib/utils";
 import { DAYS_OF_WEEK } from "@/lib/constants"; // Corrected import
+import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 interface UpcomingScheduleCardContentProps {
   schedule: ScheduledTimer[];
@@ -26,6 +27,7 @@ const UpcomingScheduleCardContent: React.FC<UpcomingScheduleCardContentProps> = 
   resetSchedule,
 }) => {
   const { formatTime, is24HourFormat } = useTimer();
+  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode
 
   const totalDurationMinutes = useMemo(() => {
     return schedule.reduce((sum, timer) => sum + timer.durationMinutes, 0);
@@ -68,7 +70,8 @@ const UpcomingScheduleCardContent: React.FC<UpcomingScheduleCardContentProps> = 
             key={item.id}
             className={cn(
               "flex items-center justify-between p-2 rounded-md text-sm",
-              item.type === 'focus' ? "bg-[hsl(var(--focus-background))]" : "bg-[hsl(var(--break-background))]"
+              // NEW: Use the solid focus background color based on theme
+              item.type === 'focus' ? (isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]") : "bg-[hsl(var(--break-background))]"
             )}
             style={{ backgroundColor: activeTimerColors[item.id] || undefined }}
           >
