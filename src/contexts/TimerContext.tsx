@@ -1321,7 +1321,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
               finalBreakSeconds,
               totalSession,
               activeJoinedSessionCoworkerCount,
-              sessionStartTime || Date.Now(),
+              sessionStartTime || Date.now(),
               activeAsks,
               allParticipantsToDisplay,
               areToastsEnabled
@@ -1351,14 +1351,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             const newBreakDurationSeconds = activeManualBreakDuration * 60; // MODIFIED: Use activeManualBreakDuration
             setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
             setTimeLeft(newBreakDurationSeconds);
-            setCurrentPhaseStartTime(Date.Now());
+            setCurrentPhaseStartTime(Date.now());
           } else {
             setTimerType('focus');
             // NEW: Set new phase duration and start time
             const newFocusDurationSeconds = activeManualFocusDuration * 60; // MODIFIED: Use activeManualFocusDuration
             setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
             setTimeLeft(newFocusDurationSeconds);
-            setCurrentPhaseStartTime(Date.Now());
+            setCurrentPhaseStartTime(Date.now());
           }
         }
       }
@@ -1519,7 +1519,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         maxAllowedInactivitySeconds = (loadedFocusMinutes + loadedBreakMinutes) * 60;
       }
 
-      const now = Date.Now();
+      const now = Date.now();
       const timeSinceLastActivity = loadedLastActivityTime ? (now - loadedLastActivityTime) / 1000 : 0;
 
       // Determine the correct currentPhaseDurationSeconds based on the loaded state
