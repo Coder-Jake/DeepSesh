@@ -43,11 +43,11 @@
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 10%; /* Darker olive for text */
 
-    /* NEW: Focus gradients for light mode */
-    --focus-gradient-start-light: 270 30% 45%;
-    --focus-gradient-end-light: 270 30% 50%;
-    /* NEW: Solid focus background for light mode (midpoint of gradient) */
-    --focus-background-solid-light: 270 30% 47.5%;
+    /* NEW: Focus gradients for light mode (SWAPPED) */
+    --focus-gradient-start-light: 270 100% 90%;
+    --focus-gradient-end-light: 270 100% 95%;
+    /* NEW: Solid focus background for light mode (midpoint of gradient) (SWAPPED) */
+    --focus-background-solid-light: 270 100% 92.5%;
 
     --break-background: 40 100% 80%; /* Light pastel yellow for break */
     --neutral-background: 210 20% 95%; /* Light gray for neutral */
@@ -95,11 +95,11 @@
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */
 
-    /* NEW: Focus gradients for dark mode */
-    --focus-gradient-start-dark: 270 100% 90%;
-    --focus-gradient-end-dark: 270 100% 95%;
-    /* NEW: Solid focus background for dark mode (midpoint of gradient) */
-    --focus-background-solid-dark: 270 100% 92.5%;
+    /* NEW: Focus gradients for dark mode (SWAPPED) */
+    --focus-gradient-start-dark: 270 30% 45%;
+    --focus-gradient-end-dark: 270 30% 50%;
+    /* NEW: Solid focus background for dark mode (midpoint of gradient) (SWAPPED) */
+    --focus-background-solid-dark: 270 30% 47.5%;
 
     --break-background: 60 40% 25%; /* Dark mode pastel yellow for break */
     --neutral-background: 210 20% 15%; /* Darker gray for neutral */
