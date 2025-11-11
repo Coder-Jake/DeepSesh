@@ -1609,7 +1609,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
       setIsRunning(loadedIsRunning);
       setIsPaused(loadedIsPaused);
-      setIsFlashing(loadedIsFlashing); // Corrected typo here
+      setIsFlashing(data.isFlashing ?? false); // Corrected typo here
       setSchedule(data.schedule ?? []);
       setCurrentScheduleIndex(loadedCurrentScheduleIndex);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
@@ -1974,6 +1974,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentPhaseDurationSeconds, // ADDED
     remainingTimeAtPause, // ADDED
     setRemainingTimeAtPause, // ADDED
+    activeManualFocusDuration, // ADDED
+    setActiveManualFocusDuration, // ADDED
+    activeManualBreakDuration, // ADDED
+    setActiveManualBreakDuration, // ADDED
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
