@@ -46,7 +46,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Profile as ProfileType } from '@/contexts/ProfileContext';
+import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext'; // Import ProfileUpdate
 
 interface ExtendSuggestion {
   id: string;
@@ -1158,7 +1158,7 @@ const Index = () => {
     const trimmedDisplayName = discoveryDisplayName.trim();
     const currentFocusPreference = focusPreference; // Get current state from context
 
-    const updates: ProfileType = {};
+    const updates: ProfileUpdate = {}; // Corrected type to ProfileUpdate
     let hasChangesToSave = false;
 
     if (trimmedDisplayName !== "" && trimmedDisplayName !== localFirstName) {
