@@ -703,7 +703,7 @@ const Profile = () => {
                     onClick={handleKeyTooltipClick}
                   />
                 </TooltipTrigger>
-                <TooltipContent className="p-2 select-none">
+                <TooltipContent className="p-2 select-none" side="right" align="start">
                   <p className="font-semibold mb-1">Visibility Settings:</p>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
