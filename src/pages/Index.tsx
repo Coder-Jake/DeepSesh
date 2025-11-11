@@ -358,9 +358,14 @@ const Index = () => {
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIXED: Initialize with null
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
-  const [discoveryDisplayName, setDiscoveryDisplayName] = useState(
-    localFirstName === "You" ? (hostCode || "") : (localFirstName || hostCode || "")
-  );
+  const [discoveryDisplayName, setDiscoveryDisplayName] = useState(""); // Initialize empty
+
+  // NEW: Effect to sync discoveryDisplayName with localFirstName when dialog opens
+  useEffect(() => {
+    if (isDiscoverySetupOpen) {
+      setDiscoveryDisplayName(localFirstName === "You" ? (hostCode || "") : (localFirstName || hostCode || ""));
+    }
+  }, [isDiscoverySetupOpen, localFirstName, hostCode]);
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
