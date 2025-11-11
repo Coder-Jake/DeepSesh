@@ -1490,6 +1490,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const loadedFocusMinutes = data.focusMinutes ?? data._defaultFocusMinutes ?? 25;
       const loadedBreakMinutes = data.breakMinutes ?? data._defaultBreakMinutes ?? 5;
       const loadedActiveSchedule = data.activeSchedule ?? [];
+      const loadedCurrentScheduleIndex = data.currentScheduleIndex ?? 0;
+      const loadedTimerType = data.timerType ?? 'focus';
 
       let maxAllowedInactivitySeconds = 0;
       if (loadedIsScheduleActive || loadedIsSchedulePending) {
@@ -1501,8 +1503,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const now = Date.now();
       const timeSinceLastActivity = loadedLastActivityTime ? (now - loadedLastActivityTime) / 1000 : 0;
 
+      // Determine the correct currentPhaseDurationSeconds based on the loaded state
+      let calculatedCurrentPhaseDurationSeconds = 0;
+      if (loadedIsScheduleActive && loadedActiveSchedule[loadedCurrentScheduleIndex]) {
+        calculatedCurrentPhaseDurationSeconds = loadedActiveSchedule[loadedCurrentScheduleIndex].durationMinutes * 60;
+      } else if (loadedIsRunning || loadedIsPaused || loadedIsFlashing) {
+        calculatedCurrentPhaseDurationSeconds = (loadedTimerType === 'focus' ? loadedFocusMinutes : loadedBreakMinutes) * 60;
+      } else {
+        // If no timer is active, default to the homepage's current focus/break duration
+        calculatedCurrentPhaseDurationSeconds = (loadedTimerType === 'focus' ? loadedFocusMinutes : loadedBreakMinutes) * 60;
+      }
+
       // NEW: Load currentPhaseDurationSeconds and remainingTimeAtPause
-      const loadedCurrentPhaseDurationSeconds = data.currentPhaseDurationSeconds ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
+      const loadedCurrentPhaseDurationSeconds = data.currentPhaseDurationSeconds ?? calculatedCurrentPhaseDurationSeconds; // Use calculated value as fallback
       const loadedRemainingTimeAtPause = data.remainingTimeAtPause ?? 0;
       setCurrentPhaseDurationSeconds(loadedCurrentPhaseDurationSeconds);
       setRemainingTimeAtPause(loadedRemainingTimeAtPause);
@@ -1529,18 +1542,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       // if no timer is currently active (running, paused, or schedule active/pending).
       // This prevents overriding active timer durations with potentially stale homepage defaults
       // when a re-render occurs due to other context changes (like profile name).
-      if (!loadedIsRunning && !loadedIsPaused && !loadedIsScheduleActive && !loadedIsSchedulePending) {
-        _setFocusMinutes(loadedFocusMinutes);
-        _setBreakMinutes(loadedBreakMinutes);
-        setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
-        setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
-      } else {
-        // If a timer is active, ensure the homepage inputs reflect the active timer's state
-        // and are considered "customized" so they don't revert to defaults.
-        // The actual `focusMinutes` and `breakMinutes` will be managed by the active session logic.
-        setIsHomepageFocusCustomized(true);
-        setIsHomepageBreakCustomized(true);
-      }
+      // The actual `focusMinutes` and `breakMinutes` will be managed by the active session logic.
+      _setFocusMinutes(loadedFocusMinutes);
+      _setBreakMinutes(loadedBreakMinutes);
+      setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
+      setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
 
       let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
       let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
@@ -1578,13 +1584,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       // }
       // setIsGlobalPrivate(initialIsGlobalPrivate);
 
-      setTimerType(data.timerType ?? 'focus');
+      setTimerType(loadedTimerType);
 
-      let actualTimeLeft = data.timeLeft ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
+      let actualTimeLeft = data.timeLeft ?? calculatedCurrentPhaseDurationSeconds; // Use calculated duration as fallback
       if ((loadedIsRunning || loadedIsPaused || loadedIsFlashing || loadedIsScheduleActive || loadedIsSchedulePending) && loadedLastActivityTime !== null) {
-          // NEW: Calculate actualTimeLeft based on currentPhaseDurationSeconds
           const elapsedSinceLastActivity = (now - loadedLastActivityTime) / 1000;
-          actualTimeLeft = Math.max(0, loadedCurrentPhaseDurationSeconds - elapsedSinceLastActivity);
+          actualTimeLeft = Math.max(0, loadedCurrentPhaseDurationSeconds - elapsedSinceLastActivity); // Use loadedCurrentPhaseDurationSeconds here
           if (actualTimeLeft === 0) {
               console.log("TimerContext: Timer ran out while inactive, resetting state.");
               localStorage.removeItem(LOCAL_STORAGE_KEY_TIMER);
@@ -1598,7 +1603,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsPaused(loadedIsPaused);
       setIsFlashing(loadedIsFlashing); // Corrected typo here
       setSchedule(data.schedule ?? []);
-      setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
+      setCurrentScheduleIndex(loadedCurrentScheduleIndex);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
       setIsScheduleActive(loadedIsScheduleActive);
       setScheduleTitle(data.scheduleTitle ?? getDefaultSeshTitle());
