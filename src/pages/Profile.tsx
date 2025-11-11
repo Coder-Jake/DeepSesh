@@ -266,7 +266,7 @@ const Profile = () => {
 
       setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.profile_data?.pronouns?.value || ""));
     }
-  }, [loading, profile, originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference, setOrganization, setLinkedinUrl, setHostCode, setPronouns, setCurrentPronounIndex, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility]);
+  }, [loading, profile, originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference, setOrganization, setLinkedinUrl, setHostCode, setPronouns, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility]);
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -635,44 +635,7 @@ const Profile = () => {
                     className="mt-2"
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Changed to grid grid-cols-1 sm:grid-cols-2 */}
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="can-help-with"
-                      onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
-                      className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
-                    >
-                      <Handshake size={16} className="inline-block mr-1" /> I can help with
-                    </Label>
-                    <Textarea
-                      id="can-help-with"
-                      placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
-                      value={canHelpWith || ""}
-                      onChange={(e) => setCanHelpWith(e.target.value)}
-                      className="mt-2"
-                    />
-                  </div>
 
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="need-help-with"
-                      onClick={() => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with')}
-                      className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibility)))}
-                    >
-                      <HelpCircle size={16} className="inline-block mr-1" /> I need help with
-                    </Label>
-                    <Textarea
-                      id="need-help-with"
-                      placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
-                      value={needHelpWith || ""}
-                      onChange={(e) => setNeedHelpWith(e.target.value)}
-                      className="mt-2"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
                 <div>
                   <Label
                     htmlFor="intention"
@@ -689,89 +652,74 @@ const Profile = () => {
                     className="mt-2"
                   />
                 </div>
-                {/* NEW: Container for LinkedIn and Hosting Code */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label
-                      htmlFor="linkedin-username"
-                      onClick={() => handleLabelClick(linkedinVisibility, setLinkedinVisibility, 'linkedin_url')}
-                      className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibility)))}
-                    >
-                      LinkedIn Handle
-                    </Label>
-                    <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
-                      <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
-                        linkedin.com/in/
-                      </span>
-                      <Input
-                        id="linkedin-username"
-                        type="text"
-                        placeholder="yourusername"
-                        value={linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : ""}
-                        onChange={(e) => setLinkedinUrl(e.target.value)}
-                        className="flex-1 border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-l-none"
-                      />
-                      {linkedinUrl && (
-                        <a
-                          href={`https://www.linkedin.com/in/${linkedinUrl}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 transition-colors p-2"
-                          aria-label="Visit LinkedIn Profile"
-                        >
-                          <Linkedin size={20} />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  {/* Hosting Code section */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold mb-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">Hosting Code</span>
-                          </TooltipTrigger>
-                          <TooltipContent className="select-none">
-                            <p>Others can use this code to join your sessions.</p>
-                          </TooltipContent>
-                        </Tooltip>
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      {isEditingHostCode ? (
-                        <Input
-                          ref={hostCodeInputRef}
-                          value={hostCode || ""}
-                          onChange={(e) => { e.stopPropagation(); setHostCode(e.target.value); }}
-                          onKeyDown={handleHostCodeInputKeyDown}
-                          onBlur={handleHostCodeInputBlur}
-                          placeholder="yourhostcode"
-                          className="text-lg font-semibold h-auto py-1 px-2 italic flex-grow"
-                          minLength={4}
-                          maxLength={20}
-                        />
-                      ) : (
-                        <span
-                          className={cn(
-                            "text-lg font-semibold flex-grow select-none",
-                            // Removed: "text-foreground cursor-pointer hover:text-primary"
-                          )}
-                          onClick={handleHostCodeClick}
-                        >
-                          {hostCode}
-                        </span>
-                      )}
-                      {!isEditingHostCode && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={handleCopyHostCode}
-                          className="text-muted-foreground hover:text-foreground"
-                          aria-label="Copy host code"
-                        >
-                          <Clipboard size={16} className={cn(isCopied ? "text-green-500" : "text-muted-foreground")} />
-                        </Button>
-                      )}
-                    </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label
+                    htmlFor="can-help-with"
+                    onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
+                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
+                  >
+                    <Handshake size={16} className="inline-block mr-1" /> I can help with
+                  </Label>
+                  <Textarea
+                    id="can-help-with"
+                    placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
+                    value={canHelpWith || ""}
+                    onChange={(e) => setCanHelpWith(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="need-help-with"
+                    onClick={() => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with')}
+                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibility)))}
+                  >
+                    <HelpCircle size={16} className="inline-block mr-1" /> I need help with
+                  </Label>
+                  <Textarea
+                    id="need-help-with"
+                    placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
+                    value={needHelpWith || ""}
+                    onChange={(e) => setNeedHelpWith(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="linkedin-username"
+                    onClick={() => handleLabelClick(linkedinVisibility, setLinkedinVisibility, 'linkedin_url')}
+                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibility)))}
+                  >
+                    LinkedIn Handle
+                  </Label>
+                  <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                    <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
+                      linkedin.com/in/
+                    </span>
+                    <Input
+                      id="linkedin-username"
+                      type="text"
+                      placeholder="yourusername"
+                      value={linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : ""}
+                      onChange={(e) => setLinkedinUrl(e.target.value)}
+                      className="flex-1 border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-l-none"
+                    />
+                    {linkedinUrl && (
+                      <a
+                        href={`https://www.linkedin.com/in/${linkedinUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                        aria-label="Visit LinkedIn Profile"
+                      >
+                        <Linkedin size={20} />
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -821,6 +769,55 @@ const Profile = () => {
                     {focusPreference > 60 && focusPreference <= 80 && "Socialise only during breaks"}
                     {focusPreference > 80 && "Minimal interaction even during breaks"}
                   </div>
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-6 mt-6">
+                <h3 className="text-lg font-semibold mb-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help">Hosting Code</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="select-none">
+                        <p>Others can use this code to join your sessions.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                </h3>
+                <div className="flex items-center gap-2">
+                  {isEditingHostCode ? (
+                    <Input
+                      ref={hostCodeInputRef}
+                      value={hostCode || ""}
+                      onChange={(e) => { e.stopPropagation(); setHostCode(e.target.value); }}
+                      onKeyDown={handleHostCodeInputKeyDown}
+                      onBlur={handleHostCodeInputBlur}
+                      placeholder="yourhostcode"
+                      className="text-lg font-semibold h-auto py-1 px-2 italic flex-grow"
+                      minLength={4}
+                      maxLength={20}
+                    />
+                  ) : (
+                    <span
+                      className={cn(
+                        "text-lg font-semibold flex-grow select-none",
+                        // Removed: "text-foreground cursor-pointer hover:text-primary"
+                      )}
+                      onClick={handleHostCodeClick}
+                    >
+                      {hostCode}
+                    </span>
+                  )}
+                  {!isEditingHostCode && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCopyHostCode}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label="Copy host code"
+                    >
+                      <Clipboard size={16} className={cn(isCopied ? "text-green-500" : "text-muted-foreground")} />
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
