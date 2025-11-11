@@ -57,7 +57,7 @@ const Header = () => {
             onClick={handleHeaderClick}
           >
             <img 
-              src="/DeepSesh11_11 Logo small.png" 
+              src="/DS-logo-small.png" 
               alt="DeepSesh Logo" 
               className="h-8 w-8 mr-0 mt-[-6px]"
             />
