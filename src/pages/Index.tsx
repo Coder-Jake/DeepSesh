@@ -1358,7 +1358,7 @@ const Index = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsSchedulingMode(true)}
-                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors"
                       data-name="Schedule Button"
                     >
                       <CalendarPlus size={16} />
@@ -1390,7 +1390,7 @@ const Index = () => {
                         onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
                         onTouchEnd={handleLongPressEnd}
                         onClick={handlePublicPrivateToggle}
-                        className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors select-none"
+                        className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors select-none"
                         data-name="Public/Private Toggle Button"
                       >
                         {!isGlobalPrivate ? (
@@ -1412,7 +1412,7 @@ const Index = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors"
                               data-name="Share Options Button"
                             >
                               <Share2 size={16} />
@@ -1429,7 +1429,7 @@ const Index = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => setShowJoinInput(true)}
-                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors"
+                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors"
                           data-name="Join Sesh Button"
                         >
                           <Users size={16} />
@@ -1542,7 +1542,7 @@ const Index = () => {
                           onTouchEnd={handleLongPressEnd}
                           onClick={() => stopTimer(true, false)}
                           className={cn(
-                            "w-full h-full rounded-none bg-transparent hover:bg-transparent",
+                            "w-full h-full rounded-none bg-transparent hover:bg-primary/5 dark:hover:bg-primary/10",
                             isPaused ? "text-red-500" : "text-secondary-foreground"
                           )}
                           data-name="Stop Timer Button"
@@ -1957,7 +1957,7 @@ const Index = () => {
                   className={cn(
                     "w-full flex items-center gap-2",
                     geolocationPermissionStatus === 'granted' && "bg-green-100 text-green-700 border-green-200 hover:bg-green-200",
-                    geolocationPermissionStatus === 'denied' && "bg-red-100 text-red-700 border-red-200"
+                    geolocationPermissionStatus === 'denied' && "bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
                   )}
                   onClick={getLocation}
                 >

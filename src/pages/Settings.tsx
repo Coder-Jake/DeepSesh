@@ -526,7 +526,7 @@ const Settings = () => {
                   id="show-sessions-while-active"
                   onClick={cycleSessionVisibility}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80 select-none"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
                   )}
                 >
                   {showSessionsWhileActive === 'hidden' && "Hidden"}
@@ -550,7 +550,7 @@ const Settings = () => {
                   id="timer-transition-toggle"
                   onClick={cycleTimerTransitions}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80 select-none"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
                   )}
                 >
                   {manualTransition ? "Manual" : "Auto"}
@@ -770,7 +770,7 @@ const Settings = () => {
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)}
                   className={cn(
                     "px-3 py-1 rounded-full transition-colors select-none",
-                    !isGlobalPrivate ? "bg-public-bg text-public-bg-foreground" : "bg-private-bg text-private-bg-foreground"
+                    !isGlobalPrivate ? "bg-public-bg text-public-bg-foreground hover:bg-public-bg/80" : "bg-private-bg text-private-bg-foreground hover:bg-private-bg/80"
                   )}
                 >
                   {!isGlobalPrivate ? "Public" : "Private"}
@@ -785,7 +785,7 @@ const Settings = () => {
                   id="time-format-toggle"
                   onClick={() => setIs24HourFormat(prev => !prev)}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80 select-none"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
                   )}
                 >
                   {is24HourFormat ? "24hr" : "AM/PM"}
@@ -807,7 +807,7 @@ const Settings = () => {
                   id="timer-increments-toggle"
                   onClick={() => setCurrentTimerIncrement(prev => prev === 1 ? 5 : 1)}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-muted/80 select-none"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
                   )}
                 >
                   {currentTimerIncrement}
@@ -889,8 +889,8 @@ const Settings = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-green-100 text-green-700 border-green-200",
-                    geolocationPermissionStatus === 'denied' && "bg-red-100 text-red-700 border-red-200"
+                    geolocationPermissionStatus === 'granted' && "bg-green-100 text-green-700 border-green-200 hover:bg-green-200",
+                    geolocationPermissionStatus === 'denied' && "bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
                   )}
                   onClick={handleLocationButtonClick} // Call the new handler
                 >
