@@ -26,6 +26,25 @@ import { ProfileUpdate, ProfileDataJsonb } from "@/contexts/ProfileContext"; // 
 
 const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"];
 
+// Define the shape of the original values
+type OriginalValuesType = {
+  firstName: string;
+  bio: string;
+  intention: string;
+  canHelpWith: string;
+  needHelpWith: string;
+  focusPreference: number;
+  organization: string;
+  linkedinUrl: string; // raw username part
+  hostCode: string;
+  bioVisibility: ("public" | "friends" | "organisation" | "private")[];
+  intentionVisibility: ("public" | "friends" | "organisation" | "private")[];
+  linkedinVisibility: ("public" | "friends" | "organisation" | "private")[];
+  canHelpWithVisibility: ("public" | "friends" | "organisation" | "private")[];
+  needHelpWithVisibility: ("public" | "friends" | "organisation" | "private")[];
+  pronouns: string | null;
+};
+
 const Profile = () => {
   const {
     profile, loading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
@@ -58,24 +77,8 @@ const Profile = () => {
   const [isCopied, setIsCopied] = useState(false);
 
   const [hasChanges, setHasChanges] = useState(false);
+  const [originalValues, setOriginalValues] = useState<OriginalValuesType | null>(null);
 
-  const [originalValues, setOriginalValues] = useState({
-    firstName: "",
-    bio: "",
-    intention: "",
-    canHelpWith: "",
-    needHelpWith: "",
-    focusPreference: 50,
-    organization: "",
-    linkedinUrl: "",
-    hostCode: "",
-    bioVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
-    intentionVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
-    linkedinVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
-    canHelpWithVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
-    needHelpWithVisibility: ['public'] as ("public" | "friends" | "organisation" | "private")[],
-    pronouns: null as string | null,
-  });
 
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
   const firstNameInputRef = useRef<HTMLInputElement>(null);
@@ -221,39 +224,49 @@ const Profile = () => {
     await updateProfile({ pronouns: { value: newPronoun === "" ? null : newPronoun, visibility: ['public'] } }); // Assuming pronouns are always public
   }, [currentPronounIndex, setPronouns, areToastsEnabled, updateProfile]);
 
-  // Effect to initialize originalValues and color indices from context states
+  // Effect to initialize originalValues ONCE when profile is loaded
   useEffect(() => {
-    if (!loading && profile) {
+    if (!loading && profile && originalValues === null) {
       setOriginalValues({
         firstName: profile.first_name || "You",
-        bio: bio || "",
-        intention: intention || "",
-        canHelpWith: canHelpWith || "",
-        needHelpWith: needHelpWith || "",
-        focusPreference: focusPreference || 50,
-        organization: organization || "",
-        linkedinUrl: linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : "",
-        hostCode: hostCode || "",
-        bioVisibility: bioVisibility || ['public'],
-        intentionVisibility: intentionVisibility || ['public'],
-        linkedinVisibility: linkedinVisibility || ['public'],
-        canHelpWithVisibility: canHelpWithVisibility || ['public'],
-        needHelpWithVisibility: needHelpWithVisibility || ['public'],
-        pronouns: pronouns || null,
+        bio: profile.profile_data?.bio?.value || "",
+        intention: profile.profile_data?.intention?.value || "",
+        canHelpWith: profile.profile_data?.can_help_with?.value || "",
+        needHelpWith: profile.profile_data?.need_help_with?.value || "",
+        focusPreference: profile.focus_preference || 50,
+        organization: profile.organization || "",
+        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
+        hostCode: profile.host_code || "",
+        bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
+        intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
+        linkedinVisibility: profile.profile_data?.linkedin_url?.visibility || ['public'],
+        canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
+        needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
+        pronouns: profile.profile_data?.pronouns?.value || null,
       });
 
-      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(pronouns || ""));
-      setBioLabelColorIndex(getIndexFromVisibility(bioVisibility || ['public']));
-      setIntentionLabelColorIndex(getIndexFromVisibility(intentionVisibility || ['public']));
-      setLinkedinLabelColorIndex(getIndexFromVisibility(linkedinVisibility || ['public']));
-      setCanHelpWithLabelColorIndex(getIndexFromVisibility(canHelpWithVisibility || ['public']));
-      setNeedHelpWithLabelColorIndex(getIndexFromVisibility(needHelpWithVisibility || ['public']));
-      setHasChanges(false);
+      // Also set individual states from profile here, if they are not already
+      // This ensures the editable states are in sync with the loaded profile
+      setLocalFirstName(profile.first_name || "You");
+      setBio(profile.profile_data?.bio?.value || null);
+      setIntention(profile.profile_data?.intention?.value || null);
+      setCanHelpWith(profile.profile_data?.can_help_with?.value || null);
+      setNeedHelpWith(profile.profile_data?.need_help_with?.value || null);
+      setFocusPreference(profile.focus_preference || 50);
+      setOrganization(profile.organization);
+      setLinkedinUrl(profile.profile_data?.linkedin_url?.value || null);
+      setHostCode(profile.host_code);
+      setPronouns(profile.profile_data?.pronouns?.value || null);
+
+      setBioVisibility(profile.profile_data?.bio?.visibility || ['public']);
+      setIntentionVisibility(profile.profile_data?.intention?.visibility || ['public']);
+      setLinkedinVisibility(profile.profile_data?.linkedin_url?.visibility || ['public']);
+      setCanHelpWithVisibility(profile.profile_data?.can_help_with?.visibility || ['public']);
+      setNeedHelpWithVisibility(profile.profile_data?.need_help_with?.visibility || ['public']);
+
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.profile_data?.pronouns?.value || ""));
     }
-  }, [
-    loading, profile, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
-    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, pronouns
-  ]);
+  }, [loading, profile, originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference, setOrganization, setLinkedinUrl, setHostCode, setPronouns, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility]);
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -269,42 +282,42 @@ const Profile = () => {
     }
   }, [isEditingHostCode]);
 
+  // This useCallback now correctly compares current states with the initial originalValues snapshot
   const checkForChanges = useCallback(() => {
+    if (!originalValues) {
+      setHasChanges(false); // No original values to compare against yet
+      return;
+    }
+
     const currentLinkedinUsername = linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/")
                                     ? linkedinUrl.substring("https://www.linkedin.com/in/".length)
                                     : linkedinUrl) : "";
 
     const changed = localFirstName !== originalValues.firstName ||
-                   bio !== originalValues.bio ||
-                   intention !== originalValues.intention ||
-                   canHelpWith !== originalValues.canHelpWith ||
-                   needHelpWith !== originalValues.needHelpWith ||
+                   (bio || "") !== originalValues.bio ||
+                   (intention || "") !== originalValues.intention ||
+                   (canHelpWith || "") !== originalValues.canHelpWith ||
+                   (needHelpWith || "") !== originalValues.needHelpWith ||
                    focusPreference !== originalValues.focusPreference ||
-                   organization !== originalValues.organization ||
+                   (organization || "") !== originalValues.organization ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
-                   hostCode !== originalValues.hostCode ||
+                   (hostCode || "") !== originalValues.hostCode ||
                    JSON.stringify(bioVisibility) !== JSON.stringify(originalValues.bioVisibility) ||
                    JSON.stringify(intentionVisibility) !== JSON.stringify(originalValues.intentionVisibility) ||
                    JSON.stringify(linkedinVisibility) !== JSON.stringify(originalValues.linkedinVisibility) ||
                    JSON.stringify(canHelpWithVisibility) !== JSON.stringify(originalValues.canHelpWithVisibility) ||
                    JSON.stringify(needHelpWithVisibility) !== JSON.stringify(originalValues.needHelpWithVisibility) ||
-                   pronouns !== originalValues.pronouns;
+                   (pronouns || null) !== originalValues.pronouns;
     setHasChanges(changed);
   }, [
-    localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
-    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    pronouns,
-    originalValues
+    originalValues, localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
+    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, pronouns
   ]);
 
+  // This useEffect will now correctly trigger checkForChanges whenever any editable state changes
   useEffect(() => {
     checkForChanges();
-  }, [
-    localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
-    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    pronouns,
-    checkForChanges
-  ]);
+  }, [checkForChanges]); // Dependency on checkForChanges ensures it runs when its internal dependencies change
 
   const handleHostCodeClick = () => {
     setIsEditingHostCode(true);
@@ -388,8 +401,28 @@ const Profile = () => {
       pronouns: { value: pronouns, visibility: ['public'] }, // Assuming pronouns are always public
     };
 
-    await updateProfile(dataToUpdate);
-    setHasChanges(false);
+    await updateProfile(dataToUpdate); // This updates the profile in context and local storage
+
+    // After successful save, update originalValues to reflect the new saved state
+    // This should be done using the *current* state values, which are now the "saved" values
+    setOriginalValues({
+      firstName: nameToSave,
+      bio: bio || "",
+      intention: intention || "",
+      canHelpWith: canHelpWith || "",
+      needHelpWith: needHelpWith || "",
+      focusPreference: focusPreference,
+      organization: organization || "",
+      linkedinUrl: linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : "",
+      hostCode: trimmedHostCode,
+      bioVisibility: bioVisibility,
+      intentionVisibility: intentionVisibility,
+      linkedinVisibility: linkedinVisibility,
+      canHelpWithVisibility: canHelpWithVisibility,
+      needHelpWithVisibility: needHelpWithVisibility,
+      pronouns: pronouns,
+    });
+    setHasChanges(false); // Explicitly set to false after saving
   };
 
   const handleCopyHostCode = useCallback(async () => {
@@ -413,42 +446,27 @@ const Profile = () => {
   }, [hostCode, areToastsEnabled]);
 
   const handleCancel = useCallback(() => {
-    // Revert all context states to their original values
-    setLocalFirstName(originalValues.firstName);
-    setBio(originalValues.bio);
-    setIntention(originalValues.intention);
-    setCanHelpWith(originalValues.canHelpWith);
-    setNeedHelpWith(originalValues.needHelpWith);
-    setFocusPreference(originalValues.focusPreference);
-    setOrganization(originalValues.organization);
-    setLinkedinUrl(originalValues.linkedinUrl);
-    setHostCode(originalValues.hostCode);
-    setPronouns(originalValues.pronouns);
-    setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(originalValues.pronouns || ""));
+    if (originalValues) {
+      setLocalFirstName(originalValues.firstName);
+      setBio(originalValues.bio === "" ? null : originalValues.bio);
+      setIntention(originalValues.intention === "" ? null : originalValues.intention);
+      setCanHelpWith(originalValues.canHelpWith === "" ? null : originalValues.canHelpWith);
+      setNeedHelpWith(originalValues.needHelpWith === "" ? null : originalValues.needHelpWith);
+      setFocusPreference(originalValues.focusPreference);
+      setOrganization(originalValues.organization === "" ? null : originalValues.organization);
+      setLinkedinUrl(originalValues.linkedinUrl === "" ? null : originalValues.linkedinUrl);
+      setHostCode(originalValues.hostCode === "" ? null : originalValues.hostCode);
+      setPronouns(originalValues.pronouns);
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(originalValues.pronouns || ""));
 
-    setBioVisibility(originalValues.bioVisibility);
-    setIntentionVisibility(originalValues.intentionVisibility);
-    setLinkedinVisibility(originalValues.linkedinVisibility);
-    setCanHelpWithVisibility(originalValues.canHelpWithVisibility);
-    setNeedHelpWithVisibility(originalValues.needHelpWithVisibility);
-
-    setBioLabelColorIndex(getIndexFromVisibility(originalValues.bioVisibility));
-    setIntentionLabelColorIndex(getIndexFromVisibility(originalValues.intentionVisibility));
-    setLinkedinLabelColorIndex(getIndexFromVisibility(originalValues.linkedinVisibility));
-    setCanHelpWithLabelColorIndex(getIndexFromVisibility(originalValues.canHelpWithVisibility));
-    setNeedHelpWithLabelColorIndex(getIndexFromVisibility(originalValues.needHelpWithVisibility));
-
-    setIsEditingFirstName(false);
-    setIsEditingHostCode(false);
-    setIsCopied(false);
-    setHasChanges(false);
-    setLongPressedFriendId(null);
-  }, [
-    originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference,
-    setOrganization, setLinkedinUrl, setHostCode, setPronouns, setCurrentPronounIndex,
-    setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility,
-    setBioLabelColorIndex, setIntentionLabelColorIndex, setLinkedinLabelColorIndex, setCanHelpWithLabelColorIndex, setNeedHelpWithLabelColorIndex
-  ]);
+      setBioVisibility(originalValues.bioVisibility);
+      setIntentionVisibility(originalValues.intentionVisibility);
+      setLinkedinVisibility(originalValues.linkedinVisibility);
+      setCanHelpWithVisibility(originalValues.canHelpWithVisibility);
+      setNeedHelpWithVisibility(originalValues.needHelpWithVisibility);
+    }
+    setHasChanges(false); // Explicitly set to false after cancelling
+  }, [originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference, setOrganization, setLinkedinUrl, setHostCode, setPronouns, setCurrentPronounIndex, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility]);
 
   const friends = Object.entries(friendStatuses)
     .filter(([, status]) => status === 'friends')
@@ -488,10 +506,9 @@ const Profile = () => {
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
         {/* Top-right Save Profile button */}
         <div className="absolute right-0">
-          {/* Disabled when no changes */}
           <Button
             onClick={handleSave}
-            disabled={loading || !hasChanges}
+            disabled={loading || !hasChanges} {/* Disabled when no changes */}
             className="shadow-lg"
           >
             {loading ? "Saving..." : "Save Profile"}
