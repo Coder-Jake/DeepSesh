@@ -328,6 +328,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [isSeshTitleCustomized]);
 
+  // This effect ensures the default session title updates when the user's name changes,
+  // but only if a custom title has not been set.
+  useEffect(() => {
+    if (!isSeshTitleCustomized) {
+      const defaultTitle = getDefaultSeshTitle();
+      if (_seshTitle !== defaultTitle) { // Only update if the title actually changed
+        _setSeshTitle(defaultTitle);
+      }
+    }
+  }, [user?.id, profile?.first_name, isSeshTitleCustomized, getDefaultSeshTitle, _seshTitle]);
+
+
   const getLocation = useCallback(async (): Promise<{ latitude: number | null; longitude: number | null }> => {
     return new Promise(async (resolve) => {
       if (!navigator.geolocation) {
@@ -669,7 +681,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         toast.info("Session Ended", {
           description: "No other participants to transfer host role to. Session ended.",
         });
-      }
+      });
       await resetSchedule();
     }
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
