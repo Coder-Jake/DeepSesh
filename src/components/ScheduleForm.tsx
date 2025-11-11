@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
 import ColorPicker from './ColorPicker';
 import { DAYS_OF_WEEK } from "@/lib/constants";
+import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -47,6 +48,8 @@ const ScheduleForm: React.FC = () => {
     is24HourFormat, 
     getDefaultSeshTitle, 
   } = useTimer();
+
+  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode
 
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
@@ -416,84 +419,90 @@ const ScheduleForm: React.FC = () => {
         </CardHeader>
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
           <div className="space-y-1 pr-2">
-            {schedule.map((timer, index) => (
-              <div 
-                key={timer.id} 
-                className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50"
-                style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }}
-                onClick={() => handleTimerDivClick(timer.id)}
-              >
-                <div className="flex items-center gap-1 flex-grow-0">
-                  <span 
-                    className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors"
-                    onClick={(e) => { e.stopPropagation(); handleOpenColorPicker(e, timer.id); }}
-                  >
-                    {index + 1}.
-                  </span>
+            {schedule.map((timer, index) => {
+              const defaultFocusBg = isDarkMode ? 'hsl(var(--focus-background-solid-dark))' : 'hsl(var(--focus-background-solid-light))';
+              const defaultBreakBg = isDarkMode ? 'hsl(var(--break-background-dark))' : 'hsl(var(--break-background))';
+              const itemBackgroundColor = timerColors[timer.id] || (timer.type === 'focus' ? defaultFocusBg : defaultBreakBg);
+
+              return (
+                <div 
+                  key={timer.id} 
+                  className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50"
+                  style={{ backgroundColor: itemBackgroundColor }}
+                  onClick={() => handleTimerDivClick(timer.id)}
+                >
+                  <div className="flex items-center gap-1 flex-grow-0">
+                    <span 
+                      className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors"
+                      onClick={(e) => { e.stopPropagation(); handleOpenColorPicker(e, timer.id); }}
+                    >
+                      {index + 1}.
+                    </span>
+                    <Input
+                      placeholder="Timer Title"
+                      value={timer.title}
+                      onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
+                      className="flex-grow min-w-0"
+                      onFocus={(e) => e.target.select()}
+                      onKeyDown={handleEnterKeyNavigation}
+                      data-input-type="timer-title"
+                    />
+                  </div>
+                  
                   <Input
-                    placeholder="Timer Title"
-                    value={timer.title}
-                    onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
-                    className="flex-grow min-w-0"
+                    type="number"
+                    placeholder="Min"
+                    value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        handleUpdateTimer(timer.id, 'durationMinutes', 0);
+                      } else {
+                        handleUpdateTimer(timer.id, 'durationMinutes', parseFloat(value) || 0);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (timer.durationMinutes === 0) {
+                        handleUpdateTimer(timer.id, 'durationMinutes', timerIncrement);
+                      }
+                    }}
+                    min={timerIncrement}
+                    step={timerIncrement}
+                    className="w-16 text-center flex-shrink-0 pr-0"
                     onFocus={(e) => e.target.select()}
                     onKeyDown={handleEnterKeyNavigation}
-                    data-input-type="timer-title"
+                    data-input-type="timer-duration"
                   />
-                </div>
-                
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "") {
-                      handleUpdateTimer(timer.id, 'durationMinutes', 0);
-                    } else {
-                      handleUpdateTimer(timer.id, 'durationMinutes', parseFloat(value) || 0);
-                    }
-                  }}
-                  onBlur={() => {
-                    if (timer.durationMinutes === 0) {
-                      handleUpdateTimer(timer.id, 'durationMinutes', timerIncrement);
-                    }
-                  }}
-                  min={timerIncrement}
-                  step={timerIncrement}
-                  className="w-16 text-center flex-shrink-0 pr-0"
-                  onFocus={(e) => e.target.select()}
-                  onKeyDown={handleEnterKeyNavigation}
-                  data-input-type="timer-duration"
-                />
-                
-                {scheduleStartOption === 'custom_time' && itemStartTimes[timer.id] && (
-                  <span className="text-sm text-muted-foreground flex-shrink-0 text-right">
-                    {itemStartTimes[timer.id]}
-                  </span>
-                )}
+                  
+                  {scheduleStartOption === 'custom_time' && itemStartTimes[timer.id] && (
+                    <span className="text-sm text-muted-foreground flex-shrink-0 text-right">
+                      {itemStartTimes[timer.id]}
+                    </span>
+                  )}
 
-                <Select
-                  value={timer.type}
-                  onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
-                >
-                  <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center hidden" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="focus">Focus</SelectItem>
-                    <SelectItem value="break">Break</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                {visibleTrashId === timer.id && (
-                  <Trash2 
-                    className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
-                    onClick={(e) => { e.stopPropagation(); handleRemoveTimer(timer.id); }}
-                    data-ignore-enter-nav
-                  />
-                )}
-              </div>
-            ))}
+                  <Select
+                    value={timer.type}
+                    onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
+                  >
+                    <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center hidden" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="focus">Focus</SelectItem>
+                      <SelectItem value="break">Break</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {visibleTrashId === timer.id && (
+                    <Trash2 
+                      className="h-4 w-4 text-destructive ml-auto flex-shrink-0 cursor-pointer" 
+                      onClick={(e) => { e.stopPropagation(); handleRemoveTimer(timer.id); }}
+                      data-ignore-enter-nav
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {totalDurationMinutes > 0 && (scheduleStartOption === 'now' || scheduleStartOption === 'custom_time') && (
