@@ -100,7 +100,7 @@ const Profile = () => {
   const friendLongPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isKeyTooltipOpen, setIsKeyTooltipOpen] = useState(false);
-  const keyTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(keyTooltipTimeoutRef);
+  const keyTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIXED: Initialize with null
 
   const getDisplayVisibilityStatus = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[] | null): string => {
     if (!visibility || visibility.length === 0) return 'public';
