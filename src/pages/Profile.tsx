@@ -568,10 +568,7 @@ const Profile = () => {
                   />
                 ) : (
                   <span // <-- EDIT HERE
-                    className={cn(
-                      "select-none",
-                      "flex-grow" // Added flex-grow to make the span take available space
-                    )}
+                    className={"select-none flex-grow"} // Simplified className
                     onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
                   >
                     {localFirstName || "You"}
