@@ -1564,7 +1564,7 @@ const Index = () => {
                           data-name="Focus Duration Input"
                           className={cn(
                             "w-16 text-center pr-0",
-                            timerType === 'focus' && (isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]")
+                            isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]"
                           )}
                         />
                       </div>
@@ -1602,7 +1602,7 @@ const Index = () => {
                           data-name="Break Duration Input"
                           className={cn(
                             "w-16 text-center pr-0",
-                            timerType === 'break' && (isDarkMode ? "bg-[hsl(var(--break-background-solid-dark))]" : "bg-[hsl(var(--break-background-solid-light))]")
+                            isDarkMode ? "bg-[hsl(var(--break-background-solid-dark))]" : "bg-[hsl(var(--break-background-solid-light))]"
                           )}
                         />
                       </div>
