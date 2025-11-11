@@ -306,7 +306,8 @@ const Profile = () => {
     checkForChanges
   ]);
 
-  const handleHostCodeClick = () => {
+  const handleHostCodeClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling up and causing immediate blur
     setIsEditingHostCode(true);
   };
 
