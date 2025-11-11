@@ -308,6 +308,10 @@ export type TimerContextType = {
   setCurrentPhaseDurationSeconds: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setCurrentPhaseDurationSeconds
   remainingTimeAtPause: number; // NEW: Add remainingTimeAtPause
   setRemainingTimeAtPause: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setRemainingTimeAtPause
+  activeManualFocusDuration: number; // NEW: Add activeManualFocusDuration
+  setActiveManualFocusDuration: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setActiveManualFocusDuration
+  activeManualBreakDuration: number; // NEW: Add activeManualBreakDuration
+  setActiveManualBreakDuration: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setActiveManualBreakDuration
 };
 
 // Define the structure for a saved session
