@@ -657,7 +657,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         toast.info("Session Ended", {
           description: "No other participants to transfer host role to. Session ended.",
         });
-      });
+      }
       await resetSchedule();
     }
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
