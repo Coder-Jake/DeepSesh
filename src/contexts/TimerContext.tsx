@@ -1377,12 +1377,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   useEffect(() => {
     if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
       const expectedTime = (timerType === 'focus' ? focusMinutes : breakMinutes) * 60;
-      if (timeLeft !== expectedTime) {
-        setTimeLeft(expectedTime);
-        setCurrentPhaseDurationSeconds(expectedTime); // NEW: Also update currentPhaseDurationSeconds
-      }
+      // Always update timeLeft and currentPhaseDurationSeconds to reflect the current homepage input
+      setTimeLeft(expectedTime);
+      setCurrentPhaseDurationSeconds(expectedTime);
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, timeLeft, setCurrentPhaseDurationSeconds]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, setCurrentPhaseDurationSeconds, setTimeLeft]); // Removed timeLeft from dependencies as it's being set
 
   useEffect(() => {
     if (!isSeshTitleCustomized && activeScheduleDisplayTitle.trim() !== "") {
