@@ -679,11 +679,11 @@ const Profile = () => {
                     onClick={() => handleLabelClick(intentionVisibility, setIntentionVisibility, 'intention')}
                     className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibility)))}
                   >
-                    Statement of Intention
+                    Intention
                   </Label>
                   <Textarea
                     id="intention"
-                    placeholder="What are you working on? Goals and intentions for upcoming sessions?"
+                    placeholder="What are you working on? Goals for upcoming sessions?"
                     value={intention || ""}
                     onChange={(e) => setIntention(e.target.value)}
                     className="mt-2"
