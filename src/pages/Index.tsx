@@ -14,7 +14,7 @@ import { useNavigate, Link } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAsk/ActiveAskSection";
+import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
@@ -499,7 +499,8 @@ const Index = () => {
       setActiveAsks([]);
     }
 
-    // Ensure focusMinutes and breakMinutes reflect defaults if not customized
+    // Use the current values of focusMinutes and breakMinutes, which are managed by setHomepageFocusMinutes/setHomepageBreakMinutes
+    // and initialized from defaults or loaded state.
     const currentFocusDuration = focusMinutes;
     const currentBreakDuration = breakMinutes;
 
@@ -1637,7 +1638,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend} // Corrected: Use handleVoteExtend for voting on existing asks
+              onVoteExtend={handleExtendSubmit} // Corrected: Use handleVoteExtend for voting on existing asks
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
