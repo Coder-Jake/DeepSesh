@@ -59,7 +59,7 @@ const Header = () => {
             <img 
               src="/ds-logo.png" 
               alt="DeepSesh Logo" 
-              className="h-8 w-8 mr-0 mt-[-6px]"
+              className="h-8 w-8 mr-0 mt-[-6px] rotate-45"
             />
             <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-[#1a8cff] to-[#8c25f4] text-transparent bg-clip-text">
               DeepSesh
