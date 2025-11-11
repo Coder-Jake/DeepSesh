@@ -1151,9 +1151,23 @@ const Index = () => {
 
   const handleActivateDiscovery = async () => {
     const trimmedDisplayName = discoveryDisplayName.trim();
+    const currentFocusPreference = focusPreference; // Get current state from context
+
+    const updates: ProfileType = {};
+    let hasChangesToSave = false;
+
     if (trimmedDisplayName !== "" && trimmedDisplayName !== localFirstName) {
-      // Use updateProfile to ensure the profile context is properly updated and persisted
-      await updateProfile({ first_name: trimmedDisplayName }, "Display name updated.");
+      updates.first_name = trimmedDisplayName;
+      hasChangesToSave = true;
+    }
+
+    if (currentFocusPreference !== profile?.focus_preference) {
+        updates.focus_preference = currentFocusPreference;
+        hasChangesToSave = true;
+    }
+
+    if (hasChangesToSave) {
+      await updateProfile(updates, "Profile updated for discovery.");
     }
 
     setIsDiscoveryActivated(true);
