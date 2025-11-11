@@ -552,9 +552,9 @@ const Profile = () => {
             <CardHeader className="relative">
               <CardTitle
                 className="flex items-center gap-1 select-none"
-                onClick={handlePronounCycle}
+                // Removed onClick={handlePronounCycle} from CardTitle
               >
-                <span>About</span>
+                <span onClick={handlePronounCycle}>About</span> {/* Added onClick here */}
                 {isEditingFirstName ? (
                   <Input
                     ref={firstNameInputRef}
@@ -567,10 +567,10 @@ const Profile = () => {
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span
+                  <span // <-- EDIT HERE
                     className={cn(
-                      "select-none"
-                      // Removed: localFirstName === "You" && "animate-fade-in-out"
+                      "select-none",
+                      "flex-grow" // Added flex-grow to make the span take available space
                     )}
                     onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
                   >
@@ -578,7 +578,7 @@ const Profile = () => {
                   </span>
                 )}
                 {pronouns && (
-                  <span className="text-sm text-muted-foreground ml-1">({pronouns})</span>
+                  <span className="text-sm text-muted-foreground ml-1" onClick={handlePronounCycle}>({pronouns})</span> {/* Added onClick here */}
                 )}
               </CardTitle>
                 <Tooltip
