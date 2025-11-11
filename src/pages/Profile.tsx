@@ -492,6 +492,31 @@ const Profile = () => {
     }, 2000);
   };
 
+  // NEW: Effect for global 'Enter' keydown to save
+  useEffect(() => {
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && hasChanges && !loading) {
+        const activeElement = document.activeElement;
+        const isTyping = 
+          activeElement instanceof HTMLInputElement ||
+          activeElement instanceof HTMLTextAreaElement ||
+          activeElement instanceof HTMLSelectElement ||
+          activeElement?.hasAttribute('contenteditable');
+
+        if (!isTyping) {
+          event.preventDefault(); // Prevent default Enter behavior (e.g., submitting a form if one exists)
+          handleSave();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [hasChanges, loading, handleSave]); // Dependencies for the effect
+
   if (loading) {
     return (
       <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6 text-center text-muted-foreground">
