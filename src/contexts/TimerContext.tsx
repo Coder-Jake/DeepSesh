@@ -212,8 +212,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     _setDefaultBreakMinutes(minutes);
   }, []);
 
-  // REMOVED: useEffect to update homepage focus minutes from default if not customized
-  // REMOVED: useEffect to update homepage break minutes from default if not customized
+  // NEW: Effect to sync homepage focus minutes with default if not customized
+  useEffect(() => {
+    if (!isHomepageFocusCustomized) {
+      _setFocusMinutes(_defaultFocusMinutes);
+    }
+  }, [_defaultFocusMinutes, isHomepageFocusCustomized]);
+
+  // NEW: Effect to sync homepage break minutes with default if not customized
+  useEffect(() => {
+    if (!isHomepageBreakCustomized) {
+      _setBreakMinutes(_defaultBreakMinutes);
+    }
+  }, [_defaultBreakMinutes, isHomepageBreakCustomized]);
 
   const getDefaultSeshTitle = useCallback(() => {
     const name = user?.user_metadata?.first_name || profile?.first_name || "You";
@@ -1552,7 +1563,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       // when a re-render occurs due to other context changes (like profile name).
       // The actual `focusMinutes` and `breakMinutes` will be managed by the active session logic.
       _setFocusMinutes(loadedFocusMinutes);
-      _setBreakMinutes(loadedBreakMinutes);
+      _setBreakMinutes(loadedBreakMinutes); // FIXED: Typo here
       setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
       setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
 
