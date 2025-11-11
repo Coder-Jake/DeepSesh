@@ -1104,7 +1104,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     
     // The sessionStartTime should reflect when the *entire session* started, not just the current phase.
     // For a coworker joining, we don't have the exact session start time from the host directly in these props.
-    // For now, we'll approximate it based on the current phase's elapsed time.
     // A more robust solution would be to pass session.startTime from the fetched SupabaseSessionData.
     setSessionStartTime(Date.now() - (currentPhaseDurationMinutes * 60 - remainingSecondsInPhase) * 1000); 
     
@@ -1526,10 +1525,22 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const loadedIsHomepageFocusCustomized = data.isHomepageFocusCustomized ?? false;
       const loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
 
-      _setFocusMinutes(loadedFocusMinutes);
-      _setBreakMinutes(loadedBreakMinutes);
-      setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
-      setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
+      // Only update homepage focus/break minutes and their customization flags
+      // if no timer is currently active (running, paused, or schedule active/pending).
+      // This prevents overriding active timer durations with potentially stale homepage defaults
+      // when a re-render occurs due to other context changes (like profile name).
+      if (!loadedIsRunning && !loadedIsPaused && !loadedIsScheduleActive && !loadedIsSchedulePending) {
+        _setFocusMinutes(loadedFocusMinutes);
+        _setBreakMinutes(loadedBreakMinutes);
+        setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
+        setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
+      } else {
+        // If a timer is active, ensure the homepage inputs reflect the active timer's state
+        // and are considered "customized" so they don't revert to defaults.
+        // The actual `focusMinutes` and `breakMinutes` will be managed by the active session logic.
+        setIsHomepageFocusCustomized(true);
+        setIsHomepageBreakCustomized(true);
+      }
 
       let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
       let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
@@ -1585,7 +1596,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
       setIsRunning(loadedIsRunning);
       setIsPaused(loadedIsPaused);
-      setIsFlashing(loadedIsFlashing);
+      setIsFlashing(loadedIsFlodedIsFlashing);
       setSchedule(data.schedule ?? []);
       setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
