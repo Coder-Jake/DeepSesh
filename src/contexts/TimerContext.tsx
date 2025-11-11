@@ -49,7 +49,45 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [scheduleTitle, setScheduleTitle] = useState("My DeepSesh");
   const [commenceTime, setCommenceTime] = useState("");
   const [commenceDay, setCommenceDay] = useState<number | null>(null);
-  const [isGlobalPrivate, setIsGlobalPrivate] = useState(false);
+  
+  // Synchronous initialization for isGlobalPrivate, isDiscoveryActivated, geolocationPermissionStatus
+  const [isDiscoveryActivated, setIsDiscoveryActivated] = useState<boolean>(() => {
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      return data.isDiscoveryActivated ?? false;
+    }
+    return false;
+  });
+
+  const [geolocationPermissionStatus, setGeolocationPermissionStatus] = useState<PermissionState>(() => {
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      return data.geolocationPermissionStatus ?? 'prompt';
+    }
+    return 'prompt';
+  });
+
+  const [isGlobalPrivate, setIsGlobalPrivate] = useState<boolean>(() => {
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
+      const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
+      const storedIsGlobalPrivate = data.isGlobalPrivate ?? false;
+
+      if (loadedIsDiscoveryActivated && loadedGeolocationPermissionStatus === 'denied') {
+        return true; // Force private if discovery active but location denied
+      } else if (!loadedIsDiscoveryActivated) {
+        return true; // Force private if discovery is not activated
+      }
+      return storedIsGlobalPrivate; // Otherwise, use the stored value
+    }
+    return true; // Default to private if no stored data
+  });
+  // End synchronous initialization
+
   const [isRecurring, setIsRecurring] = useState<boolean>(false);
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [scheduleStartOption, setScheduleStartOption] = useState<'now' | 'manual' | 'custom_time'>('now');
@@ -134,9 +172,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const [activeSessionRecordId, setActiveSessionRecordId] = useState<string | null>(null);
 
-  const [geolocationPermissionStatus, setGeolocationPermissionStatus] = useState<PermissionState>('prompt');
-
-  const [isDiscoveryActivated, setIsDiscoveryActivated] = useState(false);
+  // geolocationPermissionStatus and isDiscoveryActivated are now initialized synchronously above
+  // const [geolocationPermissionStatus, setGeolocationPermissionStatus] = useState<PermissionState>('prompt');
+  // const [isDiscoveryActivated, setIsDiscoveryActivated] = useState(false);
 
   const [lastActivityTime, setLastActivityTime] = useState<number | null>(null);
 
@@ -359,7 +397,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
       );
     });
-  }, [areToastsEnabled, setIsGlobalPrivate]);
+  }, [areToastsEnabled, setIsGlobalPrivate, setGeolocationPermissionStatus]); // Added setGeolocationPermissionStatus to dependencies
 
   useEffect(() => {
     if (isDiscoveryActivated && geolocationPermissionStatus === 'denied' && !isGlobalPrivate) {
@@ -1498,22 +1536,22 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       setShowSessionsWhileActive(loadedShowSessionsWhileActive);
 
-      const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
-      setIsDiscoveryActivated(loadedIsDiscoveryActivated);
+      // isDiscoveryActivated and geolocationPermissionStatus are now initialized synchronously,
+      // so we don't need to set them again here from `data`.
+      // const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
+      // setIsDiscoveryActivated(loadedIsDiscoveryActivated);
+      // const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
+      // setGeolocationPermissionStatus(loadedGeolocationPermissionStatus);
 
-      // NEW: Load geolocationPermissionStatus from storage
-      const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
-      setGeolocationPermissionStatus(loadedGeolocationPermissionStatus);
-
-      // MODIFIED: Determine initial isGlobalPrivate based on loaded states and stored value
-      let initialIsGlobalPrivate = data.isGlobalPrivate ?? false; // Default to public
-
-      if (loadedIsDiscoveryActivated && loadedGeolocationPermissionStatus === 'denied') {
-        initialIsGlobalPrivate = true; // Force private if discovery active but location denied
-      } else if (!loadedIsDiscoveryActivated) {
-        initialIsGlobalPrivate = true; // Force private if discovery is not activated
-      }
-      setIsGlobalPrivate(initialIsGlobalPrivate);
+      // isGlobalPrivate is also initialized synchronously.
+      // The logic for deriving it based on discovery/location is now in its useState initializer.
+      // let initialIsGlobalPrivate = data.isGlobalPrivate ?? false;
+      // if (loadedIsDiscoveryActivated && loadedGeolocationPermissionStatus === 'denied') {
+      //   initialIsGlobalPrivate = true;
+      // } else if (!loadedIsDiscoveryActivated) {
+      //   initialIsGlobalPrivate = true;
+      // }
+      // setIsGlobalPrivate(initialIsGlobalPrivate);
 
       setTimerType(data.timerType ?? 'focus');
 
@@ -1642,7 +1680,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
     }
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates]);
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate]); // Added synchronous state setters to dependencies
 
   useEffect(() => {
     const dataToSave = {
@@ -1669,7 +1707,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       isHomepageFocusCustomized, isHomepageBreakCustomized,
       activeSessionRecordId,
       isDiscoveryActivated,
-      geolocationPermissionStatus, // NEW: Add to dataToSave
+      geolocationPermissionStatus, // NEW: Add to dependencies
       currentSessionParticipantsData,
       lastActivityTime,
       showDemoSessions,
