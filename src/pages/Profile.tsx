@@ -635,7 +635,9 @@ const Profile = () => {
                     className="mt-2"
                   />
                 </div>
+              </div>
 
+              <div className="space-y-4">
                 <div>
                   <Label
                     htmlFor="intention"
@@ -652,9 +654,6 @@ const Profile = () => {
                     className="mt-2"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-4">
                 <div>
                   <Label
                     htmlFor="can-help-with"
