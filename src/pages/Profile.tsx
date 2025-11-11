@@ -225,7 +225,7 @@ const Profile = () => {
   useEffect(() => {
     if (!loading && profile) {
       setOriginalValues({
-        firstName: localFirstName || "You",
+        firstName: profile.first_name || "You",
         bio: bio || "",
         intention: intention || "",
         canHelpWith: canHelpWith || "",
@@ -251,7 +251,7 @@ const Profile = () => {
       setHasChanges(false);
     }
   }, [
-    loading, profile, localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
+    loading, profile, bio, intention, canHelpWith, needHelpWith, focusPreference, organization, linkedinUrl, hostCode,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility, pronouns
   ]);
 
@@ -510,11 +510,12 @@ const Profile = () => {
                   <Input
                     ref={firstNameInputRef}
                     value={localFirstName}
-                    onChange={(e) => setLocalFirstName(e.target.value)}
+                    onChange={(e) => { e.stopPropagation(); setLocalFirstName(e.target.value); }}
                     onKeyDown={handleFirstNameInputKeyDown}
                     onBlur={handleFirstNameInputBlur}
                     placeholder="your name"
                     className="text-lg font-semibold h-auto py-1 px-2 italic"
+                    onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
                   <span
@@ -741,7 +742,7 @@ const Profile = () => {
                     <Input
                       ref={hostCodeInputRef}
                       value={hostCode || ""}
-                      onChange={(e) => setHostCode(e.target.value)}
+                      onChange={(e) => { e.stopPropagation(); setHostCode(e.target.value); }}
                       onKeyDown={handleHostCodeInputKeyDown}
                       onBlur={handleHostCodeInputBlur}
                       placeholder="yourhostcode"
