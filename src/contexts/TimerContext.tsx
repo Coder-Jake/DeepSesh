@@ -213,18 +213,20 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, []);
 
   // NEW: Effect to sync homepage focus minutes with default if not customized
+  // MODIFIED: Added conditions to prevent reset if a timer is active
   useEffect(() => {
-    if (!isHomepageFocusCustomized) {
+    if (!isHomepageFocusCustomized && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
       _setFocusMinutes(_defaultFocusMinutes);
     }
-  }, [_defaultFocusMinutes, isHomepageFocusCustomized]);
+  }, [_defaultFocusMinutes, isHomepageFocusCustomized, isRunning, isPaused, isScheduleActive, isSchedulePending]); // Added timer activity states to dependencies
 
   // NEW: Effect to sync homepage break minutes with default if not customized
+  // MODIFIED: Added conditions to prevent reset if a timer is active
   useEffect(() => {
-    if (!isHomepageBreakCustomized) {
+    if (!isHomepageBreakCustomized && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
       _setBreakMinutes(_defaultBreakMinutes);
     }
-  }, [_defaultBreakMinutes, isHomepageBreakCustomized]);
+  }, [_defaultBreakMinutes, isHomepageBreakCustomized, isRunning, isPaused, isScheduleActive, isSchedulePending]); // Added timer activity states to dependencies
 
   const getDefaultSeshTitle = useCallback(() => {
     const name = user?.user_metadata?.first_name || profile?.first_name || "You";
@@ -539,8 +541,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsRecurring(false);
     setRecurrenceFrequency('daily');
     setTimerType('focus');
-    _setFocusMinutes(_defaultFocusMinutes);
-    _setBreakMinutes(_defaultBreakMinutes);
+    _setFocusMinutes(_defaultFocusMinutes); // Reset homepage input to default
+    _setBreakMinutes(_defaultBreakMinutes); // Reset homepage input to default
     setTimeLeft(_defaultFocusMinutes * 60); // Ensure timeLeft also resets
     setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Reset currentPhaseDurationSeconds
     setIsRunning(false);
@@ -1586,7 +1588,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       setShowSessionsWhileActive(loadedShowSessionsWhileActive);
 
-      // isDiscoveryActivated and geolocationPermissionStatus are now initialized synchronously,
+      // isDiscoveryActivated and geolocationPermissionStatus are now initialized synchronously above
       // so we don't need to set them again here from `data`.
       // const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
       // setIsDiscoveryActivated(loadedIsDiscoveryActivated);
