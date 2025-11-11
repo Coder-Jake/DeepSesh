@@ -1058,7 +1058,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     sessionId: string,
     sessionTitle: string,
     hostName: string,
-    participants: ParticipantSessionData[],
+    participants: ParticipantSessionData[], // This is the list of participants from the *mock* session
     fullSchedule: ScheduledTimer[],
     currentPhaseType: 'focus' | 'break',
     currentPhaseDurationMinutes: number,
@@ -1145,14 +1145,22 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         .single();
 
       if (fetchError) {
-        console.error("Error fetching existing session for join:", fetchError);
+        console.error("Error fetching existing session for join (expected for mock sessions):", fetchError);
+        // If it's a mock session (i.e., not found in Supabase), use the provided participants
+        let updatedParticipantsData: ParticipantSessionData[] = [...participants]; // Initialize with the mock session's participants
+        if (!updatedParticipantsData.some(p => p.userId === user.id)) {
+          updatedParticipantsData.push(newCoworker);
+        }
+        setCurrentSessionParticipantsData(updatedParticipantsData);
+        // Skip the Supabase update for mock sessions
         if (areToastsEnabled) {
-          toast.error("Join Session Failed", {
-            description: `Could not fetch session details: ${fetchError.message}`,
+          toast.success("Sesh Joined (Mock)!", {
+            description: `You've joined "${sessionTitle}".`,
           });
         }
-        resetSessionStates();
-        return;
+        playSound();
+        triggerVibration();
+        return; // Exit early for mock sessions
       }
 
       let updatedParticipantsData: ParticipantSessionData[] = (existingSession?.participants_data || []) as ParticipantSessionData[];
@@ -1203,7 +1211,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
     setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, _defaultBreakMinutes, _defaultFocusMinutes,
-    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds // NEW dependency
+    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds
   ]);
 
   // NEW: Main timer countdown effect
