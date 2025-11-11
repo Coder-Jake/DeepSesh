@@ -617,106 +617,110 @@ const Profile = () => {
                   </TooltipContent>
                 </Tooltip>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label
-                  htmlFor="bio"
-                  onClick={() => handleLabelClick(bioVisibility, setBioVisibility, 'bio')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibility)))}
-                >
-                  Brief Bio
-                </Label>
-                <Textarea
-                  id="bio"
-                  placeholder="Share a bit about yourself..."
-                  value={bio || ""}
-                  onChange={(e) => setBio(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="intention"
-                  onClick={() => handleLabelClick(intentionVisibility, setIntentionVisibility, 'intention')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibility)))}
-                >
-                  Statement of Intention
-                </Label>
-                <Textarea
-                  id="intention"
-                  placeholder="What are you working on? Goals and intentions for upcoming sessions?"
-                  value={intention || ""}
-                  onChange={(e) => setIntention(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="can-help-with"
-                  onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
-                >
-                  <Handshake size={16} className="inline-block mr-1" /> I can help with
-                </Label>
-                <Textarea
-                  id="can-help-with"
-                  placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
-                  value={canHelpWith || ""}
-                  onChange={(e) => setCanHelpWith(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="need-help-with"
-                  onClick={() => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibility)))}
-                >
-                  <HelpCircle size={16} className="inline-block mr-1" /> I need help with
-                </Label>
-                <Textarea
-                  id="need-help-with"
-                  placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
-                  value={needHelpWith || ""}
-                  onChange={(e) => setNeedHelpWith(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="linkedin-username"
-                  onClick={() => handleLabelClick(linkedinVisibility, setLinkedinVisibility, 'linkedin_url')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibility)))}
-                >
-                  LinkedIn Handle
-                </Label>
-                <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
-                  <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
-                    linkedin.com/in/
-                  </span>
-                  <Input
-                    id="linkedin-username"
-                    type="text"
-                    placeholder="yourusername"
-                    value={linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : ""}
-                    onChange={(e) => setLinkedinUrl(e.target.value)}
-                    className="flex-1 border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-l-none"
+            <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div>
+                  <Label
+                    htmlFor="bio"
+                    onClick={() => handleLabelClick(bioVisibility, setBioVisibility, 'bio')}
+                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibility)))}
+                  >
+                    Brief Bio
+                  </Label>
+                  <Textarea
+                    id="bio"
+                    placeholder="Share a bit about yourself..."
+                    value={bio || ""}
+                    onChange={(e) => setBio(e.target.value)}
+                    className="mt-2"
                   />
-                  {linkedinUrl && (
-                    <a
-                      href={`https://www.linkedin.com/in/${linkedinUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 transition-colors p-2"
-                      aria-label="Visit LinkedIn Profile"
-                    >
-                      <Linkedin size={20} />
-                    </a>
-                  )}
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="intention"
+                    onClick={() => handleLabelClick(intentionVisibility, setIntentionVisibility, 'intention')}
+                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibility)))}
+                  >
+                    Statement of Intention
+                  </Label>
+                  <Textarea
+                    id="intention"
+                    placeholder="What are you working on? Goals and intentions for upcoming sessions?"
+                    value={intention || ""}
+                    onChange={(e) => setIntention(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label
+                    htmlFor="can-help-with"
+                    onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
+                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
+                  >
+                    <Handshake size={16} className="inline-block mr-1" /> I can help with
+                  </Label>
+                  <Textarea
+                    id="can-help-with"
+                    placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
+                    value={canHelpWith || ""}
+                    onChange={(e) => setCanHelpWith(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="need-help-with"
+                    onClick={() => handleLabelClick(needHelpWithVisibility, setNeedHelpWithVisibility, 'need_help_with')}
+                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibility)))}
+                  >
+                    <HelpCircle size={16} className="inline-block mr-1" /> I need help with
+                  </Label>
+                  <Textarea
+                    id="need-help-with"
+                    placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
+                    value={needHelpWith || ""}
+                    onChange={(e) => setNeedHelpWith(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="linkedin-username"
+                    onClick={() => handleLabelClick(linkedinVisibility, setLinkedinVisibility, 'linkedin_url')}
+                    className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibility)))}
+                  >
+                    LinkedIn Handle
+                  </Label>
+                  <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                    <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
+                      linkedin.com/in/
+                    </span>
+                    <Input
+                      id="linkedin-username"
+                      type="text"
+                      placeholder="yourusername"
+                      value={linkedinUrl ? (linkedinUrl.startsWith("https://www.linkedin.com/in/") ? linkedinUrl.substring("https://www.linkedin.com/in/".length) : linkedinUrl) : ""}
+                      onChange={(e) => setLinkedinUrl(e.target.value)}
+                      className="flex-1 border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-l-none"
+                    />
+                    {linkedinUrl && (
+                      <a
+                        href={`https://www.linkedin.com/in/${linkedinUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                        aria-label="Visit LinkedIn Profile"
+                      >
+                        <Linkedin size={20} />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>
