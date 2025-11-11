@@ -495,16 +495,22 @@ const Profile = () => {
   // NEW: Effect for global 'Enter' keydown to save
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && hasChanges && !loading) {
+      if (hasChanges && !loading) {
         const activeElement = document.activeElement;
-        const isTypingInTextarea = activeElement instanceof HTMLTextAreaElement;
-        const isTypingInInput = activeElement instanceof HTMLInputElement;
+        const isTypingInInputOrTextarea = activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement;
 
-        // Only trigger save if not typing in a textarea, or if it's an input and not a specific type that handles Enter differently
-        if (!isTypingInTextarea && isTypingInInput) { // Only trigger for single-line inputs
-          event.preventDefault(); // Prevent default Enter behavior (e.g., submitting a form if one exists)
+        // Condition for Ctrl/Cmd + Enter
+        if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+          event.preventDefault(); // Prevent default Enter behavior (e.g., new line in textarea)
           handleSave();
-        } else if (!isTypingInTextarea && !isTypingInInput) { // If not typing in any input/textarea, also save
+        }
+        // Existing condition for Enter without modifier keys (only for single-line inputs or when no input is focused)
+        else if (event.key === 'Enter' && !event.metaKey && !event.ctrlKey) {
+          if (isTypingInInputOrTextarea && activeElement instanceof HTMLTextAreaElement) {
+            // If in a textarea, allow new line, don't save
+            return;
+          }
+          // For single-line inputs or when no input is focused, save
           event.preventDefault();
           handleSave();
         }
