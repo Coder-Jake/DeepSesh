@@ -332,7 +332,7 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const notesTextareaRef = useRef<HTMLTextAreaAreaElement>(null);
 
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
@@ -1374,7 +1374,7 @@ const Index = () => {
                         </h2>
                       ) : (
                         <p className="text-sm md:text-base font-bold text-muted-foreground">
-                          {isGlobalPrivate ? "Sync focus with known coworkers" : "Sync focus with nearby coworkers"}
+                          Sync focus with <span className="whitespace-nowrap">{isGlobalPrivate ? "known coworkers" : "nearby coworkers"}</span>
                         </p>
                       )}
                     </div>
