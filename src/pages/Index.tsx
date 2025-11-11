@@ -140,7 +140,7 @@ const mockFriendsSessions: DemoSession[] = [
       { userId: "mock-user-id-jung", userName: "Jung", role: 'coworker', joinTime: Date.now(), focusPreference: 70, intention: "Summarizing archetypal concepts." },
       { userId: "mock-user-id-maslow", userName: "Maslow", role: 'coworker', joinTime: Date.now(), focusPreference: 90, intention: "Creating hierarchy of needs flashcards." },
       { userId: "mock-user-id-rogers", userName: "Rogers", role: 'coworker', joinTime: Date.now(), focusPreference: 95, intention: "Discussing humanistic approaches." },
-      { id: crypto.randomUUID(), userId: "mock-user-id-pavlov", userName: "Pavlov", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Peer teaching classical conditioning." },
+      { userId: "mock-user-id-pavlov", userName: "Pavlov", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Peer teaching classical conditioning." },
     ],
     fullSchedule: [
       { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 25 },
@@ -1638,7 +1638,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleExtendSubmit} // Corrected: Use handleVoteExtend for voting on existing asks
+              onVoteExtend={handleVoteExtend} // Corrected: Use handleVoteExtend for voting on existing asks
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
