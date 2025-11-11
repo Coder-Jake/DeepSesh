@@ -233,10 +233,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     // Ensure profile_data is always a valid object before sending
+    // Use the current 'profile' state directly, which already has an updated_at from setProfile
     const profileDataToSend = {
       ...profile,
       profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
-      updated_at: new Date().toISOString(), // Always update timestamp on sync attempt
     };
 
     try {
@@ -375,63 +375,16 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   }, [user, profile, syncProfileToSupabase]);
 
 
-  // Sync local states to profile object and save to local storage
-  // This useEffect now acts as the "local save" mechanism, but with an optimization
+  // Effect to save the entire profile object to local storage whenever it changes
+  // This ensures localStorage always reflects the current 'profile' state from context.
   useEffect(() => {
-    if (!user || loading) return;
-
-    const currentProfileData: ProfileDataJsonb = {
-      bio: getDefaultProfileDataField(bio, bioVisibility),
-      intention: getDefaultProfileDataField(intention, intentionVisibility),
-      linkedin_url: getDefaultProfileDataField(linkedinUrl, linkedinVisibility),
-      can_help_with: getDefaultProfileDataField(canHelpWith, canHelpWithVisibility),
-      need_help_with: getDefaultProfileDataField(needHelpWith, needHelpWithVisibility),
-      pronouns: getDefaultProfileDataField(pronouns, ['public']),
-    };
-
-    const newProfileContent: Omit<Profile, 'updated_at'> = {
-      id: user.id,
-      first_name: localFirstName,
-      last_name: null,
-      avatar_url: null,
-      focus_preference: focusPreference,
-      organization,
-      host_code: hostCode,
-      profile_data: currentProfileData,
-    };
-
-    // Create a comparable version of the existing profile (without updated_at)
-    const existingProfileContentComparable: Omit<Profile, 'updated_at'> | null = profile ? {
-      id: profile.id,
-      first_name: profile.first_name,
-      last_name: profile.last_name,
-      avatar_url: profile.avatar_url,
-      focus_preference: profile.focus_preference,
-      organization: profile.organization,
-      host_code: profile.host_code,
-      profile_data: profile.profile_data,
-    } : null;
-
-    // Only update if the content of the profile has actually changed
-    if (JSON.stringify(newProfileContent) !== JSON.stringify(existingProfileContentComparable)) {
-      const updatedProfile: Profile = {
-        ...newProfileContent,
-        updated_at: new Date().toISOString(), // Set updated_at only when content changes
-      };
-      setProfile(updatedProfile);
-      localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(updatedProfile));
-    } else if (profile) {
-      // If content hasn't changed, but profile exists, ensure localStorage has the latest profile object
-      // (which might have a different `updated_at` from the last `setProfile` call, e.g., from initial load or Supabase sync)
-      // This is crucial for `syncProfileToSupabase` to always send the most recent `updated_at` to Supabase.
+    if (profile) {
       localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(profile));
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_PROFILE_KEY);
     }
-  }, [
-    user, loading, localFirstName, bio, intention, canHelpWith, needHelpWith, focusPreference,
-    organization, linkedinUrl, hostCode, pronouns,
-    bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    getDefaultProfileDataField, profile // `profile` is a dependency because we compare against it
-  ]);
+  }, [profile]);
+
 
   // --- MODIFIED: updateProfile function (now local-first) ---
   const updateProfile = useCallback(async (updates: ProfileUpdate, successMessage?: string) => {
@@ -470,10 +423,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       organization: updates.organization !== undefined ? updates.organization : organization,
       host_code: updates.host_code !== undefined ? updates.host_code : hostCode,
       profile_data: newProfileData,
-      updated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(), // Always update timestamp on explicit update
     };
-    setProfile(updatedProfile);
-    localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(updatedProfile));
+    setProfile(updatedProfile); // <-- This updates the profile context object
+    // localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(updatedProfile)); // Removed, handled by new useEffect
 
     if (areToastsEnabled && successMessage) {
       toast.success("Profile Updated", {
