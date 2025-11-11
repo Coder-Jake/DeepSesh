@@ -212,19 +212,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     _setDefaultBreakMinutes(minutes);
   }, []);
 
-  // NEW: Effect to update homepage focus minutes from default if not customized
-  useEffect(() => {
-    if (!isHomepageFocusCustomized) {
-      _setFocusMinutes(_defaultFocusMinutes);
-    }
-  }, [_defaultFocusMinutes, isHomepageFocusCustomized]);
-
-  // NEW: Effect to update homepage break minutes from default if not customized
-  useEffect(() => {
-    if (!isHomepageBreakCustomized) {
-      _setBreakMinutes(_defaultBreakMinutes);
-    }
-  }, [_defaultBreakMinutes, isHomepageBreakCustomized]);
+  // REMOVED: useEffect to update homepage focus minutes from default if not customized
+  // REMOVED: useEffect to update homepage break minutes from default if not customized
 
   const getDefaultSeshTitle = useCallback(() => {
     const name = user?.user_metadata?.first_name || profile?.first_name || "You";
@@ -1650,7 +1639,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setPhoneCalls(data.phoneCalls ?? false);
       setFavourites(data.favourites ?? false);
       setWorkApps(data.workApps ?? false);
-      setIntentionalBreaches(data.intentionalBreaches ?? false);
+      setIntentionalBreaches(data.intentionalBreches ?? false);
       setManualTransition(data.manualTransition ?? false);
       setMaxDistance(data.maxDistance ?? 1000);
       setAskNotifications(data.askNotifications ?? { push: false, vibrate: false, sound: false });
