@@ -710,7 +710,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     resetSessionStates();
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates, transferHostRole]);
 
-  const stopTimer = useCallback(async (confirmPrompt: boolean, isLongPress: boolean) => {
+  const stopTimer = useCallback(async (confirmPrompt: boolean) => { // Removed isLongPress argument
     if (currentSessionRole === 'host') {
       await transferHostRole();
       return;
@@ -719,7 +719,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return;
     }
 
-    if (confirmPrompt && !isLongPress) {
+    // For solo timers, only show confirmation if confirmPrompt is true
+    if (confirmPrompt) {
       if (!confirm('Are you sure you want to stop the timer?')) {
         return;
       }

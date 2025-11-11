@@ -614,13 +614,9 @@ const Index = () => {
   };
 
   const resetTimer = async () => {
-    if (longPressRef.current) {
-      stopTimer(false, true); // Use stopTimer for full reset logic
-    } else {
-      if (confirm('Are you sure you want to reset the timer?')) {
-        stopTimer(false, false); // Use stopTimer for full reset logic
-      }
-    }
+    // For solo timers, always stop without confirmation
+    // The `stopTimer` function now handles the confirmation logic based on its `confirmPrompt` argument.
+    stopTimer(false); 
   };
 
   const switchToBreak = () => {
@@ -1535,12 +1531,8 @@ const Index = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onMouseDown={() => handleLongPressStart(() => stopTimer(false, true))}
-                          onMouseUp={handleLongPressEnd}
-                          onMouseLeave={handleLongPressEnd}
-                          onTouchStart={() => handleLongPressStart(() => stopTimer(false, true))}
-                          onTouchEnd={handleLongPressEnd}
-                          onClick={() => stopTimer(true, false)}
+                          // Removed onMouseDown, onMouseUp, onMouseLeave, onTouchStart, onTouchEnd
+                          onClick={() => stopTimer(true)} // Always pass true for confirmation for multi-user, false for solo
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-primary/5 dark:hover:bg-primary/10",
                             isPaused ? "text-red-500" : "text-secondary-foreground"
@@ -1555,7 +1547,7 @@ const Index = () => {
                     </div>
                   )}
 
-                  {!isScheduleActive && !isSchedulePrepared && !isTimeLeftManagedBySession && (
+                  {!isScheduleActive && !isTimeLeftManagedBySession && (
                     <div className="flex justify-center gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <span
