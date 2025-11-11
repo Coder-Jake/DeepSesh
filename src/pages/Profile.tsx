@@ -519,8 +519,8 @@ const Profile = () => {
                 ) : (
                   <span
                     className={cn(
-                      "cursor-pointer select-none",
-                      localFirstName === "You" && "animate-fade-in-out"
+                      "cursor-pointer select-none"
+                      // Removed: localFirstName === "You" && "animate-fade-in-out"
                     )}
                     onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
                   >
