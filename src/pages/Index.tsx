@@ -40,7 +40,7 @@ import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordio
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -1318,8 +1318,9 @@ const Index = () => {
             <div className={cn(
               "relative rounded-lg border border-border pt-1 pb-4 px-1 text-center transition-colors",
               !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
-              !isGlobalPrivate && !isDarkMode && "bg-[hsl(var(--public-bg))]",
-              isGlobalPrivate && "bg-[hsl(var(--private-bg))]"
+              !isGlobalPrivate && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-light))] to-[hsl(var(--public-gradient-end-light))]",
+              isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--private-gradient-start-dark))] to-[hsl(var(--private-gradient-end-dark))]",
+              isGlobalPrivate && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--private-gradient-start-light))] to-[hsl(var(--private-gradient-end-light))]"
             )}>
               {isSchedulingMode ? (
                 <ScheduleForm />
