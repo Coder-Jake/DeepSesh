@@ -502,7 +502,7 @@ const Profile = () => {
           <Card>
             <CardHeader className="relative">
               <CardTitle
-                className="flex items-center gap-1 cursor-pointer select-none"
+                className="flex items-center gap-1 select-none"
                 onClick={handlePronounCycle}
               >
                 <span>About</span>
@@ -519,7 +519,7 @@ const Profile = () => {
                 ) : (
                   <span
                     className={cn(
-                      "cursor-pointer select-none"
+                      "select-none"
                       // Removed: localFirstName === "You" && "animate-fade-in-out"
                     )}
                     onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
@@ -705,7 +705,7 @@ const Profile = () => {
                     />
                   </div>
                   <div
-                    className="text-center mt-3 text-sm text-muted-foreground cursor-pointer select-none"
+                    className="text-center mt-3 text-sm text-muted-foreground select-none"
                     onMouseDown={() => handleLongPressStart(handleFocusPreferenceLongPress)}
                     onMouseUp={handleLongPressEnd}
                     onMouseLeave={handleLongPressEnd}
@@ -753,7 +753,7 @@ const Profile = () => {
                     <span
                       className={cn(
                         "text-lg font-semibold flex-grow select-none",
-                        "text-foreground cursor-pointer hover:text-primary"
+                        // Removed: "text-foreground cursor-pointer hover:text-primary"
                       )}
                       onClick={handleHostCodeClick}
                     >
