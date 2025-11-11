@@ -488,9 +488,10 @@ const Profile = () => {
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
         {/* Top-right Save Profile button */}
         <div className="absolute right-0">
+          {/* Disabled when no changes */}
           <Button
             onClick={handleSave}
-            disabled={loading || !hasChanges} {/* Disabled when no changes */}
+            disabled={loading || !hasChanges}
             className="shadow-lg"
           >
             {loading ? "Saving..." : "Save Profile"}
