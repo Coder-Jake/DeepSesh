@@ -194,11 +194,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const setHomepageFocusMinutes = useCallback((minutes: number) => {
     _setFocusMinutes(minutes);
+    _setDefaultFocusMinutes(minutes); // Update default when homepage input changes
     setIsHomepageFocusCustomized(true);
   }, []);
 
   const setHomepageBreakMinutes = useCallback((minutes: number) => {
     _setBreakMinutes(minutes);
+    _setDefaultBreakMinutes(minutes); // Update default when homepage input changes
     setIsHomepageBreakCustomized(true);
   }, []);
 
@@ -1319,7 +1321,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
               finalBreakSeconds,
               totalSession,
               activeJoinedSessionCoworkerCount,
-              sessionStartTime || Date.now(),
+              sessionStartTime || Date.Now(),
               activeAsks,
               allParticipantsToDisplay,
               areToastsEnabled
@@ -1349,14 +1351,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             const newBreakDurationSeconds = activeManualBreakDuration * 60; // MODIFIED: Use activeManualBreakDuration
             setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
             setTimeLeft(newBreakDurationSeconds);
-            setCurrentPhaseStartTime(Date.now());
+            setCurrentPhaseStartTime(Date.Now());
           } else {
             setTimerType('focus');
             // NEW: Set new phase duration and start time
             const newFocusDurationSeconds = activeManualFocusDuration * 60; // MODIFIED: Use activeManualFocusDuration
             setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
             setTimeLeft(newFocusDurationSeconds);
-            setCurrentPhaseStartTime(Date.now());
+            setCurrentPhaseStartTime(Date.Now());
           }
         }
       }
@@ -1517,7 +1519,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         maxAllowedInactivitySeconds = (loadedFocusMinutes + loadedBreakMinutes) * 60;
       }
 
-      const now = Date.now();
+      const now = Date.Now();
       const timeSinceLastActivity = loadedLastActivityTime ? (now - loadedLastActivityTime) / 1000 : 0;
 
       // Determine the correct currentPhaseDurationSeconds based on the loaded state
