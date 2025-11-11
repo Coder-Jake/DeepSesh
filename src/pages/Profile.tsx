@@ -100,7 +100,7 @@ const Profile = () => {
   const friendLongPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isKeyTooltipOpen, setIsKeyTooltipOpen] = useState(false);
-  const keyTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIXED: Initialize with null
+  const keyTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const getDisplayVisibilityStatus = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[] | null): string => {
     if (!visibility || visibility.length === 0) return 'public';
@@ -637,23 +637,6 @@ const Profile = () => {
 
               <div className="space-y-4">
                 <Label
-                  htmlFor="can-help-with"
-                  onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
-                >
-                  <Handshake size={16} className="inline-block mr-1" /> I can help with
-                </Label>
-                <Textarea
-                  id="can-help-with"
-                  placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
-                  value={canHelpWith || ""}
-                  onChange={(e) => setCanHelpWith(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label
                   htmlFor="intention"
                   onClick={() => handleLabelClick(intentionVisibility, setIntentionVisibility, 'intention')}
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibility)))}
@@ -665,6 +648,23 @@ const Profile = () => {
                   placeholder="What are you working on? Goals and intentions for upcoming sessions?"
                   value={intention || ""}
                   onChange={(e) => setIntention(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label
+                  htmlFor="can-help-with"
+                  onClick={() => handleLabelClick(canHelpWithVisibility, setCanHelpWithVisibility, 'can_help_with')}
+                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibility)))}
+                >
+                  <Handshake size={16} className="inline-block mr-1" /> I can help with
+                </Label>
+                <Textarea
+                  id="can-help-with"
+                  placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
+                  value={canHelpWith || ""}
+                  onChange={(e) => setCanHelpWith(e.target.value)}
                   className="mt-2"
                 />
               </div>
