@@ -314,6 +314,8 @@ const Index = () => {
     currentPhaseDurationSeconds,
     setCurrentPhaseDurationSeconds,
     remainingTimeAtPause, // ADDED: Destructure remainingTimeAtPause
+    activeManualFocusDuration, // NEW: Destructure activeManualFocusDuration
+    activeManualBreakDuration, // NEW: Destructure activeManualBreakDuration
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
@@ -515,6 +517,12 @@ const Index = () => {
     const initialDurationSeconds = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
     setCurrentPhaseDurationSeconds(initialDurationSeconds);
     setTimeLeft(initialDurationSeconds); // Initialize timeLeft to full duration
+
+    // NEW: Capture current homepage focus/break minutes for the active manual timer
+    // These will be used for phase transitions within this manual timer
+    setActiveManualFocusDuration(focusMinutes);
+    setActiveManualBreakDuration(breakMinutes);
+
     setIsTimeLeftManagedBySession(true);
 
     const hostParticipant: ParticipantSessionData = {
@@ -545,8 +553,8 @@ const Index = () => {
             host_name: hostParticipant.userName,
             session_title: seshTitle,
             visibility: 'public',
-            focus_duration: focusMinutes,
-            break_duration: breakMinutes,
+            focus_duration: focusMinutes, // MODIFIED: Use current focusMinutes
+            break_duration: breakMinutes, // MODIFIED: Use current breakMinutes
             current_phase_type: timerType,
             current_phase_end_time: currentPhaseEndTime,
             total_session_duration_seconds: currentPhaseDuration * 60,
@@ -629,7 +637,7 @@ const Index = () => {
     }
     setTimerType('break');
     // NEW: Set new phase duration and start time
-    const newBreakDurationSeconds = breakMinutes * 60;
+    const newBreakDurationSeconds = activeManualBreakDuration * 60; // MODIFIED: Use activeManualBreakDuration
     setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
     setTimeLeft(newBreakDurationSeconds);
     setCurrentPhaseStartTime(Date.now());
@@ -648,7 +656,7 @@ const Index = () => {
     }
     setTimerType('focus');
     // NEW: Set new phase duration and start time
-    const newFocusDurationSeconds = focusMinutes * 60;
+    const newFocusDurationSeconds = activeManualFocusDuration * 60; // MODIFIED: Use activeManualFocusDuration
     setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
     setTimeLeft(newFocusDurationSeconds);
     setCurrentPhaseStartTime(Date.now());
