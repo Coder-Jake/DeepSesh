@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from "react";
-import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
+import React from "react";
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface CircularProgressProps {
   size?: number;
@@ -7,8 +8,8 @@ interface CircularProgressProps {
   progress: number; // 0-100
   children?: React.ReactNode;
   className?: string;
-  timerType?: 'focus' | 'break'; // New prop
-  isActiveTimer?: boolean; // New prop
+  timerType?: 'focus' | 'break';
+  isActiveTimer?: boolean;
 }
 
 export const CircularProgress = ({
@@ -17,61 +18,61 @@ export const CircularProgress = ({
   progress,
   children,
   className = "",
-  timerType = 'focus', // Default to focus
-  isActiveTimer = false, // Default to false
+  timerType = 'focus',
+  isActiveTimer = false,
 }: CircularProgressProps) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
-  const { isDarkMode } = useTheme(); // NEW: Get dark mode status
+  const { isDarkMode } = useTheme();
 
-  // Determine the background fill for the circle
-  let backgroundFill: string;
+  // Determine the background color for the outer div
+  let backgroundColor: string;
   if (!isActiveTimer) {
-    backgroundFill = 'hsl(var(--neutral-background))';
+    backgroundColor = 'hsl(var(--neutral-background))';
   } else {
     if (timerType === 'focus') {
-      backgroundFill = isDarkMode 
-        ? 'linear-gradient(to bottom right, hsl(var(--focus-gradient-start-dark)), hsl(var(--focus-gradient-end-dark)))'
-        : 'linear-gradient(to bottom right, hsl(var(--focus-gradient-start-light)), hsl(var(--focus-gradient-end-light)))';
+      backgroundColor = isDarkMode
+        ? 'hsl(var(--focus-background-solid-dark))'
+        : 'hsl(var(--focus-background-solid-light))';
     } else { // timerType === 'break'
-      backgroundFill = isDarkMode 
-        ? 'linear-gradient(to bottom right, hsl(var(--break-gradient-start-dark)), hsl(var(--break-gradient-end-dark)))'
-        : 'linear-gradient(to bottom right, hsl(var(--break-gradient-start-light)), hsl(var(--break-gradient-end-light)))';
+      backgroundColor = isDarkMode
+        ? 'hsl(var(--break-background-solid-dark))'
+        : 'hsl(var(--break-background-solid-light))';
     }
   }
 
-  // Progress stroke color will always be the foreground color for consistency
   const progressStrokeColor = 'hsl(var(--foreground))';
 
   return (
-    <div className={`relative inline-flex items-center justify-center ${className}`}>
+    <div
+      className={cn(
+        `relative inline-flex items-center justify-center rounded-full overflow-hidden`,
+        className
+      )}
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: backgroundColor,
+        transition: 'background-color 1s ease-in-out', // Add the transition here
+      }}
+    >
       <svg
         width={size}
         height={size}
-        className={`circular-progress-container transform -rotate-90`}
+        className={`circular-progress-container transform -rotate-90 absolute`}
       >
-        {/* Background ring */}
+        {/* Background ring - now transparent, relying on parent div's background */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           stroke="hsl(var(--muted))"
           strokeWidth={strokeWidth}
-          fill={isActiveTimer ? 'url(#gradientFill)' : backgroundFill} // Use gradientFill for active timer
+          fill="transparent" // Make SVG background transparent
         />
         
-        {/* Define gradient for active timer background */}
-        {isActiveTimer && (
-          <defs>
-            <linearGradient id="gradientFill" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={isDarkMode ? (timerType === 'focus' ? 'hsl(var(--focus-gradient-start-dark))' : 'hsl(var(--break-gradient-start-dark))') : (timerType === 'focus' ? 'hsl(var(--focus-gradient-start-light))' : 'hsl(var(--break-gradient-start-light))')} />
-              <stop offset="100%" stopColor={isDarkMode ? (timerType === 'focus' ? 'hsl(var(--focus-gradient-end-dark))' : 'hsl(var(--break-gradient-end-dark))') : (timerType === 'focus' ? 'hsl(var(--focus-gradient-end-light))' : 'hsl(var(--break-gradient-end-light))')} />
-            </linearGradient>
-          </defs>
-        )}
-
         {/* Progress ring */}
         <circle
           cx={size / 2}
@@ -84,7 +85,6 @@ export const CircularProgress = ({
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
           className="transition-all duration-200 ease-out"
-          // Removed the filter drop-shadow as it was tied to the old coloring
         />
       </svg>
       
