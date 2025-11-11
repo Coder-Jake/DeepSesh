@@ -1100,8 +1100,17 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
-    setSessionStartTime(Date.now() - (currentPhaseDurationMinutes * 60 - remainingSecondsInPhase) * 1000);
-    setCurrentPhaseStartTime(Date.now());
+    // Calculate the actual start time of the current phase based on its total duration and remaining time
+    const elapsedSecondsInPhase = initialDurationSeconds - remainingSecondsInPhase;
+    const actualCurrentPhaseStartTime = Date.now() - elapsedSecondsInPhase * 1000;
+    setCurrentPhaseStartTime(actualCurrentPhaseStartTime); // MODIFIED: Set currentPhaseStartTime correctly
+    
+    // The sessionStartTime should reflect when the *entire session* started, not just the current phase.
+    // For a coworker joining, we don't have the exact session start time from the host directly in these props.
+    // For now, we'll approximate it based on the current phase's elapsed time.
+    // A more robust solution would be to pass session.startTime from the fetched SupabaseSessionData.
+    setSessionStartTime(Date.now() - (currentPhaseDurationMinutes * 60 - remainingSecondsInPhase) * 1000); 
+    
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
 
