@@ -567,20 +567,12 @@ const Profile = () => {
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <>
-                    <span
-                      className={cn(
-                        "select-none",
-                        (localFirstName !== 'You' || pronouns) ? "flex-grow" : ""
-                      )}
-                      onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
-                    >
-                      {localFirstName || "You"}
-                    </span>
-                    {(localFirstName === 'You' && !pronouns) && (
-                      <span className="w-[100px] inline-block"></span>
-                    )}
-                  </>
+                  <span // <-- EDIT HERE
+                    className={"select-none flex-grow"} // Simplified className
+                    onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
+                  >
+                    {localFirstName || "You"}
+                  </span>
                 )}
                 {pronouns && (
                   <span className="text-sm text-muted-foreground ml-1" onClick={handlePronounCycle}>
