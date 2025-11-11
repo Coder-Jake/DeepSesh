@@ -31,17 +31,27 @@ export const CircularProgress = ({
   if (!isActiveTimer) {
     backgroundFill = 'hsl(var(--neutral-background))';
   } else if (timerType === 'break') {
-    backgroundFill = 'hsl(var(--break-background))';
+    // NEW: Use break gradient
+    backgroundFill = 'url(#breakGradient)';
   } else { // timerType === 'focus'
     // For focus, we use the gradient defined in SVG defs
     backgroundFill = 'url(#focusGradient)';
   }
 
-  const progressStrokeColor = timerType === 'break' ? 'silver' : 'hsl(var(--primary))';
+  // NEW: Determine progress stroke color based on timerType and theme
+  let progressStrokeColor: string;
+  if (timerType === 'break') {
+    progressStrokeColor = isDarkMode ? `hsl(var(--break-gradient-end-dark))` : `hsl(var(--break-gradient-end-light))`;
+  } else { // timerType === 'focus'
+    progressStrokeColor = `hsl(var(--primary))`;
+  }
 
-  // NEW: Determine which CSS variables to use for the gradient based on theme
+  // NEW: Determine which CSS variables to use for the gradients based on theme
   const focusGradientStartVar = isDarkMode ? 'var(--focus-gradient-start-dark)' : 'var(--focus-gradient-start-light)';
   const focusGradientEndVar = isDarkMode ? 'var(--focus-gradient-end-dark)' : 'var(--focus-gradient-end-light)';
+
+  const breakGradientStartVar = isDarkMode ? 'var(--break-gradient-start-dark)' : 'var(--break-gradient-start-light)';
+  const breakGradientEndVar = isDarkMode ? 'var(--break-gradient-end-dark)' : 'var(--break-gradient-end-light)';
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
@@ -55,6 +65,11 @@ export const CircularProgress = ({
           <linearGradient id="focusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={`hsl(${focusGradientStartVar})`} />
             <stop offset="100%" stopColor={`hsl(${focusGradientEndVar})`} />
+          </linearGradient>
+          {/* NEW: Define the linear gradient for break periods */}
+          <linearGradient id="breakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={`hsl(${breakGradientStartVar})`} />
+            <stop offset="100%" stopColor={`hsl(${breakGradientEndVar})`} />
           </linearGradient>
         </defs>
         {/* Background ring */}
