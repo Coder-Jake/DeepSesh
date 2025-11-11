@@ -127,6 +127,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName) {
+      uniqueNames.add(currentUserName); // Add current user if they are a coworker
       uniqueNames.add(currentSessionHostName);
     }
 
@@ -1028,8 +1029,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `"${templateToLoad.title}" has been loaded into the editor.`,
         });
       }
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
+      // Do NOT reset setIsHomepageFocusCustomized/BreakCustomized here.
+      // They should retain their loaded state from localStorage.
     }
   }, [savedSchedules, areToastsEnabled, toast]);
 
@@ -1464,14 +1465,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, activeAsks, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]); // NEW: Added currentPhaseDurationSeconds to dependencies
 
   useEffect(() => {
-    if (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) {
-      setLastActivityTime(Date.now());
-    } else {
-      setLastActivityTime(null);
-    }
-  }, [isRunning, isPaused, isFlashing, isScheduleActive, isSchedulePending]);
-
-  useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     let initialSavedSchedules: ScheduledTimerTemplate[] = [];
     let initialScheduleToLoad: ScheduledTimerTemplate | undefined;
@@ -1546,22 +1539,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         loadedShowSessionsWhileActive = 'all';
       }
       setShowSessionsWhileActive(loadedShowSessionsWhileActive);
-
-      // isDiscoveryActivated and geolocationPermissionStatus are now initialized synchronously above
-      // const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
-      // setIsDiscoveryActivated(loadedIsDiscoveryActivated);
-      // const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
-      // setGeolocationPermissionStatus(loadedGeolocationPermissionStatus);
-
-      // isGlobalPrivate is also initialized synchronously.
-      // The logic for deriving it based on discovery/location is now in its useState initializer.
-      // let initialIsGlobalPrivate = data.isGlobalPrivate ?? false;
-      // if (loadedIsDiscoveryActivated && loadedGeolocationPermissionStatus === 'denied') {
-      //   initialIsGlobalPrivate = true;
-      // } else if (!loadedIsDiscoveryActivated) {
-      //   initialIsGlobalPrivate = true;
-      // }
-      // setIsGlobalPrivate(initialIsGlobalPrivate);
 
       setTimerType(data.timerType ?? 'focus');
 
@@ -1670,25 +1647,23 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setRecurrenceFrequency(initialScheduleToLoad.recurrenceFrequency);
       setTimerColors(initialScheduleToLoad.timerColors || {});
 
-      // REMOVED: _setFocusMinutes(_defaultFocusMinutes);
-      // REMOVED: _setBreakMinutes(_defaultBreakMinutes);
       setTimerType('focus');
       setTimeLeft(_defaultFocusMinutes * 60);
       setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
+      // Removed: setIsHomepageFocusCustomized(false);
+      // Removed: setIsHomepageBreakCustomized(false);
     } else {
-      _setFocusMinutes(_defaultFocusMinutes);
-      _setBreakMinutes(_defaultBreakMinutes);
+      // Removed: _setFocusMinutes(_defaultFocusMinutes);
+      // Removed: _setBreakMinutes(_defaultBreakMinutes);
       setTimerType('focus');
       setTimeLeft(_defaultFocusMinutes * 60);
       setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
+      // Removed: setIsHomepageFocusCustomized(false);
+      // Removed: setIsHomepageBreakCustomized(false);
     }
   }, [/* Removed getDefaultSeshTitle from dependencies */ _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate]); // Added synchronous state setters to dependencies
 
