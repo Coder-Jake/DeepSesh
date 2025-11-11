@@ -20,15 +20,18 @@
 
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
+    --primary-hover: 222.2 47.4% 21.2%; /* 10% lighter */
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
 
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    --destructive-hover: 0 84.2% 70.2%; /* 10% lighter */
 
     --ring: 215 20.2% 65.1%;
 
@@ -65,6 +68,10 @@
 
     --cancel: 0 100% 95%; /* Light red */
     --cancel-foreground: 0 80% 30%; /* Darker red for text */
+
+    /* Opacity for outline/ghost button hover effects */
+    --outline-hover-opacity-light: 0.05;
+    --ghost-hover-opacity-light: 0.05;
   }
 
   .dark {
@@ -84,15 +91,18 @@
 
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
+    --secondary-hover: 217.2 32.6% 27.5%; /* 10% lighter */
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+    --destructive-hover: 0 62.8% 40.6%; /* 10% lighter */
 
     --ring: 217.2 32.6% 17.5%;
 
@@ -128,6 +138,10 @@
 
     --cancel: 0 60% 20%; /* Darker light red for dark mode */
     --cancel-foreground: 0 80% 80%; /* Lighter red for text in dark mode */
+
+    /* Opacity for outline/ghost button hover effects */
+    --outline-hover-opacity-dark: 0.1;
+    --ghost-hover-opacity-dark: 0.1;
   }
 }
 
