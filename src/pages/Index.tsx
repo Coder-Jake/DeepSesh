@@ -1172,10 +1172,18 @@ const Index = () => {
     }
 
     if (hasChangesToSave) {
+      console.log("handleActivateDiscovery: Updating profile with changes:", updates);
       await updateProfile(updates, "Profile updated for discovery.");
     }
 
+    console.log("handleActivateDiscovery: Before setIsDiscoveryActivated, isDiscoveryActivated:", isDiscoveryActivated);
     setIsDiscoveryActivated(true);
+    console.log("handleActivateDiscovery: After setIsDiscoveryActivated, isDiscoveryActivated (should be true in next render):", true);
+
+    // Add a small delay to allow React to process state updates and useEffects to run,
+    // ensuring localStorage is updated before the dialog potentially unmounts.
+    await new Promise(resolve => setTimeout(resolve, 100)); // Increased delay slightly for robustness
+
     setIsDiscoverySetupOpen(false);
 
     await getLocation();
