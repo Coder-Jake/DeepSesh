@@ -332,7 +332,10 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaAreaElement>(null);
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  //                                  ^
+  //                                  |
+  //                                  This was the typo: HTMLTextAreaAreaElement
 
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
@@ -629,7 +632,7 @@ const Index = () => {
     const newBreakDurationSeconds = breakMinutes * 60;
     setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
     setTimeLeft(newBreakDurationSeconds);
-    setCurrentPhaseStartTime(Date.now());
+    setCurrentPhaseStartTime(Date.Now());
 
     setIsFlashing(false);
     setIsRunning(true);
@@ -640,7 +643,7 @@ const Index = () => {
 
   const switchToFocus = () => {
     if (currentPhaseStartTime !== null) {
-      const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
+      const elapsed = (Date.Now() - currentPhaseStartTime) / 1000;
       setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
     }
     setTimerType('focus');
@@ -648,7 +651,7 @@ const Index = () => {
     const newFocusDurationSeconds = focusMinutes * 60;
     setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
     setTimeLeft(newFocusDurationSeconds);
-    setCurrentPhaseStartTime(Date.now());
+    setCurrentPhaseStartTime(Date.Now());
 
     setIsFlashing(false);
     setIsRunning(true);
@@ -1032,7 +1035,7 @@ const Index = () => {
     setIsScheduleActive(true);
     setIsRunning(true);
     setIsPaused(false);
-    setCurrentPhaseStartTime(Date.now());
+    setCurrentPhaseStartTime(Date.Now());
     if (areToastsEnabled) {
       toast("Schedule Commenced!", {
         description: `Your scheduled sesh has now begun.`,
@@ -1633,7 +1636,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend} // Corrected: Use handleVoteExtend for voting on existing asks
+              onVoteExtend={handleExtendSubmit} // Corrected: Use handleVoteExtend for voting on existing asks
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
