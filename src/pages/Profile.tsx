@@ -486,17 +486,16 @@ const Profile = () => {
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
       <div className="mb-6 flex justify-between items-center relative">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-        {hasChanges && (
-          <div className="absolute right-0">
-            <Button
-              onClick={handleSave}
-              disabled={loading}
-              className="shadow-lg"
-            >
-              {loading ? "Saving..." : "Save Profile"}
-            </Button>
-          </div>
-        )}
+        {/* Top-right Save Profile button */}
+        <div className="absolute right-0">
+          <Button
+            onClick={handleSave}
+            disabled={loading || !hasChanges} {/* Disabled when no changes */}
+            className="shadow-lg"
+          >
+            {loading ? "Saving..." : "Save Profile"}
+          </Button>
+        </div>
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
@@ -841,6 +840,7 @@ const Profile = () => {
           </Card>
         </div>
 
+        {/* Floating Save Profile button */}
         {hasChanges && (
           <div className="fixed bottom-4 right-4 z-50 transition-opacity duration-300 opacity-100 pointer-events-auto">
             <Button
@@ -853,16 +853,17 @@ const Profile = () => {
           </div>
         )}
 
-      {hasChanges && (
-        <div className="fixed bottom-4 left-4 z-50">
-          <Button
-            onClick={handleCancel}
-            className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel/80"
-          >
-            Cancel
-          </Button>
-        </div>
-      )}
+        {/* Floating Cancel button */}
+        {hasChanges && (
+          <div className="fixed bottom-4 left-4 z-50">
+            <Button
+              onClick={handleCancel}
+              className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel/80"
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
 
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
