@@ -1562,6 +1562,10 @@ const Index = () => {
                           step={timerIncrement}
                           onFocus={(e) => e.target.select()}
                           data-name="Focus Duration Input"
+                          className={cn(
+                            "w-16 text-center pr-0",
+                            timerType === 'focus' && (isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]")
+                          )}
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -1596,6 +1600,10 @@ const Index = () => {
                           step={timerIncrement}
                           onFocus={(e) => e.target.select()}
                           data-name="Break Duration Input"
+                          className={cn(
+                            "w-16 text-center pr-0",
+                            timerType === 'break' && (isDarkMode ? "bg-[hsl(var(--break-background-solid-dark))]" : "bg-[hsl(var(--break-background-solid-light))]")
+                          )}
                         />
                       </div>
                     </div>
