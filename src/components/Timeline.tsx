@@ -208,7 +208,8 @@ const Timeline: React.FC<TimelineProps> = ({
           
           // NEW: Use the solid focus background color based on theme
           const defaultFocusBg = isDarkMode ? 'hsl(var(--focus-background-solid-dark))' : 'hsl(var(--focus-background-solid-light))';
-          const itemBackgroundColor = timerColors[item.id] || (item.type === 'focus' ? defaultFocusBg : 'hsl(var(--break-background))');
+          const defaultBreakBg = isDarkMode ? 'hsl(var(--break-background-solid-dark))' : 'hsl(var(--break-background-solid-light))'; // NEW: Use solid break background
+          const itemBackgroundColor = timerColors[item.id] || (item.type === 'focus' ? defaultFocusBg : defaultBreakBg);
 
           return (
             <div

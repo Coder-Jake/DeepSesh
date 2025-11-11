@@ -69,6 +69,23 @@ export default {
 				cancel: { // NEW: Added cancel color
 					DEFAULT: 'hsl(var(--cancel))',
 					foreground: 'hsl(var(--cancel-foreground))'
+				},
+				// NEW: Focus and Break gradient colors
+				focus: {
+					'gradient-start-light': 'hsl(var(--focus-gradient-start-light))',
+					'gradient-end-light': 'hsl(var(--focus-gradient-end-light))',
+					'gradient-start-dark': 'hsl(var(--focus-gradient-start-dark))',
+					'gradient-end-dark': 'hsl(var(--focus-gradient-end-dark))',
+					'background-solid-light': 'hsl(var(--focus-background-solid-light))',
+					'background-solid-dark': 'hsl(var(--focus-background-solid-dark))',
+				},
+				break: {
+					'gradient-start-light': 'hsl(var(--break-gradient-start-light))',
+					'gradient-end-light': 'hsl(var(--break-gradient-end-light))',
+					'gradient-start-dark': 'hsl(var(--break-gradient-start-dark))',
+					'gradient-end-dark': 'hsl(var(--break-gradient-end-dark))',
+					'background-solid-light': 'hsl(var(--break-background-solid-light))',
+					'background-solid-dark': 'hsl(var(--break-background-solid-dark))',
 				}
 			},
 			borderRadius: {
