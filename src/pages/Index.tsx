@@ -1363,7 +1363,7 @@ const Index = () => {
                       data-name="Schedule Button"
                     >
                       <CalendarPlus size={16} />
-                      <span className="text-sm font-medium" "data-nosnippet">Schedule</span>
+                      <span className="text-sm font-medium"  "data-nosnippet">Schedule</span>
                     </Button>
                     <div className="flex-grow self-center text-center transition-opacity duration-300 ease-in-out">
                       {isActiveTimer ? (
