@@ -1223,8 +1223,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     if (isRunning && !isPaused && currentPhaseStartTime !== null && currentPhaseDurationSeconds > 0) {
       timerRef.current = setInterval(() => {
         const elapsedSeconds = (Date.now() - currentPhaseStartTime) / 1000;
-        const calculatedTimeLeft = currentPhaseDurationSeconds - elapsedSeconds;
-        setTimeLeft(Math.max(0, Math.floor(calculatedTimeLeft)));
+        // Calculate remaining time by subtracting the *floored* elapsed seconds
+        // from the total duration of the current phase.
+        // This ensures that the displayed time only decrements after a full second has passed.
+        const secondsPassed = Math.floor(elapsedSeconds);
+        setTimeLeft(Math.max(0, currentPhaseDurationSeconds - secondsPassed));
       }, 1000);
     }
 
