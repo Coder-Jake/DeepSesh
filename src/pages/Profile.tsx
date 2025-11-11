@@ -575,7 +575,7 @@ const Profile = () => {
                   </span>
                 )}
                 {pronouns && (
-                  <span className="text-sm text-muted-foreground ml-1" onClick={handlePronounCycle}>{`(${pronouns})`}</span> {/* Changed to template literal */}
+                  <span className="text-sm text-muted-foreground ml-1" onClick={handlePronounCycle}>{"(" + pronouns + ")"}</span> {/* Changed to explicit string concatenation */}
                 )}
               </CardTitle>
                 <Tooltip
