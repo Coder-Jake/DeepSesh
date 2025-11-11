@@ -15,10 +15,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipHeader, TooltipTitle, TooltipDescription, TooltipFooter, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
@@ -568,7 +568,7 @@ const Profile = () => {
                   />
                 ) : (
                   <span // <-- EDIT HERE
-                    className={"select-none flex-grow"} // Simplified className
+                    className={cn("select-none", pronouns ? "" : "flex-grow")} // Conditionally apply flex-grow
                     onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
                   >
                     {localFirstName || "You"}
