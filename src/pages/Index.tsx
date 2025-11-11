@@ -1354,7 +1354,7 @@ const Index = () => {
                 <ScheduleForm />
               ) : (
                 <>
-                  <div className="flex justify-between items-start mb-6">
+                  <div className="flex justify-between items-start mb-6" data-nosnippet>
                     <Button
                       variant="ghost"
                       size="sm"
