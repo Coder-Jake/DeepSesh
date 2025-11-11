@@ -769,10 +769,8 @@ const Settings = () => {
                   variant="outline"
                   onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)}
                   className={cn(
-                    "px-3 py-1 rounded-full transition-colors select-none text-foreground",
-                    !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
-                    !isGlobalPrivate && !isDarkMode && "bg-[hsl(var(--public-bg))] hover:bg-[hsl(var(--public-bg))]/80",
-                    isGlobalPrivate && "bg-[hsl(var(--private-bg))] hover:bg-[hsl(var(--private-bg))]/80"
+                    "px-3 py-1 rounded-full transition-colors select-none",
+                    !isGlobalPrivate ? "bg-public-bg text-public-bg-foreground" : "bg-private-bg text-private-bg-foreground"
                   )}
                 >
                   {!isGlobalPrivate ? "Public" : "Private"}

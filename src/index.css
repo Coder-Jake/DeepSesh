@@ -40,6 +40,12 @@
     --private-gradient-start-light: 270 100% 90%;
     --private-gradient-end-light: 270 100% 85%;
 
+    /* Solid public/private backgrounds for light mode (midpoint of gradient) */
+    --public-background-solid: 200 90% 82.5%;
+    --public-foreground-solid: var(--foreground);
+    --private-background-solid: 270 100% 87.5%;
+    --private-foreground-solid: var(--foreground);
+
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 10%; /* Darker olive for text */
 
@@ -96,6 +102,12 @@
     /* Private gradient for dark mode */
     --private-gradient-start-dark: 270 30% 45%;
     --private-gradient-end-dark: 270 30% 40%;
+
+    /* Solid public/private backgrounds for dark mode (midpoint of gradient) */
+    --public-background-solid: 220 50% 42.5%;
+    --public-foreground-solid: var(--foreground);
+    --private-background-solid: 270 30% 42.5%;
+    --private-foreground-solid: var(--foreground);
 
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */

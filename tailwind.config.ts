@@ -69,6 +69,14 @@ export default {
 				cancel: { // NEW: Added cancel color
 					DEFAULT: 'hsl(var(--cancel))',
 					foreground: 'hsl(var(--cancel-foreground))'
+				},
+				'public-bg': { // NEW: Public background color
+					DEFAULT: 'hsl(var(--public-background-solid))',
+					foreground: 'hsl(var(--public-foreground-solid))',
+				},
+				'private-bg': { // NEW: Private background color
+					DEFAULT: 'hsl(var(--private-background-solid))',
+					foreground: 'hsl(var(--private-foreground-solid))',
 				}
 			},
 			borderRadius: {
