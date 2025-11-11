@@ -266,7 +266,7 @@ const Profile = () => {
 
       setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.profile_data?.pronouns?.value || ""));
     }
-  }, [loading, profile, originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference, setOrganization, setLinkedinUrl, setHostCode, setPronouns, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility]);
+  }, [loading, profile, originalValues, setLocalFirstName, setBio, setIntention, setCanHelpWith, setNeedHelpWith, setFocusPreference, setOrganization, setLinkedinUrl, setHostCode, setPronouns, setCurrentPronounIndex, setBioVisibility, setIntentionVisibility, setLinkedinVisibility, setCanHelpWithVisibility, setNeedHelpWithVisibility]);
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -497,14 +497,15 @@ const Profile = () => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && hasChanges && !loading) {
         const activeElement = document.activeElement;
-        const isTyping = 
-          activeElement instanceof HTMLInputElement ||
-          activeElement instanceof HTMLTextAreaElement ||
-          activeElement instanceof HTMLSelectElement ||
-          activeElement?.hasAttribute('contenteditable');
+        const isTypingInTextarea = activeElement instanceof HTMLTextAreaElement;
+        const isTypingInInput = activeElement instanceof HTMLInputElement;
 
-        if (!isTyping) {
+        // Only trigger save if not typing in a textarea, or if it's an input and not a specific type that handles Enter differently
+        if (!isTypingInTextarea && isTypingInInput) { // Only trigger for single-line inputs
           event.preventDefault(); // Prevent default Enter behavior (e.g., submitting a form if one exists)
+          handleSave();
+        } else if (!isTypingInTextarea && !isTypingInInput) { // If not typing in any input/textarea, also save
+          event.preventDefault();
           handleSave();
         }
       }
