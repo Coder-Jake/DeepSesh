@@ -25,58 +25,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
-  // Initialize default focus/break minutes from local storage
-  const [_defaultFocusMinutes, _setDefaultFocusMinutes] = useState<number>(() => {
-    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      return data._defaultFocusMinutes ?? 25;
-    }
-    return 25;
-  });
-  const [_defaultBreakMinutes, _setDefaultBreakMinutes] = useState<number>(() => {
-    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      return data._defaultBreakMinutes ?? 5;
-    }
-    return 5;
-  });
+  const [_defaultFocusMinutes, _setDefaultFocusMinutes] = useState(25);
+  const [_defaultBreakMinutes, _setDefaultBreakMinutes] = useState(5);
 
-  // Initialize homepage focus/break minutes and customization flags from local storage
-  const [isHomepageFocusCustomized, setIsHomepageFocusCustomized] = useState<boolean>(() => {
-    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      return data.isHomepageFocusCustomized ?? false;
-    }
-    return false;
-  });
-  const [isHomepageBreakCustomized, setIsHomepageBreakCustomized] = useState<boolean>(() => {
-    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      return data.isHomepageBreakCustomized ?? false;
-    }
-    return false;
-  });
-
-  const [focusMinutes, _setFocusMinutes] = useState<number>(() => {
-    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      return data.focusMinutes ?? data._defaultFocusMinutes ?? 25;
-    }
-    return 25; // Fallback if no local storage
-  });
-  const [breakMinutes, _setBreakMinutes] = useState<number>(() => {
-    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      return data.breakMinutes ?? data._defaultBreakMinutes ?? 5;
-    }
-    return 5; // Fallback if no local storage
-  });
+  const [focusMinutes, _setFocusMinutes] = useState(_defaultFocusMinutes);
+  const [breakMinutes, _setBreakMinutes] = useState(_defaultBreakMinutes);
 
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -213,6 +166,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]);
   const [is24HourFormat, setIs24HourFormat] = useState(true);
   const [hasWonPrize, setHasWonPrize] = useState(false);
+
+  const [isHomepageFocusCustomized, setIsHomepageFocusCustomized] = useState(false);
+  const [isHomepageBreakCustomized, setIsHomepageBreakCustomized] = useState(false);
 
   const [activeSessionRecordId, setActiveSessionRecordId] = useState<string | null>(null);
 
@@ -371,18 +327,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       _setSeshTitle(currentScheduleTitle);
     }
   }, [isSeshTitleCustomized]);
-
-  // This effect ensures the default session title updates when the user's name changes,
-  // but only if a custom title has not been set.
-  useEffect(() => {
-    if (!isSeshTitleCustomized) {
-      const defaultTitle = getDefaultSeshTitle();
-      if (_seshTitle !== defaultTitle) { // Only update if the title actually changed
-        _setSeshTitle(defaultTitle);
-      }
-    }
-  }, [user?.id, profile?.first_name, isSeshTitleCustomized, getDefaultSeshTitle, _seshTitle]);
-
 
   const getLocation = useCallback(async (): Promise<{ latitude: number | null; longitude: number | null }> => {
     return new Promise(async (resolve) => {
@@ -1583,15 +1527,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         return;
       }
 
-      // These are now initialized in their useState calls, so no need to set here
-      // _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25);
-      // _setDefaultBreakMinutes(data. _defaultBreakMinutes ?? 5);
+      _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25);
+      _setDefaultBreakMinutes(data. _defaultBreakMinutes ?? 5);
 
-      // These are now initialized in their useState calls, so no need to set here
-      // _setFocusMinutes(loadedFocusMinutes);
-      // _setBreakMinutes(loadedBreakMinutes);
-      // setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
-      // setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
+      const loadedIsHomepageFocusCustomized = data.isHomepageFocusCustomized ?? false;
+      const loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
+
+      _setFocusMinutes(loadedFocusMinutes);
+      _setBreakMinutes(loadedBreakMinutes);
+      setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
+      setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
 
       let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
       let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
@@ -1736,31 +1681,27 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setRecurrenceFrequency(initialScheduleToLoad.recurrenceFrequency);
       setTimerColors(initialScheduleToLoad.timerColors || {});
 
-      // These are now initialized in their useState calls, so no need to set here
-      // _setFocusMinutes(_defaultFocusMinutes);
-      // _setBreakMinutes(_defaultBreakMinutes);
+      _setFocusMinutes(_defaultFocusMinutes);
+      _setBreakMinutes(_defaultBreakMinutes);
       setTimerType('focus');
       setTimeLeft(_defaultFocusMinutes * 60);
       setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
-      // These are now initialized in their useState calls, so no need to set here
-      // setIsHomepageFocusCustomized(false);
-      // setIsHomepageBreakCustomized(false);
+      setIsHomepageFocusCustomized(false);
+      setIsHomepageBreakCustomized(false);
     } else {
-      // These are now initialized in their useState calls, so no need to set here
-      // _setFocusMinutes(_defaultFocusMinutes);
-      // _setBreakMinutes(_defaultBreakMinutes);
+      _setFocusMinutes(_defaultFocusMinutes);
+      _setBreakMinutes(_defaultBreakMinutes);
       setTimerType('focus');
       setTimeLeft(_defaultFocusMinutes * 60);
       setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
       _setSeshTitle(getDefaultSeshTitle());
       setIsSeshTitleCustomized(false);
-      // These are now initialized in their useState calls, so no need to set here
-      // setIsHomepageFocusCustomized(false);
-      // setIsHomepageBreakCustomized(false);
+      setIsHomepageFocusCustomized(false);
+      setIsHomepageBreakCustomized(false);
     }
-  }, [getDefaultSeshTitle, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates]); // Removed synchronous state setters from dependencies
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate]); // Added synchronous state setters to dependencies
 
   useEffect(() => {
     const dataToSave = {
