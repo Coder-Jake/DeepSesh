@@ -360,12 +360,12 @@ const Index = () => {
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(""); // Initialize empty
 
-  // NEW: Effect to set initial discoveryDisplayName when dialog opens
+  // NEW: Effect to sync discoveryDisplayName with localFirstName when dialog opens
   useEffect(() => {
     if (isDiscoverySetupOpen) {
       setDiscoveryDisplayName(localFirstName === "You" ? (hostCode || "") : (localFirstName || hostCode || ""));
     }
-  }, [isDiscoverySetupOpen]); // Only depend on dialog open state
+  }, [isDiscoverySetupOpen, localFirstName, hostCode]);
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
@@ -512,7 +512,6 @@ const Index = () => {
     const initialDurationSeconds = timerType === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
     setCurrentPhaseDurationSeconds(initialDurationSeconds);
     setTimeLeft(initialDurationSeconds); // Initialize timeLeft to full duration
-    setRemainingTimeAtPause(initialDurationSeconds); // NEW: Initialize remainingTimeAtPause
     setIsTimeLeftManagedBySession(true);
 
     const hostParticipant: ParticipantSessionData = {
@@ -604,7 +603,7 @@ const Index = () => {
         setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
       }
       // NEW: Store remaining time at pause
-      setRemainingTimeAtPause(timeLeft); // This is now handled in TimerContext
+      // setRemainingTimeAtPause(timeLeft); // This is now handled in TimerContext
       setCurrentPhaseStartTime(null);
     }
     setIsPaused(true);
