@@ -635,7 +635,7 @@ const Profile = () => {
                     className="mt-2"
                   />
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4"> {/* Changed to flex-col for small screens, flex-row for sm and up */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Changed to grid grid-cols-1 sm:grid-cols-2 */}
                   <div className="flex-1">
                     <Label
                       htmlFor="can-help-with"
@@ -679,11 +679,11 @@ const Profile = () => {
                     onClick={() => handleLabelClick(intentionVisibility, setIntentionVisibility, 'intention')}
                     className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibility)))}
                   >
-                    Intention
+                    Statement of Intention
                   </Label>
                   <Textarea
                     id="intention"
-                    placeholder="What are you working on? Goals for upcoming sessions?"
+                    placeholder="What are you working on? Goals and intentions for upcoming sessions?"
                     value={intention || ""}
                     onChange={(e) => setIntention(e.target.value)}
                     className="mt-2"
