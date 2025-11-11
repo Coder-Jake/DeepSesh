@@ -420,7 +420,7 @@ const ScheduleForm: React.FC = () => {
               <div 
                 key={timer.id} 
                 className="relative flex items-center gap-x-2 px-1 py-1 border rounded-md bg-muted/50"
-                style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(var(--focus-background))' : '') }}
+                style={{ backgroundColor: timerColors[timer.id] || (timer.type === 'focus' ? 'hsl(270 30% 45%)' : 'hsl(var(--break-background))') }}
                 onClick={() => handleTimerDivClick(timer.id)}
               >
                 <div className="flex items-center gap-1 flex-grow-0">
