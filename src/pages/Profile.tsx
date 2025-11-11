@@ -582,50 +582,8 @@ const Profile = () => {
                   </span>
                 )}
               </CardTitle>
-                <Tooltip
-                  open={isKeyTooltipOpen}
-                  onOpenChange={(openState) => {
-                    if (!openState && keyTooltipTimeoutRef.current) {
-                      return;
-                    }
-                    setIsKeyTooltipOpen(openState);
-                  }}
-                  delayDuration={0}
-                >
-                  <TooltipTrigger asChild>
-                    <Key
-                      className="absolute top-4 right-4 h-4 w-4 text-muted-foreground cursor-help"
-                      onClick={handleKeyTooltipClick}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent className="p-2 select-none">
-                    <p className="font-semibold mb-1">Visibility Settings:</p>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="h-4 w-4 rounded-full bg-green-600" />
-                        <span className="font-bold text-foreground">Public</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-4 w-4 rounded-full bg-blue-500" />
-                        <span className="font-bold text-foreground">Friends Only</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-4 w-4 rounded-full bg-red-500" />
-                        <span className="font-bold text-foreground">Organisation Only</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-4 w-4 rounded-full bg-purple-500" />
-                        <span className="font-bold text-foreground">Friends & Organisation</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-4 w-4 rounded-full bg-gray-500" />
-                        <span className="font-bold text-foreground">Private</span>
-                      </div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative"> {/* Added relative here */}
               <div className="space-y-4">
                 <Label
                   htmlFor="bio"
@@ -777,6 +735,49 @@ const Profile = () => {
                   )}
                 </div>
               </div>
+              {/* Moved Key Tooltip to bottom left of CardContent */}
+              <Tooltip
+                open={isKeyTooltipOpen}
+                onOpenChange={(openState) => {
+                  if (!openState && keyTooltipTimeoutRef.current) {
+                    return;
+                  }
+                  setIsKeyTooltipOpen(openState);
+                }}
+                delayDuration={0}
+              >
+                <TooltipTrigger asChild>
+                  <Key
+                    className="absolute bottom-4 left-4 h-4 w-4 text-muted-foreground cursor-help"
+                    onClick={handleKeyTooltipClick}
+                  />
+                </TooltipTrigger>
+                <TooltipContent className="p-2 select-none">
+                  <p className="font-semibold mb-1">Visibility Settings:</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-green-600" />
+                      <span className="font-bold text-foreground">Public</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-blue-500" />
+                      <span className="font-bold text-foreground">Friends Only</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-red-500" />
+                      <span className="font-bold text-foreground">Organisation Only</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-purple-500" />
+                      <span className="font-bold text-foreground">Friends & Organisation</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-gray-500" />
+                      <span className="font-bold text-foreground">Private</span>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             </CardContent>
           </Card>
 
