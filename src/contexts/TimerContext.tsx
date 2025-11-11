@@ -522,8 +522,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsRecurring(false);
     setRecurrenceFrequency('daily');
     setTimerType('focus');
-    _setFocusMinutes(_defaultFocusMinutes);
-    _setBreakMinutes(_defaultBreakMinutes);
+    // REMOVED: _setFocusMinutes(_defaultFocusMinutes);
+    // REMOVED: _setBreakMinutes(_defaultBreakMinutes);
     setTimeLeft(_defaultFocusMinutes * 60);
     setIsRunning(false);
     setIsPaused(false);
@@ -548,8 +548,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setActiveJoinedSessionCoworkerCount(0);
     setIsTimeLeftManagedBySession(false);
     setHasWonPrize(false);
-    setIsHomepageFocusCustomized(false);
-    setIsHomepageBreakCustomized(false);
+    // REMOVED: setIsHomepageFocusCustomized(false);
+    // REMOVED: setIsHomepageBreakCustomized(false);
     setCurrentSessionParticipantsData([]);
     console.log("resetSessionStates: activeSessionRecordId cleared to null.");
     setActiveSessionRecordId(null);
@@ -1342,7 +1342,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     timeLeft, isRunning, currentPhaseStartTime, currentPhaseDurationSeconds, // NEW dependencies
     isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle,
-    setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndSound, shouldShowEndToast, user?.id, _seshTitle, notes,
+    setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldPlayEndToast, user?.id, _seshTitle, notes,
     accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition,
     focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration,
     isRecurring, setCurrentScheduleIndex, setTimerType, setIsRunning, setIsFlashing, setCurrentPhaseStartTime, setTimeLeft,
@@ -1544,8 +1544,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       setShowSessionsWhileActive(loadedShowSessionsWhileActive);
 
-      // isDiscoveryActivated and geolocationPermissionStatus are now initialized synchronously,
-      // so we don't need to set them again here from `data`.
+      // isDiscoveryActivated and geolocationPermissionStatus are now initialized synchronously above
       // const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
       // setIsDiscoveryActivated(loadedIsDiscoveryActivated);
       // const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
