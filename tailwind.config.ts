@@ -27,17 +27,17 @@ export default {
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))',
-					hover: 'hsl(var(--primary-hover))' // NEW: Primary hover color
+					hover: 'hsl(var(--primary-hover))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))',
-					hover: 'hsl(var(--secondary-hover))' // NEW: Secondary hover color
+					hover: 'hsl(var(--secondary-hover))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))',
-					hover: 'hsl(var(--destructive-hover))' // NEW: Destructive hover color
+					hover: 'hsl(var(--destructive-hover))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
@@ -45,7 +45,8 @@ export default {
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					foreground: 'hsl(var(--accent-foreground))',
+					hover: 'hsl(var(--accent-hover))' // NEW: Accent hover color
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -66,18 +67,18 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				olive: {
-					DEFAULT: 'hsl(80 60% 40%)', // A shade of olive green
-					foreground: 'hsl(0 0% 100%)', // White text for contrast
+					DEFAULT: 'hsl(80 60% 40%)',
+					foreground: 'hsl(0 0% 100%)',
 				},
-				cancel: { // NEW: Added cancel color
+				cancel: {
 					DEFAULT: 'hsl(var(--cancel))',
 					foreground: 'hsl(var(--cancel-foreground))'
 				},
-				'public-bg': { // NEW: Public background color
+				'public-bg': {
 					DEFAULT: 'hsl(var(--public-background-solid))',
 					foreground: 'hsl(var(--public-foreground-solid))',
 				},
-				'private-bg': { // NEW: Private background color
+				'private-bg': {
 					DEFAULT: 'hsl(var(--private-background-solid))',
 					foreground: 'hsl(var(--private-foreground-solid))',
 				}

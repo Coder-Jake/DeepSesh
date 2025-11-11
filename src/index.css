@@ -24,10 +24,11 @@
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --secondary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
+    --secondary-hover: 210 40% 98%; /* Capped at 98% to avoid pure white */
 
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
+    --accent-hover: 210 40% 98%; /* Capped at 98% to avoid pure white */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -89,9 +90,9 @@
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 210 40% 98%; /* This is a very light color in dark mode */
     --primary-foreground: 222.2 47.4% 11.2%;
-    --primary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
+    --primary-hover: 210 40% 98%; /* Cannot make 10% lighter without turning white. Keeping same lightness. */
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -99,6 +100,7 @@
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+    --accent-hover: 217.2 32.6% 27.5%; /* 10% lighter */
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
