@@ -80,6 +80,18 @@ export default {
 				'private-bg': { // NEW: Private background color
 					DEFAULT: 'hsl(var(--private-background-solid))',
 					foreground: 'hsl(var(--private-foreground-solid))',
+				},
+				success: { // NEW: Success color for granted states
+					DEFAULT: 'hsl(var(--success-bg))',
+					foreground: 'hsl(var(--success-fg))',
+					border: 'hsl(var(--success-border))',
+					hover: 'hsl(var(--success-hover))',
+				},
+				error: { // NEW: Error color for denied states
+					DEFAULT: 'hsl(var(--error-bg))',
+					foreground: 'hsl(var(--error-fg))',
+					border: 'hsl(var(--error-border))',
+					hover: 'hsl(var(--error-hover))',
 				}
 			},
 			borderRadius: {

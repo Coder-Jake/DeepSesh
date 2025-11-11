@@ -35,8 +35,6 @@
 
     --ring: 215 20.2% 65.1%;
 
-    --radius: 0.5rem;
-
     /* Public and Private gradients for light mode */
     --public-gradient-start-light: 200 90% 85%;
     --public-gradient-end-light: 200 90% 80%;
@@ -72,6 +70,29 @@
     /* Opacity for outline/ghost button hover effects */
     --outline-hover-opacity-light: 0.05;
     --ghost-hover-opacity-light: 0.05;
+
+    /* Success colors */
+    --success-bg: var(--success-bg-light);
+    --success-fg: var(--success-fg-light);
+    --success-border: var(--success-border-light);
+    --success-hover: var(--success-hover-light);
+
+    /* Error colors */
+    --error-bg: var(--error-bg-light);
+    --error-fg: var(--error-fg-light);
+    --error-border: var(--error-border-light);
+    --error-hover: var(--error-hover-light);
+
+    /* Light Mode specific definitions */
+    --success-bg-light: 120 60% 90%; /* Light green */
+    --success-fg-light: 120 60% 30%; /* Darker green text */
+    --success-border-light: 120 60% 80%; /* Border color */
+    --success-hover-light: 120 60% 85%; /* Slightly darker green on hover */
+
+    --error-bg-light: 0 80% 90%; /* Light red */
+    --error-fg-light: 0 80% 40%; /* Darker red text */
+    --error-border-light: 0 80% 80%; /* Border color */
+    --error-hover-light: 0 80% 85%; /* Slightly darker red on hover */
   }
 
   .dark {
@@ -142,6 +163,18 @@
     /* Opacity for outline/ghost button hover effects */
     --outline-hover-opacity-dark: 0.1;
     --ghost-hover-opacity-dark: 0.1;
+
+    /* Success colors for dark mode */
+    --success-bg-dark: 120 40% 20%; /* Dark green */
+    --success-fg-dark: 120 40% 80%; /* Lighter green text */
+    --success-border-dark: 120 40% 30%; /* Border color */
+    --success-hover-dark: 120 40% 25%; /* Slightly lighter green on hover */
+
+    /* Error colors for dark mode */
+    --error-bg-dark: 0 60% 20%; /* Dark red */
+    --error-fg-dark: 0 60% 80%; /* Lighter red text */
+    --error-border-dark: 0 60% 30%; /* Border color */
+    --error-hover-dark: 0 60% 25%; /* Slightly lighter red on hover */
   }
 }
 

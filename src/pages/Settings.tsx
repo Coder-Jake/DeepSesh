@@ -889,8 +889,8 @@ const Settings = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-green-100 text-green-700 border-green-200 hover:bg-green-200",
-                    geolocationPermissionStatus === 'denied' && "bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover",
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover"
                   )}
                   onClick={handleLocationButtonClick} // Call the new handler
                 >

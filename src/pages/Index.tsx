@@ -1218,8 +1218,8 @@ const Index = () => {
                         size={16}
                         className={cn(
                           "cursor-pointer hover:text-primary",
-                          geolocationPermissionStatus === 'granted' && "text-green-600",
-                          geolocationPermissionStatus === 'denied' && "text-destructive"
+                          geolocationPermissionStatus === 'granted' && "text-success-foreground",
+                          geolocationPermissionStatus === 'denied' && "text-error-foreground"
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1526,7 +1526,7 @@ const Index = () => {
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
                         isRunning && "opacity-50",
                         "hover:opacity-100",
-                        isPaused && "text-red-500"
+                        isPaused && "text-error-foreground" // Changed to error-foreground
                       )}>
                         <Button
                           variant="ghost"
@@ -1535,7 +1535,7 @@ const Index = () => {
                           onClick={() => stopTimer(true, false)} // MODIFIED: Added second argument
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-primary/5 dark:hover:bg-primary/10",
-                            isPaused ? "text-red-500" : "text-secondary-foreground"
+                            isPaused ? "text-error-foreground" : "text-secondary-foreground" // Changed to error-foreground
                           )}
                           data-name="Stop Timer Button"
                         >
@@ -1948,8 +1948,8 @@ const Index = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-green-100 text-green-700 border-green-200 hover:bg-green-200",
-                    geolocationPermissionStatus === 'denied' && "bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover",
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover"
                   )}
                   onClick={getLocation}
                 >
