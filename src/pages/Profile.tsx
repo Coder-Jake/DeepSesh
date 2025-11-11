@@ -33,6 +33,7 @@ type OriginalValuesType = {
   intention: string;
   canHelpWith: string;
   needHelpWith: string;
+  needHelpWith: string;
   focusPreference: number;
   organization: string;
   linkedinUrl: string; // raw username part
@@ -541,7 +542,7 @@ const Profile = () => {
         </div>
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Card>
+          <Card className="lg:col-span-2"> {/* Added lg:col-span-2 here */}
             <CardHeader className="relative">
               <CardTitle
                 className="flex items-center gap-1 select-none"
