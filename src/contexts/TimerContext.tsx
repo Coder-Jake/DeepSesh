@@ -972,7 +972,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       templateToCommence.scheduleStartOption,
       templateToCommence.isRecurring,
       templateToCommence.recurrenceFrequency,
-      templateToCommence.scheduleStartOption === 'custom_time'
+      templateToCommence.commenceTime !== "" && templateToCommence.scheduleStartOption === 'custom_time'
     );
 
     if (started) {
@@ -1596,7 +1596,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
       setIsRunning(loadedIsRunning);
       setIsPaused(loadedIsPaused);
-      setIsFlashing(loadedIsFlodedIsFlashing);
+      setIsFlashing(loadedIsFlashing); // Corrected typo here
       setSchedule(data.schedule ?? []);
       setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
