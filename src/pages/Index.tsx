@@ -315,7 +315,9 @@ const Index = () => {
     setCurrentPhaseDurationSeconds,
     remainingTimeAtPause, // ADDED: Destructure remainingTimeAtPause
     activeManualFocusDuration, // NEW: Destructure activeManualFocusDuration
+    setActiveManualFocusDuration, // NEW: Add setter
     activeManualBreakDuration, // NEW: Destructure activeManualBreakDuration
+    setActiveManualBreakDuration, // NEW: Add setter
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile } = useProfile();
