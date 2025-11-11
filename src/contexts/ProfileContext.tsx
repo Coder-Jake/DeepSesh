@@ -129,7 +129,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Local states for profile fields
+  // Individual states for profile fields - these will be derived from 'profile'
   const [localFirstName, setLocalFirstName] = useState("You");
   const [bio, setBio] = useState<string | null>(null);
   const [intention, setIntention] = useState<string | null>(null);
@@ -155,13 +155,11 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   const mockProfilesRef = useRef<Profile[]>([]);
 
-  // Helper to get default ProfileDataField
   const getDefaultProfileDataField = useCallback((value: string | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
     value,
     visibility,
   }), []);
 
-  // Helper to get default ProfileDataJsonb
   const getDefaultProfileDataJsonb = useCallback((): ProfileDataJsonb => ({
     bio: getDefaultProfileDataField(null, ['public']),
     intention: getDefaultProfileDataField(null, ['public']),
@@ -171,7 +169,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     pronouns: getDefaultProfileDataField(null, ['public']),
   }), [getDefaultProfileDataField]);
 
-  // Function to fetch mock profiles (from Index.tsx)
   const fetchMockProfiles = useCallback(async () => {
     mockProfilesRef.current = [
       {
@@ -225,15 +222,12 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     fetchMockProfiles();
   }, [fetchMockProfiles]);
 
-  // --- NEW: Supabase Synchronization Function ---
   const syncProfileToSupabase = useCallback(async (successMessage?: string) => {
     if (!user || !profile) {
       console.log("syncProfileToSupabase: Skipping sync. User or local profile not available.");
       return;
     }
 
-    // Ensure profile_data is always a valid object before sending
-    // Use the current 'profile' state directly, which already has an updated_at from setProfile
     const profileDataToSend = {
       ...profile,
       profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
@@ -242,7 +236,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     try {
       const { error } = await supabase
         .from('profiles')
-        .upsert(profileDataToSend, { onConflict: 'id' }); // Use upsert to handle both insert and update
+        .upsert(profileDataToSend, { onConflict: 'id' });
 
       if (error) {
         console.error("Error syncing profile to Supabase:", error.message);
@@ -269,9 +263,9 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
   }, [user, profile, areToastsEnabled, getDefaultProfileDataJsonb]);
 
-  // --- NEW: Initial Load Effect (Local-First) ---
+  // --- Initial Load Effect (Local-First) ---
   useEffect(() => {
-    let isMounted = true; // Flag to prevent state updates on unmounted component
+    let isMounted = true;
     const loadProfile = async () => {
       setLoading(true);
       const storedProfile = localStorage.getItem(LOCAL_STORAGE_PROFILE_KEY);
@@ -281,34 +275,14 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
       if (storedProfile) {
         const parsedProfile: Profile = JSON.parse(storedProfile);
-        // Ensure profile_data is always a valid object
         const defaultedProfile: Profile = {
           ...parsedProfile,
           profile_data: parsedProfile.profile_data || getDefaultProfileDataJsonb(),
         };
         if (isMounted) {
-          setProfile(defaultedProfile);
-          setLocalFirstName(defaultedProfile.first_name || "You");
-          setFocusPreference(defaultedProfile.focus_preference || 50);
-          setOrganization(defaultedProfile.organization);
-          setHostCode(defaultedProfile.host_code);
-
-          // Deconstruct profile_data with safe access and fallbacks
-          const pd = defaultedProfile.profile_data;
-          setBio(pd.bio?.value || null);
-          setBioVisibility(pd.bio?.visibility || ['public']);
-          setIntention(pd.intention?.value || null);
-          setIntentionVisibility(pd.intention?.visibility || ['public']);
-          setLinkedinUrl(pd.linkedin_url?.value || null);
-          setLinkedinVisibility(pd.linkedin_url?.visibility || ['public']);
-          setCanHelpWith(pd.can_help_with?.value || null);
-          setCanHelpWithVisibility(pd.can_help_with?.visibility || ['public']);
-          setNeedHelpWith(pd.need_help_with?.value || null);
-          setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
-          setPronouns(pd.pronouns?.value || null);
+          setProfile(defaultedProfile); // Set the main profile object
         }
       } else {
-        // If no local profile, create a default one once user is available
         if (!authLoading && user) {
           const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
           const defaultProfile: Profile = {
@@ -316,25 +290,11 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
             first_name: user.user_metadata.first_name || "You",
             last_name: null, avatar_url: null, organization: null,
             focus_preference: 50, updated_at: new Date().toISOString(),
-            host_code: generateRandomHostCode(), // Client-side fallback for host code
+            host_code: generateRandomHostCode(),
             profile_data: defaultProfileData,
           };
           if (isMounted) {
             setProfile(defaultProfile);
-            setLocalFirstName(defaultProfile.first_name);
-            setHostCode(defaultProfile.host_code);
-            setFocusPreference(defaultProfile.focus_preference);
-            setBio(defaultProfile.profile_data.bio.value);
-            setBioVisibility(defaultProfile.profile_data.bio.visibility);
-            setIntention(defaultProfile.profile_data.intention.value);
-            setIntentionVisibility(defaultProfile.profile_data.intention.visibility);
-            setLinkedinUrl(defaultProfile.profile_data.linkedin_url.value);
-            setLinkedinVisibility(defaultProfile.profile_data.linkedin_url.visibility);
-            setCanHelpWith(defaultProfile.profile_data.can_help_with.value);
-            setCanHelpWithVisibility(defaultProfile.profile_data.can_help_with.visibility);
-            setNeedHelpWith(defaultProfile.profile_data.need_help_with.value);
-            setNeedHelpWithVisibility(defaultProfile.profile_data.need_help_with.visibility);
-            setPronouns(defaultProfile.profile_data.pronouns.value);
             localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
           }
         }
@@ -350,10 +310,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         setRecentCoworkers(JSON.parse(storedRecentCoworkers));
       }
       setLoading(false);
-      // After loading (or creating) local profile, trigger an immediate sync
-      if (user && isMounted) { // Only sync if user is available
-        syncProfileToSupabase("Profile loaded and synced.");
-      }
     };
 
     loadProfile();
@@ -361,22 +317,49 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     return () => {
       isMounted = false;
     };
-  }, [authLoading, user, getDefaultProfileDataJsonb, getDefaultProfileDataField, syncProfileToSupabase]);
+  }, [authLoading, user, getDefaultProfileDataJsonb, getDefaultProfileDataField]); // Removed syncProfileToSupabase from dependencies here
 
-  // --- NEW: Periodic Sync Effect ---
+  // --- Effect to sync individual states from the main 'profile' object ---
   useEffect(() => {
-    if (!user || !profile) return; // Only sync if user and profile are loaded
+    if (profile) {
+      setLocalFirstName(profile.first_name || "You");
+      setFocusPreference(profile.focus_preference || 50);
+      setOrganization(profile.organization);
+      setHostCode(profile.host_code);
 
-    const syncInterval = setInterval(() => {
-      syncProfileToSupabase();
-    }, 30000); // Sync every 30 seconds
-
-    return () => clearInterval(syncInterval);
-  }, [user, profile, syncProfileToSupabase]);
-
+      const pd = profile.profile_data;
+      setBio(pd.bio?.value || null);
+      setBioVisibility(pd.bio?.visibility || ['public']);
+      setIntention(pd.intention?.value || null);
+      setIntentionVisibility(pd.intention?.visibility || ['public']);
+      setLinkedinUrl(pd.linkedin_url?.value || null);
+      setLinkedinVisibility(pd.linkedin_url?.visibility || ['public']);
+      setCanHelpWith(pd.can_help_with?.value || null);
+      setCanHelpWithVisibility(pd.can_help_with?.visibility || ['public']);
+      setNeedHelpWith(pd.need_help_with?.value || null);
+      setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
+      setPronouns(pd.pronouns?.value || null);
+    } else {
+      // Reset individual states if profile becomes null
+      setLocalFirstName("You");
+      setFocusPreference(50);
+      setOrganization(null);
+      setHostCode(null);
+      setBio(null);
+      setBioVisibility(['public']);
+      setIntention(null);
+      setIntentionVisibility(['public']);
+      setLinkedinUrl(null);
+      setLinkedinVisibility(['public']);
+      setCanHelpWith(null);
+      setCanHelpWithVisibility(['public']);
+      setNeedHelpWith(null);
+      setNeedHelpWithVisibility(['public']);
+      setPronouns(null);
+    }
+  }, [profile, getDefaultProfileDataJsonb]); // Depend on profile
 
   // Effect to save the entire profile object to local storage whenever it changes
-  // This ensures localStorage always reflects the current 'profile' state from context.
   useEffect(() => {
     if (profile) {
       localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(profile));
@@ -384,6 +367,17 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       localStorage.removeItem(LOCAL_STORAGE_PROFILE_KEY);
     }
   }, [profile]);
+
+  // --- Periodic Sync Effect ---
+  useEffect(() => {
+    if (!user || !profile) return;
+
+    const syncInterval = setInterval(() => {
+      syncProfileToSupabase();
+    }, 30000);
+
+    return () => clearInterval(syncInterval);
+  }, [user, profile, syncProfileToSupabase]);
 
 
   // --- MODIFIED: updateProfile function (now local-first) ---
@@ -397,36 +391,27 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       return;
     }
 
-    // Immediately update local states
-    if (updates.first_name !== undefined) setLocalFirstName(updates.first_name);
-    if (updates.focus_preference !== undefined) setFocusPreference(updates.focus_preference);
-    if (updates.organization !== undefined) setOrganization(updates.organization);
-    if (updates.host_code !== undefined) setHostCode(updates.host_code);
+    // Create a new profile object based on current 'profile' and 'updates'
+    const currentProfile = profile || { id: user.id, first_name: "You", focus_preference: 50, host_code: generateRandomHostCode(), profile_data: getDefaultProfileDataJsonb() } as Profile;
 
-    // Handle profile_data fields
-    const currentProfileData = profile?.profile_data || getDefaultProfileDataJsonb();
-    let newProfileData: ProfileDataJsonb = { ...currentProfileData };
+    const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
 
-    if (updates.bio !== undefined) { setBio(updates.bio.value); setBioVisibility(updates.bio.visibility); newProfileData.bio = updates.bio; }
-    if (updates.intention !== undefined) { setIntention(updates.intention.value); setIntentionVisibility(updates.intention.visibility); newProfileData.intention = updates.intention; }
-    if (updates.linkedin_url !== undefined) { setLinkedinUrl(updates.linkedin_url.value); setLinkedinVisibility(updates.linkedin_url.visibility); newProfileData.linkedin_url = updates.linkedin_url; }
-    if (updates.can_help_with !== undefined) { setCanHelpWith(updates.can_help_with.value); setCanHelpWithVisibility(updates.can_help_with.visibility); newProfileData.can_help_with = updates.can_help_with; }
-    if (updates.need_help_with !== undefined) { setNeedHelpWith(updates.need_help_with.value); setNeedHelpWithVisibility(updates.need_help_with.visibility); newProfileData.need_help_with = updates.need_help_with; }
-    if (updates.pronouns !== undefined) { setPronouns(updates.pronouns.value); newProfileData.pronouns = updates.pronouns; }
+    if (updates.bio !== undefined) updatedProfileData.bio = updates.bio;
+    if (updates.intention !== undefined) updatedProfileData.intention = updates.intention;
+    if (updates.linkedin_url !== undefined) updatedProfileData.linkedin_url = updates.linkedin_url;
+    if (updates.can_help_with !== undefined) updatedProfileData.can_help_with = updates.can_help_with;
+    if (updates.need_help_with !== undefined) updatedProfileData.need_help_with = updates.need_help_with;
+    if (updates.pronouns !== undefined) updatedProfileData.pronouns = updates.pronouns;
 
-    // Update the main profile state object
-    const updatedProfile: Profile = {
-      ...(profile || {} as Profile), // Use existing profile or an empty object as base
-      id: user.id, // Ensure ID is always set
-      first_name: updates.first_name !== undefined ? updates.first_name : localFirstName,
-      focus_preference: updates.focus_preference !== undefined ? updates.focus_preference : focusPreference,
-      organization: updates.organization !== undefined ? updates.organization : organization,
-      host_code: updates.host_code !== undefined ? updates.host_code : hostCode,
-      profile_data: newProfileData,
+    const newProfile: Profile = {
+      ...currentProfile,
+      ...updates, // Apply direct updates (first_name, focus_preference, etc.)
+      profile_data: updatedProfileData,
       updated_at: new Date().toISOString(), // Always update timestamp on explicit update
+      id: user.id, // Ensure ID is always set
     };
-    setProfile(updatedProfile); // <-- This updates the profile context object
-    // localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(updatedProfile)); // Removed, handled by new useEffect
+
+    setProfile(newProfile); // <-- This is the single source of truth update
 
     if (areToastsEnabled && successMessage) {
       toast.success("Profile Updated", {
@@ -437,22 +422,13 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     // Trigger immediate sync to Supabase
     await syncProfileToSupabase();
 
-  }, [
-    user, areToastsEnabled, profile, localFirstName, focusPreference, organization, hostCode,
-    bio, bioVisibility, intention, intentionVisibility, linkedinUrl, linkedinVisibility,
-    canHelpWith, canHelpWithVisibility, needHelpWith, needHelpWithVisibility, pronouns,
-    setLocalFirstName, setFocusPreference, setOrganization, setHostCode,
-    setBio, setBioVisibility, setIntention, setIntentionVisibility, setLinkedinUrl, setLinkedinVisibility,
-    setCanHelpWith, setCanHelpWithVisibility, setNeedHelpWith, setNeedHelpWithVisibility, setPronouns,
-    getDefaultProfileDataJsonb, syncProfileToSupabase
-  ]);
+  }, [user, areToastsEnabled, profile, getDefaultProfileDataJsonb, syncProfileToSupabase]);
 
   const getPublicProfile = useCallback((userId: string, userName: string): Profile | null => {
     const foundProfile = mockProfilesRef.current.find(p => p.id === userId);
     if (foundProfile) {
       return foundProfile;
     }
-    // Fallback for users not in mock data
     const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
     return {
       id: userId,
@@ -504,29 +480,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     localStorage.removeItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
     localStorage.removeItem(LOCAL_STORAGE_BLOCKED_USERS_KEY);
     localStorage.removeItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY);
-    setProfile(null);
-    setLocalFirstName("You");
-    setBio(null);
-    setIntention(null);
-    setCanHelpWith(null);
-    setNeedHelpWith(null);
-    setFocusPreference(50);
-    setOrganization(null);
-    setLinkedinUrl(null);
-    setHostCode(null);
-    setPronouns(null);
-    // Reset profile_data related states
-    setBioVisibility(['public']);
-    setIntentionVisibility(['public']);
-    setLinkedinVisibility(['public']);
-    setCanHelpWithVisibility(['public']);
-    setNeedHelpWithVisibility(['public']);
-    setFriendStatuses({});
-    setBlockedUsers([]);
-    setRecentCoworkers([]);
+    setProfile(null); // This will trigger the useEffect to reset individual states
     // After local reset, trigger a sync to potentially clear Supabase entry
     syncProfileToSupabase("Profile reset and synced to cloud.");
-    window.location.reload(); // Reload to ensure full state reset
+    window.location.reload();
   }, [syncProfileToSupabase]);
 
   const value = useMemo(() => ({
