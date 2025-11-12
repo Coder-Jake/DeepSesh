@@ -95,6 +95,7 @@ interface SupabaseSessionData {
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
+  host_code: string | null; // NEW: Add host_code
 }
 
 const now = new Date();
@@ -557,6 +558,7 @@ const Index = () => {
             location_lat: latitude,
             location_long: longitude,
             participants_data: [hostParticipant],
+            host_code: hostCode, // NEW: Include host_code from the host's profile
           })
           .select('id')
           .single();
@@ -751,13 +753,64 @@ const Index = () => {
     }
   };
 
-  const handleJoinCodeSubmit = () => {
-    if (joinSessionCode.trim()) {
+  const handleJoinCodeSubmit = async () => { // MODIFIED: Made async
+    const trimmedCode = joinSessionCode.trim();
+    if (!trimmedCode) {
       if (areToastsEnabled) {
-        toast.info("Joining Sesh", {
-          description: `Attempting to join sesh with code: ${joinSessionCode.trim()}`,
+        toast.error("Missing Code", {
+          description: "Please enter a session code.",
         });
       }
+      return;
+    }
+
+    if (areToastsEnabled) {
+      toast.info("Searching for session...", {
+        description: `Looking for session with code: ${trimmedCode}`,
+      });
+    }
+
+    try {
+      const { data: sessions, error } = await supabase
+        .from('active_sessions')
+        .select('*')
+        .eq('host_code', trimmedCode)
+        .eq('is_active', true)
+        .limit(1);
+
+      if (error) {
+        throw error;
+      }
+
+      if (sessions && sessions.length > 0) {
+        const session = sessions[0];
+        // Map SupabaseSessionData to DemoSession for handleJoinSession
+        const demoSession: DemoSession = {
+          id: session.id,
+          title: session.session_title,
+          startTime: new Date(session.created_at).getTime(),
+          location: session.location_long && session.location_lat ? `Lat: ${session.location_lat}, Long: ${session.location_lat}` : "Unknown Location",
+          workspaceImage: "/api/placeholder/200/120", // Placeholder
+          workspaceDescription: "Live session from Supabase",
+          participants: (session.participants_data || []) as ParticipantSessionData[],
+          fullSchedule: (session.schedule_data || []) as ScheduledTimer[],
+        };
+        await handleJoinSession(demoSession);
+      } else {
+        if (areToastsEnabled) {
+          toast.error("Session Not Found", {
+            description: `No active session found with code: ${trimmedCode}`,
+          });
+        }
+      }
+    } catch (err: any) {
+      console.error("Error joining session by code:", err);
+      if (areToastsEnabled) {
+        toast.error("Join Failed", {
+          description: `An error occurred: ${err.message || String(err)}`,
+        });
+      }
+    } finally {
       setJoinSessionCode("");
       setShowJoinInput(false);
     }

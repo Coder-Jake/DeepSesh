@@ -21,7 +21,7 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user } = useAuth();
-  const { localFirstName, profile, focusPreference: userFocusPreference } = useProfile();
+  const { localFirstName, profile, focusPreference: userFocusPreference, hostCode: userHostCode } = useProfile(); // NEW: Get userHostCode from profile
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
@@ -434,6 +434,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       visibility: isGlobalPrivate ? 'private' : 'public',
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
+      host_code: userHostCode, // NEW: Include host_code in the update
     };
 
     try {
@@ -458,7 +459,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
-    currentScheduleIndex, timeLeft, isGlobalPrivate, currentSessionParticipantsData, areToastsEnabled
+    currentScheduleIndex, timeLeft, isGlobalPrivate, currentSessionParticipantsData, areToastsEnabled,
+    userHostCode // NEW: Add userHostCode to dependencies
   ]);
 
   useEffect(() => {
@@ -627,6 +629,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           user_id: newHost.userId,
           host_name: newHost.userName,
           participants_data: updatedParticipants,
+          host_code: newHost.userId === user?.id ? userHostCode : null, // NEW: Update host_code if new host is current user
         })
         .eq('id', activeSessionRecordId);
 
@@ -660,7 +663,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       await resetSchedule();
     }
-  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule]);
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule, userHostCode]); // NEW: Add userHostCode to dependencies
 
   const leaveSession = useCallback(async () => {
     if (!user?.id || !activeSessionRecordId || currentSessionRole === null) {
@@ -881,6 +884,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             location_lat: latitude,
             location_long: longitude,
             participants_data: [hostParticipant],
+            host_code: userHostCode, // NEW: Include host_code from the host's profile
           })
           .select('id')
           .single();
@@ -903,7 +907,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, isGlobalPrivate, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized,
-    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime // NEW dependencies
+    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userHostCode // NEW: Added userHostCode to dependencies
   ]);
 
   const startSchedule = useCallback(async () => {
