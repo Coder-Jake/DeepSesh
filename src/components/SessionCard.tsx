@@ -137,10 +137,10 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
     return null;
   }
 
-  const handleParticipantNameClick = (userId: string, userName: string, event: React.MouseEvent) => {
+  const handleParticipantNameClick = async (userId: string, userName: string, event: React.MouseEvent) => {
     event.stopPropagation();
 
-    const targetProfileData = getPublicProfile(userId, userName);
+    const targetProfileData = await getPublicProfile(userId, userName);
     if (targetProfileData) {
       toggleProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
     } else {

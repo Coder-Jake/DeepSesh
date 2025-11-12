@@ -1157,7 +1157,7 @@ const Index = () => {
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    const targetProfileData = getPublicProfile(userId, userName);
+    const targetProfileData = await getPublicProfile(userId, userName);
     if (targetProfileData) {
       toggleProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
     } else {

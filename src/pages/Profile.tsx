@@ -172,7 +172,7 @@ const Profile = () => {
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    const targetProfileData = getPublicProfile(userId, userName);
+    const targetProfileData = await getPublicProfile(userId, userName);
     if (targetProfileData) {
       toggleProfilePopUp(targetProfileData.id, targetProfileData.first_name || userName, event.clientX, event.clientY);
     } else {
@@ -192,11 +192,11 @@ const Profile = () => {
     }
   }, []);
 
-  const handleFriendClick = useCallback((friendId: string, userName: string, event: React.MouseEvent) => {
+  const handleFriendClick = useCallback(async (friendId: string, userName: string, event: React.MouseEvent) => {
     if (longPressedFriendId === friendId) {
       setLongPressedFriendId(null);
     } else {
-      handleNameClick(friendId, userName, event);
+      await handleNameClick(friendId, userName, event);
     }
   }, [longPressedFriendId, handleNameClick]);
 
