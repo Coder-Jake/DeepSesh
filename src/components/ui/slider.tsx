@@ -5,14 +5,12 @@ import * as SliderPrimitive from "@radix-ui/react-slider"
 
 import { cn } from "@/lib/utils"
 
-interface SliderProps extends React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> {
-  rangeColor?: string; // NEW: Add rangeColor prop
-}
-
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
-  SliderProps // Use the new interface
->(({ className, rangeColor, ...props }, ref) => ( // Destructure rangeColor
+  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> & {
+    rangeColor?: string; // Add rangeColor prop
+  }
+>(({ className, rangeColor, ...props }, ref) => (
   <SliderPrimitive.Root
     ref={ref}
     className={cn(
@@ -21,13 +19,13 @@ const Slider = React.forwardRef<
     )}
     {...props}
   >
-    <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
+    <SliderPrimitive.Track className="relative h-4 w-full grow overflow-hidden rounded-full bg-secondary">
       <SliderPrimitive.Range 
-        className="absolute h-full" // Removed bg-primary
-        style={{ backgroundColor: rangeColor }} // Apply dynamic color here
+        className="absolute h-full" 
+        style={{ backgroundColor: rangeColor || 'hsl(var(--primary))' }} // Use rangeColor or default to primary
       />
     </SliderPrimitive.Track>
-    <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+    <SliderPrimitive.Thumb className="block h-6 w-6 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
   </SliderPrimitive.Root>
 ))
 Slider.displayName = SliderPrimitive.Root.displayName
