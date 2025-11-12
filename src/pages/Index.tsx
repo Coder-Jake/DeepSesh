@@ -361,6 +361,8 @@ const Index = () => {
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(""); // Initialize empty
 
+  const sliderRef = useRef<HTMLDivElement>(null); // Ref for the Slider's root element
+
   // NEW: Effect to sync discoveryDisplayName with localFirstName when dialog opens
   useEffect(() => {
     if (isDiscoverySetupOpen) {
@@ -1256,6 +1258,29 @@ const Index = () => {
     }
   };
 
+  const handleSliderAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (sliderRef.current) {
+      // The SliderPrimitive.Root is the ref target. We need to find the track within it.
+      const trackElement = sliderRef.current.querySelector('[data-radix-slider-track]');
+      
+      if (trackElement) {
+        const rect = trackElement.getBoundingClientRect();
+        const clickX = e.clientX;
+
+        // Calculate the position of the click relative to the track's left edge
+        const relativeX = clickX - rect.left;
+
+        // Ensure the click is within the bounds of the track
+        const clampedX = Math.max(0, Math.min(relativeX, rect.width));
+
+        // Calculate the new value (0-100)
+        const newValue = Math.round((clampedX / rect.width) * 100);
+
+        setFocusPreference(newValue);
+      }
+    }
+  };
+
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
@@ -1967,13 +1992,14 @@ const Index = () => {
                     How would you prefer to balance focus vs socialising?
                   </TooltipContent>
                 </Tooltip>
-                <div className="space-y-4">
+                <div className="space-y-4 cursor-pointer" onClick={handleSliderAreaClick}>
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Banter</span>
                     <span>Deep Focus</span>
                   </div>
                   <div className="relative group">
                     <Slider
+                      ref={sliderRef}
                       value={[focusPreference]}
                       onValueChange={(val) => setFocusPreference(val[0])}
                       max={100}
