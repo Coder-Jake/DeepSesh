@@ -105,7 +105,7 @@ interface ProfileContextType {
   friendStatuses: Record<string, 'friends' | 'pending' | 'none'>;
   blockedUsers: string[];
   recentCoworkers: string[];
-  getPublicProfile: (userId: string, userName: string) => Profile | null;
+  getPublicProfile: (userId: string, userName: string) => Promise<Profile | null>; // Change return type to Promise
   blockUser: (userName: string) => void;
   unblockUser: (userName: string) => void;
   resetProfile: () => void;
@@ -265,7 +265,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   // --- Initial Load Effect (Local-First) ---
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true; // Flag to prevent state updates on unmounted component
     const loadProfile = async () => {
       setLoading(true);
       const storedProfile = localStorage.getItem(LOCAL_STORAGE_PROFILE_KEY);
@@ -424,11 +424,44 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   }, [user, areToastsEnabled, profile, getDefaultProfileDataJsonb, syncProfileToSupabase]);
 
-  const getPublicProfile = useCallback((userId: string, userName: string): Profile | null => {
-    const foundProfile = mockProfilesRef.current.find(p => p.id === userId);
-    if (foundProfile) {
-      return foundProfile;
+  const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => { // Make it async
+    // 1. Check mock profiles
+    const foundMockProfile = mockProfilesRef.current.find(p => p.id === userId);
+    if (foundMockProfile) {
+      return foundMockProfile;
     }
+
+    // 2. Check if it's the current user's profile
+    if (user?.id === userId && profile) {
+      return profile; // Return the current user's full profile from context
+    }
+
+    // 3. Fetch from Supabase
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
+        console.error("Error fetching public profile from Supabase:", error.message);
+        // Don't throw, just log and proceed to default
+      }
+
+      if (data) {
+        // Ensure profile_data is properly defaulted if missing from DB
+        const fetchedProfile: Profile = {
+          ...data,
+          profile_data: data.profile_data || getDefaultProfileDataJsonb(),
+        };
+        return fetchedProfile;
+      }
+    } catch (error: any) {
+      console.error("Unexpected error fetching public profile from Supabase:", error.message);
+    }
+
+    // 4. If not found anywhere, return a default minimal profile
     const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
     return {
       id: userId,
@@ -441,7 +474,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       host_code: null,
       profile_data: defaultProfileData,
     };
-  }, [getDefaultProfileDataJsonb]);
+  }, [user?.id, profile, getDefaultProfileDataJsonb]); // Add user and profile to dependencies
 
   const blockUser = useCallback((userName: string) => {
     setBlockedUsers(prev => {

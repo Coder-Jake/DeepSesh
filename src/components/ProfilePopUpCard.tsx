@@ -68,38 +68,22 @@ const ProfilePopUpCard: React.FC = () => {
   // The ProfilePopUpCard should only display, not allow editing of the current user's profile.
 
   useEffect(() => {
-    const fetchTargetProfile = () => {
+    const fetchTargetProfile = async () => { // Make this async
       if (targetUserId) {
         setLoading(true);
         setError(null);
 
-        if (currentUserProfile && targetUserId === currentUserProfile.id) {
-          // Use individual states from context for current user's profile
-          setTargetProfile({
-            ...currentUserProfile,
-            first_name: currentUserProfile.first_name,
-            organization: currentUserOrganization,
-            focus_preference: currentUserFocusPreference,
-            profile_data: {
-              bio: { value: bio, visibility: bioVisibility },
-              intention: { value: intention, visibility: intentionVisibility },
-              linkedin_url: { value: linkedinUrl, visibility: linkedinVisibility },
-              can_help_with: { value: canHelpWith, visibility: canHelpWithVisibility },
-              need_help_with: { value: needHelpWith, visibility: needHelpWithVisibility },
-              pronouns: { value: currentUserPronouns, visibility: ['public'] },
-            }
-          });
+        // Removed the direct check for currentUserProfile.id === targetUserId here
+        // as getPublicProfile will handle it internally now.
+
+        try {
+          const fetchedProfile = await getPublicProfile(targetUserId, targetUserName || "Unknown User"); // Await the call
+          setTargetProfile(fetchedProfile);
+        } catch (err: any) {
+          setError(err.message || "Failed to load profile.");
+          setTargetProfile(null);
+        } finally {
           setLoading(false);
-        } else {
-          try {
-            const fetchedProfile = getPublicProfile(targetUserId, targetUserName || "Unknown User");
-            setTargetProfile(fetchedProfile);
-          } catch (err: any) {
-            setError(err.message || "Failed to load profile.");
-            setTargetProfile(null);
-          } finally {
-            setLoading(false);
-          }
         }
       }
     };
@@ -108,7 +92,7 @@ const ProfilePopUpCard: React.FC = () => {
       fetchTargetProfile();
     } else {
       setTargetProfile(null);
-      setLoading(true);
+      setLoading(true); // Reset loading state when closing
       setError(null);
     }
   }, [
@@ -337,7 +321,7 @@ const ProfilePopUpCard: React.FC = () => {
             </h4>
             <div className="w-full bg-secondary rounded-full h-2 mt-1">
               <div
-                className="h-2 rounded-full"
+                className="h-full rounded-full"
                 style={{ width: `${targetProfile.focus_preference}%`, backgroundColor: getSociabilityGradientColor(targetProfile.focus_preference) }}
               ></div>
             </div>
