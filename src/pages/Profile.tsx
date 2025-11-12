@@ -122,6 +122,10 @@ const Profile = () => {
   const [isKeyTooltipOpen, setIsKeyTooltipOpen] = useState(false);
   const keyTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // NEW: Slider drag state and refs
+  const sliderContainerRef = useRef<HTMLDivElement>(null);
+  const [isDraggingSlider, setIsDraggingSlider] = useState(false);
+
   const getDisplayVisibilityStatus = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[] | null): string => {
     if (!visibility || visibility.length === 0) return 'public';
     if (visibility.includes('private')) return 'private';
@@ -505,6 +509,38 @@ const Profile = () => {
     }, 2000);
   };
 
+  // NEW: Slider drag handlers
+  const handleSliderDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (!sliderContainerRef.current) return;
+
+    const rect = sliderContainerRef.current.getBoundingClientRect();
+    const clientX = event.clientX;
+
+    let relativeX = clientX - rect.left;
+    relativeX = Math.max(0, Math.min(relativeX, rect.width));
+
+    const newValue = Math.round((relativeX / rect.width) * 100);
+    setFocusPreferenceInput(newValue);
+  }, [setFocusPreferenceInput]);
+
+  const handlePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return; // Only respond to left-click
+    setIsDraggingSlider(true);
+    handleSliderDrag(event); // Set initial value on click
+    event.currentTarget.setPointerCapture(event.pointerId); // Capture pointer for continuous drag
+  }, [handleSliderDrag]);
+
+  const handlePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (isDraggingSlider) {
+      handleSliderDrag(event);
+    }
+  }, [isDraggingSlider, handleSliderDrag]);
+
+  const handlePointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    setIsDraggingSlider(false);
+    event.currentTarget.releasePointerCapture(event.pointerId); // Release pointer capture
+  }, []);
+
   // NEW: Effect for global 'Enter' keydown to save
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
@@ -804,7 +840,15 @@ const Profile = () => {
                 <p className="text-sm text-muted-foreground mb-6">
                   How would you prefer to balance focus vs socialising?
                 </p>
-                <div className="space-y-4">
+                {/* NEW: Wrapper div for expanded slider interaction */}
+                <div
+                  ref={sliderContainerRef}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerLeave={handlePointerUp} // Handle pointer leaving the element
+                  className="space-y-4 cursor-ew-resize p-2 -m-2 rounded-md" // Added padding and negative margin to expand touch area
+                >
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Banter</span>
                     <span>Deep Focus</span>

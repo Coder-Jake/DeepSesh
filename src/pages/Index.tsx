@@ -361,6 +361,10 @@ const Index = () => {
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(""); // Initialize empty
 
+  // NEW: Slider drag state and refs for Discovery Setup dialog
+  const discoverySliderContainerRef = useRef<HTMLDivElement>(null);
+  const [isDraggingDiscoverySlider, setIsDraggingDiscoverySlider] = useState(false);
+
   // NEW: Effect to sync discoveryDisplayName with localFirstName when dialog opens
   useEffect(() => {
     if (isDiscoverySetupOpen) {
@@ -1152,7 +1156,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    });
+    );
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -1255,6 +1259,38 @@ const Index = () => {
       await updateProfile({ first_name: trimmedDisplayName }, "Display name updated.");
     }
   };
+
+  // NEW: Slider drag handlers for Discovery Setup dialog
+  const handleDiscoverySliderDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (!discoverySliderContainerRef.current) return;
+
+    const rect = discoverySliderContainerRef.current.getBoundingClientRect();
+    const clientX = event.clientX;
+
+    let relativeX = clientX - rect.left;
+    relativeX = Math.max(0, Math.min(relativeX, rect.width));
+
+    const newValue = Math.round((relativeX / rect.width) * 100);
+    setFocusPreference(newValue);
+  }, [setFocusPreference]);
+
+  const handleDiscoveryPointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return; // Only respond to left-click
+    setIsDraggingDiscoverySlider(true);
+    handleDiscoverySliderDrag(event); // Set initial value on click
+    event.currentTarget.setPointerCapture(event.pointerId); // Capture pointer for continuous drag
+  }, [handleDiscoverySliderDrag]);
+
+  const handleDiscoveryPointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (isDraggingDiscoverySlider) {
+      handleDiscoverySliderDrag(event);
+    }
+  }, [isDraggingDiscoverySlider, handleDiscoverySliderDrag]);
+
+  const handleDiscoveryPointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    setIsDraggingDiscoverySlider(false);
+    event.currentTarget.releasePointerCapture(event.pointerId); // Release pointer capture
+  }, []);
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
@@ -1691,7 +1727,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend} // Corrected: Use handleVoteExtend for voting on existing asks
+              onVoteExtend={handleExtendSubmit} // Corrected: Use handleVoteExtend for voting on existing asks
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
@@ -1967,7 +2003,15 @@ const Index = () => {
                     How would you prefer to balance focus vs socialising?
                   </TooltipContent>
                 </Tooltip>
-                <div className="space-y-4">
+                {/* NEW: Wrapper div for expanded slider interaction */}
+                <div
+                  ref={discoverySliderContainerRef}
+                  onPointerDown={handleDiscoveryPointerDown}
+                  onPointerMove={handleDiscoveryPointerMove}
+                  onPointerUp={handleDiscoveryPointerUp}
+                  onPointerLeave={handleDiscoveryPointerUp} // Handle pointer leaving the element
+                  className="space-y-4 cursor-ew-resize p-2 -m-2 rounded-md" // Added padding and negative margin to expand touch area
+                >
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Banter</span>
                     <span>Deep Focus</span>
