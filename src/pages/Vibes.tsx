@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck } from 'lucide-react'; // Added ShieldCheck for Respect
+import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck, Brain } from 'lucide-react'; // Added Brain icon for Autonomy
 
 const Vibes = () => {
   return (
@@ -16,36 +16,18 @@ const Vibes = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8"> {/* Changed to 3 columns for large screens */}
-        {/* New Card: Respect */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* New Card: Autonomy */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5" /> {/* New icon for Respect */}
-              Respect
+              <Brain className="h-5 w-5" /> {/* New icon for Autonomy */}
+              Autonomy
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              DeepSesh is built on the principle of respecting individual focus and boundaries. We encourage you to work independently, knowing that others are doing the same.
-            </p>
-            <p>
-              The <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> on your profile helps set expectations. A higher score indicates a preference for deep focus with minimal interaction, even during breaks. A lower score suggests you're more open to collaboration and banter.
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* New Card: Independence */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" /> {/* Icon for Independence */}
-              Independence
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-muted-foreground">
-            <p>
-              DeepSesh empowers you to control your personal space and information.
+              The foundation for DeepSesh's success is its users' intrinsic motivation to get things done. We believe in empowering you to control your personal space and information.
             </p>
             <p>
               Use the <Link to="/settings" className="text-blue-500 hover:underline">Privacy settings</Link> to control who sees your profile details, ensuring you share only what you're comfortable with.
@@ -59,23 +41,41 @@ const Vibes = () => {
           </CardContent>
         </Card>
 
-        {/* Existing Card: Collaboration (renamed) */}
+        {/* Existing Card: Respect */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Handshake className="h-5 w-5" /> {/* Changed icon for Collaboration */}
+              <ShieldCheck className="h-5 w-5" />
+              Respect
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              DeepSesh is built on respecting individual focus and boundaries. We encourage you to work independently, knowing others are doing the same.
+            </p>
+            <p>
+              Your <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> help set expectations. A higher score indicates a preference for deep focus with minimal interaction, even during breaks. A lower score suggests you're more open to collaboration and banter.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Existing Card: Collaboration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Handshake className="h-5 w-5" />
               Collaboration
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              While independence is key, DeepSesh also fosters a vibrant collaborative environment. Breaks are a great time to connect, brainstorm, and build community.
+              While autonomy is key, DeepSesh also fosters a vibrant collaborative environment. Breaks are a great time to connect, brainstorm, and build community.
             </p>
             <p>
-              Your <Link to="/profile" className="text-blue-500 hover:underline">Intention statement</Link> helps others understand what you're working on, opening doors for relevant discussions and potential collaborations.
+              Your <Link to="/profile" className="text-blue-500 hover:underline">Intention statement</Link> helps others understand your work, opening doors for relevant discussions and potential collaborations.
             </p>
             <p>
-              The "Can Help With" and "Need Help With" sections on your profile are perfect for signaling your expertise and areas where you're seeking assistance, making it easier to find complementary coworkers.
+              The "Can Help With" and "Need Help With" sections on your profile signal your expertise and areas where you're seeking assistance, making it easier to find complementary coworkers.
             </p>
             <p>
               Don't hesitate to use the <Link to="/" className="text-blue-500 hover:underline">Ask menu</Link> during sessions to suggest extending a timer or create a poll for group decisions.
