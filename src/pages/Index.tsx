@@ -151,12 +151,22 @@ const mockFriendsSessions: DemoSession[] = [
 ];
 
 // NEW: Function to fetch active sessions from Supabase
-const fetchSupabaseSessions = async (): Promise<DemoSession[]> => {
-  const { data, error } = await supabase
+const fetchSupabaseSessions = async (userId: string | undefined): Promise<DemoSession[]> => {
+  let query = supabase
     .from('active_sessions')
     .select('*')
-    .eq('visibility', 'public')
     .eq('is_active', true);
+
+  // Apply RLS logic on the client side for filtering, as RLS policies are already in place on the DB
+  // The RLS policy "View own, public, or joined sessions" handles the actual database access.
+  // This client-side filter is for display purposes based on the user's context.
+  if (userId) {
+    query = query.or(`visibility.eq.public,user_id.eq.${userId},participants_data.cs.{{"userId": "${userId}"}}`);
+  } else {
+    query = query.eq('visibility', 'public'); // Only show public sessions for anonymous users
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("Error fetching active sessions from Supabase:", error);
@@ -374,8 +384,8 @@ const Index = () => {
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions'],
-    queryFn: fetchSupabaseSessions,
+    queryKey: ['supabaseActiveSessions', user?.id], // Add user.id to query key for re-fetching on auth change
+    queryFn: () => fetchSupabaseSessions(user?.id),
     refetchInterval: 5000,
     enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'),
   });
@@ -442,16 +452,6 @@ const Index = () => {
       clearTimeout(longPressRef.current);
     }
     isLongPress.current = false;
-  };
-
-  const handlePublicPrivateToggle = async () => {
-    if (isGlobalPrivate && !isLongPress.current) {
-      if (geolocationPermissionStatus === 'denied' || geolocationPermissionStatus === 'prompt') {
-        setIsDiscoverySetupOpen(true);
-        return;
-      }
-    }
-    setIsGlobalPrivate((prev: boolean) => !prev);
   };
 
   const handleIntentionLongPress = () => {
@@ -775,29 +775,38 @@ const Index = () => {
     }
 
     try {
-      const { data: sessions, error } = await supabase
-        .from('active_sessions')
-        .select('*')
-        .eq('host_code', trimmedCode)
-        .eq('is_active', true)
-        .limit(1);
+      const response = await supabase.functions.invoke('join-session', {
+        body: JSON.stringify({
+          sessionCode: trimmedCode,
+          participantData: {
+            userId: user?.id || `anon-${crypto.randomUUID()}`,
+            userName: localFirstName,
+            focusPreference: focusPreference || 50,
+            intention: profile?.profile_data?.intention?.value || undefined,
+            bio: profile?.profile_data?.bio?.value || undefined,
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.id}`, // Use user's JWT for authentication
+        },
+      });
 
-      if (error) {
-        throw error;
-      }
+      if (response.error) throw response.error;
+      if (response.data.error) throw new Error(response.data.error);
 
-      if (sessions && sessions.length > 0) {
-        const session = sessions[0];
+      const joinedSession = response.data.session;
+      if (joinedSession) {
         // Map SupabaseSessionData to DemoSession for handleJoinSession
         const demoSession: DemoSession = {
-          id: session.id,
-          title: session.session_title,
-          startTime: new Date(session.created_at).getTime(),
-          location: session.location_long && session.location_lat ? `Lat: ${session.location_lat}, Long: ${session.location_lat}` : "Unknown Location",
+          id: joinedSession.id,
+          title: joinedSession.session_title,
+          startTime: new Date(joinedSession.created_at).getTime(),
+          location: joinedSession.location_long && joinedSession.location_lat ? `Lat: ${joinedSession.location_lat}, Long: ${joinedSession.location_lat}` : "Unknown Location",
           workspaceImage: "/api/placeholder/200/120", // Placeholder
           workspaceDescription: "Live session from Supabase",
-          participants: (session.participants_data || []) as ParticipantSessionData[],
-          fullSchedule: (session.schedule_data || []) as ScheduledTimer[],
+          participants: (joinedSession.participants_data || []) as ParticipantSessionData[],
+          fullSchedule: (joinedSession.schedule_data || []) as ScheduledTimer[],
         };
         await handleJoinSession(demoSession);
       } else {
@@ -958,18 +967,37 @@ const Index = () => {
   }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions]);
 
 
-  const handleExtendSubmit = (minutes: number) => {
+  const handleExtendSubmit = async (minutes: number) => {
+    if (!user?.id || !activeSessionRecordId) {
+      if (areToastsEnabled) {
+        toast.error("Not in a session", {
+          description: "You must be in an active session to suggest an extension.",
+        });
+      }
+      return;
+    }
+
     const newSuggestion: ExtendSuggestion = {
       id: `extend-${Date.now()}`,
       minutes,
       creator: currentUserName,
+      creatorId: user.id, // Add creatorId for server-side validation
       votes: [],
       status: 'pending',
     };
-    addAsk(newSuggestion);
+    await addAsk(newSuggestion);
   };
 
-  const handlePollSubmit = (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => {
+  const handlePollSubmit = async (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => {
+    if (!user?.id || !activeSessionRecordId) {
+      if (areToastsEnabled) {
+        toast.error("Not in a session", {
+          description: "You must be in an active session to create a poll.",
+        });
+      }
+      return;
+    }
+
     const pollOptions: PollOption[] = options.map((text, index) => ({
       id: `option-${index}-${Date.now()}`,
       text: text,
@@ -989,21 +1017,31 @@ const Index = () => {
       question,
       type: pollType,
       creator: currentUserName,
+      creatorId: user.id, // Add creatorId for server-side validation
       options: pollOptions,
       status: 'active',
       allowCustomResponses,
     };
-    addAsk(newPoll);
+    await addAsk(newPoll);
   };
 
-  const handleVoteExtend = (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => {
+  const handleVoteExtend = async (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => {
+    if (!user?.id || !activeSessionRecordId) {
+      if (areToastsEnabled) {
+        toast.error("Not in a session", {
+          description: "You must be in an active session to vote.",
+        });
+      }
+      return;
+    }
+
     const currentAsk = activeAsks.find(ask => ask.id === id);
     if (!currentAsk || !('minutes' in currentAsk)) return;
 
-    let updatedVotes = currentAsk.votes.filter(v => v.userId !== currentUserId);
+    let updatedVotes = currentAsk.votes.filter(v => v.userId !== user.id);
 
     if (newVote !== null) {
-      updatedVotes.push({ userId: currentUserId, vote: newVote });
+      updatedVotes.push({ userId: user.id, vote: newVote });
     }
 
     const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
@@ -1023,14 +1061,23 @@ const Index = () => {
       }
     }
 
-    updateAsk({
+    await updateAsk({
       ...currentAsk,
       votes: updatedVotes,
       status: newStatus,
     });
   };
 
-  const handleVoteOnExistingPoll = (pollId: string, optionIds: string[], customOptionText?: string, isCustomOptionSelected?: boolean) => {
+  const handleVoteOnExistingPoll = async (pollId: string, optionIds: string[], customOptionText?: string, isCustomOptionSelected?: boolean) => {
+    if (!user?.id || !activeSessionRecordId) {
+      if (areToastsEnabled) {
+        toast.error("Not in a session", {
+          description: "You must be in an active session to vote.",
+        });
+      }
+      return;
+    }
+
     const currentAsk = activeAsks.find(ask => ask.id === pollId);
     if (!currentAsk || !('options' in currentAsk)) return;
 
@@ -1041,7 +1088,7 @@ const Index = () => {
     let userCustomOptionId: string | null = null;
 
     const existingUserCustomOption = currentPoll.options.find(
-      opt => opt.id.startsWith('custom-') && opt.votes.some(vote => vote.userId === currentUserId)
+      opt => opt.id.startsWith('custom-') && opt.votes.some(vote => vote.userId === user.id)
     );
 
     if (trimmedCustomText && isCustomOptionSelected) {
@@ -1074,10 +1121,10 @@ const Index = () => {
     }
 
     let updatedOptions = currentPoll.options.map(option => {
-      let newVotes = option.votes.filter(v => v.userId !== currentUserId);
+      let newVotes = option.votes.filter(v => v.userId !== user.id);
 
       if (finalOptionIdsToVote.includes(option.id)) {
-        newVotes.push({ userId: currentUserId });
+        newVotes.push({ userId: user.id });
       }
       return { ...option, votes: newVotes };
     });
@@ -1086,7 +1133,7 @@ const Index = () => {
       !option.id.startsWith('custom-') || option.votes.length > 0 || (option.id === userCustomOptionId && isCustomOptionSelected)
     );
 
-    updateAsk({ ...currentPoll, options: updatedOptions });
+    await updateAsk({ ...currentPoll, options: updatedOptions });
   };
 
   const handleCountdownEnd = useCallback(() => {
@@ -1727,7 +1774,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleExtendSubmit} // Corrected: Use handleVoteExtend for voting on existing asks
+              onVoteExtend={handleVoteExtend} // Corrected: Use handleVoteExtend for voting on existing asks
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />

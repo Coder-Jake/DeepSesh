@@ -499,6 +499,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             const updatedParticipants = (updatedSession.participants_data || []) as ParticipantSessionData[];
             setCurrentSessionParticipantsData(updatedParticipants);
             setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
+            setActiveAsks(updatedSession.active_asks || []); // Sync active asks
           }
         )
         .subscribe();
@@ -510,7 +511,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         supabase.removeChannel(subscription);
       }
     };
-  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount]);
+  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks]);
 
   const resetSessionStates = useCallback(() => {
     setIsScheduleActive(false);
@@ -613,46 +614,48 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     if (otherCoworkers.length > 0) {
       const newHost = otherCoworkers[0];
-      const updatedParticipants = currentSessionParticipantsData.map(p => {
-        if (p.userId === newHost.userId) {
-          return { ...p, role: 'host' as const };
-        }
-        if (p.userId === currentHostId) {
-          return { ...p, role: 'coworker' as const };
-        }
-        return p;
-      });
+      
+      try {
+        const response = await supabase.functions.invoke('update-session-data', {
+          body: JSON.stringify({
+            sessionId: activeSessionRecordId,
+            actionType: 'transfer_host',
+            payload: {
+              newHostId: newHost.userId,
+              newHostName: newHost.userName,
+            },
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.id}`, // Use user's JWT for authentication
+          },
+        });
 
-      const { error } = await supabase
-        .from('active_sessions')
-        .update({
-          user_id: newHost.userId,
-          host_name: newHost.userName,
-          participants_data: updatedParticipants,
-          host_code: newHost.userId === user?.id ? userHostCode : null, // NEW: Update host_code if new host is current user
-        })
-        .eq('id', activeSessionRecordId);
+        if (response.error) throw response.error;
+        if (response.data.error) throw new Error(response.data.error);
 
-      if (error) {
-        console.error("Error transferring host role in Supabase:", error);
+        const updatedSession = response.data.session;
+        const updatedParticipants = (updatedSession.participants_data || []) as ParticipantSessionData[];
+
+        if (areToastsEnabled) {
+          toast.success("Host Role Transferred", {
+            description: `Host role transferred to ${newHost.userName}. You are now a coworker.`,
+          });
+        }
+        setCurrentSessionRole('coworker');
+        setCurrentSessionHostName(newHost.userName);
+        setCurrentSessionOtherParticipants(updatedParticipants.filter(p => p.userId !== user.id && p.userId !== newHost.userId));
+        setCurrentSessionParticipantsData(updatedParticipants);
+        setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
+
+      } catch (error: any) {
+        console.error("Error transferring host role via Edge Function:", error);
         if (areToastsEnabled) {
           toast.error("Host Transfer Failed", {
             description: `Failed to transfer host role: ${error.message}`,
           });
         }
-        return;
       }
-
-      if (areToastsEnabled) {
-        toast.success("Host Role Transferred", {
-          description: `Host role transferred to ${newHost.userName}. You are now a coworker.`,
-        });
-      }
-      setCurrentSessionRole('coworker');
-      setCurrentSessionHostName(newHost.userName);
-      setCurrentSessionOtherParticipants(updatedParticipants.filter(p => p.userId !== user.id && p.userId !== newHost.userId));
-      setCurrentSessionParticipantsData(updatedParticipants);
-      setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
 
     } else {
       console.log("transferHostRole: No other coworkers to transfer to. Ending session.");
@@ -676,30 +679,40 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return;
     }
 
-    const updatedParticipants = currentSessionParticipantsData.filter(p => p.userId !== user.id);
-    setCurrentSessionParticipantsData(updatedParticipants);
+    try {
+      const response = await supabase.functions.invoke('update-session-data', {
+        body: JSON.stringify({
+          sessionId: activeSessionRecordId,
+          actionType: 'leave_session',
+          payload: {
+            participantId: user.id,
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.id}`, // Use user's JWT for authentication
+        },
+      });
 
-    const { error } = await supabase
-      .from('active_sessions')
-      .update({ participants_data: updatedParticipants })
-      .eq('id', activeSessionRecordId);
+      if (response.error) throw response.error;
+      if (response.data.error) throw new Error(response.data.error);
 
-    if (error) {
-      console.error("Error removing coworker from Supabase session:", error);
-      if (areToastsEnabled) {
-        toast.error("Leave Session Failed", {
-          description: `Failed to update session participants: ${error.message}`,
-        });
-      }
-    } else {
       if (areToastsEnabled) {
         toast.info("Session Left", {
           description: "You have left the session.",
         });
       }
+    } catch (error: any) {
+      console.error("Error leaving session via Edge Function:", error);
+      if (areToastsEnabled) {
+        toast.error("Leave Session Failed", {
+          description: `Failed to leave session: ${error.message}`,
+        });
+      }
+    } finally {
+      resetSessionStates();
     }
-    resetSessionStates();
-  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, areToastsEnabled, resetSessionStates, transferHostRole]);
+  }, [user?.id, activeSessionRecordId, currentSessionRole, areToastsEnabled, resetSessionStates, transferHostRole]);
 
   const stopTimer = useCallback(async (confirmPrompt: boolean, isLongPress: boolean) => { // MODIFIED: Added isLongPress argument
     if (currentSessionRole === 'host') {
@@ -1130,52 +1143,23 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     };
 
     try {
-      const { data: existingSession, error: fetchError } = await supabase
-        .from('active_sessions')
-        .select('participants_data')
-        .eq('id', sessionId)
-        .single();
+      const response = await supabase.functions.invoke('join-session', {
+        body: JSON.stringify({
+          sessionCode: sessionId, // For mock sessions, sessionId acts as the "code"
+          participantData: newCoworker,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.id}`, // Use user's JWT for authentication
+        },
+      });
 
-      if (fetchError) {
-        console.error("Error fetching existing session for join (expected for mock sessions):", fetchError);
-        // If it's a mock session (i.e., not found in Supabase), use the provided participants
-        let updatedParticipantsData: ParticipantSessionData[] = [...participants]; // Initialize with the mock session's participants
-        if (!updatedParticipantsData.some(p => p.userId === user.id)) {
-          updatedParticipantsData.push(newCoworker);
-        }
-        setCurrentSessionParticipantsData(updatedParticipantsData);
-        // Skip the Supabase update for mock sessions
-        if (areToastsEnabled) {
-          toast.success("Sesh Joined (Mock)!", {
-            description: `You've joined "${sessionTitle}".`,
-          });
-        }
-        playSound();
-        triggerVibration();
-        return; // Exit early for mock sessions
-      }
+      if (response.error) throw response.error;
+      if (response.data.error) throw new Error(response.data.error);
 
-      let updatedParticipantsData: ParticipantSessionData[] = (existingSession?.participants_data || []) as ParticipantSessionData[];
-      if (!updatedParticipantsData.some(p => p.userId === user.id)) {
-        updatedParticipantsData.push(newCoworker);
-      }
+      const updatedSession = response.data.session;
+      const updatedParticipantsData: ParticipantSessionData[] = (updatedSession?.participants_data || []) as ParticipantSessionData[];
       setCurrentSessionParticipantsData(updatedParticipantsData);
-
-      const { error: updateError } = await supabase
-        .from('active_sessions')
-        .update({ participants_data: updatedParticipantsData })
-        .eq('id', sessionId);
-
-      if (updateError) {
-        console.error("Error updating participants in Supabase:", updateError);
-        if (areToastsEnabled) {
-          toast.error("Join Session Failed", {
-            description: `Failed to update session participants: ${updateError.message}`,
-          });
-        }
-        resetSessionStates();
-        return;
-      }
 
       if (areToastsEnabled) {
         toast.success("Sesh Joined!", {
@@ -1380,15 +1364,87 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [isSeshTitleCustomized, getDefaultSeshTitle, _setSeshTitle]);
 
 
-  const addAsk = useCallback((ask: ActiveAskItem) => {
-    setActiveAsks((prev) => [...prev, ask]);
-  }, []);
+  const addAsk = useCallback(async (ask: ActiveAskItem) => {
+    if (!user?.id || !activeSessionRecordId) {
+      setActiveAsks((prev) => [...prev, ask]); // Add locally if no active session
+      return;
+    }
 
-  const updateAsk = useCallback((updatedAsk: ActiveAskItem) => {
-    setActiveAsks((prev) =>
-      prev.map((ask) => (ask.id === updatedAsk.id ? updatedAsk : ask))
-    );
-  }, []);
+    try {
+      const response = await supabase.functions.invoke('update-session-data', {
+        body: JSON.stringify({
+          sessionId: activeSessionRecordId,
+          actionType: 'add_ask',
+          payload: {
+            ask: { ...ask, creatorId: user.id }, // Add creatorId for server-side validation
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.id}`,
+        },
+      });
+
+      if (response.error) throw response.error;
+      if (response.data.error) throw new Error(response.data.error);
+
+      // The realtime subscription will update activeAsks
+      if (areToastsEnabled) {
+        toast.success("Ask Created!", {
+          description: "Your ask has been added to the session.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error adding ask via Edge Function:", error);
+      if (areToastsEnabled) {
+        toast.error("Failed to Create Ask", {
+          description: `Could not add your ask: ${error.message}`,
+        });
+      }
+    }
+  }, [user?.id, activeSessionRecordId, areToastsEnabled, setActiveAsks]);
+
+  const updateAsk = useCallback(async (updatedAsk: ActiveAskItem) => {
+    if (!user?.id || !activeSessionRecordId) {
+      setActiveAsks((prev) =>
+        prev.map((ask) => (ask.id === updatedAsk.id ? updatedAsk : ask))
+      );
+      return;
+    }
+
+    try {
+      const response = await supabase.functions.invoke('update-session-data', {
+        body: JSON.stringify({
+          sessionId: activeSessionRecordId,
+          actionType: 'update_ask',
+          payload: {
+            ask: { ...updatedAsk, creatorId: user.id }, // Pass creatorId for validation
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.id}`,
+        },
+      });
+
+      if (response.error) throw response.error;
+      if (response.data.error) throw new Error(response.data.error);
+
+      // The realtime subscription will update activeAsks
+      if (areToastsEnabled) {
+        toast.success("Ask Updated!", {
+          description: "Your vote/update has been recorded.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error updating ask via Edge Function:", error);
+      if (areToastsEnabled) {
+        toast.error("Failed to Update Ask", {
+          description: `Could not update ask: ${error.message}`,
+        });
+      }
+    }
+  }, [user?.id, activeSessionRecordId, areToastsEnabled, setActiveAsks]);
 
   useEffect(() => {
     const checkAndCommenceSchedules = () => {
