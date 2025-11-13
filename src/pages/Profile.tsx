@@ -15,14 +15,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/AuthContext"; // Corrected import path
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Removed TooltipHeader, TooltipTitle, TooltipDescription, TooltipFooter
+import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, Lock, Building2, UserStar, HeartHandshake } from "lucide-react"; // Added Globe, Lock, Building2, UserStar, HeartHandshake
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
-import { ProfileUpdate, ProfileDataJsonb } from "@/contexts/ProfileContext"; // NEW: Import ProfileUpdate and ProfileDataJsonb
+import { ProfileUpdate, ProfileDataJsonb } from "@/contexts/ProfileContext";
 
 const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"];
 
@@ -43,7 +43,7 @@ type OriginalValuesType = {
   canHelpWithVisibility: ("public" | "friends" | "organisation" | "private")[];
   needHelpWithVisibility: ("public" | "friends" | "organisation" | "private")[];
   pronouns: string | null;
-  profileVisibility: ("public" | "friends" | "organisation" | "private")[]; // NEW: Add profileVisibility
+  profileVisibility: ("public" | "friends" | "organisation" | "private")[];
 };
 
 const Profile = () => {
@@ -66,8 +66,8 @@ const Profile = () => {
     setLinkedinVisibility: setContextLinkedinVisibility,
     setCanHelpWithVisibility: setContextCanHelpWithVisibility,
     setNeedHelpWithVisibility: setContextNeedHelpWithVisibility,
-    profileVisibility: contextProfileVisibility, // NEW: Get profileVisibility from context
-    setProfileVisibility: setContextProfileVisibility, // NEW: Get setter from context
+    profileVisibility: contextProfileVisibility,
+    setProfileVisibility: setContextProfileVisibility,
   } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -92,7 +92,7 @@ const Profile = () => {
   const [linkedinVisibilityInput, setLinkedinVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
   const [canHelpWithVisibilityInput, setCanHelpWithVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
   const [needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
-  const [profileVisibilityInput, setProfileVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']); // NEW: Add profileVisibilityInput
+  const [profileVisibilityInput, setProfileVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
 
   const [currentPronounIndex, setCurrentPronounIndex] = useState(0);
 
@@ -152,10 +152,20 @@ const Profile = () => {
     }
   }, []);
 
+  // NEW: Helper to get the correct icon based on visibility
+  const getPrivacyIcon = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[]): React.ElementType => {
+    if (visibility.includes('private')) return Lock;
+    if (visibility.includes('public')) return Globe;
+    if (visibility.includes('friends') && visibility.includes('organisation')) return HeartHandshake;
+    if (visibility.includes('friends')) return UserStar;
+    if (visibility.includes('organisation')) return Building2;
+    return Globe; // Default to public
+  }, []);
+
   const handleLabelClick = useCallback(async (
     currentVisibility: ("public" | "friends" | "organisation" | "private")[],
     visibilitySetter: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>,
-    fieldName: keyof ProfileDataJsonb | 'profileVisibility' // NEW: Allow 'profileVisibility'
+    fieldName: keyof ProfileDataJsonb | 'profileVisibility'
   ) => {
     const currentIndex = getIndexFromVisibility(currentVisibility);
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
@@ -265,7 +275,7 @@ const Profile = () => {
       setLinkedinVisibilityInput(profile.profile_data?.linkedin_url?.visibility || ['public']);
       setCanHelpWithVisibilityInput(profile.profile_data?.can_help_with?.visibility || ['public']);
       setNeedHelpWithVisibilityInput(profile.profile_data?.need_help_with?.visibility || ['public']);
-      setProfileVisibilityInput(profile.visibility || ['public']); // NEW: Initialize profileVisibilityInput
+      setProfileVisibilityInput(profile.visibility || ['public']);
 
       setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.profile_data?.pronouns?.value || ""));
 
@@ -277,7 +287,7 @@ const Profile = () => {
         needHelpWith: profile.profile_data?.need_help_with?.value || "",
         focusPreference: profile.focus_preference || 50,
         organization: profile.organization || "",
-        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin.url.value) : "",
+        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
         hostCode: profile.host_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
         intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
@@ -285,7 +295,7 @@ const Profile = () => {
         canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
         needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
         pronouns: profile.profile_data?.pronouns?.value || null,
-        profileVisibility: profile.visibility || ['public'], // NEW: Set original profileVisibility
+        profileVisibility: profile.visibility || ['public'],
       });
     }
   }, [loading, profile, originalValues]);
@@ -330,7 +340,7 @@ const Profile = () => {
                    JSON.stringify(canHelpWithVisibilityInput) !== JSON.stringify(originalValues.canHelpWithVisibility) ||
                    JSON.stringify(needHelpWithVisibilityInput) !== JSON.stringify(originalValues.needHelpWithVisibility) ||
                    (pronounsInput || null) !== originalValues.pronouns ||
-                   JSON.stringify(profileVisibilityInput) !== JSON.stringify(originalValues.profileVisibility); // NEW: Compare profileVisibility
+                   JSON.stringify(profileVisibilityInput) !== JSON.stringify(originalValues.profileVisibility);
     setHasChanges(changed);
   }, [
     originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organizationInput, linkedinUrlInput, hostCodeInput,
@@ -340,7 +350,7 @@ const Profile = () => {
   // This useEffect will now correctly trigger checkForChanges whenever any editable state changes
   useEffect(() => {
     checkForChanges();
-  }, [checkForChanges]); // Dependency on checkForChanges ensures it runs when its internal dependencies change
+  }, [checkForChanges]);
 
   const handleHostCodeClick = () => {
     setIsEditingHostCode(true);
@@ -399,7 +409,7 @@ const Profile = () => {
       focus_preference: focusPreferenceInput,
       organization: organizationInput?.trim() === "" ? null : organizationInput?.trim(),
       host_code: trimmedHostCode,
-      visibility: profileVisibilityInput, // NEW: Include profileVisibility
+      visibility: profileVisibilityInput,
       // Update profile_data fields
       bio: { value: bioInput, visibility: bioVisibilityInput },
       intention: { value: intentionInput, visibility: intentionVisibilityInput },
@@ -427,7 +437,7 @@ const Profile = () => {
     setContextLinkedinVisibility(linkedinVisibilityInput);
     setContextCanHelpWithVisibility(canHelpWithVisibilityInput);
     setContextNeedHelpWithVisibility(needHelpWithVisibilityInput);
-    setContextProfileVisibility(profileVisibilityInput); // NEW: Update context profileVisibility
+    setContextProfileVisibility(profileVisibilityInput);
 
 
     // After successful save, update originalValues to reflect the new saved state
@@ -448,7 +458,7 @@ const Profile = () => {
       canHelpWithVisibility: canHelpWithVisibilityInput,
       needHelpWithVisibility: needHelpWithVisibilityInput,
       pronouns: pronounsInput,
-      profileVisibility: profileVisibilityInput, // NEW: Update original profileVisibility
+      profileVisibility: profileVisibilityInput,
     });
     setHasChanges(false); // Explicitly set to false after saving
   };
@@ -492,7 +502,7 @@ const Profile = () => {
       setLinkedinVisibilityInput(originalValues.linkedinVisibility);
       setCanHelpWithVisibilityInput(originalValues.canHelpWithVisibility);
       setNeedHelpWithVisibilityInput(originalValues.needHelpWithVisibility);
-      setProfileVisibilityInput(originalValues.profileVisibility); // NEW: Reset profileVisibilityInput
+      setProfileVisibilityInput(originalValues.profileVisibility);
     }
     setHasChanges(false); // Explicitly set to false after cancelling
   }, [originalValues]);
@@ -583,7 +593,7 @@ const Profile = () => {
     return () => {
       document.removeEventListener('keydown', handleGlobalKeyDown);
     };
-  }, [hasChanges, loading, handleSave]); // Dependencies for the effect
+  }, [hasChanges, loading, handleSave]);
 
   if (loading) {
     return (
@@ -601,7 +611,7 @@ const Profile = () => {
         <div className="absolute right-0">
           <Button
             onClick={handleSave}
-            disabled={loading || !hasChanges} /* Disabled when no changes */
+            disabled={loading || !hasChanges}
             className="shadow-lg"
           >
             {loading ? "Saving..." : "Save Profile"}
@@ -609,13 +619,12 @@ const Profile = () => {
         </div>
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Card className="lg:col-span-2"> {/* Added lg:col-span-2 here */}
+          <Card className="lg:col-span-2">
             <CardHeader className="relative">
               <CardTitle
                 className="flex items-center gap-1 select-none"
-                // Removed onClick={handlePronounCycle} from CardTitle
               >
-                <span onClick={handlePronounCycle}>About</span> {/* Added onClick here */}
+                <span onClick={handlePronounCycle}>About</span>
                 {isEditingFirstName ? (
                   <Input
                     ref={firstNameInputRef}
@@ -628,8 +637,8 @@ const Profile = () => {
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span // <-- EDIT HERE
-                    className={cn("select-none", pronounsInput ? "" : "flex-grow")} // Conditionally apply flex-grow
+                  <span
+                    className={cn("select-none", pronounsInput ? "" : "flex-grow")}
                     onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
                   >
                     {firstNameInput || "You"}
@@ -644,14 +653,14 @@ const Profile = () => {
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative"> {/* Added relative here */}
+            <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative">
               <div className="space-y-4">
                 <Label
                   htmlFor="bio"
                   onClick={() => handleLabelClick(bioVisibilityInput, setBioVisibilityInput, 'bio')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
                 >
-                  Brief Bio
+                  {React.createElement(getPrivacyIcon(bioVisibilityInput), { size: 16 })} Brief Bio
                 </Label>
                 <Textarea
                   id="bio"
@@ -666,9 +675,9 @@ const Profile = () => {
                 <Label
                   htmlFor="intention"
                   onClick={() => handleLabelClick(intentionVisibilityInput, setIntentionVisibilityInput, 'intention')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
                 >
-                  Intention
+                  {React.createElement(getPrivacyIcon(intentionVisibilityInput), { size: 16 })} Intention
                 </Label>
                 <Textarea
                   id="intention"
@@ -683,9 +692,9 @@ const Profile = () => {
                 <Label
                   htmlFor="can-help-with"
                   onClick={() => handleLabelClick(canHelpWithVisibilityInput, setCanHelpWithVisibilityInput, 'can_help_with')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibilityInput)))}
                 >
-                  <Handshake size={16} className="inline-block mr-1" /> I can help with
+                  {React.createElement(getPrivacyIcon(canHelpWithVisibilityInput), { size: 16 })} I can help with
                 </Label>
                 <Textarea
                   id="can-help-with"
@@ -700,9 +709,9 @@ const Profile = () => {
                 <Label
                   htmlFor="need-help-with"
                   onClick={() => handleLabelClick(needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput, 'need_help_with')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
                 >
-                  <HelpCircle size={16} className="inline-block mr-1" /> I need help with
+                  {React.createElement(getPrivacyIcon(needHelpWithVisibilityInput), { size: 16 })} I need help with
                 </Label>
                 <Textarea
                   id="need-help-with"
@@ -717,9 +726,9 @@ const Profile = () => {
                 <Label
                   htmlFor="linkedin-username"
                   onClick={() => handleLabelClick(linkedinVisibilityInput, setLinkedinVisibilityInput, 'linkedin_url')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibilityInput)))}
                 >
-                  LinkedIn Handle
+                  {React.createElement(getPrivacyIcon(linkedinVisibilityInput), { size: 16 })} LinkedIn Handle
                 </Label>
                 <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
@@ -793,10 +802,16 @@ const Profile = () => {
 
               {/* Hosting Code section */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold mb-2">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                    {React.createElement(getPrivacyIcon(profileVisibilityInput), { size: 16 })}
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="cursor-help">Hosting Code</span>
+                        <span
+                          className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(profileVisibilityInput)))}
+                          onClick={() => handleLabelClick(profileVisibilityInput, setProfileVisibilityInput, 'profileVisibility')}
+                        >
+                          Hosting Code
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent className="select-none">
                         <p>Others can use this code to join your sessions.</p>
@@ -820,7 +835,6 @@ const Profile = () => {
                     <span
                       className={cn(
                         "text-lg font-semibold flex-grow select-none",
-                        // Removed: "text-foreground cursor-pointer hover:text-primary"
                       )}
                       onClick={handleHostCodeClick}
                     >
@@ -858,8 +872,8 @@ const Profile = () => {
                   onPointerDown={handlePointerDown}
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerUp}
-                  onPointerLeave={handlePointerUp} // Handle pointer leaving the element
-                  className="space-y-4 cursor-ew-resize p-2 -m-2 rounded-md" // Added padding and negative margin to expand touch area
+                  onPointerLeave={handlePointerUp}
+                  className="space-y-4 cursor-ew-resize p-2 -m-2 rounded-md"
                 >
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Banter</span>
@@ -901,7 +915,9 @@ const Profile = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Organisation</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                {React.createElement(getPrivacyIcon(profile?.organization ? ['organisation'] : ['private']), { size: 16 })} Organisation
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {organizationInput ? (
@@ -922,7 +938,7 @@ const Profile = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+                <UserStar className="h-5 w-5" />
                 Friends
               </CardTitle>
             </CardHeader>
@@ -936,7 +952,7 @@ const Profile = () => {
                     onMouseDown={() => handleFriendLongPressStart(friendId)}
                     onMouseUp={handleFriendLongPressEnd}
                     onMouseLeave={handleFriendLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(() => handleFriendLongPressStart(friendId))} // FIX HERE
+                    onTouchStart={() => handleLongPressStart(() => handleFriendLongPressStart(friendId))}
                     onTouchEnd={handleFriendLongPressEnd}
                   >
                     <p className="font-medium">{friendId}</p>

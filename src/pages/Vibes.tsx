@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck, Brain, Shield } from 'lucide-react'; // Added Shield icon for Privacy
+import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck, Brain, Shield, UserStar, HeartHandshake } from 'lucide-react'; // Added UserStar and HeartHandshake icons
 
 const Vibes = () => {
   return (
@@ -16,7 +16,7 @@ const Vibes = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"> {/* Changed to 2 columns for large screens for a 2x2 layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
         {/* Card: Autonomy */}
         <Card>
           <CardHeader>
@@ -79,7 +79,7 @@ const Vibes = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" /> {/* New icon for Privacy */}
+              <Shield className="h-5 w-5" />
               Privacy
             </CardTitle>
           </CardHeader>
@@ -92,8 +92,9 @@ const Vibes = () => {
             </p>
             <ul className="list-disc list-inside ml-4 space-y-1">
               <li><Globe className="inline-block h-4 w-4 mr-1 text-green-600" /> Public: Share broadly.</li>
-              <li><Users className="inline-block h-4 w-4 mr-1 text-blue-500" /> Friends Only: Connect with trusted peers.</li>
+              <li><UserStar className="inline-block h-4 w-4 mr-1 text-blue-500" /> Friends Only: Connect with trusted peers.</li>
               <li><Building2 className="inline-block h-4 w-4 mr-1 text-red-500" /> Organisation Only: Collaborate within your team.</li>
+              <li><HeartHandshake className="inline-block h-4 w-4 mr-1 text-purple-500" /> Friends & Organisation: Share with both.</li>
               <li><Lock className="inline-block h-4 w-4 mr-1 text-gray-500" /> Private: Keep details to yourself.</li>
             </ul>
           </CardContent>
