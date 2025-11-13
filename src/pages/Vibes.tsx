@@ -70,7 +70,7 @@ const Vibes = () => {
               The "Can Help" and "Need Help" sections signal your expertise and areas where you're seeking assistance.
             </p>
             <p>
-               Use the <Link to="/" className="text-blue-500 hover:underline">Ask</Link> menu during sessions to poll coworkers for group decisions ().
+               Use the <Link to="/" className="text-blue-500 hover:underline">Ask</Link> menu during sessions to poll coworkers for group decisions.
             </p>
           </CardContent>
         </Card>
