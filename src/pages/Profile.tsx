@@ -668,7 +668,7 @@ const Profile = () => {
                   onClick={() => handleLabelClick(intentionVisibilityInput, setIntentionVisibilityInput, 'intention')}
                   className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
                 >
-                  Statement of Intention
+                  Intention
                 </Label>
                 <Textarea
                   id="intention"
