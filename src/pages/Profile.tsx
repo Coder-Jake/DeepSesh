@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext"; // Corrected import path
 import { useNavigate } from "react-router-dom";
-import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp } from "lucide-react";
+import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, MessageSquare, Lightbulb } from "lucide-react"; // NEW: Imported privacy icons
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Removed TooltipHeader, TooltipTitle, TooltipDescription, TooltipFooter
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
@@ -585,6 +585,18 @@ const Profile = () => {
     };
   }, [hasChanges, loading, handleSave]); // Dependencies for the effect
 
+  // Helper to get the correct icon component based on visibility index
+  const getPrivacyIcon = (index: number) => {
+    switch (index) {
+      case 0: return Globe; // Public
+      case 1: return UserStar; // Friends
+      case 2: return Building2; // Organisation
+      case 3: return HeartHandshake; // Friends & Organisation
+      case 4: return Lock; // Private
+      default: return Globe;
+    }
+  };
+
   if (loading) {
     return (
       <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6 text-center text-muted-foreground">
@@ -649,8 +661,9 @@ const Profile = () => {
                 <Label
                   htmlFor="bio"
                   onClick={() => handleLabelClick(bioVisibilityInput, setBioVisibilityInput, 'bio')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
                 >
+                  {React.createElement(getPrivacyIcon(getIndexFromVisibility(bioVisibilityInput)), { size: 16 })}
                   Brief Bio
                 </Label>
                 <Textarea
@@ -666,8 +679,9 @@ const Profile = () => {
                 <Label
                   htmlFor="intention"
                   onClick={() => handleLabelClick(intentionVisibilityInput, setIntentionVisibilityInput, 'intention')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
                 >
+                  {React.createElement(getPrivacyIcon(getIndexFromVisibility(intentionVisibilityInput)), { size: 16 })}
                   Intention
                 </Label>
                 <Textarea
@@ -683,9 +697,10 @@ const Profile = () => {
                 <Label
                   htmlFor="can-help-with"
                   onClick={() => handleLabelClick(canHelpWithVisibilityInput, setCanHelpWithVisibilityInput, 'can_help_with')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibilityInput)))}
                 >
-                  <Handshake size={16} className="inline-block mr-1" /> I can help with
+                  {React.createElement(getPrivacyIcon(getIndexFromVisibility(canHelpWithVisibilityInput)), { size: 16 })}
+                  I can help with
                 </Label>
                 <Textarea
                   id="can-help-with"
@@ -700,9 +715,10 @@ const Profile = () => {
                 <Label
                   htmlFor="need-help-with"
                   onClick={() => handleLabelClick(needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput, 'need_help_with')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
                 >
-                  <HelpCircle size={16} className="inline-block mr-1" /> I need help with
+                  {React.createElement(getPrivacyIcon(getIndexFromVisibility(needHelpWithVisibilityInput)), { size: 16 })}
+                  I need help with
                 </Label>
                 <Textarea
                   id="need-help-with"
@@ -717,8 +733,9 @@ const Profile = () => {
                 <Label
                   htmlFor="linkedin-username"
                   onClick={() => handleLabelClick(linkedinVisibilityInput, setLinkedinVisibilityInput, 'linkedin_url')}
-                  className={cn("cursor-pointer select-none", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibilityInput)))}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibilityInput)))}
                 >
+                  {React.createElement(getPrivacyIcon(getIndexFromVisibility(linkedinVisibilityInput)), { size: 16 })}
                   LinkedIn Handle
                 </Label>
                 <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
@@ -768,23 +785,23 @@ const Profile = () => {
                   <p className="font-semibold mb-1">Visibility Settings:</p>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-green-600" />
+                      <Globe className="h-4 w-4 text-green-600" />
                       <span className="font-bold text-foreground">Public</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-blue-500" />
+                      <UserStar className="h-4 w-4 text-blue-500" />
                       <span className="font-bold text-foreground">Friends Only</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-red-500" />
+                      <Building2 className="h-4 w-4 text-red-500" />
                       <span className="font-bold text-foreground">Organisation Only</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-purple-500" />
+                      <HeartHandshake className="h-4 w-4 text-purple-500" />
                       <span className="font-bold text-foreground">Friends & Organisation</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-gray-500" />
+                      <Lock className="h-4 w-4 text-gray-500" />
                       <span className="font-bold text-foreground">Private</span>
                     </div>
                   </div>
