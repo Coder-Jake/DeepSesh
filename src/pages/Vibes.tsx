@@ -92,7 +92,7 @@ const Vibes = () => {
             </p>
             <ul className="list-disc list-inside ml-4 space-y-1">
               <li><Globe className="inline-block h-4 w-4 mr-1 text-green-600" /> Public: Share broadly.</li>
-              <li><UserStar className="inline-block h-4 w-4 mr-1 text-blue-500" /> Friends Only: Connect with trusted peers.</li>
+              <li><User-star className="inline-block h-4 w-4 mr-1 text-blue-500" /> Friends Only: Connect with trusted peers.</li>
               <li><Building2 className="inline-block h-4 w-4 mr-1 text-red-500" /> Organisation Only: Collaborate within your team.</li>
               <li><HeartHandshake className="inline-block h-4 w-4 mr-1 text-purple-500" /> Friends & Organisation: Connect with trusted peers and within your team.</li>
               <li><Lock className="inline-block h-4 w-4 mr-1 text-gray-500" /> Private: Keep details to yourself.</li>
