@@ -302,6 +302,7 @@ const Index = () => {
     currentSessionRole,
     setCurrentSessionRole,
     currentSessionHostName,
+    setCurrentSessionHostName, // Destructure setCurrentSessionHostName
     currentSessionOtherParticipants,
     currentSessionParticipantsData,
     setCurrentSessionParticipantsData,
@@ -399,7 +400,7 @@ const Index = () => {
       try {
         return await fetchSupabaseSessions(user?.id);
       } catch (err: any) {
-        console.error("Error fetching Supabase sessions:", err.message); // Explicit error logging
+        console.error("Error fetching active sessions from Supabase:", err.message); // Explicit error logging
         if (areToastsEnabled) {
           toast.error("Failed to Load Sessions", {
             description: `Could not load live sessions: ${err.message}`,
@@ -511,7 +512,7 @@ const Index = () => {
     }
   };
 
-  const startNewManualTimer = async () => {
+  const startNewManualTimer = useCallback(async () => {
     if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
@@ -557,7 +558,7 @@ const Index = () => {
     };
 
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(localFirstName);
+    setCurrentSessionHostName(localFirstName); // This uses setCurrentSessionHostName
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
     setCurrentSessionParticipantsData([hostParticipant]);
@@ -601,7 +602,9 @@ const Index = () => {
         }
       }
     }
-  };
+  }, [
+    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, isGlobalPrivate, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle
+  ]);
 
   const resumeTimer = () => {
     playSound();
@@ -1179,9 +1182,9 @@ const Index = () => {
     }
 
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(currentUserName);
+    setCurrentSessionHostName(currentUserName); // This uses setCurrentSessionHostName
     setCurrentSessionOtherParticipants([]);
-  }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, areToastsEnabled, currentUserName]);
+  }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, areToastsEnabled, currentUserName, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants]);
 
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
