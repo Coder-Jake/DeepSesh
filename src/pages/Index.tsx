@@ -10,7 +10,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom"; // MODIFIED: Import useLocation
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
@@ -331,6 +331,7 @@ const Index = () => {
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility } = useProfile(); // RENAMED: hostCode to joinCode, NEW: Get profileVisibility from useProfile
   const navigate = useNavigate();
+  const location = useLocation(); // MODIFIED: Use useLocation hook
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
   const { user, session } = useAuth(); // MODIFIED: Destructure session from useAuth
@@ -462,6 +463,13 @@ const Index = () => {
     const isDefault = seshTitle === getDefaultSeshTitle() && !isSeshTitleCustomized;
     setIsDefaultTitleAnimating(isDefault);
   }, [seshTitle, isSeshTitleCustomized, getDefaultSeshTitle]);
+
+  // MODIFIED: Effect to minimize ScheduleForm when navigating away from Index page
+  useEffect(() => {
+    if (location.pathname !== '/' && isSchedulingMode) {
+      setIsSchedulingMode(false);
+    }
+  }, [location.pathname, isSchedulingMode, setIsSchedulingMode]);
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
