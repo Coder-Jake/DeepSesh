@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2 } from 'lucide-react';
+import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck } from 'lucide-react'; // Added ShieldCheck for Respect
 
 const Vibes = () => {
   return (
@@ -16,12 +16,13 @@ const Vibes = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8"> {/* Changed to 3 columns for large screens */}
+        {/* New Card: Respect */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Handshake className="h-5 w-5" />
-              Respectful Independence
+              <ShieldCheck className="h-5 w-5" /> {/* New icon for Respect */}
+              Respect
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
@@ -30,6 +31,21 @@ const Vibes = () => {
             </p>
             <p>
               The <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> on your profile helps set expectations. A higher score indicates a preference for deep focus with minimal interaction, even during breaks. A lower score suggests you're more open to collaboration and banter.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* New Card: Independence */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" /> {/* Icon for Independence */}
+              Independence
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              DeepSesh empowers you to control your personal space and information.
             </p>
             <p>
               Use the <Link to="/settings" className="text-blue-500 hover:underline">Privacy settings</Link> to control who sees your profile details, ensuring you share only what you're comfortable with.
@@ -43,11 +59,12 @@ const Vibes = () => {
           </CardContent>
         </Card>
 
+        {/* Existing Card: Collaboration (renamed) */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="h-5 w-5" />
-              Collaborative Spirit
+              <Handshake className="h-5 w-5" /> {/* Changed icon for Collaboration */}
+              Collaboration
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
