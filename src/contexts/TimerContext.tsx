@@ -666,7 +666,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         toast.info("Session Ended", {
           description: "No other participants to transfer host role to. Session ended.",
         });
-      });
+      }
       await resetSchedule();
     }
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule, userJoinCode, session?.access_token]); // RENAMED: userHostCode to userJoinCode, NEW: Add session.access_token to dependencies
@@ -709,7 +709,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       console.error("Error leaving session via Edge Function:", error);
       if (areToastsEnabled) {
         toast.error("Leave Session Failed", {
-          description: `Failed to leave session: ${error.message}`,
+          description: `An unexpected error occurred: ${error.message}`,
         });
       }
     } finally {
