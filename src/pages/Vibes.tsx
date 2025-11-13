@@ -43,7 +43,7 @@ const Vibes = () => {
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              DeepSesh makes it simple to share expectations and establish boundaries
+              DeepSesh makes it simple to share expectations and establish boundaries.
             </p>
             <p>
               <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> help indicate your sociability to create aligned coworking.
