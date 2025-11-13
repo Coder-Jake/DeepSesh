@@ -114,19 +114,31 @@ const Profile = () => {
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
-  // NEW: States for momentary tooltips
-  const [isBioTooltipOpen, setIsBioTooltipOpen] = useState(false);
-  const [isIntentionTooltipOpen, setIsIntentionTooltipOpen] = useState(false);
-  const [isLinkedinTooltipOpen, setIsLinkedinTooltipOpen] = useState(false);
-  const [isCanHelpWithTooltipOpen, setIsCanHelpWithTooltipOpen] = useState(false);
-  const [isNeedHelpWithTooltipOpen, setIsNeedHelpWithTooltipOpen] = useState(false);
-  const tooltipTimeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
+  // NEW: States for momentary tooltips (click-triggered)
+  const [isBioClickTooltipOpen, setIsBioClickTooltipOpen] = useState(false);
+  const [isIntentionClickTooltipOpen, setIsIntentionClickTooltipOpen] = useState(false);
+  const [isLinkedinClickTooltipOpen, setIsLinkedinClickTooltipOpen] = useState(false);
+  const [isCanHelpWithClickTooltipOpen, setIsCanHelpWithClickTooltipOpen] = useState(false);
+  const [isNeedHelpWithClickTooltipOpen, setIsNeedHelpWithClickTooltipOpen] = useState(false);
+  const clickTooltipTimeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
+
+  // NEW: States for momentary tooltips (icon-hover-triggered)
+  const [isBioIconHoverTooltipOpen, setIsBioIconHoverTooltipOpen] = useState(false);
+  const bioIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isIntentionIconHoverTooltipOpen, setIsIntentionIconHoverTooltipOpen] = useState(false);
+  const intentionIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isLinkedinIconHoverTooltipOpen, setIsLinkedinIconHoverTooltipOpen] = useState(false);
+  const linkedinIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isCanHelpWithIconHoverTooltipOpen, setIsCanHelpWithIconHoverTooltipOpen] = useState(false);
+  const canHelpWithIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isNeedHelpWithIconHoverTooltipOpen, setIsNeedHelpWithIconHoverTooltipOpen] = useState(false);
+  const needHelpWithIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isKeyIconHoverTooltipOpen, setIsKeyIconHoverTooltipOpen] = useState(false);
+  const keyIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
   const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
   const friendLongPressTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [isKeyTooltipOpen, setIsKeyTooltipOpen] = useState(false);
-  const keyTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // NEW: Slider drag state and refs
   const sliderContainerRef = useRef<HTMLDivElement>(null);
@@ -136,7 +148,7 @@ const Profile = () => {
     if (!visibility || visibility.length === 0) return 'Public';
     if (visibility.includes('private')) return 'Private';
     if (visibility.includes('public')) return 'Public';
-    if (visibility.includes('friends') && visibility.includes('organisation')) return 'Friends & Organisation'; // MODIFIED: Removed 'only'
+    if (visibility.includes('friends') && visibility.includes('organisation')) return 'Friends & Organisation';
     if (visibility.includes('friends')) return 'Friends Only';
     if (visibility.includes('organisation')) return 'Organisation Only';
     return 'Public';
@@ -158,7 +170,7 @@ const Profile = () => {
     currentVisibility: ("public" | "friends" | "organisation" | "private")[],
     visibilitySetter: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>,
     fieldName: keyof ProfileDataJsonb | 'profileVisibility',
-    tooltipSetter: React.Dispatch<React.SetStateAction<boolean>> // NEW: Add tooltipSetter
+    clickTooltipSetter: React.Dispatch<React.SetStateAction<boolean>> // NEW: Add clickTooltipSetter
   ) => {
     const currentIndex = getIndexFromVisibility(currentVisibility);
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
@@ -166,15 +178,15 @@ const Profile = () => {
 
     visibilitySetter(newVisibility);
 
-    // NEW: Show momentary tooltip
-    tooltipSetter(true);
+    // NEW: Show momentary tooltip (click-triggered)
+    clickTooltipSetter(true);
     const key = fieldName.toString();
-    if (tooltipTimeoutRefs.current[key]) {
-      clearTimeout(tooltipTimeoutRefs.current[key]);
+    if (clickTooltipTimeoutRefs.current[key]) {
+      clearTimeout(clickTooltipTimeoutRefs.current[key]);
     }
-    tooltipTimeoutRefs.current[key] = setTimeout(() => {
-      tooltipSetter(false);
-      tooltipTimeoutRefs.current[key] = null;
+    clickTooltipTimeoutRefs.current[key] = setTimeout(() => {
+      clickTooltipSetter(false);
+      clickTooltipTimeoutRefs.current[key] = null;
     }, 1000); // Display for 1 second
 
     if (areToastsEnabled) {
@@ -185,6 +197,30 @@ const Profile = () => {
       });
     }
   }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus]);
+
+  // NEW: Generic handler for icon hover tooltips
+  const handleIconHoverTooltip = useCallback((
+    isOpen: boolean,
+    hoverTooltipSetter: React.Dispatch<React.SetStateAction<boolean>>,
+    hoverTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>
+  ) => {
+    if (isOpen) {
+      hoverTooltipSetter(true);
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+      hoverTimeoutRef.current = setTimeout(() => {
+        hoverTooltipSetter(false);
+        hoverTimeoutRef.current = null;
+      }, 1000); // 1 second duration
+    } else {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+      hoverTooltipSetter(false);
+    }
+  }, []);
 
   const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
@@ -523,17 +559,9 @@ const Profile = () => {
     unblockUser(userName);
   };
 
-  const handleKeyTooltipClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsKeyTooltipOpen(true);
-    if (keyTooltipTimeoutRef.current) {
-      clearTimeout(keyTooltipTimeoutRef.current);
-    }
-    keyTooltipTimeoutRef.current = setTimeout(() => {
-      setIsKeyTooltipOpen(false);
-      keyTooltipTimeoutRef.current = null;
-    }, 2000);
-  };
+  // NEW: Simplified Key icon tooltip to be purely hover-driven with 1-second display
+  // Removed handleKeyTooltipClick
+  // Removed isKeyTooltipOpen state and keyTooltipTimeoutRef
 
   // NEW: Slider drag handlers
   const handleSliderDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
@@ -671,21 +699,25 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative">
               <div className="space-y-4">
-                <Tooltip open={isBioTooltipOpen} onOpenChange={setIsBioTooltipOpen} delayDuration={0}> {/* NEW: Tooltip for Bio */}
-                  <TooltipTrigger asChild>
-                    <Label
-                      htmlFor="bio"
-                      onClick={() => handleLabelClick(bioVisibilityInput, setBioVisibilityInput, 'bio', setIsBioTooltipOpen)}
-                      className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
-                    >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(bioVisibilityInput)), { size: 16 })}
-                        Brief Bio
-                    </Label>
-                  </TooltipTrigger>
-                  <TooltipContent className="select-none">
-                    {getDisplayVisibilityStatus(bioVisibilityInput)}
-                  </TooltipContent>
-                </Tooltip>
+                <Label
+                  htmlFor="bio"
+                  onClick={() => handleLabelClick(bioVisibilityInput, setBioVisibilityInput, 'bio', setIsBioClickTooltipOpen)}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
+                >
+                  <Tooltip
+                    open={isBioClickTooltipOpen || isBioIconHoverTooltipOpen}
+                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsBioIconHoverTooltipOpen, bioIconHoverTimeoutRef)}
+                    delayDuration={0}
+                  >
+                    <TooltipTrigger asChild>
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(bioVisibilityInput)), { size: 16 })}
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none" side="top" align="start">
+                      {getDisplayVisibilityStatus(bioVisibilityInput)}
+                    </TooltipContent>
+                  </Tooltip>
+                  Brief Bio
+                </Label>
                 <Textarea
                   id="bio"
                   placeholder="Share a bit about yourself..."
@@ -696,21 +728,25 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <Tooltip open={isIntentionTooltipOpen} onOpenChange={setIsIntentionTooltipOpen} delayDuration={0}> {/* NEW: Tooltip for Intention */}
-                  <TooltipTrigger asChild>
-                    <Label
-                      htmlFor="intention"
-                      onClick={() => handleLabelClick(intentionVisibilityInput, setIntentionVisibilityInput, 'intention', setIsIntentionTooltipOpen)}
-                      className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
-                    >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(intentionVisibilityInput)), { size: 16 })}
-                        Intention
-                    </Label>
-                  </TooltipTrigger>
-                  <TooltipContent className="select-none">
-                    {getDisplayVisibilityStatus(intentionVisibilityInput)}
-                  </TooltipContent>
-                </Tooltip>
+                <Label
+                  htmlFor="intention"
+                  onClick={() => handleLabelClick(intentionVisibilityInput, setIntentionVisibilityInput, 'intention', setIsIntentionClickTooltipOpen)}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
+                >
+                  <Tooltip
+                    open={isIntentionClickTooltipOpen || isIntentionIconHoverTooltipOpen}
+                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsIntentionIconHoverTooltipOpen, intentionIconHoverTimeoutRef)}
+                    delayDuration={0}
+                  >
+                    <TooltipTrigger asChild>
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(intentionVisibilityInput)), { size: 16 })}
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none" side="top" align="start">
+                      {getDisplayVisibilityStatus(intentionVisibilityInput)}
+                    </TooltipContent>
+                  </Tooltip>
+                  Intention
+                </Label>
                 <Textarea
                   id="intention"
                   placeholder="What are you working on? Goals for upcoming sessions?"
@@ -721,21 +757,25 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <Tooltip open={isCanHelpWithTooltipOpen} onOpenChange={setIsCanHelpWithTooltipOpen} delayDuration={0}> {/* NEW: Tooltip for Can Help With */}
-                  <TooltipTrigger asChild>
-                    <Label
-                      htmlFor="can-help-with"
-                      onClick={() => handleLabelClick(canHelpWithVisibilityInput, setCanHelpWithVisibilityInput, 'can_help_with', setIsCanHelpWithTooltipOpen)}
-                      className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibilityInput)))}
-                    >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(canHelpWithVisibilityInput)), { size: 16 })}
-                        I can help with
-                    </Label>
-                  </TooltipTrigger>
-                  <TooltipContent className="select-none">
-                    {getDisplayVisibilityStatus(canHelpWithVisibilityInput)}
-                  </TooltipContent>
-                </Tooltip>
+                <Label
+                  htmlFor="can-help-with"
+                  onClick={() => handleLabelClick(canHelpWithVisibilityInput, setCanHelpWithVisibilityInput, 'can_help_with', setIsCanHelpWithClickTooltipOpen)}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibilityInput)))}
+                >
+                  <Tooltip
+                    open={isCanHelpWithClickTooltipOpen || isCanHelpWithIconHoverTooltipOpen}
+                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsCanHelpWithIconHoverTooltipOpen, canHelpWithIconHoverTimeoutRef)}
+                    delayDuration={0}
+                  >
+                    <TooltipTrigger asChild>
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(canHelpWithVisibilityInput)), { size: 16 })}
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none" side="top" align="start">
+                      {getDisplayVisibilityStatus(canHelpWithVisibilityInput)}
+                    </TooltipContent>
+                  </Tooltip>
+                  I can help with
+                </Label>
                 <Textarea
                   id="can-help-with"
                   placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
@@ -746,21 +786,25 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <Tooltip open={isNeedHelpWithTooltipOpen} onOpenChange={setIsNeedHelpWithTooltipOpen} delayDuration={0}> {/* NEW: Tooltip for Need Help With */}
-                  <TooltipTrigger asChild>
-                    <Label
-                      htmlFor="need-help-with"
-                      onClick={() => handleLabelClick(needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput, 'need_help_with', setIsNeedHelpWithTooltipOpen)}
-                      className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
-                    >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(needHelpWithVisibilityInput)), { size: 16 })}
-                        I need help with
-                    </Label>
-                  </TooltipTrigger>
-                  <TooltipContent className="select-none">
-                    {getDisplayVisibilityStatus(needHelpWithVisibilityInput)}
-                  </TooltipContent>
-                </Tooltip>
+                <Label
+                  htmlFor="need-help-with"
+                  onClick={() => handleLabelClick(needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput, 'need_help_with', setIsNeedHelpWithClickTooltipOpen)}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
+                >
+                  <Tooltip
+                    open={isNeedHelpWithClickTooltipOpen || isNeedHelpWithIconHoverTooltipOpen}
+                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsNeedHelpWithIconHoverTooltipOpen, needHelpWithIconHoverTimeoutRef)}
+                    delayDuration={0}
+                  >
+                    <TooltipTrigger asChild>
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(needHelpWithVisibilityInput)), { size: 16 })}
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none" side="top" align="start">
+                      {getDisplayVisibilityStatus(needHelpWithVisibilityInput)}
+                    </TooltipContent>
+                  </Tooltip>
+                  I need help with
+                </Label>
                 <Textarea
                   id="need-help-with"
                   placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
@@ -771,21 +815,25 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <Tooltip open={isLinkedinTooltipOpen} onOpenChange={setIsLinkedinTooltipOpen} delayDuration={0}> {/* NEW: Tooltip for LinkedIn */}
-                  <TooltipTrigger asChild>
-                    <Label
-                      htmlFor="linkedin-username"
-                      onClick={() => handleLabelClick(linkedinVisibilityInput, setLinkedinVisibilityInput, 'linkedin_url', setIsLinkedinTooltipOpen)}
-                      className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibilityInput)))}
-                    >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(linkedinVisibilityInput)), { size: 16 })}
-                        LinkedIn Handle
-                    </Label>
-                  </TooltipTrigger>
-                  <TooltipContent className="select-none">
-                    {getDisplayVisibilityStatus(linkedinVisibilityInput)}
-                  </TooltipContent>
-                </Tooltip>
+                <Label
+                  htmlFor="linkedin-username"
+                  onClick={() => handleLabelClick(linkedinVisibilityInput, setLinkedinVisibilityInput, 'linkedin_url', setIsLinkedinClickTooltipOpen)}
+                  className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibilityInput)))}
+                >
+                  <Tooltip
+                    open={isLinkedinClickTooltipOpen || isLinkedinIconHoverTooltipOpen}
+                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsLinkedinIconHoverTooltipOpen, linkedinIconHoverTimeoutRef)}
+                    delayDuration={0}
+                  >
+                    <TooltipTrigger asChild>
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(linkedinVisibilityInput)), { size: 16 })}
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none" side="top" align="start">
+                      {getDisplayVisibilityStatus(linkedinVisibilityInput)}
+                    </TooltipContent>
+                  </Tooltip>
+                  LinkedIn Handle
+                </Label>
                 <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
                     linkedin.com/in/
@@ -814,19 +862,13 @@ const Profile = () => {
 
               {/* Key Tooltip moved here */}
               <Tooltip
-                open={isKeyTooltipOpen}
-                onOpenChange={(openState) => {
-                  if (!openState && keyTooltipTimeoutRef.current) {
-                    return;
-                  }
-                  setIsKeyTooltipOpen(openState);
-                }}
+                open={isKeyIconHoverTooltipOpen}
+                onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsKeyIconHoverTooltipOpen, keyIconHoverTimeoutRef)}
                 delayDuration={0}
               >
                 <TooltipTrigger asChild>
                   <Key
                     className="h-4 w-4 text-muted-foreground cursor-help"
-                    onClick={handleKeyTooltipClick}
                   />
                 </TooltipTrigger>
                 <TooltipContent className="p-2 select-none" side="right" align="start">
@@ -1060,7 +1102,7 @@ const Profile = () => {
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
-          </DialogHeader>
+          </DialogDescription>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="organization-name">Organisation Name</Label>
