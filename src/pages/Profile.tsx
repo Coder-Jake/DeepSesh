@@ -859,7 +859,7 @@ const Profile = () => {
                 <h3 className="text-lg font-semibold mb-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="cursor-help">Join Code</span> {/* RENAMED */}
+                        <span className="cursor-help">Join Code</span>
                       </TooltipTrigger>
                       <TooltipContent className="select-none">
                         <p>Others can use this code to join your sessions.</p>
@@ -867,14 +867,14 @@ const Profile = () => {
                     </Tooltip>
                 </h3>
                 <div className="flex items-center gap-2">
-                  {isEditingJoinCode ? ( // RENAMED
+                  {isEditingJoinCode ? (
                     <Input
-                      ref={joinCodeInputRef} // RENAMED
-                      value={joinCodeInput || ""} // RENAMED
-                      onChange={(e) => { e.stopPropagation(); setJoinCodeInput(e.target.value); }} // RENAMED
-                      onKeyDown={handleJoinCodeInputKeyDown} // RENAMED
-                      onBlur={handleJoinCodeInputBlur} // RENAMED
-                      placeholder="yourjoincode" {/* RENAMED */}
+                      ref={joinCodeInputRef}
+                      value={joinCodeInput || ""}
+                      onChange={(e) => { e.stopPropagation(); setJoinCodeInput(e.target.value); }}
+                      onKeyDown={handleJoinCodeInputKeyDown}
+                      onBlur={handleJoinCodeInputBlur}
+                      placeholder="yourjoincode"
                       className="text-lg font-semibold h-auto py-1 px-2 italic flex-grow"
                       minLength={4}
                       maxLength={20}
@@ -885,18 +885,18 @@ const Profile = () => {
                         "text-lg font-semibold flex-grow select-none",
                         // Removed: "text-foreground cursor-pointer hover:text-primary"
                       )}
-                      onClick={handleJoinCodeClick} // RENAMED
+                      onClick={handleJoinCodeClick}
                     >
-                      {joinCodeInput} {/* RENAMED */}
+                      {joinCodeInput}
                     </span>
                   )}
-                  {!isEditingJoinCode && ( // RENAMED
+                  {!isEditingJoinCode && (
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={handleCopyJoinCode} // RENAMED
+                      onClick={handleCopyJoinCode}
                       className="text-muted-foreground hover:text-foreground"
-                      aria-label="Copy join code" {/* RENAMED */}
+                      aria-label="Copy join code"
                     >
                       <Clipboard size={16} className={cn(isCopied ? "text-green-500" : "text-muted-foreground")} />
                     </Button>
