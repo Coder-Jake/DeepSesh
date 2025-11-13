@@ -67,8 +67,8 @@ const Vibes = () => {
               Your <Link to="/profile" className="text-blue-500 hover:underline">Profile</Link> shares details to help coworkers understand your work, opening doors for deeper conversations and potential collaborations.
             </p>
             <p>
-              Bio and Intention gives basic context for curious coworkers. 
-              The "Can Help" and "Need Help" sections signal your expertise and areas where you're seeking assistance.
+              'Bio' and 'Intention' gives basic context for curious coworkers. 
+              'Can/Need Help' sections signal your expertise and areas where you're seeking assistance.
             </p>
             <p>
                Use the <Link to="/" className="text-blue-500 hover:underline">Ask</Link> menu during sessions to poll coworkers for group decisions.
