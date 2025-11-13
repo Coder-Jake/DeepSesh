@@ -83,7 +83,7 @@ const Vibes = () => {
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
               You have full control over the information you share.
-            </p>            <p>Your data is not for sale. </p>            
+            </p>            <p>DeepSesh does not sell user data</p>            
             <p>
               Click the <Link to="/profile" className="text-blue-500 hover:underline">headings</Link> for each profile field to control who sees those details.
             </p>
