@@ -29,7 +29,7 @@ const Vibes = () => {
             <p>
               The foundation for DeepSesh's success is your intrinsic motivation to get sh*t done.
             </p>
-            <p>DeepSesh is your tool to strengthen productivity in this cutthroat attention economy. </p>
+            <p>DeepSesh is your tool to strengthen productivity in the attention economy. </p>
           </CardContent>
         </Card>
 
