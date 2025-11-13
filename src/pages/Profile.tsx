@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, MessageSquare, Lightbulb } from "lucide-react";
+import { Linkedin, Clipboard, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, MessageSquare, Lightbulb } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
@@ -133,8 +133,6 @@ const Profile = () => {
   const canHelpWithIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isNeedHelpWithIconHoverTooltipOpen, setIsNeedHelpWithIconHoverTooltipOpen] = useState(false);
   const needHelpWithIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [isKeyIconHoverTooltipOpen, setIsKeyIconHoverTooltipOpen] = useState(false);
-  const keyIconHoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 
   const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
@@ -327,7 +325,7 @@ const Profile = () => {
         needHelpWith: profile.profile_data?.need_help_with?.value || "",
         focusPreference: profile.focus_preference || 50,
         organization: profile.organization || "",
-        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
+        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
         hostCode: profile.host_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
         intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
@@ -855,44 +853,6 @@ const Profile = () => {
                   )}
                 </div>
               </div>
-
-              {/* Key Tooltip moved here */}
-              <Tooltip
-                open={isKeyIconHoverTooltipOpen}
-                onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsKeyIconHoverTooltipOpen, keyIconHoverTimeoutRef)}
-                delayDuration={0}
-              >
-                <TooltipTrigger asChild>
-                  <Key
-                    className="h-4 w-4 text-muted-foreground cursor-help"
-                  />
-                </TooltipTrigger>
-                <TooltipContent className="p-2 select-none" side="top" align="start"> {/* Changed side to top */}
-                  <p className="font-semibold mb-1">Visibility Settings:</p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-green-600" />
-                      <span className="font-bold text-foreground">Public</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <UserStar className="h-4 w-4 text-blue-500" />
-                      <span className="font-bold text-foreground">Friends Only</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-red-500" />
-                      <span className="font-bold text-foreground">Organisation Only</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <HeartHandshake className="h-4 w-4 text-purple-500" />
-                      <span className="font-bold text-foreground">Friends & Organisation</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Lock className="h-4 w-4 text-gray-500" />
-                      <span className="font-bold text-foreground">Private</span>
-                    </div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
 
               {/* Hosting Code section */}
               <div className="space-y-4">
