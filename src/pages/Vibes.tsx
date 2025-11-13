@@ -85,7 +85,7 @@ const Vibes = () => {
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              Your data privacy is paramount. You have full control over the information you share, and your data is never commodified.
+              You have full control over the information you share. Your data is not for sale.
             </p>
             <p>
               Use the <Link to="/settings" className="text-blue-500 hover:underline">Privacy settings</Link> to control who sees your profile details, ensuring you share only what you're comfortable with.
