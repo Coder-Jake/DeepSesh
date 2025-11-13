@@ -88,7 +88,7 @@ const Vibes = () => {
               You have full control over the information you share. Your data is not for sale.
             </p>
             <p>
-              Use the <Link to="/settings" className="text-blue-500 hover:underline">Privacy settings</Link> to control who sees your profile details, ensuring you share only what you're comfortable with.
+              Click the <Link to="/profile" className="text-blue-500 hover:underline">headings</Link> for each profile field to control who sees those details.
             </p>
             <ul className="list-disc list-inside ml-4 space-y-1">
               <li><Globe className="inline-block h-4 w-4 mr-1 text-green-600" /> Public: Share broadly.</li>
