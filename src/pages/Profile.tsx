@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, Lock, Building2, UserStar, HeartHandshake } from "lucide-react"; // Added Globe, Lock, Building2, UserStar, HeartHandshake
+import { Linkedin, Clipboard, Key, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, Lock, Building2, HeartHandshake } from "lucide-react"; // Removed UserStar, kept Users and HeartHandshake
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
@@ -157,7 +157,7 @@ const Profile = () => {
     if (visibility.includes('private')) return Lock;
     if (visibility.includes('public')) return Globe;
     if (visibility.includes('friends') && visibility.includes('organisation')) return HeartHandshake;
-    if (visibility.includes('friends')) return UserStar;
+    if (visibility.includes('friends')) return Users; // Changed from UserStar to Users
     if (visibility.includes('organisation')) return Building2;
     return Globe; // Default to public
   }, []);
@@ -287,7 +287,7 @@ const Profile = () => {
         needHelpWith: profile.profile_data?.need_help_with?.value || "",
         focusPreference: profile.focus_preference || 50,
         organization: profile.organization || "",
-        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
+        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
         hostCode: profile.host_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
         intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
@@ -938,7 +938,7 @@ const Profile = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UserStar className="h-5 w-5" />
+                <Users className="h-5 w-5" />
                 Friends
               </CardTitle>
             </CardHeader>
