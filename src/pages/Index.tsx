@@ -302,9 +302,7 @@ const Index = () => {
     currentSessionRole,
     setCurrentSessionRole,
     currentSessionHostName,
-    setCurrentSessionHostName,
     currentSessionOtherParticipants,
-    setCurrentSessionOtherParticipants,
     currentSessionParticipantsData,
     setCurrentSessionParticipantsData,
 
@@ -397,7 +395,19 @@ const Index = () => {
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
     queryKey: ['supabaseActiveSessions', user?.id], // Add user.id to query key for re-fetching on auth change
-    queryFn: () => fetchSupabaseSessions(user?.id),
+    queryFn: async () => { // Made async to allow for error logging
+      try {
+        return await fetchSupabaseSessions(user?.id);
+      } catch (err: any) {
+        console.error("Error fetching Supabase sessions:", err.message); // Explicit error logging
+        if (areToastsEnabled) {
+          toast.error("Failed to Load Sessions", {
+            description: `Could not load live sessions: ${err.message}`,
+          });
+        }
+        throw err; // Re-throw to let TanStack Query handle the error state
+      }
+    },
     refetchInterval: 5000,
     enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'),
   });
