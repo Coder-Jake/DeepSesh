@@ -47,6 +47,7 @@ export interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
+  creatorId: string; // NEW: Add creatorId
   votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
   status: 'pending' | 'accepted' | 'rejected';
 }
@@ -63,6 +64,7 @@ export interface Poll {
   question: string;
   type: 'closed' | 'choice' | 'selection';
   creator: string;
+  creatorId: string; // NEW: Add creatorId
   options: PollOption[];
   status: 'active' | 'closed';
   allowCustomResponses: boolean;

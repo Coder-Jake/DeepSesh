@@ -46,11 +46,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext'; // Import ProfileUpdate
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // NEW: Import Popover components
 
 interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
+  creatorId: string; // NEW: Add creatorId
   votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
   status: 'pending' | 'accepted' | 'rejected';
 }
@@ -66,6 +68,7 @@ interface Poll {
   question: string;
   type: 'closed' | 'choice' | 'selection';
   creator: string;
+  creatorId: string; // NEW: Add creatorId
   options: PollOption[];
   status: 'active' | 'closed';
   allowCustomResponses: boolean;
@@ -380,6 +383,16 @@ const Index = () => {
       setDiscoveryDisplayName(localFirstName === "You" ? (joinCode || "") : (localFirstName || joinCode || "")); // RENAMED: hostCode to joinCode
     }
   }, [isDiscoverySetupOpen, localFirstName, joinCode]); // RENAMED: hostCode to joinCode
+
+  // NEW: Function to toggle global private/public status
+  const handlePublicPrivateToggle = useCallback(() => {
+    setIsGlobalPrivate(prev => !prev);
+    if (areToastsEnabled) {
+      toast.info("Session Visibility", {
+        description: `Your sessions are now ${isGlobalPrivate ? 'Public' : 'Private'}.`,
+      });
+    }
+  }, [setIsGlobalPrivate, isGlobalPrivate, areToastsEnabled]);
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
@@ -1151,9 +1164,6 @@ const Index = () => {
     setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
   }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, areToastsEnabled, currentUserName]);
-
-  // NEW: Use currentPhaseDurationSeconds for currentItemDuration
-  const currentItemDuration = currentPhaseDurationSeconds / 60;
 
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
