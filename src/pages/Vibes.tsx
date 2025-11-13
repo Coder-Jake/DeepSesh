@@ -61,7 +61,7 @@ const Vibes = () => {
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              While autonomy is key, DeepSesh also fosters a vibrant collaborative environment. Breaks are a great time to connect, brainstorm, and build community.
+              Breaks are a great time to network, brainstorm, and build community.
             </p>
             <p>
               Your <Link to="/profile" className="text-blue-500 hover:underline">Intention statement</Link> helps others understand your work, opening doors for relevant discussions and potential collaborations.
