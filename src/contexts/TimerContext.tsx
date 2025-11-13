@@ -291,7 +291,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .from('active_sessions')
           .update({ session_title: newTitle })
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id);
+          .eq('user.id', user.id);
 
         if (error) {
           console.error("Error updating session title in Supabase:", error);
@@ -525,8 +525,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsRecurring(false);
     setRecurrenceFrequency('daily');
     setTimerType('focus');
-    // REMOVED: _setFocusMinutes(_defaultFocusMinutes);
-    // REMOVED: _setBreakMinutes(_defaultBreakMinutes);
+    // Reset homepage focus/break minutes to defaults and clear customization flags
+    _setFocusMinutes(_defaultFocusMinutes);
+    _setBreakMinutes(_defaultBreakMinutes);
+    setIsHomepageFocusCustomized(false); // NEW
+    setIsHomepageBreakCustomized(false); // NEW
     setTimeLeft(_defaultFocusMinutes * 60);
     setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
     setIsRunning(false);
@@ -561,7 +564,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentPhaseDurationSeconds(0); // NEW: Reset current phase duration
     setRemainingTimeAtPause(0); // NEW: Reset remaining time at pause
   }, [
-    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle
+    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
   ]);
 
   const resetSchedule = useCallback(async () => {
@@ -1047,8 +1050,23 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
+
+      // NEW: Set homepage focus/break minutes to the first item of the loaded schedule, or its default
+      const firstScheduleItem = templateToLoad.schedule[0];
+      if (firstScheduleItem) {
+        _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
+        _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
+        setTimerType(firstScheduleItem.type);
+        setTimeLeft(firstScheduleItem.durationMinutes * 60);
+        setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
+      } else {
+        // If schedule is empty, fall back to current defaults
+        setTimerType('focus');
+        setTimeLeft(_defaultFocusMinutes * 60);
+        setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
+      }
     }
-  }, [savedSchedules, areToastsEnabled, toast]);
+  }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized]);
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
@@ -1534,7 +1552,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     let initialSavedSchedules: ScheduledTimerTemplate[] = [];
-    let initialScheduleToLoad: ScheduledTimerTemplate | undefined;
 
     if (storedData) {
       const data = JSON.parse(storedData);
@@ -1577,16 +1594,29 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         return;
       }
 
-      _setDefaultFocusMinutes(data._defaultFocusMinutes ?? 25);
-      _setDefaultBreakMinutes(data. _defaultBreakMinutes ?? 5);
+      // 1. Load default settings
+      const loadedDefaultFocusMinutes = data._defaultFocusMinutes ?? 25;
+      const loadedDefaultBreakMinutes = data._defaultBreakMinutes ?? 5;
+      _setDefaultFocusMinutes(loadedDefaultFocusMinutes);
+      _setDefaultBreakMinutes(loadedDefaultBreakMinutes);
 
+      // 2. Load homepage customization flags
       const loadedIsHomepageFocusCustomized = data.isHomepageFocusCustomized ?? false;
       const loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
-
-      _setFocusMinutes(loadedFocusMinutes);
-      _setBreakMinutes(loadedBreakMinutes);
       setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
       setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
+
+      // 3. Set homepage focus/break minutes based on customization or defaults
+      if (loadedIsHomepageFocusCustomized) {
+        _setFocusMinutes(data.focusMinutes ?? loadedDefaultFocusMinutes);
+      } else {
+        _setFocusMinutes(loadedDefaultFocusMinutes);
+      }
+      if (loadedIsHomepageBreakCustomized) {
+        _setBreakMinutes(data.breakMinutes ?? loadedDefaultBreakMinutes);
+      } else {
+        _setBreakMinutes(loadedDefaultBreakMinutes);
+      }
 
       let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
       let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
@@ -1606,22 +1636,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         loadedShowSessionsWhileActive = 'all';
       }
       setShowSessionsWhileActive(loadedShowSessionsWhileActive);
-
-      // isDiscoveryActivated and geolocationPermissionStatus are now initialized synchronously above
-      // const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
-      // setIsDiscoveryActivated(loadedIsDiscoveryActivated);
-      // const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
-      // setGeolocationPermissionStatus(loadedGeolocationPermissionStatus);
-
-      // isGlobalPrivate is also initialized synchronously.
-      // The logic for deriving it based on discovery/location is now in its useState initializer.
-      // let initialIsGlobalPrivate = data.isGlobalPrivate ?? false;
-      // if (loadedIsDiscoveryActivated && loadedGeolocationPermissionStatus === 'denied') {
-      //   initialIsGlobalPrivate = true;
-      // } else if (!loadedIsDiscoveryActivated) {
-      //   initialIsGlobalPrivate = true;
-      // }
-      // setIsGlobalPrivate(initialIsGlobalPrivate);
 
       setTimerType(data.timerType ?? 'focus');
 
@@ -1716,7 +1730,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const finalSavedSchedules = Array.from(mergedSchedulesMap.values());
     setSavedSchedules(finalSavedSchedules);
 
-    initialScheduleToLoad = finalSavedSchedules.find(
+    const initialScheduleToLoad = finalSavedSchedules.find(
       (template) => template.id === "default-school-timetable"
     );
 
@@ -1730,27 +1744,40 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setRecurrenceFrequency(initialScheduleToLoad.recurrenceFrequency);
       setTimerColors(initialScheduleToLoad.timerColors || {});
 
-      // REMOVED: _setFocusMinutes(_defaultFocusMinutes);
-      // REMOVED: _setBreakMinutes(_defaultBreakMinutes);
-      setTimerType('focus');
-      setTimeLeft(_defaultFocusMinutes * 60);
-      setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
-      _setSeshTitle(getDefaultSeshTitle());
-      setIsSeshTitleCustomized(false);
+      // When a template is loaded, reset homepage customization flags
       setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
+
+      // Set homepage focus/break minutes to the first item of the loaded schedule, or its default
+      const firstScheduleItem = initialScheduleToLoad.schedule[0];
+      if (firstScheduleItem) {
+        _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
+        _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
+        setTimerType(firstScheduleItem.type);
+        setTimeLeft(firstScheduleItem.durationMinutes * 60);
+        setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
+      } else {
+        // If schedule is empty, fall back to loaded defaults
+        setTimerType('focus');
+        setTimeLeft(_defaultFocusMinutes * 60);
+        setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
+      }
+      _setSeshTitle(getDefaultSeshTitle()); // Reset seshTitle to default
+      setIsSeshTitleCustomized(false); // Reset seshTitle customization
     } else {
-      _setFocusMinutes(_defaultFocusMinutes);
-      _setBreakMinutes(_defaultBreakMinutes);
-      setTimerType('focus');
-      setTimeLeft(_defaultFocusMinutes * 60);
-      setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60); // NEW: Initialize
-      _setSeshTitle(getDefaultSeshTitle());
-      setIsSeshTitleCustomized(false);
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
+      // If no initial schedule to load, ensure timeLeft and currentPhaseDurationSeconds reflect the loaded homepage values
+      const currentHomepageFocus = loadedIsHomepageFocusCustomized ? (data.focusMinutes ?? loadedDefaultFocusMinutes) : loadedDefaultFocusMinutes;
+      const currentHomepageBreak = loadedIsHomepageBreakCustomized ? (data.breakMinutes ?? loadedDefaultBreakMinutes) : loadedDefaultBreakMinutes;
+      const currentTimerType = data.timerType ?? 'focus';
+
+      setTimerType(currentTimerType);
+      setTimeLeft((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
+      setCurrentPhaseDurationSeconds((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
+      _setSeshTitle(data._seshTitle ?? getDefaultSeshTitle());
+      setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
     }
-  }, [/* Removed getDefaultSeshTitle from dependencies */ _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate]); // Added synchronous state setters to dependencies
+    setLoading(false); // This should be the last thing in the useEffect
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules]);
 
   useEffect(() => {
     const dataToSave = {
