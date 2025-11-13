@@ -1051,22 +1051,22 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
 
-      // NEW: Set homepage focus/break minutes to the first item of the loaded schedule, or its default
+      // Set homepage focus/break minutes to the first item of the loaded schedule, or its default
       const firstScheduleItem = templateToLoad.schedule[0];
       if (firstScheduleItem) {
         _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
         _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
-        setTimerType(firstScheduleItem.type);
-        setTimeLeft(firstScheduleItem.durationMinutes * 60);
-        setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
+        // REMOVED: setTimerType(firstScheduleItem.type);
+        // REMOVED: setTimeLeft(firstScheduleItem.durationMinutes * 60);
+        // REMOVED: setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
       } else {
         // If schedule is empty, fall back to current defaults
-        setTimerType('focus');
-        setTimeLeft(_defaultFocusMinutes * 60);
-        setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
+        // REMOVED: setTimerType('focus');
+        // REMOVED: setTimeLeft(_defaultFocusMinutes * 60);
+        // REMOVED: setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
       }
     }
-  }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized]);
+  }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized]);
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
@@ -1262,7 +1262,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           const nextPhaseDurationSeconds = activeSchedule[nextIndex].durationMinutes * 60;
           setCurrentPhaseDurationSeconds(nextPhaseDurationSeconds);
           setTimeLeft(nextPhaseDurationSeconds);
-          setCurrentPhaseStartTime(Date.Now());
+          setCurrentPhaseStartTime(Date.now());
 
           setIsRunning(true);
           setIsFlashing(false);
@@ -1753,14 +1753,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       if (firstScheduleItem) {
         _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
         _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
-        setTimerType(firstScheduleItem.type);
-        setTimeLeft(firstScheduleItem.durationMinutes * 60);
-        setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
+        // REMOVED: setTimerType(firstScheduleItem.type);
+        // REMOVED: setTimeLeft(firstScheduleItem.durationMinutes * 60);
+        // REMOVED: setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
       } else {
         // If schedule is empty, fall back to loaded defaults
-        setTimerType('focus');
-        setTimeLeft(_defaultFocusMinutes * 60);
-        setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
+        // REMOVED: setTimerType('focus');
+        // REMOVED: setTimeLeft(_defaultFocusMinutes * 60);
+        // REMOVED: setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
       }
       _setSeshTitle(getDefaultSeshTitle()); // Reset seshTitle to default
       setIsSeshTitleCustomized(false); // Reset seshTitle customization
