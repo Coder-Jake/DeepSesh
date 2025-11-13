@@ -43,10 +43,10 @@ const Vibes = () => {
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              DeepSesh is built on respecting individual focus and boundaries. We encourage you to work independently, knowing others are doing the same.
+              DeepSesh makes it simple to share expectations and establish boundaries
             </p>
             <p>
-              Your <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> help set expectations. A higher score indicates a preference for deep focus with minimal interaction, even during breaks. A lower score suggests you're more open to collaboration and banter.
+              Your <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> help indicate your sociability to create aligned coworking.
             </p>
           </CardContent>
         </Card>
