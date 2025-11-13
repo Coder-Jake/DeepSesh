@@ -666,7 +666,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         toast.info("Session Ended", {
           description: "No other participants to transfer host role to. Session ended.",
         });
-      }
+      });
       await resetSchedule();
     }
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule, userJoinCode, session?.access_token]); // RENAMED: userHostCode to userJoinCode, NEW: Add session.access_token to dependencies
@@ -1054,8 +1054,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       // Set homepage focus/break minutes to the first item of the loaded schedule, or its default
       const firstScheduleItem = templateToLoad.schedule[0];
       if (firstScheduleItem) {
-        _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
-        _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
+        // REMOVED: _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
+        // REMOVED: _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
         // REMOVED: setTimerType(firstScheduleItem.type);
         // REMOVED: setTimeLeft(firstScheduleItem.durationMinutes * 60);
         // REMOVED: setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
@@ -1065,6 +1065,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         // REMOVED: setTimeLeft(_defaultFocusMinutes * 60);
         // REMOVED: setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
       }
+      _setSeshTitle(getDefaultSeshTitle()); // Reset seshTitle to default
+      setIsSeshTitleCustomized(false); // Reset seshTitle customization
     }
   }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized]);
 
@@ -1751,8 +1753,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       // Set homepage focus/break minutes to the first item of the loaded schedule, or its default
       const firstScheduleItem = initialScheduleToLoad.schedule[0];
       if (firstScheduleItem) {
-        _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
-        _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
+        // REMOVED: _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
+        // REMOVED: _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
         // REMOVED: setTimerType(firstScheduleItem.type);
         // REMOVED: setTimeLeft(firstScheduleItem.durationMinutes * 60);
         // REMOVED: setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
