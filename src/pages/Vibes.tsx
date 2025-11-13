@@ -30,7 +30,7 @@ const Vibes = () => {
               The foundation for DeepSesh's success is its users' intrinsic motivation to get things done. We believe in empowering self-discipline in this cutthroat attention economy.
             </p>
             <p>
-              DeepSesh provides tools to help you manage your focus and breaks, giving you control over your productivity journey.
+              DeepSesh is a tool to strengthen your productivity.
             </p>
           </CardContent>
         </Card>
