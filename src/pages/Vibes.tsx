@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck, Brain, Shield, User-star, HeartHandshake } from 'lucide-react'; // Added User-star and HeartHandshake icons
+import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck, Brain, Shield, User-star, HeartHandshake } from 'lucide-react'; // Added user-star and HeartHandshake icons
 
 const Vibes = () => {
   return (
