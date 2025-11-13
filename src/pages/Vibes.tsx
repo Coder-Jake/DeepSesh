@@ -68,7 +68,7 @@ const Vibes = () => {
             </p>
             <p>
               'Bio' and 'Intention' gives basic context for curious coworkers.\n
-              'Can/Need Help' sections signal your expertise and areas where you're seeking assistance.
+            'Can/Need Help' sections signal your expertise and areas where you're seeking assistance.
             </p>
             <p>
                Use the <Link to="/" className="text-blue-500 hover:underline">Ask</Link> menu during sessions to poll coworkers for group decisions.
