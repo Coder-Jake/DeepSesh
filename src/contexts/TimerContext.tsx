@@ -1262,7 +1262,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           const nextPhaseDurationSeconds = activeSchedule[nextIndex].durationMinutes * 60;
           setCurrentPhaseDurationSeconds(nextPhaseDurationSeconds);
           setTimeLeft(nextPhaseDurationSeconds);
-          setCurrentPhaseStartTime(Date.now());
+          setCurrentPhaseStartTime(Date.Now());
 
           setIsRunning(true);
           setIsFlashing(false);
@@ -1776,7 +1776,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       _setSeshTitle(data._seshTitle ?? getDefaultSeshTitle());
       setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
     }
-    setLoading(false); // This should be the last thing in the useEffect
+    // REMOVED: setLoading(false); // This should be the last thing in the useEffect
   }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules]);
 
   useEffect(() => {
