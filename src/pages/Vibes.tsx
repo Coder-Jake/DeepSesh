@@ -64,7 +64,7 @@ const Vibes = () => {
               Breaks are a great time to network, brainstorm, and build community.
             </p>
             <p>
-              Your <Link to="/profile" className="text-blue-500 hover:underline">Intention statement</Link> helps others understand your work, opening doors for relevant discussions and potential collaborations.
+              Your<Link to="/profile" className="text-blue-500 hover:underline">Profile</Link> can share details which help coworkers understand your work, opening doors for deeper conversations and potential collaborations.
             </p>
             <p>
               The "Can Help With" and "Need Help With" sections on your profile signal your expertise and areas where you're seeking assistance, making it easier to find complementary coworkers.
