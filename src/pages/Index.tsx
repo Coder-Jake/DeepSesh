@@ -843,6 +843,14 @@ const Index = () => {
 
   const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
 
+  // Define currentItemDuration based on context
+  const currentItemDuration = useMemo(() => {
+    if (isScheduleActive && activeSchedule[currentScheduleIndex]) {
+      return activeSchedule[currentScheduleIndex].durationMinutes;
+    }
+    return timerType === 'focus' ? focusMinutes : breakMinutes;
+  }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType, focusMinutes, breakMinutes]);
+
   const shouldShowNearbySessions = useMemo(() => {
     if (!isDiscoveryActivated) return false;
     if (!isActiveTimer) {

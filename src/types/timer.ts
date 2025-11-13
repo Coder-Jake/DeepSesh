@@ -128,6 +128,7 @@ export interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null; // NEW: Add join_code
+  active_asks: ActiveAskItem[]; // ADDED: active_asks property
 }
 
 // Define the structure for the TimerContext value
