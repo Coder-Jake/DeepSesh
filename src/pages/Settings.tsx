@@ -68,8 +68,8 @@ const Settings = () => {
     setBreakNotificationsVibrate,
     verificationStandard,
     setVerificationStandard,
-    profileVisibility,
-    setProfileVisibility,
+    // REMOVED: profileVisibility,
+    // REMOVED: setProfileVisibility,
     locationSharing,
     setLocationSharing,
     isGlobalPrivate,
@@ -94,7 +94,7 @@ const Settings = () => {
   const { user } = useAuth(); // Removed 'logout' from destructuring
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile } = useProfile(); // NEW: Get resetProfile
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile, profileVisibility, setProfileVisibility } = useProfile(); // NEW: Get resetProfile and profileVisibility
 
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
   const [userNameToBlock, setUserNameToBlock] = useState("");
@@ -131,7 +131,7 @@ const Settings = () => {
     sessionInvites,
     friendActivity,
     verificationStandard,
-    profileVisibility,
+    profileVisibility, // NEW: Add to saved settings
     locationSharing,
     isGlobalPrivate,
     timerIncrement,
@@ -177,7 +177,7 @@ const Settings = () => {
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility,
+      profileVisibility, // NEW: Add to current UI settings
       locationSharing,
       isGlobalPrivate,
       timerIncrement: currentTimerIncrement,
@@ -210,7 +210,8 @@ const Settings = () => {
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     manualTransition, localFocusMinutes, localBreakMinutes, maxDistance,
     askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
-    verificationStandard, profileVisibility, locationSharing,
+    verificationStandard, profileVisibility, // NEW: Add profileVisibility to dependencies
+    locationSharing,
     isGlobalPrivate,
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
     isDarkMode,
@@ -423,6 +424,8 @@ const Settings = () => {
     setFriendActivity(friendActivity);
     setBreakNotificationsVibrate(breakNotificationsVibrate);
     setVerificationStandard(verificationStandard);
+    // NEW: Save profileVisibility from ProfileContext
+    // setProfileVisibility(profileVisibility); // This is already handled by ProfileContext's updateProfile
     setLocationSharing(locationSharing);
     setIsGlobalPrivate(isGlobalPrivate);
     setShouldPlayEndSound(shouldPlayEndSound);
@@ -453,7 +456,7 @@ const Settings = () => {
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility,
+      profileVisibility, // NEW: Save profileVisibility
       locationSharing,
       isGlobalPrivate,
       timerIncrement: currentTimerIncrement,

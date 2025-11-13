@@ -31,6 +31,7 @@ export type Profile = {
   updated_at: string | null;
   host_code: string | null;
   profile_data: ProfileDataJsonb; // The new JSONB column
+  visibility: ("public" | "friends" | "organisation" | "private")[]; // NEW: Add visibility column
 };
 
 // ProfileUpdate type: allows updating direct columns OR specific fields within profile_data
@@ -54,6 +55,7 @@ export type ProfileInsert = {
   profile_data: ProfileDataJsonb;
   organization?: string | null;
   avatar_url?: string | null;
+  visibility: ("public" | "friends" | "organisation" | "private")[]; // NEW: Add visibility
 };
 
 // Helper to generate a random host code (now handled by Supabase function)
@@ -109,6 +111,8 @@ interface ProfileContextType {
   blockUser: (userName: string) => void;
   unblockUser: (userName: string) => void;
   resetProfile: () => void;
+  profileVisibility: ("public" | "friends" | "organisation" | "private")[]; // NEW: Add profileVisibility
+  setProfileVisibility: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>; // NEW: Add setter
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -147,6 +151,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [linkedinVisibility, setLinkedinVisibility] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
   const [canHelpWithVisibility, setCanHelpWithVisibility] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
   const [needHelpWithVisibility, setNeedHelpWithVisibility] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
+  const [profileVisibility, setProfileVisibility] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']); // NEW: Add profileVisibility state
 
   // Social states
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'friends' | 'pending' | 'none'>>({});
@@ -172,7 +177,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const fetchMockProfiles = useCallback(async () => {
     mockProfilesRef.current = [
       {
-        id: "mock-user-id-bezos", first_name: "Sam Altman", last_name: null, avatar_url: null, focus_preference: 20, updated_at: new Date().toISOString(), organization: "OpenAI", host_code: "Goldfish",
+        id: "mock-user-id-bezos", first_name: "Sam Altman", last_name: null, avatar_url: null, focus_preference: 20, updated_at: new Date().toISOString(), organization: "OpenAI", host_code: "Goldfish", visibility: ['public'],
         profile_data: {
           bio: getDefaultProfileDataField("Leading AI research.", ['public']),
           intention: getDefaultProfileDataField("Focusing on AGI.", ['public']),
@@ -183,7 +188,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       },
       {
-        id: "mock-user-id-musk", first_name: "Musk", last_name: null, avatar_url: null, focus_preference: 10, updated_at: new Date().toISOString(), organization: "SpaceX", host_code: "Silverfalcon",
+        id: "mock-user-id-musk", first_name: "Musk", last_name: null, avatar_url: null, focus_preference: 10, updated_at: new Date().toISOString(), organization: "SpaceX", host_code: "Silverfalcon", visibility: ['public'],
         profile_data: {
           bio: getDefaultProfileDataField("Designing rockets.", ['public']),
           intention: getDefaultProfileDataField("Innovating space travel.", ['public']),
@@ -194,7 +199,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       },
       {
-        id: "mock-user-id-freud", first_name: "Freud", last_name: null, avatar_url: null, focus_preference: 60, updated_at: new Date().toISOString(), organization: "Psychology Dept.", host_code: "Tealshark",
+        id: "mock-user-id-freud", first_name: "Freud", last_name: null, avatar_url: null, focus_preference: 60, updated_at: new Date().toISOString(), organization: "Psychology Dept.", host_code: "Tealshark", visibility: ['public'],
         profile_data: {
           bio: getDefaultProfileDataField("Reviewing psychoanalytic theories.", ['public']),
           intention: getDefaultProfileDataField("Unraveling human behavior.", ['public']),
@@ -205,7 +210,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       },
       {
-        id: "mock-user-id-aristotle", first_name: "Aristotle", last_name: null, avatar_url: null, focus_preference: 50, updated_at: new Date().toISOString(), organization: "Ancient Philosophy Guild", host_code: "Redphilosopher",
+        id: "mock-user-id-aristotle", first_name: "Aristotle", last_name: null, avatar_url: null, focus_preference: 50, updated_at: new Date().toISOString(), organization: "Ancient Philosophy Guild", host_code: "Redphilosopher", visibility: ['organisation'],
         profile_data: {
           bio: getDefaultProfileDataField("Studying logic.", ['public']),
           intention: getDefaultProfileDataField("Deep work on theories.", ['public']),
@@ -231,6 +236,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     const profileDataToSend = {
       ...profile,
       profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
+      visibility: profile.visibility || ['public'], // Ensure visibility is sent
     };
 
     try {
@@ -278,6 +284,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         const defaultedProfile: Profile = {
           ...parsedProfile,
           profile_data: parsedProfile.profile_data || getDefaultProfileDataJsonb(),
+          visibility: parsedProfile.visibility || ['public'], // Default visibility if missing
         };
         if (isMounted) {
           setProfile(defaultedProfile); // Set the main profile object
@@ -292,6 +299,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
             focus_preference: 50, updated_at: new Date().toISOString(),
             host_code: generateRandomHostCode(),
             profile_data: defaultProfileData,
+            visibility: ['public'], // Default visibility for new profiles
           };
           if (isMounted) {
             setProfile(defaultProfile);
@@ -326,6 +334,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setFocusPreference(profile.focus_preference || 50);
       setOrganization(profile.organization);
       setHostCode(profile.host_code);
+      setProfileVisibility(profile.visibility || ['public']); // NEW: Sync profileVisibility
 
       const pd = profile.profile_data;
       setBio(pd.bio?.value || null);
@@ -345,6 +354,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setFocusPreference(50);
       setOrganization(null);
       setHostCode(null);
+      setProfileVisibility(['public']); // NEW: Reset profileVisibility
       setBio(null);
       setBioVisibility(['public']);
       setIntention(null);
@@ -392,7 +402,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     // Create a new profile object based on current 'profile' and 'updates'
-    const currentProfile = profile || { id: user.id, first_name: "You", focus_preference: 50, host_code: generateRandomHostCode(), profile_data: getDefaultProfileDataJsonb() } as Profile;
+    const currentProfile = profile || { id: user.id, first_name: "You", focus_preference: 50, host_code: generateRandomHostCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'] } as Profile;
 
     const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
 
@@ -409,6 +419,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       profile_data: updatedProfileData,
       updated_at: new Date().toISOString(), // Always update timestamp on explicit update
       id: user.id, // Ensure ID is always set
+      visibility: updates.visibility || currentProfile.visibility || ['public'], // NEW: Ensure visibility is updated
     };
 
     setProfile(newProfile); // <-- This is the single source of truth update
@@ -450,10 +461,11 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       }
 
       if (data) {
-        // Ensure profile_data is properly defaulted if missing from DB
+        // Ensure profile_data and visibility are properly defaulted if missing from DB
         const fetchedProfile: Profile = {
           ...data,
           profile_data: data.profile_data || getDefaultProfileDataJsonb(),
+          visibility: data.visibility || ['public'], // Default visibility if missing
         };
         return fetchedProfile;
       }
@@ -473,6 +485,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       updated_at: new Date().toISOString(),
       host_code: null,
       profile_data: defaultProfileData,
+      visibility: ['private'], // Default to private for unknown public profiles
     };
   }, [user?.id, profile, getDefaultProfileDataJsonb]); // Add user and profile to dependencies
 
@@ -560,6 +573,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     blockUser,
     unblockUser,
     resetProfile,
+    profileVisibility, // NEW: Provide profileVisibility
+    setProfileVisibility, // NEW: Provide setProfileVisibility
   }), [
     profile, loading, authLoading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
     bio, setBio, intention, setIntention, canHelpWith, setCanHelpWith, needHelpWith, setNeedHelpWith,
@@ -567,7 +582,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
     canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility,
     pronouns, setPronouns, friendStatuses, blockedUsers, recentCoworkers, getPublicProfile, blockUser, unblockUser,
-    resetProfile
+    resetProfile, profileVisibility, setProfileVisibility
   ]);
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

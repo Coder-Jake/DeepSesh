@@ -161,7 +161,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
   const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false);
   const [verificationStandard, setVerificationStandard] = useState<'anyone' | 'phone1' | 'organisation' | 'id1'>('anyone');
-  const [profileVisibility, setProfileVisibility] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
+  // REMOVED: profileVisibility and setProfileVisibility from TimerContext
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]);
   const [is24HourFormat, setIs24HourFormat] = useState(true);
@@ -1624,7 +1624,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setFriendActivity(data.friendActivity ?? { push: false, vibrate: false, sound: false });
       setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? false);
       setVerificationStandard(data.verificationStandard ?? 'anyone');
-      setProfileVisibility(data.profileVisibility ?? ['public']);
+      // REMOVED: setProfileVisibility(data.profileVisibility ?? ['public']);
       setLocationSharing(data.locationSharing ?? false);
       setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
       setTimerColors(data.timerColors ?? {});
@@ -1710,7 +1710,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
-      friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
+      friendActivity, breakNotificationsVibrate, verificationStandard,
+      // REMOVED: profileVisibility,
       locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
       is24HourFormat,
       preparedSchedules,
@@ -1745,7 +1746,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
     intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
-    friendActivity, breakNotificationsVibrate, verificationStandard, profileVisibility,
+    friendActivity, breakNotificationsVibrate, verificationStandard,
+    // REMOVED: profileVisibility,
     locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
     is24HourFormat,
     preparedSchedules,
@@ -1913,8 +1915,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setBreakNotificationsVibrate,
     verificationStandard,
     setVerificationStandard,
-    profileVisibility,
-    setProfileVisibility,
+    // REMOVED: profileVisibility,
+    // REMOVED: setProfileVisibility,
     locationSharing,
     setLocationSharing,
     openSettingsAccordions,

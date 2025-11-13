@@ -33,6 +33,7 @@ const ProfilePopUpCard: React.FC = () => {
     canHelpWithVisibility,
     needHelpWithVisibility,
     friendStatuses,
+    profileVisibility: currentUserProfileVisibility, // NEW: Get currentUserProfileVisibility
   } = useProfile();
   const { areToastsEnabled } = useTimer();
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
@@ -99,7 +100,7 @@ const ProfilePopUpCard: React.FC = () => {
     isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile,
     bio, intention, linkedinUrl, canHelpWith, needHelpWith, currentUserPronouns,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    currentUserFocusPreference, currentUserOrganization
+    currentUserFocusPreference, currentUserOrganization, currentUserProfileVisibility // NEW: Add currentUserProfileVisibility
   ]);
 
   useLayoutEffect(() => {
@@ -196,6 +197,27 @@ const ProfilePopUpCard: React.FC = () => {
         (field.visibility.includes('organisation') && isOrgMember)
       );
     };
+
+    // NEW: Check overall profile visibility
+    const isProfileGloballyPrivate = targetProfile.visibility.includes('private');
+    const isProfilePublic = targetProfile.visibility.includes('public');
+    const isProfileOrgOnly = targetProfile.visibility.includes('organisation');
+    const isProfileFriendsOnly = targetProfile.visibility.includes('friends');
+
+    const isFriend = currentFriendStatus === 'friends';
+    const isOrgMember = currentUserProfile?.organization && targetProfile.organization && currentUserProfile.organization === targetProfile.organization;
+
+    const canViewProfile = isCurrentUserProfile || isProfilePublic || (isProfileOrgOnly && isOrgMember) || (isProfileFriendsOnly && isFriend);
+
+    if (!canViewProfile) {
+      return (
+        <div className="text-center space-y-2">
+          <User className="h-8 w-8 text-muted-foreground mx-auto" />
+          <p className="font-bold text-lg">{displayName}</p>
+          <p className="text-sm text-muted-foreground">This profile is private or not visible to you.</p>
+        </div>
+      );
+    }
 
     const targetBio = targetProfile.profile_data?.bio; // Use optional chaining
     const targetIntention = targetProfile.profile_data?.intention; // Use optional chaining

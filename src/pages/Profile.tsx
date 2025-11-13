@@ -43,6 +43,7 @@ type OriginalValuesType = {
   canHelpWithVisibility: ("public" | "friends" | "organisation" | "private")[];
   needHelpWithVisibility: ("public" | "friends" | "organisation" | "private")[];
   pronouns: string | null;
+  profileVisibility: ("public" | "friends" | "organisation" | "private")[]; // NEW: Add profileVisibility
 };
 
 const Profile = () => {
@@ -65,6 +66,8 @@ const Profile = () => {
     setLinkedinVisibility: setContextLinkedinVisibility,
     setCanHelpWithVisibility: setContextCanHelpWithVisibility,
     setNeedHelpWithVisibility: setContextNeedHelpWithVisibility,
+    profileVisibility: contextProfileVisibility, // NEW: Get profileVisibility from context
+    setProfileVisibility: setContextProfileVisibility, // NEW: Get setter from context
   } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -89,6 +92,7 @@ const Profile = () => {
   const [linkedinVisibilityInput, setLinkedinVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
   const [canHelpWithVisibilityInput, setCanHelpWithVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
   const [needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
+  const [profileVisibilityInput, setProfileVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']); // NEW: Add profileVisibilityInput
 
   const [currentPronounIndex, setCurrentPronounIndex] = useState(0);
 
@@ -151,7 +155,7 @@ const Profile = () => {
   const handleLabelClick = useCallback(async (
     currentVisibility: ("public" | "friends" | "organisation" | "private")[],
     visibilitySetter: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>,
-    fieldName: keyof ProfileDataJsonb
+    fieldName: keyof ProfileDataJsonb | 'profileVisibility' // NEW: Allow 'profileVisibility'
   ) => {
     const currentIndex = getIndexFromVisibility(currentVisibility);
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
@@ -160,7 +164,8 @@ const Profile = () => {
     visibilitySetter(newVisibility);
 
     if (areToastsEnabled) {
-      const successMessage = `${getDisplayFieldName(fieldName)} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
+      const fieldDisplayName = fieldName === 'profileVisibility' ? 'Profile Visibility' : getDisplayFieldName(fieldName as keyof ProfileDataJsonb);
+      const successMessage = `${fieldDisplayName} is now ${getDisplayVisibilityStatus(newVisibility)}.`;
       toast.success("Privacy Setting Changed", {
         description: successMessage,
       });
@@ -260,6 +265,7 @@ const Profile = () => {
       setLinkedinVisibilityInput(profile.profile_data?.linkedin_url?.visibility || ['public']);
       setCanHelpWithVisibilityInput(profile.profile_data?.can_help_with?.visibility || ['public']);
       setNeedHelpWithVisibilityInput(profile.profile_data?.need_help_with?.visibility || ['public']);
+      setProfileVisibilityInput(profile.visibility || ['public']); // NEW: Initialize profileVisibilityInput
 
       setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.profile_data?.pronouns?.value || ""));
 
@@ -271,7 +277,7 @@ const Profile = () => {
         needHelpWith: profile.profile_data?.need_help_with?.value || "",
         focusPreference: profile.focus_preference || 50,
         organization: profile.organization || "",
-        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
+        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin.url.value) : "",
         hostCode: profile.host_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
         intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
@@ -279,6 +285,7 @@ const Profile = () => {
         canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
         needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
         pronouns: profile.profile_data?.pronouns?.value || null,
+        profileVisibility: profile.visibility || ['public'], // NEW: Set original profileVisibility
       });
     }
   }, [loading, profile, originalValues]);
@@ -322,11 +329,12 @@ const Profile = () => {
                    JSON.stringify(linkedinVisibilityInput) !== JSON.stringify(originalValues.linkedinVisibility) ||
                    JSON.stringify(canHelpWithVisibilityInput) !== JSON.stringify(originalValues.canHelpWithVisibility) ||
                    JSON.stringify(needHelpWithVisibilityInput) !== JSON.stringify(originalValues.needHelpWithVisibility) ||
-                   (pronounsInput || null) !== originalValues.pronouns;
+                   (pronounsInput || null) !== originalValues.pronouns ||
+                   JSON.stringify(profileVisibilityInput) !== JSON.stringify(originalValues.profileVisibility); // NEW: Compare profileVisibility
     setHasChanges(changed);
   }, [
     originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organizationInput, linkedinUrlInput, hostCodeInput,
-    bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput
+    bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput, profileVisibilityInput
   ]);
 
   // This useEffect will now correctly trigger checkForChanges whenever any editable state changes
@@ -391,6 +399,7 @@ const Profile = () => {
       focus_preference: focusPreferenceInput,
       organization: organizationInput?.trim() === "" ? null : organizationInput?.trim(),
       host_code: trimmedHostCode,
+      visibility: profileVisibilityInput, // NEW: Include profileVisibility
       // Update profile_data fields
       bio: { value: bioInput, visibility: bioVisibilityInput },
       intention: { value: intentionInput, visibility: intentionVisibilityInput },
@@ -418,6 +427,7 @@ const Profile = () => {
     setContextLinkedinVisibility(linkedinVisibilityInput);
     setContextCanHelpWithVisibility(canHelpWithVisibilityInput);
     setContextNeedHelpWithVisibility(needHelpWithVisibilityInput);
+    setContextProfileVisibility(profileVisibilityInput); // NEW: Update context profileVisibility
 
 
     // After successful save, update originalValues to reflect the new saved state
@@ -438,6 +448,7 @@ const Profile = () => {
       canHelpWithVisibility: canHelpWithVisibilityInput,
       needHelpWithVisibility: needHelpWithVisibilityInput,
       pronouns: pronounsInput,
+      profileVisibility: profileVisibilityInput, // NEW: Update original profileVisibility
     });
     setHasChanges(false); // Explicitly set to false after saving
   };
@@ -481,6 +492,7 @@ const Profile = () => {
       setLinkedinVisibilityInput(originalValues.linkedinVisibility);
       setCanHelpWithVisibilityInput(originalValues.canHelpWithVisibility);
       setNeedHelpWithVisibilityInput(originalValues.needHelpWithVisibility);
+      setProfileVisibilityInput(originalValues.profileVisibility); // NEW: Reset profileVisibilityInput
     }
     setHasChanges(false); // Explicitly set to false after cancelling
   }, [originalValues]);

@@ -273,8 +273,6 @@ export type TimerContextType = {
   setBreakNotificationsVibrate: React.Dispatch<React.SetStateAction<boolean>>;
   verificationStandard: 'anyone' | 'phone1' | 'organisation' | 'id1';
   setVerificationStandard: React.Dispatch<React.SetStateAction<'anyone' | 'phone1' | 'organisation' | 'id1'>>;
-  profileVisibility: ('public' | 'friends' | 'organisation' | 'private')[];
-  setProfileVisibility: React.Dispatch<React.SetStateAction<('public' | 'friends' | 'organisation' | 'private')[]>>;
   locationSharing: boolean;
   setLocationSharing: React.Dispatch<React.SetStateAction<boolean>>;
   openSettingsAccordions: string[];
