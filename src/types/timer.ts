@@ -125,6 +125,7 @@ export interface SupabaseSessionData {
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
+  join_code: string | null; // NEW: Add join_code
 }
 
 // Define the structure for the TimerContext value

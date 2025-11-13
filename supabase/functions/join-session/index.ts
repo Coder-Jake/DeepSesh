@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error('SUPABASE_JWT_SECRET is not set in environment variables.');
     }
 
-    let authenticatedUserId: string | null = null; // Renamed to avoid confusion with payload.userId
+    let authenticatedUserId: string | null = null;
     try {
       const { sub } = await verify(token, jwtSecret, 'HS256');
       authenticatedUserId = sub || null;
@@ -66,11 +66,11 @@ serve(async (req) => {
       });
     }
 
-    // Fetch the session using the host_code
+    // Fetch the session using the join_code
     const { data: sessions, error: fetchError } = await supabaseClient
       .from('active_sessions')
-      .select('id, participants_data, is_active, visibility')
-      .eq('host_code', sessionCode)
+      .select('id, participants_data, is_active, visibility, user_id, join_code') // Select join_code and user_id
+      .eq('join_code', sessionCode) // Use join_code
       .eq('is_active', true)
       .limit(1);
 
@@ -91,6 +91,19 @@ serve(async (req) => {
 
     const session = sessions[0];
     const currentParticipants = (session.participants_data || []) as any[];
+
+    // Check session visibility rules
+    if (session.visibility === 'private' && session.user_id !== authenticatedUserId) {
+      // For private sessions, only the host (authenticatedUserId) can use their own join_code.
+      // If a non-host tries to join a private session, deny access.
+      return new Response(JSON.stringify({ error: 'Forbidden: This is a private session.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403,
+      });
+    }
+    // For public sessions, any authenticated user can join using the host's join_code.
+    // The initial query already filtered by join_code, so if we reach here for a public session,
+    // it means the join_code is valid for a public session.
 
     // Check if the user is already a participant
     if (currentParticipants.some(p => p.userId === participantData.userId)) {

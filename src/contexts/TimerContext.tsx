@@ -21,7 +21,7 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user, session } = useAuth(); // MODIFIED: Destructure session from useAuth
-  const { localFirstName, profile, focusPreference: userFocusPreference, hostCode: userHostCode } = useProfile(); // NEW: Get userHostCode from profile
+  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode } = useProfile(); // RENAMED: hostCode to joinCode
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
@@ -434,7 +434,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       visibility: isGlobalPrivate ? 'private' : 'public',
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
-      host_code: userHostCode, // NEW: Include host_code in the update
+      join_code: userJoinCode, // RENAMED: host_code to join_code
     };
 
     try {
@@ -460,7 +460,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, isGlobalPrivate, currentSessionParticipantsData, areToastsEnabled,
-    userHostCode // NEW: Add userHostCode to dependencies
+    userJoinCode // RENAMED: userHostCode to userJoinCode
   ]);
 
   useEffect(() => {
@@ -666,7 +666,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       await resetSchedule();
     }
-  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule, userHostCode, session?.access_token]); // NEW: Add session.access_token to dependencies
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule, userJoinCode, session?.access_token]); // RENAMED: userHostCode to userJoinCode, NEW: Add session.access_token to dependencies
 
   const leaveSession = useCallback(async () => {
     if (!user?.id || !activeSessionRecordId || currentSessionRole === null) {
@@ -897,7 +897,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             location_lat: latitude,
             location_long: longitude,
             participants_data: [hostParticipant],
-            host_code: userHostCode, // NEW: Include host_code from the host's profile
+            join_code: userJoinCode, // RENAMED: host_code to join_code
           })
           .select('id')
           .single();
@@ -920,7 +920,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, isGlobalPrivate, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized,
-    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userHostCode // NEW: Added userHostCode to dependencies
+    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode // RENAMED: userHostCode to userJoinCode
   ]);
 
   const startSchedule = useCallback(async () => {

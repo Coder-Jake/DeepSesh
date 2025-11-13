@@ -29,7 +29,7 @@ export type Profile = {
   organization: string | null;
   focus_preference: number | null;
   updated_at: string | null;
-  host_code: string | null;
+  join_code: string | null; // RENAMED: host_code to join_code
   profile_data: ProfileDataJsonb; // The new JSONB column
   visibility: ("public" | "friends" | "organisation" | "private")[]; // NEW: Add visibility column
 };
@@ -51,7 +51,7 @@ export type ProfileInsert = {
   first_name: string | null;
   last_name: string | null;
   focus_preference: number | null;
-  host_code: string | null;
+  join_code: string | null; // RENAMED: host_code to join_code
   profile_data: ProfileDataJsonb;
   organization?: string | null;
   avatar_url?: string | null;
@@ -62,7 +62,7 @@ export type ProfileInsert = {
 // This function is no longer used client-side for new profile creation,
 // as the Supabase trigger `handle_new_user` calls `public.generate_random_host_code()`.
 // Keeping it here as a placeholder or for potential future client-side use cases.
-export const generateRandomHostCode = () => {
+export const generateRandomJoinCode = () => { // RENAMED: generateRandomHostCode to generateRandomJoinCode
   const randomColor = colors[Math.floor(Math.random() * colors.length)];
   const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
   // Client-side generation, if ever needed, would also apply TitleCase
@@ -76,8 +76,8 @@ interface ProfileContextType {
   updateProfile: (updates: ProfileUpdate, successMessage?: string) => Promise<void>;
   localFirstName: string;
   setLocalFirstName: React.Dispatch<React.SetStateAction<string>>;
-  hostCode: string | null;
-  setHostCode: React.Dispatch<React.SetStateAction<string | null>>;
+  joinCode: string | null; // RENAMED: hostCode to joinCode
+  setJoinCode: React.Dispatch<React.SetStateAction<string | null>>; // RENAMED: setHostCode to setJoinCode
   bio: string | null;
   setBio: React.Dispatch<React.SetStateAction<string | null>>;
   intention: string | null;
@@ -142,7 +142,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [focusPreference, setFocusPreference] = useState(50);
   const [organization, setOrganization] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
-  const [hostCode, setHostCode] = useState<string | null>(null);
+  const [joinCode, setJoinCode] = useState<string | null>(null); // RENAMED: hostCode to joinCode
   const [pronouns, setPronouns] = useState<string | null>(null);
 
   // Visibility settings
@@ -177,7 +177,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const fetchMockProfiles = useCallback(async () => {
     mockProfilesRef.current = [
       {
-        id: "mock-user-id-bezos", first_name: "Sam Altman", last_name: null, avatar_url: null, focus_preference: 20, updated_at: new Date().toISOString(), organization: "OpenAI", host_code: "Goldfish", visibility: ['public'],
+        id: "mock-user-id-bezos", first_name: "Sam Altman", last_name: null, avatar_url: null, focus_preference: 20, updated_at: new Date().toISOString(), organization: "OpenAI", join_code: "Goldfish", visibility: ['public'], // RENAMED
         profile_data: {
           bio: getDefaultProfileDataField("Leading AI research.", ['public']),
           intention: getDefaultProfileDataField("Focusing on AGI.", ['public']),
@@ -188,7 +188,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       },
       {
-        id: "mock-user-id-musk", first_name: "Musk", last_name: null, avatar_url: null, focus_preference: 10, updated_at: new Date().toISOString(), organization: "SpaceX", host_code: "Silverfalcon", visibility: ['public'],
+        id: "mock-user-id-musk", first_name: "Musk", last_name: null, avatar_url: null, focus_preference: 10, updated_at: new Date().toISOString(), organization: "SpaceX", join_code: "Silverfalcon", visibility: ['public'], // RENAMED
         profile_data: {
           bio: getDefaultProfileDataField("Designing rockets.", ['public']),
           intention: getDefaultProfileDataField("Innovating space travel.", ['public']),
@@ -199,7 +199,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       },
       {
-        id: "mock-user-id-freud", first_name: "Freud", last_name: null, avatar_url: null, focus_preference: 60, updated_at: new Date().toISOString(), organization: "Psychology Dept.", host_code: "Tealshark", visibility: ['public'],
+        id: "mock-user-id-freud", first_name: "Freud", last_name: null, avatar_url: null, focus_preference: 60, updated_at: new Date().toISOString(), organization: "Psychology Dept.", join_code: "Tealshark", visibility: ['public'], // RENAMED
         profile_data: {
           bio: getDefaultProfileDataField("Reviewing psychoanalytic theories.", ['public']),
           intention: getDefaultProfileDataField("Unraveling human behavior.", ['public']),
@@ -210,7 +210,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       },
       {
-        id: "mock-user-id-aristotle", first_name: "Aristotle", last_name: null, avatar_url: null, focus_preference: 50, updated_at: new Date().toISOString(), organization: "Ancient Philosophy Guild", host_code: "Redphilosopher", visibility: ['organisation'],
+        id: "mock-user-id-aristotle", first_name: "Aristotle", last_name: null, avatar_url: null, focus_preference: 50, updated_at: new Date().toISOString(), organization: "Ancient Philosophy Guild", join_code: "Redphilosopher", visibility: ['organisation'], // RENAMED
         profile_data: {
           bio: getDefaultProfileDataField("Studying logic.", ['public']),
           intention: getDefaultProfileDataField("Deep work on theories.", ['public']),
@@ -297,7 +297,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
             first_name: user.user_metadata.first_name || "You",
             last_name: null, avatar_url: null, organization: null,
             focus_preference: 50, updated_at: new Date().toISOString(),
-            host_code: generateRandomHostCode(),
+            join_code: generateRandomJoinCode(), // RENAMED: host_code to join_code
             profile_data: defaultProfileData,
             visibility: ['public'], // Default visibility for new profiles
           };
@@ -333,7 +333,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setLocalFirstName(profile.first_name || "You");
       setFocusPreference(profile.focus_preference || 50);
       setOrganization(profile.organization);
-      setHostCode(profile.host_code);
+      setJoinCode(profile.join_code); // RENAMED: setHostCode to setJoinCode
       setProfileVisibility(profile.visibility || ['public']); // NEW: Sync profileVisibility
 
       const pd = profile.profile_data;
@@ -353,7 +353,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setLocalFirstName("You");
       setFocusPreference(50);
       setOrganization(null);
-      setHostCode(null);
+      setJoinCode(null); // RENAMED: setHostCode to setJoinCode
       setProfileVisibility(['public']); // NEW: Reset profileVisibility
       setBio(null);
       setBioVisibility(['public']);
@@ -402,7 +402,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     // Create a new profile object based on current 'profile' and 'updates'
-    const currentProfile = profile || { id: user.id, first_name: "You", focus_preference: 50, host_code: generateRandomHostCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'] } as Profile;
+    const currentProfile = profile || { id: user.id, first_name: "You", focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'] } as Profile; // RENAMED: host_code to join_code
 
     const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
 
@@ -483,7 +483,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       organization: null,
       focus_preference: 50,
       updated_at: new Date().toISOString(),
-      host_code: null,
+      join_code: null, // RENAMED: host_code to join_code
       profile_data: defaultProfileData,
       visibility: ['private'], // Default to private for unknown public profiles
     };
@@ -538,8 +538,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     updateProfile,
     localFirstName,
     setLocalFirstName,
-    hostCode,
-    setHostCode,
+    joinCode, // RENAMED: hostCode to joinCode
+    setJoinCode, // RENAMED: setHostCode to setJoinCode
     bio,
     setBio,
     intention,
@@ -576,7 +576,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     profileVisibility, // NEW: Provide profileVisibility
     setProfileVisibility, // NEW: Provide setProfileVisibility
   }), [
-    profile, loading, authLoading, updateProfile, localFirstName, setLocalFirstName, hostCode, setHostCode,
+    profile, loading, authLoading, updateProfile, localFirstName, setLocalFirstName, joinCode, setJoinCode, // RENAMED
     bio, setBio, intention, setIntention, canHelpWith, setCanHelpWith, needHelpWith, setNeedHelpWith,
     focusPreference, setFocusPreference, organization, setOrganization, linkedinUrl, setLinkedinUrl,
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,

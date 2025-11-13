@@ -36,7 +36,7 @@ type OriginalValuesType = {
   focusPreference: number;
   organization: string;
   linkedinUrl: string; // raw username part
-  hostCode: string;
+  joinCode: string; // RENAMED: hostCode to joinCode
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
   intentionVisibility: ("public" | "friends" | "organisation" | "private")[];
   linkedinVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -59,7 +59,7 @@ const Profile = () => {
     setFocusPreference: setContextFocusPreference,
     setOrganization: setContextOrganization,
     setLinkedinUrl: setContextLinkedinUrl,
-    setHostCode: setContextHostCode,
+    setJoinCode: setContextJoinCode, // RENAMED: setHostCode to setJoinCode
     setPronouns: setContextPronouns,
     setBioVisibility: setContextBioVisibility,
     setIntentionVisibility: setContextIntentionVisibility,
@@ -83,7 +83,7 @@ const Profile = () => {
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
   const [organizationInput, setOrganizationInput] = useState<string | null>(null);
   const [linkedinUrlInput, setLinkedinUrlInput] = useState<string | null>(null); // Stores username part
-  const [hostCodeInput, setHostCodeInput] = useState<string | null>(null);
+  const [joinCodeInput, setJoinCodeInput] = useState<string | null>(null); // RENAMED: hostCodeInput to joinCodeInput
   const [pronounsInput, setPronounsInput] = useState<string | null>(null);
 
   // Local states for visibility settings
@@ -96,8 +96,8 @@ const Profile = () => {
 
   const [currentPronounIndex, setCurrentPronounIndex] = useState(0);
 
-  const [isEditingHostCode, setIsEditingHostCode] = useState(false);
-  const hostCodeInputRef = useRef<HTMLInputElement>(null);
+  const [isEditingJoinCode, setIsEditingJoinCode] = useState(false); // RENAMED: isEditingHostCode to isEditingJoinCode
+  const joinCodeInputRef = useRef<HTMLInputElement>(null); // RENAMED: hostCodeInputRef to joinCodeInputRef
   const [isCopied, setIsCopied] = useState(false);
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -305,7 +305,7 @@ const Profile = () => {
       setFocusPreferenceInput(profile.focus_preference || 50);
       setOrganizationInput(profile.organization);
       setLinkedinUrlInput(profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : null);
-      setHostCodeInput(profile.host_code);
+      setJoinCodeInput(profile.join_code); // RENAMED: setHostCodeInput to setJoinCodeInput
       setPronounsInput(profile.profile_data?.pronouns?.value || null);
 
       setBioVisibilityInput(profile.profile_data?.bio?.visibility || ['public']);
@@ -326,7 +326,7 @@ const Profile = () => {
         focusPreference: profile.focus_preference || 50,
         organization: profile.organization || "",
         linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
-        hostCode: profile.host_code || "",
+        joinCode: profile.join_code || "", // RENAMED: hostCode to joinCode
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
         intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
         linkedinVisibility: profile.profile_data?.linkedin_url?.visibility || ['public'],
@@ -346,11 +346,11 @@ const Profile = () => {
   }, [isEditingFirstName]);
 
   useEffect(() => {
-    if (isEditingHostCode && hostCodeInputRef.current) {
-      hostCodeInputRef.current.focus();
-      hostCodeInputRef.current.select();
+    if (isEditingJoinCode && joinCodeInputRef.current) { // RENAMED
+      joinCodeInputRef.current.focus();
+      joinCodeInputRef.current.select();
     }
-  }, [isEditingHostCode]);
+  }, [isEditingJoinCode]); // RENAMED
 
   // This useCallback now correctly compares current local states with the initial originalValues snapshot
   const checkForChanges = useCallback(() => {
@@ -371,7 +371,7 @@ const Profile = () => {
                    focusPreferenceInput !== originalValues.focusPreference ||
                    (organizationInput || "") !== originalValues.organization ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
-                   (hostCodeInput || "") !== originalValues.hostCode ||
+                   (joinCodeInput || "") !== originalValues.joinCode || // RENAMED
                    JSON.stringify(bioVisibilityInput) !== JSON.stringify(originalValues.bioVisibility) ||
                    JSON.stringify(intentionVisibilityInput) !== JSON.stringify(originalValues.intentionVisibility) ||
                    JSON.stringify(linkedinVisibilityInput) !== JSON.stringify(originalValues.linkedinVisibility) ||
@@ -381,7 +381,7 @@ const Profile = () => {
                    JSON.stringify(profileVisibilityInput) !== JSON.stringify(originalValues.profileVisibility);
     setHasChanges(changed);
   }, [
-    originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organizationInput, linkedinUrlInput, hostCodeInput,
+    originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organizationInput, linkedinUrlInput, joinCodeInput, // RENAMED
     bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput, profileVisibilityInput
   ]);
 
@@ -390,20 +390,20 @@ const Profile = () => {
     checkForChanges();
   }, [checkForChanges]); // Dependency on checkForChanges ensures it runs when its internal dependencies change
 
-  const handleHostCodeClick = () => {
-    setIsEditingHostCode(true);
+  const handleJoinCodeClick = () => { // RENAMED
+    setIsEditingJoinCode(true); // RENAMED
   };
 
-  const handleHostCodeInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleJoinCodeInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => { // RENAMED
     if (e.key === 'Enter') {
-      setIsEditingHostCode(false);
+      setIsEditingJoinCode(false); // RENAMED
       e.currentTarget.blur();
       // No direct save here, will be handled by global save
     }
   };
 
-  const handleHostCodeInputBlur = async () => {
-    setIsEditingHostCode(false);
+  const handleJoinCodeInputBlur = async () => { // RENAMED
+    setIsEditingJoinCode(false); // RENAMED
     // No direct save here, will be handled by global save
   };
 
@@ -432,11 +432,11 @@ const Profile = () => {
   const handleSave = async () => {
     const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
 
-    const trimmedHostCode = hostCodeInput?.trim() || "";
-    if (trimmedHostCode.length < 4 || trimmedHostCode.length > 20) {
+    const trimmedJoinCode = joinCodeInput?.trim() || ""; // RENAMED
+    if (trimmedJoinCode.length < 4 || trimmedJoinCode.length > 20) {
       if (areToastsEnabled) {
-        toast.error("Invalid Host Code", {
-          description: "Host code must be between 4 and 20 characters. Please correct it before saving.",
+        toast.error("Invalid Join Code", { // RENAMED
+          description: "Join code must be between 4 and 20 characters. Please correct it before saving.", // RENAMED
         });
       }
       return;
@@ -446,7 +446,7 @@ const Profile = () => {
       first_name: nameToSave,
       focus_preference: focusPreferenceInput,
       organization: organizationInput?.trim() === "" ? null : organizationInput?.trim(),
-      host_code: trimmedHostCode,
+      join_code: trimmedJoinCode, // RENAMED
       visibility: profileVisibilityInput,
       // Update profile_data fields
       bio: { value: bioInput, visibility: bioVisibilityInput },
@@ -468,7 +468,7 @@ const Profile = () => {
     setContextFocusPreference(focusPreferenceInput);
     setContextOrganization(organizationInput);
     setContextLinkedinUrl(linkedinUrlInput);
-    setContextHostCode(hostCodeInput);
+    setContextJoinCode(joinCodeInput); // RENAMED
     setContextPronouns(pronounsInput);
     setContextBioVisibility(bioVisibilityInput);
     setContextIntentionVisibility(intentionVisibilityInput);
@@ -489,7 +489,7 @@ const Profile = () => {
       focusPreference: focusPreferenceInput,
       organization: organizationInput || "",
       linkedinUrl: linkedinUrlInput ? (linkedinUrlInput.startsWith("https://www.linkedin.com/in/") ? linkedinUrlInput.substring("https://www.linkedin.com/in/".length) : linkedinUrlInput) : "",
-      hostCode: trimmedHostCode,
+      joinCode: trimmedJoinCode, // RENAMED
       bioVisibility: bioVisibilityInput,
       intentionVisibility: intentionVisibilityInput,
       linkedinVisibility: linkedinVisibilityInput,
@@ -501,25 +501,25 @@ const Profile = () => {
     setHasChanges(false); // Explicitly set to false after saving
   };
 
-  const handleCopyHostCode = useCallback(async () => {
+  const handleCopyJoinCode = useCallback(async () => { // RENAMED
     try {
-      await navigator.clipboard.writeText(hostCodeInput || "");
+      await navigator.clipboard.writeText(joinCodeInput || ""); // RENAMED
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 3000);
       if (areToastsEnabled) {
         toast.success("Copied to clipboard!", {
-          description: "Your host code has been copied.",
+          description: "Your join code has been copied.", // RENAMED
         });
       }
     } catch (err) {
-      console.error('Failed to copy host code: ', err);
+      console.error('Failed to copy join code: ', err); // RENAMED
       if (areToastsEnabled) {
         toast.error("Copy Failed", {
-          description: "Could not copy host code. Please try again.",
+          description: "Could not copy join code. Please try again.", // RENAMED
         });
     }
     }
-  }, [hostCodeInput, areToastsEnabled]);
+  }, [joinCodeInput, areToastsEnabled]); // RENAMED
 
   const handleCancel = useCallback(() => {
     if (originalValues) {
@@ -531,7 +531,7 @@ const Profile = () => {
       setFocusPreferenceInput(originalValues.focusPreference);
       setOrganizationInput(originalValues.organization === "" ? null : originalValues.organization);
       setLinkedinUrlInput(originalValues.linkedinUrl === "" ? null : originalValues.linkedinUrl);
-      setHostCodeInput(originalValues.hostCode === "" ? null : originalValues.hostCode);
+      setJoinCodeInput(originalValues.joinCode === "" ? null : originalValues.joinCode); // RENAMED
       setPronounsInput(originalValues.pronouns);
       setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(originalValues.pronouns || ""));
 
@@ -854,12 +854,12 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Hosting Code section */}
+              {/* Join Code section */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold mb-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="cursor-help">Hosting Code</span>
+                        <span className="cursor-help">Join Code</span> {/* RENAMED */}
                       </TooltipTrigger>
                       <TooltipContent className="select-none">
                         <p>Others can use this code to join your sessions.</p>
@@ -867,14 +867,14 @@ const Profile = () => {
                     </Tooltip>
                 </h3>
                 <div className="flex items-center gap-2">
-                  {isEditingHostCode ? (
+                  {isEditingJoinCode ? ( {/* RENAMED */}
                     <Input
-                      ref={hostCodeInputRef}
-                      value={hostCodeInput || ""}
-                      onChange={(e) => { e.stopPropagation(); setHostCodeInput(e.target.value); }}
-                      onKeyDown={handleHostCodeInputKeyDown}
-                      onBlur={handleHostCodeInputBlur}
-                      placeholder="yourhostcode"
+                      ref={joinCodeInputRef} // RENAMED
+                      value={joinCodeInput || ""} // RENAMED
+                      onChange={(e) => { e.stopPropagation(); setJoinCodeInput(e.target.value); }} // RENAMED
+                      onKeyDown={handleJoinCodeInputKeyDown} // RENAMED
+                      onBlur={handleJoinCodeInputBlur} // RENAMED
+                      placeholder="yourjoincode" {/* RENAMED */}
                       className="text-lg font-semibold h-auto py-1 px-2 italic flex-grow"
                       minLength={4}
                       maxLength={20}
@@ -885,18 +885,18 @@ const Profile = () => {
                         "text-lg font-semibold flex-grow select-none",
                         // Removed: "text-foreground cursor-pointer hover:text-primary"
                       )}
-                      onClick={handleHostCodeClick}
+                      onClick={handleJoinCodeClick} // RENAMED
                     >
-                      {hostCodeInput}
+                      {joinCodeInput} {/* RENAMED */}
                     </span>
                   )}
-                  {!isEditingHostCode && (
+                  {!isEditingJoinCode && ( {/* RENAMED */}
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={handleCopyHostCode}
+                      onClick={handleCopyJoinCode} // RENAMED
                       className="text-muted-foreground hover:text-foreground"
-                      aria-label="Copy host code"
+                      aria-label="Copy join code" {/* RENAMED */}
                     >
                       <Clipboard size={16} className={cn(isCopied ? "text-green-500" : "text-muted-foreground")} />
                     </Button>

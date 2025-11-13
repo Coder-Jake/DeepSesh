@@ -94,7 +94,7 @@ interface SupabaseSessionData {
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
-  host_code: string | null; // NEW: Add host_code
+  join_code: string | null; // NEW: Add join_code
 }
 
 const now = new Date();
@@ -326,7 +326,7 @@ const Index = () => {
     remainingTimeAtPause, // ADDED: Destructure remainingTimeAtPause
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, hostCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility } = useProfile(); // NEW: Get profileVisibility from useProfile
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility } = useProfile(); // RENAMED: hostCode to joinCode, NEW: Get profileVisibility from useProfile
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
@@ -377,9 +377,9 @@ const Index = () => {
   // NEW: Effect to sync discoveryDisplayName with localFirstName when dialog opens
   useEffect(() => {
     if (isDiscoverySetupOpen) {
-      setDiscoveryDisplayName(localFirstName === "You" ? (hostCode || "") : (localFirstName || hostCode || ""));
+      setDiscoveryDisplayName(localFirstName === "You" ? (joinCode || "") : (localFirstName || joinCode || "")); // RENAMED: hostCode to joinCode
     }
-  }, [isDiscoverySetupOpen, localFirstName, hostCode]);
+  }, [isDiscoverySetupOpen, localFirstName, joinCode]); // RENAMED: hostCode to joinCode
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
@@ -561,7 +561,7 @@ const Index = () => {
             location_lat: latitude,
             location_long: longitude,
             participants_data: [hostParticipant],
-            host_code: hostCode, // NEW: Include host_code from the host's profile
+            join_code: joinCode, // RENAMED: host_code to join_code
           })
           .select('id')
           .single();
@@ -1228,16 +1228,16 @@ const Index = () => {
   };
 
   const handleShareLink = useCallback(async () => {
-    if (!hostCode) {
+    if (!joinCode) { // RENAMED: hostCode to joinCode
       if (areToastsEnabled) {
-        toast.error("Host Code Missing", {
-          description: "Your host code is not available. Please check your profile settings.",
+        toast.error("Join Code Missing", { // RENAMED
+          description: "Your join code is not available. Please check your profile settings.", // RENAMED
         });
       }
       return;
     }
 
-    const shareUrl = `${window.location.origin}/?joinCode=${hostCode}`;
+    const shareUrl = `${window.location.origin}/?joinCode=${joinCode}`; // RENAMED: hostCode to joinCode
     try {
       await navigator.clipboard.writeText(shareUrl);
       setIsLinkCopied(true);
@@ -1256,7 +1256,7 @@ const Index = () => {
         });
       }
     }
-  }, [hostCode, areToastsEnabled]);
+  }, [joinCode, areToastsEnabled]); // RENAMED: hostCode to joinCode
 
   const handleActivateDiscovery = async () => {
     const trimmedDisplayName = discoveryDisplayName.trim();
