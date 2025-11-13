@@ -46,7 +46,7 @@ const Vibes = () => {
               DeepSesh makes it simple to share expectations and establish boundaries
             </p>
             <p>
-              Your <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> help indicate your sociability to create aligned coworking.
+              <Link to="/profile" className="text-blue-500 hover:underline">Focus Preferences</Link> help indicate your sociability to create aligned coworking.
             </p>
           </CardContent>
         </Card>
