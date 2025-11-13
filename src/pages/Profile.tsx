@@ -867,7 +867,7 @@ const Profile = () => {
                     </Tooltip>
                 </h3>
                 <div className="flex items-center gap-2">
-                  {isEditingJoinCode ? ( {/* RENAMED */}
+                  {isEditingJoinCode ? ( // RENAMED
                     <Input
                       ref={joinCodeInputRef} // RENAMED
                       value={joinCodeInput || ""} // RENAMED
@@ -890,7 +890,7 @@ const Profile = () => {
                       {joinCodeInput} {/* RENAMED */}
                     </span>
                   )}
-                  {!isEditingJoinCode && ( {/* RENAMED */}
+                  {!isEditingJoinCode && ( // RENAMED
                     <Button
                       variant="ghost"
                       size="icon"
