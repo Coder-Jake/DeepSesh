@@ -304,6 +304,7 @@ const Index = () => {
     currentSessionHostName,
     setCurrentSessionHostName, // Destructure setCurrentSessionHostName
     currentSessionOtherParticipants,
+    setCurrentSessionOtherParticipants,
     currentSessionParticipantsData,
     setCurrentSessionParticipantsData,
 
@@ -553,8 +554,8 @@ const Index = () => {
       joinTime: Date.now(),
       role: 'host',
       focusPreference: focusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || undefined,
-      bio: profile?.profile_data?.bio?.value || undefined,
+      intention: profile?.profile_data?.intention?.value || null, // Changed undefined to null
+      bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
     };
 
     setCurrentSessionRole('host');
@@ -807,8 +808,8 @@ const Index = () => {
             userId: user?.id || `anon-${crypto.randomUUID()}`,
             userName: localFirstName,
             focusPreference: focusPreference || 50,
-            intention: profile?.profile_data?.intention?.value || undefined,
-            bio: profile?.profile_data?.bio?.value || undefined,
+            intention: profile?.profile_data?.intention?.value || null, // Changed undefined to null
+            bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
           },
         }),
         headers: {

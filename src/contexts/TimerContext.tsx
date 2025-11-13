@@ -855,8 +855,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       joinTime: Date.now(),
       role: 'host',
       focusPreference: userFocusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || undefined,
-      bio: profile?.profile_data?.bio?.value || undefined,
+      intention: profile?.profile_data?.intention?.value || null, // Changed undefined to null
+      bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
     };
     setCurrentSessionParticipantsData([hostParticipant]);
     setCurrentSessionRole('host');
@@ -1138,8 +1138,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       joinTime: Date.now(),
       role: 'coworker',
       focusPreference: userFocusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || undefined,
-      bio: profile?.profile_data?.bio?.value || undefined,
+      intention: profile?.profile_data?.intention?.value || null, // Changed undefined to null
+      bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
     };
 
     try {
