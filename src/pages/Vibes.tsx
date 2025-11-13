@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck, Brain } from 'lucide-react'; // Added Brain icon for Autonomy
+import { Users, Handshake, Lightbulb, Settings, User, MessageSquare, Globe, Lock, Building2, ShieldCheck, Brain, Shield } from 'lucide-react'; // Added Shield icon for Privacy
 
 const Vibes = () => {
   return (
@@ -16,32 +16,26 @@ const Vibes = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* New Card: Autonomy */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"> {/* Changed to 2 columns for large screens for a 2x2 layout */}
+        {/* Card: Autonomy */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5" /> {/* New icon for Autonomy */}
+              <Brain className="h-5 w-5" />
               Autonomy
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              The foundation for DeepSesh's success is its users' intrinsic motivation to get things done. We believe in empowering you to control your personal space and information.
+              The foundation for DeepSesh's success is its users' intrinsic motivation to get things done. We believe in empowering self-discipline in this cutthroat attention economy.
             </p>
             <p>
-              Use the <Link to="/settings" className="text-blue-500 hover:underline">Privacy settings</Link> to control who sees your profile details, ensuring you share only what you're comfortable with.
+              DeepSesh provides tools to help you manage your focus and breaks, giving you control over your productivity journey.
             </p>
-            <ul className="list-disc list-inside ml-4 space-y-1">
-              <li><Globe className="inline-block h-4 w-4 mr-1 text-green-600" /> Public: Share broadly.</li>
-              <li><Users className="inline-block h-4 w-4 mr-1 text-blue-500" /> Friends Only: Connect with trusted peers.</li>
-              <li><Building2 className="inline-block h-4 w-4 mr-1 text-red-500" /> Organisation Only: Collaborate within your team.</li>
-              <li><Lock className="inline-block h-4 w-4 mr-1 text-gray-500" /> Private: Keep details to yourself.</li>
-            </ul>
           </CardContent>
         </Card>
 
-        {/* Existing Card: Respect */}
+        {/* Card: Respect */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -59,7 +53,7 @@ const Vibes = () => {
           </CardContent>
         </Card>
 
-        {/* Existing Card: Collaboration */}
+        {/* Card: Collaboration */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -80,6 +74,30 @@ const Vibes = () => {
             <p>
               Don't hesitate to use the <Link to="/" className="text-blue-500 hover:underline">Ask menu</Link> during sessions to suggest extending a timer or create a poll for group decisions.
             </p>
+          </CardContent>
+        </Card>
+
+        {/* New Card: Privacy */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" /> {/* New icon for Privacy */}
+              Privacy
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              Your data privacy is paramount. You have full control over the information you share, and your data is never commodified.
+            </p>
+            <p>
+              Use the <Link to="/settings" className="text-blue-500 hover:underline">Privacy settings</Link> to control who sees your profile details, ensuring you share only what you're comfortable with.
+            </p>
+            <ul className="list-disc list-inside ml-4 space-y-1">
+              <li><Globe className="inline-block h-4 w-4 mr-1 text-green-600" /> Public: Share broadly.</li>
+              <li><Users className="inline-block h-4 w-4 mr-1 text-blue-500" /> Friends Only: Connect with trusted peers.</li>
+              <li><Building2 className="inline-block h-4 w-4 mr-1 text-red-500" /> Organisation Only: Collaborate within your team.</li>
+              <li><Lock className="inline-block h-4 w-4 mr-1 text-gray-500" /> Private: Keep details to yourself.</li>
+            </ul>
           </CardContent>
         </Card>
       </div>
