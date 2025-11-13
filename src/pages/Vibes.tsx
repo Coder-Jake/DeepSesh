@@ -27,7 +27,9 @@ const Vibes = () => {
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              The foundation for DeepSesh's success is its users' intrinsic motivation to get things done. DeepSesh is your tool to strengthen productivity in this cutthroat attention economy.
+              The foundation for DeepSesh's success is its users' intrinsic motivation to get things done.
+              
+              DeepSesh is your tool to strengthen productivity in this cutthroat attention economy.
             </p>
           </CardContent>
         </Card>
