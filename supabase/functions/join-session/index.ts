@@ -27,14 +27,16 @@ serve(async (req) => {
       throw new Error('SUPABASE_JWT_SECRET is not set in environment variables.');
     }
 
-    let userId: string | null = null;
+    let authenticatedUserId: string | null = null; // Renamed to avoid confusion with payload.userId
     try {
       const { sub } = await verify(token, jwtSecret, 'HS256');
-      userId = sub || null;
+      authenticatedUserId = sub || null;
     } catch (jwtError) {
       console.warn('JWT verification failed:', jwtError.message);
-      // Allow anonymous users to proceed if userId is null, but still require a token
-      // If the user is truly anonymous, userId will remain null.
+      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid JWT' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
     }
 
     const supabaseClient = createClient(
@@ -53,6 +55,14 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Missing sessionCode or participantData' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
+      });
+    }
+
+    // SECURITY FIX: Ensure the userId in participantData matches the authenticated user
+    if (authenticatedUserId !== participantData.userId) {
+      return new Response(JSON.stringify({ error: 'Forbidden: Participant ID mismatch with authenticated user' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403,
       });
     }
 

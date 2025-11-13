@@ -40,7 +40,6 @@ import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordio
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -331,7 +330,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
-  const { user } = useAuth();
+  const { user, session } = useAuth(); // MODIFIED: Destructure session from useAuth
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
@@ -788,7 +787,7 @@ const Index = () => {
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.id}`, // Use user's JWT for authentication
+          'Authorization': `Bearer ${session?.access_token}`, // MODIFIED: Use session.access_token
         },
       });
 

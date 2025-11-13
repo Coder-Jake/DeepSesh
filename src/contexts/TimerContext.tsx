@@ -20,7 +20,7 @@ interface TimerProviderProps {
 }
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
-  const { user } = useAuth();
+  const { user, session } = useAuth(); // MODIFIED: Destructure session from useAuth
   const { localFirstName, profile, focusPreference: userFocusPreference, hostCode: userHostCode } = useProfile(); // NEW: Get userHostCode from profile
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
@@ -627,7 +627,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           }),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.id}`, // Use user's JWT for authentication
+            'Authorization': `Bearer ${session?.access_token}`, // MODIFIED: Use session.access_token
           },
         });
 
@@ -666,7 +666,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       await resetSchedule();
     }
-  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule, userHostCode]); // NEW: Add userHostCode to dependencies
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule, userHostCode, session?.access_token]); // NEW: Add session.access_token to dependencies
 
   const leaveSession = useCallback(async () => {
     if (!user?.id || !activeSessionRecordId || currentSessionRole === null) {
@@ -690,7 +690,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.id}`, // Use user's JWT for authentication
+          'Authorization': `Bearer ${session?.access_token}`, // MODIFIED: Use session.access_token
         },
       });
 
@@ -712,7 +712,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     } finally {
       resetSessionStates();
     }
-  }, [user?.id, activeSessionRecordId, currentSessionRole, areToastsEnabled, resetSessionStates, transferHostRole]);
+  }, [user?.id, activeSessionRecordId, currentSessionRole, areToastsEnabled, resetSessionStates, transferHostRole, session?.access_token]); // NEW: Add session.access_token to dependencies
 
   const stopTimer = useCallback(async (confirmPrompt: boolean, isLongPress: boolean) => { // MODIFIED: Added isLongPress argument
     if (currentSessionRole === 'host') {
@@ -1150,7 +1150,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.id}`, // Use user's JWT for authentication
+          'Authorization': `Bearer ${session?.access_token}`, // MODIFIED: Use session.access_token
         },
       });
 
@@ -1187,7 +1187,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
     setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, _defaultBreakMinutes, _defaultFocusMinutes,
-    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds
+    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds, session?.access_token
   ]);
 
   // NEW: Main timer countdown effect
@@ -1381,7 +1381,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.id}`,
+          'Authorization': `Bearer ${session?.access_token}`, // MODIFIED: Use session.access_token
         },
       });
 
@@ -1402,7 +1402,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         });
       }
     }
-  }, [user?.id, activeSessionRecordId, areToastsEnabled, setActiveAsks]);
+  }, [user?.id, activeSessionRecordId, areToastsEnabled, setActiveAsks, session?.access_token]); // NEW: Add session.access_token to dependencies
 
   const updateAsk = useCallback(async (updatedAsk: ActiveAskItem) => {
     if (!user?.id || !activeSessionRecordId) {
@@ -1423,7 +1423,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.id}`,
+          'Authorization': `Bearer ${session?.access_token}`, // MODIFIED: Use session.access_token
         },
       });
 
@@ -1444,7 +1444,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         });
       }
     }
-  }, [user?.id, activeSessionRecordId, areToastsEnabled, setActiveAsks]);
+  }, [user?.id, activeSessionRecordId, areToastsEnabled, setActiveAsks, session?.access_token]); // NEW: Add session.access_token to dependencies
 
   useEffect(() => {
     const checkAndCommenceSchedules = () => {

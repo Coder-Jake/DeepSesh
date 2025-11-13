@@ -27,10 +27,10 @@ serve(async (req) => {
       throw new Error('SUPABASE_JWT_SECRET is not set in environment variables.');
     }
 
-    let userId: string | null = null;
+    let authenticatedUserId: string | null = null; // Renamed to avoid confusion with payload.userId
     try {
       const { sub } = await verify(token, jwtSecret, 'HS256');
-      userId = sub || null;
+      authenticatedUserId = sub || null;
     } catch (jwtError) {
       console.warn('JWT verification failed:', jwtError.message);
       return new Response(JSON.stringify({ error: 'Unauthorized: Invalid JWT' }), {
@@ -84,10 +84,10 @@ serve(async (req) => {
     let updatedAsks = (session.active_asks || []) as any[];
     let newHostId = session.user_id;
     let newHostName = session.host_name;
-    let newHostCode = session.host_code; // Keep track of host_code
+    const originalHostCode = session.host_code; // Store original host_code
 
-    const isHost = session.user_id === userId;
-    const isParticipant = updatedParticipants.some(p => p.userId === userId);
+    const isHost = session.user_id === authenticatedUserId; // Use authenticatedUserId
+    const isParticipant = updatedParticipants.some(p => p.userId === authenticatedUserId); // Use authenticatedUserId
 
     if (!isHost && !isParticipant) {
       return new Response(JSON.stringify({ error: 'Forbidden: Not a participant or host of this session' }), {
@@ -98,6 +98,7 @@ serve(async (req) => {
 
     switch (actionType) {
       case 'vote_extend': {
+        // SECURITY FIX: Only allow authenticated user to vote for themselves
         if (!isParticipant) {
           return new Response(JSON.stringify({ error: 'Forbidden: Only participants can vote' }), { status: 403, headers: corsHeaders });
         }
@@ -109,10 +110,10 @@ serve(async (req) => {
         }
 
         let currentAsk = updatedAsks[askIndex];
-        let updatedVotes = currentAsk.votes.filter((v: any) => v.userId !== userId);
+        let updatedVotes = currentAsk.votes.filter((v: any) => v.userId !== authenticatedUserId); // Use authenticatedUserId
 
         if (voteType !== null) {
-          updatedVotes.push({ userId: userId, vote: voteType });
+          updatedVotes.push({ userId: authenticatedUserId, vote: voteType }); // Use authenticatedUserId
         }
         currentAsk.votes = updatedVotes;
 
@@ -134,6 +135,7 @@ serve(async (req) => {
         break;
       }
       case 'vote_poll': {
+        // SECURITY FIX: Only allow authenticated user to vote for themselves
         if (!isParticipant) {
           return new Response(JSON.stringify({ error: 'Forbidden: Only participants can vote' }), { status: 403, headers: corsHeaders });
         }
@@ -150,7 +152,7 @@ serve(async (req) => {
         let userCustomOptionId: string | null = null;
 
         const existingUserCustomOption = currentPoll.options.find(
-          (opt: any) => opt.id.startsWith('custom-') && opt.votes.some((vote: any) => vote.userId === userId)
+          (opt: any) => opt.id.startsWith('custom-') && opt.votes.some((vote: any) => vote.userId === authenticatedUserId) // Use authenticatedUserId
         );
 
         if (trimmedCustomText && isCustomOptionSelected) {
@@ -180,9 +182,9 @@ serve(async (req) => {
         }
 
         currentPoll.options = currentPoll.options.map((option: any) => {
-          let newVotes = option.votes.filter((v: any) => v.userId !== userId);
+          let newVotes = option.votes.filter((v: any) => v.userId !== authenticatedUserId); // Use authenticatedUserId
           if (finalOptionIdsToVote.includes(option.id)) {
-            newVotes.push({ userId: userId });
+            newVotes.push({ userId: authenticatedUserId }); // Use authenticatedUserId
           }
           return { ...option, votes: newVotes };
         });
@@ -195,26 +197,27 @@ serve(async (req) => {
         break;
       }
       case 'add_ask': {
+        // SECURITY FIX: Only allow authenticated user to add asks, and ensure creatorId matches
         if (!isParticipant) { // Only participants can add asks
           return new Response(JSON.stringify({ error: 'Forbidden: Only participants can add asks' }), { status: 403, headers: corsHeaders });
         }
         const newAsk = payload.ask;
-        if (!newAsk || !newAsk.id || !newAsk.creator) {
+        if (!newAsk || !newAsk.id || !newAsk.creatorId) { // Check for creatorId
           return new Response(JSON.stringify({ error: 'Invalid ask payload' }), { status: 400, headers: corsHeaders });
         }
-        // Ensure the creator matches the authenticated user
-        if (newAsk.creatorId !== userId) {
+        if (newAsk.creatorId !== authenticatedUserId) { // Ensure creatorId matches authenticated user
           return new Response(JSON.stringify({ error: 'Forbidden: Creator ID mismatch' }), { status: 403, headers: corsHeaders });
         }
         updatedAsks.push(newAsk);
         break;
       }
       case 'update_ask': {
+        // SECURITY FIX: Only allow authenticated user to update asks they created, or host for status changes
         if (!isParticipant) { // Only participants can update asks they created
           return new Response(JSON.stringify({ error: 'Forbidden: Only participants can update asks' }), { status: 403, headers: corsHeaders });
         }
         const updatedAsk = payload.ask;
-        if (!updatedAsk || !updatedAsk.id) {
+        if (!updatedAsk || !updatedAsk.id || !updatedAsk.creatorId) { // Check for creatorId
           return new Response(JSON.stringify({ error: 'Invalid updated ask payload' }), { status: 400, headers: corsHeaders });
         }
         const askIndex = updatedAsks.findIndex((ask: any) => ask.id === updatedAsk.id);
@@ -223,15 +226,16 @@ serve(async (req) => {
         }
         // Ensure the user updating is the creator of the ask, or the host for status changes
         const existingAsk = updatedAsks[askIndex];
-        if (existingAsk.creatorId !== userId && !isHost) {
+        if (existingAsk.creatorId !== authenticatedUserId && !isHost) { // Use authenticatedUserId
              return new Response(JSON.stringify({ error: 'Forbidden: Not the creator of the ask or host' }), { status: 403, headers: corsHeaders });
         }
         updatedAsks[askIndex] = updatedAsk;
         break;
       }
       case 'update_participant_profile': {
+        // SECURITY FIX: Only allow authenticated user to update their own participant data
         const { participantId, updates } = payload;
-        if (participantId !== userId) {
+        if (participantId !== authenticatedUserId) { // Use authenticatedUserId
           return new Response(JSON.stringify({ error: 'Forbidden: Cannot update another user\'s profile data' }), { status: 403, headers: corsHeaders });
         }
         const participantIndex = updatedParticipants.findIndex((p: any) => p.userId === participantId);
@@ -242,6 +246,7 @@ serve(async (req) => {
         break;
       }
       case 'transfer_host': {
+        // SECURITY FIX: Only allow the current host to transfer host role
         if (!isHost) {
           return new Response(JSON.stringify({ error: 'Forbidden: Only the host can transfer host role' }), { status: 403, headers: corsHeaders });
         }
@@ -252,7 +257,7 @@ serve(async (req) => {
         }
 
         updatedParticipants = updatedParticipants.map((p: any) => {
-          if (p.userId === userId) { // Current host becomes coworker
+          if (p.userId === authenticatedUserId) { // Current host becomes coworker (authenticatedUserId)
             return { ...p, role: 'coworker' };
           }
           if (p.userId === newHostId) { // New host
@@ -262,20 +267,22 @@ serve(async (req) => {
         });
         newHostId = newHostId;
         newHostName = newHostName;
-        newHostCode = newHostId === userId ? session.host_code : null; // Only keep host_code if current user is new host
+        // SECURITY FIX: host_code should remain the original host_code of the session, not change with host transfer
+        // The host_code identifies the session, not the host.
         break;
       }
       case 'leave_session': {
+        // SECURITY FIX: Only allow authenticated user to leave the session
         if (!isParticipant) {
           return new Response(JSON.stringify({ error: 'Forbidden: Not a participant of this session' }), { status: 403, headers: corsHeaders });
         }
         if (isHost) {
           // If host leaves, transfer role or end session
-          const otherCoworkers = updatedParticipants.filter((p: any) => p.role === 'coworker' && p.userId !== userId);
+          const otherCoworkers = updatedParticipants.filter((p: any) => p.role === 'coworker' && p.userId !== authenticatedUserId); // Use authenticatedUserId
           if (otherCoworkers.length > 0) {
             const newHost = otherCoworkers[0];
             updatedParticipants = updatedParticipants.map((p: any) => {
-              if (p.userId === userId) { // Current host becomes non-participant
+              if (p.userId === authenticatedUserId) { // Current host becomes non-participant (authenticatedUserId)
                 return null;
               }
               if (p.userId === newHost.userId) { // New host
@@ -285,7 +292,7 @@ serve(async (req) => {
             }).filter(Boolean); // Remove null entry
             newHostId = newHost.userId;
             newHostName = newHost.userName;
-            newHostCode = newHostId === userId ? session.host_code : null; // Only keep host_code if current user is new host
+            // SECURITY FIX: host_code should remain the original host_code of the session
           } else {
             // No other participants, delete the session
             const { error: deleteError } = await supabaseClient
@@ -300,7 +307,7 @@ serve(async (req) => {
           }
         } else {
           // Coworker leaves
-          updatedParticipants = updatedParticipants.filter((p: any) => p.userId !== userId);
+          updatedParticipants = updatedParticipants.filter((p: any) => p.userId !== authenticatedUserId); // Use authenticatedUserId
         }
         break;
       }
@@ -318,7 +325,7 @@ serve(async (req) => {
         active_asks: updatedAsks,
         user_id: newHostId,
         host_name: newHostName,
-        host_code: newHostCode,
+        host_code: originalHostCode, // SECURITY FIX: Always use the original host_code
       })
       .eq('id', sessionId)
       .select()
