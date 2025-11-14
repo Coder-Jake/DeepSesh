@@ -39,10 +39,16 @@ serve(async (req) => {
       });
     }
 
+    // MODIFIED: Initialize Supabase client with the user's JWT to enforce RLS
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', // Use service role key for RLS bypass
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '', // Use anon key for client-side operations
       {
+        global: {
+          headers: {
+            Authorization: authHeader, // Pass the user's JWT
+          },
+        },
         auth: {
           persistSession: false,
         },
@@ -92,18 +98,13 @@ serve(async (req) => {
     const session = sessions[0];
     const currentParticipants = (session.participants_data || []) as any[];
 
-    // Check session visibility rules
+    // Check session visibility rules (still relevant as RLS might not prevent *joining* a private session if not host)
     if (session.visibility === 'private' && session.user_id !== authenticatedUserId) {
-      // For private sessions, only the host (authenticatedUserId) can use their own join_code.
-      // If a non-host tries to join a private session, deny access.
       return new Response(JSON.stringify({ error: 'Forbidden: This is a private session.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
       });
     }
-    // For public sessions, any authenticated user can join using the host's join_code.
-    // The initial query already filtered by join_code, so if we reach here for a public session,
-    // it means the join_code is valid for a public session.
 
     // Check if the user is already a participant
     if (currentParticipants.some(p => p.userId === participantData.userId)) {

@@ -39,10 +39,16 @@ serve(async (req) => {
       });
     }
 
+    // MODIFIED: Initialize Supabase client with the user's JWT to enforce RLS
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', // Use service role key for RLS bypass
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '', // Use anon key for client-side operations
       {
+        global: {
+          headers: {
+            Authorization: authHeader, // Pass the user's JWT
+          },
+        },
         auth: {
           persistSession: false,
         },
@@ -84,7 +90,7 @@ serve(async (req) => {
     let updatedAsks = (session.active_asks || []) as any[];
     let newHostId = session.user_id;
     let newHostName = session.host_name;
-    const originalJoinCode = session.join_code; // RENAMED: host_code to join_code
+    const originalJoinCode = session.join_code;
 
     const isHost = session.user_id === authenticatedUserId;
     const isParticipant = updatedParticipants.some(p => p.userId === authenticatedUserId);
@@ -310,7 +316,7 @@ serve(async (req) => {
         active_asks: updatedAsks,
         user_id: newHostId,
         host_name: newHostName,
-        join_code: originalJoinCode, // RENAMED: host_code to join_code
+        join_code: originalJoinCode,
       })
       .eq('id', sessionId)
       .select()
