@@ -7,7 +7,7 @@ import { DAYS_OF_WEEK } from '@/lib/constants';
 import { saveSessionToDatabase } from '@/utils/session-utils';
 import { useProfile } from '../contexts/ProfileContext';
 import { supabase } from '@/integrations/supabase/client';
-import { RealtimeChannel } from '@supabase/supabase/js'; // Import RealtimeChannel
+import { RealtimeChannel } from '@supabase/supabase-js'; // Import RealtimeChannel
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -1558,6 +1558,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     // Declare variables with default values at the top of the useEffect
     let data: any = {}; 
     let loadedLastActivityTime: number | null = null;
+    let loadedIsHomepageFocusCustomized: boolean = false;
+    let loadedIsHomepageBreakCustomized: boolean = false;
+    let loadedSeshTitle: string = getDefaultSeshTitle();
+    let loadedIsSeshTitleCustomized: boolean = false;
+    let loadedTimerType: 'focus' | 'break' = 'focus';
+    let loadedIsRunning: boolean = false;
+    let loadedIsPaused: boolean = false;
+    let loadedIsFlashing: boolean = false;
+    let loadedIsScheduleActive: boolean = false;
+    let loadedIsSchedulePending: boolean = false;
+    let loadedCurrentPhaseDurationSeconds: number = 0;
+    let loadedActiveSchedule: ScheduledTimer[] = [];
+
     // ... other loaded variables ...
     let loadedFocusMinutes = 25; // This is actually the homepage focus minutes
     let loadedBreakMinutes = 5;  // This is actually the homepage break minutes
@@ -1565,6 +1578,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     // Declare these variables with a wider scope and default values
     let loadedDefaultFocusMinutesFromData = 25; 
     let loadedDefaultBreakMinutesFromData = 5;   
+
+    const now = new Date(); // Declare 'now' here
 
     if (storedData) {
       data = JSON.parse(storedData); // Assign data here
@@ -1617,10 +1632,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       loadedTimerType = data.timerType ?? 'focus';
       setTimerType(loadedTimerType);
 
+      loadedCurrentPhaseDurationSeconds = data.currentPhaseDurationSeconds ?? (loadedTimerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
+      loadedLastActivityTime = data.lastActivityTime ?? null;
+
       let actualTimeLeft = data.timeLeft ?? (loadedTimerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
-      if ((isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) && loadedLastActivityTime !== null) {
+      if ((data.isRunning || data.isPaused || data.isFlashing || data.isScheduleActive || data.isSchedulePending) && loadedLastActivityTime !== null) {
           // NEW: Calculate actualTimeLeft based on currentPhaseDurationSeconds
-          const elapsedSinceLastActivity = (now - loadedLastActivityTime) / 1000;
+          const elapsedSinceLastActivity = (now.getTime() - loadedLastActivityTime) / 1000;
           actualTimeLeft = Math.max(0, loadedCurrentPhaseDurationSeconds - elapsedSinceLastActivity);
           if (actualTimeLeft === 0) {
               console.log("TimerContext: Timer ran out while inactive, resetting state.");
@@ -1630,6 +1648,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           }
       }
       setTimeLeft(actualTimeLeft);
+
+      loadedIsRunning = data.isRunning ?? false;
+      loadedIsPaused = data.isPaused ?? false;
+      loadedIsFlashing = data.isFlashing ?? false;
+      loadedIsScheduleActive = data.isScheduleActive ?? false;
+      loadedIsSchedulePending = data.isSchedulePending ?? false;
+      loadedActiveSchedule = data.activeSchedule ?? [];
 
       setIsRunning(loadedIsRunning);
       setIsPaused(loadedIsPaused);
