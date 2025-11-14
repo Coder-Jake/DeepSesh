@@ -1555,18 +1555,44 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     let initialSavedSchedules: ScheduledTimerTemplate[] = [];
 
-    if (storedData) {
-      const data = JSON.parse(storedData);
+    // Declare variables with default values at the top of the useEffect
+    let data: any = {}; 
+    let loadedLastActivityTime: number | null = null;
+    let loadedIsRunning = false;
+    let loadedIsPaused = false;
+    let loadedIsFlashing = false;
+    let loadedIsScheduleActive = false;
+    let loadedIsSchedulePending = false;
+    let loadedFocusMinutes = 25;
+    let loadedBreakMinutes = 5;
+    let loadedActiveSchedule: ScheduledTimer[] = [];
+    let loadedCurrentPhaseDurationSeconds = 0;
+    let loadedRemainingTimeAtPause = 0;
+    let loadedIsHomepageFocusCustomized = false;
+    let loadedIsHomepageBreakCustomized = false;
+    let loadedSeshTitle = getDefaultSeshTitle();
+    let loadedIsSeshTitleCustomized = false;
+    let loadedTimerType: 'focus' | 'break' = 'focus';
 
-      const loadedLastActivityTime = data.lastActivityTime ?? null;
-      const loadedIsRunning = data.isRunning ?? false;
-      const loadedIsPaused = data.isPaused ?? false;
-      const loadedIsFlashing = data.isFlashing ?? false;
-      const loadedIsScheduleActive = data.isScheduleActive ?? false;
-      const loadedIsSchedulePending = data.isSchedulePending ?? false;
-      const loadedFocusMinutes = data.focusMinutes ?? data._defaultFocusMinutes ?? 25;
-      const loadedBreakMinutes = data.breakMinutes ?? data._defaultBreakMinutes ?? 5;
-      const loadedActiveSchedule = data.activeSchedule ?? [];
+
+    if (storedData) {
+      data = JSON.parse(storedData); // Assign data here
+
+      loadedLastActivityTime = data.lastActivityTime ?? null;
+      loadedIsRunning = data.isRunning ?? false;
+      loadedIsPaused = data.isPaused ?? false;
+      loadedIsFlashing = data.isFlashing ?? false;
+      loadedIsScheduleActive = data.isScheduleActive ?? false;
+      loadedIsSchedulePending = data.isSchedulePending ?? false;
+      loadedFocusMinutes = data.focusMinutes ?? data._defaultFocusMinutes ?? 25;
+      loadedBreakMinutes = data.breakMinutes ?? data._defaultBreakMinutes ?? 5;
+      loadedActiveSchedule = data.activeSchedule ?? [];
+
+      // NEW: Load currentPhaseDurationSeconds and remainingTimeAtPause
+      loadedCurrentPhaseDurationSeconds = data.currentPhaseDurationSeconds ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
+      loadedRemainingTimeAtPause = data.remainingTimeAtPause ?? 0;
+      setCurrentPhaseDurationSeconds(loadedCurrentPhaseDurationSeconds);
+      setRemainingTimeAtPause(loadedRemainingTimeAtPause);
 
       let maxAllowedInactivitySeconds = 0;
       if (loadedIsScheduleActive || loadedIsSchedulePending) {
@@ -1577,12 +1603,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
       const now = Date.now();
       const timeSinceLastActivity = loadedLastActivityTime ? (now - loadedLastActivityTime) / 1000 : 0;
-
-      // NEW: Load currentPhaseDurationSeconds and remainingTimeAtPause
-      const loadedCurrentPhaseDurationSeconds = data.currentPhaseDurationSeconds ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
-      const loadedRemainingTimeAtPause = data.remainingTimeAtPause ?? 0;
-      setCurrentPhaseDurationSeconds(loadedCurrentPhaseDurationSeconds);
-      setRemainingTimeAtPause(loadedRemainingTimeAtPause);
 
       if (
         (loadedIsRunning || loadedIsPaused || loadedIsFlashing || loadedIsScheduleActive || loadedIsSchedulePending) &&
@@ -1597,31 +1617,31 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
 
       // 1. Load default settings
-      const loadedDefaultFocusMinutes = data._defaultFocusMinutes ?? 25;
-      const loadedDefaultBreakMinutes = data._defaultBreakMinutes ?? 5;
-      _setDefaultFocusMinutes(loadedDefaultFocusMinutes);
-      _setDefaultBreakMinutes(loadedDefaultBreakMinutes);
+      const loadedDefaultFocusMinutesFromData = data._defaultFocusMinutes ?? 25;
+      const loadedDefaultBreakMinutesFromData = data._defaultBreakMinutes ?? 5;
+      _setDefaultFocusMinutes(loadedDefaultFocusMinutesFromData);
+      _setDefaultBreakMinutes(loadedDefaultBreakMinutesFromData);
 
       // 2. Load homepage customization flags
-      const loadedIsHomepageFocusCustomized = data.isHomepageFocusCustomized ?? false;
-      const loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
+      loadedIsHomepageFocusCustomized = data.isHomepageFocusCustomized ?? false;
+      loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
       setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
       setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
 
       // 3. Set homepage focus/break minutes based on customization or defaults
       if (loadedIsHomepageFocusCustomized) {
-        _setFocusMinutes(data.focusMinutes ?? loadedDefaultFocusMinutes);
+        _setFocusMinutes(data.focusMinutes ?? loadedDefaultFocusMinutesFromData);
       } else {
-        _setFocusMinutes(loadedDefaultFocusMinutes);
+        _setFocusMinutes(loadedDefaultFocusMinutesFromData);
       }
       if (loadedIsHomepageBreakCustomized) {
-        _setBreakMinutes(data.breakMinutes ?? loadedDefaultBreakMinutes);
+        _setBreakMinutes(data.breakMinutes ?? loadedDefaultBreakMinutesFromData);
       } else {
-        _setBreakMinutes(loadedDefaultBreakMinutes);
+        _setBreakMinutes(loadedDefaultBreakMinutesFromData);
       }
 
-      let loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
-      let loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
+      loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
+      loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
 
       if (loadedSeshTitle === "Notes" || loadedSeshTitle.trim() === "" || loadedSeshTitle === getDefaultSeshTitle()) {
         loadedSeshTitle = getDefaultSeshTitle();
@@ -1639,9 +1659,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       setShowSessionsWhileActive(loadedShowSessionsWhileActive);
 
-      setTimerType(data.timerType ?? 'focus');
+      loadedTimerType = data.timerType ?? 'focus';
+      setTimerType(loadedTimerType);
 
-      let actualTimeLeft = data.timeLeft ?? (data.timerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
+      let actualTimeLeft = data.timeLeft ?? (loadedTimerType === 'focus' ? loadedFocusMinutes * 60 : loadedBreakMinutes * 60);
       if ((loadedIsRunning || loadedIsPaused || loadedIsFlashing || loadedIsScheduleActive || loadedIsSchedulePending) && loadedLastActivityTime !== null) {
           // NEW: Calculate actualTimeLeft based on currentPhaseDurationSeconds
           const elapsedSinceLastActivity = (now - loadedLastActivityTime) / 1000;
@@ -1770,13 +1791,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       // If no initial schedule to load, ensure timeLeft and currentPhaseDurationSeconds reflect the loaded homepage values
       const currentHomepageFocus = loadedIsHomepageFocusCustomized ? (data.focusMinutes ?? loadedDefaultFocusMinutes) : loadedDefaultFocusMinutes;
       const currentHomepageBreak = loadedIsHomepageBreakCustomized ? (data.breakMinutes ?? loadedDefaultBreakMinutes) : loadedDefaultBreakMinutes;
-      const currentTimerType = data.timerType ?? 'focus';
+      const currentTimerType = loadedTimerType;
 
       setTimerType(currentTimerType);
       setTimeLeft((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
       setCurrentPhaseDurationSeconds((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
-      _setSeshTitle(data._seshTitle ?? getDefaultSeshTitle());
-      setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
+      _setSeshTitle(loadedSeshTitle);
+      setIsSeshTitleCustomized(loadedIsSeshTitleCustomized);
     }
     // REMOVED: setLoading(false); // This should be the last thing in the useEffect
   }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules]);
