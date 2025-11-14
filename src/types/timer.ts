@@ -104,6 +104,9 @@ export interface DemoSession {
   workspaceDescription: string;
   participants: ParticipantSessionData[]; // Use ParticipantSessionData
   fullSchedule: ScheduledTimer[]; // Use ScheduledTimer
+  location_lat?: number | null; // NEW: Add location_lat
+  location_long?: number | null; // NEW: Add location_long
+  distance?: number | null; // NEW: Add distance
 }
 
 // NEW: Define a type for Supabase fetched sessions

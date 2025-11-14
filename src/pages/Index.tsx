@@ -47,6 +47,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext'; // Import ProfileUpdate
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // NEW: Import Popover components
+import { calculateDistance } from '@/utils/location-utils'; // NEW: Import calculateDistance
 
 interface ExtendSuggestion {
   id: string;
@@ -98,6 +99,7 @@ interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null; // NEW: Add join_code
+  active_asks: ActiveAskItem[]; // ADDED: active_asks property
 }
 
 const now = new Date();
@@ -125,6 +127,8 @@ const mockNearbySessions: DemoSession[] = [
       { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 55 },
       { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 5 },
     ],
+    location_lat: -33.8688, // Example latitude for Sydney
+    location_long: 151.2093, // Example longitude for Sydney
   },
 ];
 
@@ -149,11 +153,17 @@ const mockFriendsSessions: DemoSession[] = [
       { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 25 },
       { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 5 },
     ],
+    location_lat: -33.8688, // Example latitude for Sydney
+    location_long: 151.2093, // Example longitude for Sydney
   },
 ];
 
-// NEW: Function to fetch active sessions from Supabase
-const fetchSupabaseSessions = async (userId: string | undefined): Promise<DemoSession[]> => {
+// NEW: Function to fetch active sessions from Supabase, now including distance calculation
+const fetchSupabaseSessions = async (
+  userId: string | undefined,
+  userLatitude: number | null,
+  userLongitude: number | null
+): Promise<DemoSession[]> => {
   let query = supabase
     .from('active_sessions')
     .select('*')
@@ -211,6 +221,11 @@ const fetchSupabaseSessions = async (userId: string | undefined): Promise<DemoSe
       }];
     }
 
+    let distance: number | null = null;
+    if (userLatitude !== null && userLongitude !== null && session.location_lat !== null && session.location_long !== null) {
+      distance = calculateDistance(userLatitude, userLongitude, session.location_lat, session.location_long);
+    }
+
     return {
       id: session.id,
       title: session.session_title,
@@ -220,6 +235,9 @@ const fetchSupabaseSessions = async (userId: string | undefined): Promise<DemoSe
       workspaceDescription: "Live session from Supabase",
       participants: participants,
       fullSchedule: fullSchedule,
+      location_lat: session.location_lat,
+      location_long: session.location_long,
+      distance: distance,
     };
   });
 };
@@ -374,6 +392,9 @@ const Index = () => {
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState(""); // Initialize empty
 
+  // NEW: State for user's current location
+  const [userLocation, setUserLocation] = useState<{ latitude: number | null; longitude: number | null }>({ latitude: null, longitude: null });
+
   // NEW: Slider drag state and refs for Discovery Setup dialog
   const discoverySliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingDiscoverySlider, setIsDraggingDiscoverySlider] = useState(false);
@@ -397,10 +418,10 @@ const Index = () => {
 
   // NEW: Fetch Supabase sessions
   const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id], // Add user.id to query key for re-fetching on auth change
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude], // Add user.id and userLocation to query key for re-fetching on auth/location change
     queryFn: async () => { // Made async to allow for error logging
       try {
-        return await fetchSupabaseSessions(user?.id);
+        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude);
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message); // Explicit error logging
         if (areToastsEnabled) {
@@ -414,6 +435,18 @@ const Index = () => {
     refetchInterval: 5000,
     enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'),
   });
+
+  // NEW: Effect to get user's location when discovery is activated or on mount
+  useEffect(() => {
+    const getUserLocation = async () => {
+      const { latitude, longitude } = await getLocation();
+      setUserLocation({ latitude, longitude });
+    };
+
+    if (isDiscoveryActivated && geolocationPermissionStatus === 'granted') {
+      getUserLocation();
+    }
+  }, [isDiscoveryActivated, geolocationPermissionStatus, getLocation]);
 
   // NEW: Define allParticipantsToDisplayInCard
   const allParticipantsToDisplayInCard = useMemo(() => {
@@ -841,6 +874,8 @@ const Index = () => {
           workspaceDescription: "Live session from Supabase",
           participants: (joinedSession.participants_data || []) as ParticipantSessionData[],
           fullSchedule: (joinedSession.schedule_data || []) as ScheduledTimer[],
+          location_lat: joinedSession.location_lat, // NEW: Pass location data
+          location_long: joinedSession.location_long, // NEW: Pass location data
         };
         await handleJoinSession(demoSession);
       } else {
@@ -990,6 +1025,16 @@ const Index = () => {
           bio: `A dedicated member of ${orgName}.`,
         });
       }
+
+      // NEW: Add mock location data for organization sessions
+      const mockLat = -33.8688 + (Math.random() - 0.5) * 0.05; // Slightly varied from Sydney
+      const mockLong = 151.2093 + (Math.random() - 0.5) * 0.05;
+
+      let distance: number | null = null;
+      if (userLocation.latitude !== null && userLocation.longitude !== null) {
+        distance = calculateDistance(userLocation.latitude, userLocation.longitude, mockLat, mockLong);
+      }
+
       sessions.push({
         id: `org-session-${orgName.replace(/\s/g, '-')}`,
         title: `${orgName} DeepSesh`,
@@ -1002,11 +1047,14 @@ const Index = () => {
           { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 50 },
           { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 10 },
         ],
+        location_lat: mockLat,
+        location_long: mockLong,
+        distance: distance,
       });
     });
 
     return sessions;
-  }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions]);
+  }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions, userLocation]);
 
 
   const handleExtendSubmit = async (minutes: number) => {
