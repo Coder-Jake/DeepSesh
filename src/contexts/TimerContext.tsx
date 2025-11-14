@@ -1789,8 +1789,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsSeshTitleCustomized(false); // Reset seshTitle customization
     } else {
       // If no initial schedule to load, ensure timeLeft and currentPhaseDurationSeconds reflect the loaded homepage values
-      const currentHomepageFocus = loadedIsHomepageFocusCustomized ? (data.focusMinutes ?? loadedDefaultFocusMinutes) : loadedDefaultFocusMinutes;
-      const currentHomepageBreak = loadedIsHomepageBreakCustomized ? (data.breakMinutes ?? loadedDefaultBreakMinutes) : loadedDefaultBreakMinutes;
+      const currentHomepageFocus = loadedIsHomepageFocusCustomized ? (data.focusMinutes ?? loadedDefaultFocusMinutesFromData) : loadedDefaultFocusMinutesFromData;
+      const currentHomepageBreak = loadedIsHomepageBreakCustomized ? (data.breakMinutes ?? loadedDefaultBreakMinutesFromData) : loadedDefaultBreakMinutesFromData;
       const currentTimerType = loadedTimerType;
 
       setTimerType(currentTimerType);
