@@ -911,12 +911,12 @@ const Settings = () => {
                 </Button>
               </div>
 
-              {/* NEW: Limit Discovery Radius Toggle */}
+              {/* NEW: Discovery Radius Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Label htmlFor="limit-discovery-radius-toggle" className="cursor-help">Limit Discovery Radius</Label>
+                      <Label htmlFor="limit-discovery-radius-toggle" className="cursor-help">Discovery Radius</Label>
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
                       <p>Toggle to limit discovery to the specified maximum distance.</p>
