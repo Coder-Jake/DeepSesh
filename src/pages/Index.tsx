@@ -491,20 +491,37 @@ const Index = () => {
 
   // NEW: Filter mock sessions into nearby, friends, and organization
   const filteredMockNearbySessions = useMemo(() => {
-    if (!mockSessions || !userLocation.latitude || !userLocation.longitude) return [];
+    console.log("Filtering mock nearby sessions...");
+    console.log("mockSessions:", mockSessions);
+    console.log("userLocation.latitude:", userLocation.latitude, "userLocation.longitude:", userLocation.longitude);
+
+    if (!mockSessions || !userLocation.latitude || !userLocation.longitude) {
+      console.log("Skipping nearby filter: mockSessions or userLocation missing.");
+      return [];
+    }
     return mockSessions.filter(session => {
-      if (session.location_lat && session.location_long && session.distance !== null) {
-        return session.distance <= 5000; // Example: within 5km
-      }
-      return false;
+      const isNearby = (session.location_lat && session.location_long && session.distance !== null && session.distance <= 5000);
+      console.log(`Session ${session.id} (${session.title}): distance=${session.distance}, isNearby=${isNearby}`);
+      return isNearby;
     });
   }, [mockSessions, userLocation]);
 
   const filteredMockFriendsSessions = useMemo(() => {
-    if (!mockSessions || !profile?.id) return [];
+    console.log("Filtering mock friends sessions...");
+    console.log("mockSessions:", mockSessions);
+    console.log("profile?.id:", profile?.id);
+
+    if (!mockSessions || !profile?.id) {
+      console.log("Skipping friends filter: mockSessions or profile ID missing.");
+      return [];
+    }
     // For mock data, we'll just use a simple heuristic or hardcoded list for "friends"
     // For now, let's assume sessions with 'mock-user-id-freud' as host are "friends" sessions
-    return mockSessions.filter(session => session.user_id === 'mock-user-id-freud');
+    return mockSessions.filter(session => {
+      const isFriendSession = session.user_id === 'mock-user-id-freud';
+      console.log(`Session ${session.id} (${session.title}): user_id=${session.user_id}, isFriendSession=${isFriendSession}`);
+      return isFriendSession;
+    });
   }, [mockSessions, profile?.id]);
 
   const filteredMockOrganizationSessions = useMemo(() => {
@@ -542,6 +559,7 @@ const Index = () => {
     const getUserLocation = async () => {
       const { latitude, longitude } = await getLocation();
       setUserLocation({ latitude, longitude });
+      console.log("User location set:", { latitude, longitude }); // NEW: Log userLocation after setting
     };
 
     if (isDiscoveryActivated && geolocationPermissionStatus === 'granted') {
@@ -995,19 +1013,19 @@ const Index = () => {
 
   const shouldShowNearbySessions = useMemo(() => {
     const result = isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
-    console.log("shouldShowNearbySessions:", result, "isDiscoveryActivated:", isDiscoveryActivated, "isGlobalPrivate:", isGlobalPrivate, "showSessionsWhileActive:", showSessionsWhileActive);
+    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "isGlobalPrivate:", isGlobalPrivate, "showSessionsWhileActive:", showSessionsWhileActive);
     return result;
   }, [isDiscoveryActivated, isGlobalPrivate, showSessionsWhileActive]);
 
   const shouldShowFriendsSessions = useMemo(() => {
     const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
-    console.log("shouldShowFriendsSessions:", result, "isDiscoveryActivated:", isDiscoveryActivated, "showSessionsWhileActive:", showSessionsWhileActive);
+    console.log("shouldShowFriendsSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "showSessionsWhileActive:", showSessionsWhileActive);
     return result;
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganizationSessions = useMemo(() => {
     const result = isDiscoveryActivated && !!profile?.organization;
-    console.log("shouldShowOrganizationSessions:", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization);
+    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization);
     return result;
   }, [profile?.organization, isDiscoveryActivated]);
 
@@ -1497,11 +1515,13 @@ const Index = () => {
     console.log("showDemoSessions:", showDemoSessions);
     console.log("isDiscoveryActivated:", isDiscoveryActivated);
     console.log("geolocationPermissionStatus:", geolocationPermissionStatus);
-    console.log("userLocation:", userLocation);
+    console.log("userLocation.latitude:", userLocation.latitude); // More specific log
+    console.log("userLocation.longitude:", userLocation.longitude); // More specific log
     console.log("isGlobalPrivate:", isGlobalPrivate);
     console.log("showSessionsWhileActive:", showSessionsWhileActive);
     console.log("profile?.id:", profile?.id);
     console.log("profile?.organization:", profile?.organization);
+    console.log("mockSessions (raw from query):", mockSessions); // Log raw mockSessions
     console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
     console.log("filteredMockNearbySessions.length:", filteredMockNearbySessions.length);
     console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions);
@@ -1512,6 +1532,7 @@ const Index = () => {
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
     isGlobalPrivate, showSessionsWhileActive, profile?.id, profile?.organization,
+    mockSessions, // Added mockSessions to dependencies
     shouldShowNearbySessions, filteredMockNearbySessions.length,
     shouldShowFriendsSessions, filteredMockFriendsSessions.length,
     shouldShowOrganizationSessions, mockOrganizationSessions.length
