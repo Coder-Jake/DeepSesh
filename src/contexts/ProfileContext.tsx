@@ -192,7 +192,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         profile_data: {
           bio: getDefaultProfileDataField("Designing rockets.", ['public']),
           intention: getDefaultProfileDataField("Innovating space travel.", ['public']),
-          linkedin_url: getDefaultOutlinedInput("https://www.linkedin.com/in/elonmusk", ['public']),
+          linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/elonmusk", ['public']),
           can_help_with: getDefaultProfileDataField("Rocket engineering", ['public']),
           need_help_with: getDefaultProfileDataField("Mars colonization", ['private']),
           pronouns: getDefaultProfileDataField("He/Him", ['public']),
