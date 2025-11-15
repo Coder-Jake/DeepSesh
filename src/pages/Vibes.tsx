@@ -85,7 +85,7 @@ const Vibes = () => {
             <p>
               Click <Link to="/profile" className="text-blue-500 hover:underline">Profile headings</Link> to control who sees those details.
             </p>
-            <p> DeepSesh currently has weak security.</ br>Data shared may be easily accessible to hackers. Share information at own risk.
+            <p> DeepSesh currently has weak security. Data shared may be easily accessible to hackers. Share information at own risk.
           </CardContent>
         </Card>
       </div>
