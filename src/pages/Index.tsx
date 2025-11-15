@@ -185,6 +185,10 @@ const fetchSupabaseSessions = async (
     throw new Error(error.message);
   }
 
+  // --- START DIAGNOSTIC LOG ---
+  console.log("Raw Supabase sessions data:", data);
+  // --- END DIAGNOSTIC LOG ---
+
   return data.map((session: SupabaseSessionData) => {
     // Ensure participants_data is an array, even if null/undefined
     const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
