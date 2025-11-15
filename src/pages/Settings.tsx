@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity } from "lucide-react"; // NEW: Import Infinity icon
+import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin } from "lucide-react"; // REMOVED: Infinity
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -401,10 +401,10 @@ const Settings = () => {
 
   const handleSave = () => {
     // Parse local input values before saving to global state
-    const parsedFocus = parseInt(localFocusMinutes);
+    const parsedFocus = parseInt(localFocusMinutes) || 0;
     const finalFocusMinutes = isNaN(parsedFocus) || parsedFocus <= 0 ? currentTimerIncrement : parsedFocus;
 
-    const parsedBreak = parseInt(localBreakMinutes);
+    const parsedBreak = parseInt(localBreakMinutes) || 0;
     const finalBreakMinutes = isNaN(parsedBreak) || parsedBreak <= 0 ? currentTimerIncrement : parsedBreak;
 
     setDefaultFocusMinutes(finalFocusMinutes);
@@ -933,7 +933,7 @@ const Settings = () => {
                   {limitDiscoveryRadius ? (
                     maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`
                   ) : (
-                    <Infinity size={20} />
+                    <span>∞</span> // FIX: Use unicode infinity character
                   )}
                 </Button>
               </div>

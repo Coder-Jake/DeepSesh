@@ -103,11 +103,13 @@ export interface DemoSession {
   workspaceImage: string;
   workspaceDescription: string;
   participants: ParticipantSessionData[]; // Use ParticipantSessionData
+  fullSchedule: ScheduledTimer[]; // NEW: Add fullSchedule
   location_lat?: number | null; // NEW: Add location_lat
   location_long?: number | null; // NEW: Add location_long
   distance?: number | null; // NEW: Add distance
   active_asks: ActiveAskItem[]; // NEW: Add active_asks
   visibility: 'public' | 'friends' | 'organisation' | 'private'; // NEW: Add visibility
+  user_id?: string | null; // NEW: Add user_id for filtering purposes in Index.tsx
 }
 
 // NEW: Define a type for Supabase fetched sessions

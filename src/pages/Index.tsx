@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown, Infinity } from "lucide-react"; // NEW: Import Infinity
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown } from "lucide-react"; // REMOVED: Infinity
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -199,6 +199,7 @@ const fetchMockSessions = async (
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
       visibility: session.visibility, // NEW: Map visibility
+      user_id: session.user_id, // NEW: Map user_id for filtering purposes
     };
   }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -285,6 +286,7 @@ const fetchSupabaseSessions = async (
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
       visibility: session.visibility, // NEW: Map visibility
+      user_id: session.user_id, // NEW: Map user_id for filtering purposes
     };
   }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -542,8 +544,8 @@ const Index = () => {
     // For mock data, we'll just use a simple heuristic or hardcoded list for "friends"
     // For now, let's assume sessions with 'mock-user-id-freud' as host are "friends" sessions
     return mockSessions.filter(session => {
-      const isFriendSession = session.user_id === 'mock-user-id-freud';
-      console.log(`Session ${session.id} (${session.title}): user_id=${session.user_id}, isFriendSession=${isFriendSession}`);
+      const isFriendSession = session.participants.find(p => p.role === 'host')?.userId === 'mock-user-id-freud'; // FIX: Access host ID from participants
+      console.log(`Session ${session.id} (${session.title}): user_id=${session.participants.find(p => p.role === 'host')?.userId}, isFriendSession=${isFriendSession}`); // FIX: Access host ID from participants
       return isFriendSession;
     });
   }, [mockSessions, profile?.id]);
@@ -555,9 +557,12 @@ const Index = () => {
     const sessions: DemoSession[] = [];
 
     mockSessions.forEach(session => {
-      const hostProfile = mockProfiles?.find(mp => mp.id === session.user_id);
-      if (hostProfile?.organization && organizationNames.includes(hostProfile.organization)) {
-        sessions.push(session);
+      const hostId = session.participants.find(p => p.role === 'host')?.userId; // FIX: Access host ID from participants
+      if (hostId) {
+        const hostProfile = mockProfiles?.find(mp => mp.id === hostId);
+        if (hostProfile?.organization && organizationNames.includes(hostProfile.organization)) {
+          sessions.push(session);
+        }
       }
     });
     return sessions;
@@ -1011,6 +1016,7 @@ const Index = () => {
           location_long: joinedSession.location_long,
           active_asks: (joinedSession.active_asks || []) as ActiveAskItem[],
           visibility: joinedSession.visibility, // NEW: Map visibility
+          user_id: joinedSession.user_id, // NEW: Map user_id
         };
         await handleJoinSession(demoSession);
       } else {
@@ -1168,6 +1174,7 @@ const Index = () => {
         distance: distance,
         active_asks: [],
         visibility: 'organisation', // NEW: Set visibility for mock organization sessions
+        user_id: participantNames.find(p => p.role === 'host')?.userId || null, // NEW: Add user_id
       });
     });
 
@@ -1625,7 +1632,7 @@ const Index = () => {
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Infinity size={16} className="text-muted-foreground ml-1" />
+                      <span className="text-muted-foreground ml-1">∞</span> {/* FIX: Use unicode infinity character */}
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
                       Discovery Radius: Unlimited
@@ -2027,7 +2034,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend}
+              onVoteExtend={handleExtendSubmit}
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />

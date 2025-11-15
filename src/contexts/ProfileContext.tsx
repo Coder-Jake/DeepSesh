@@ -469,30 +469,19 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     // Create a new profile object based on current 'profile' and 'updates'
     const currentProfile = profile || createDefaultProfile(user.id, user.user_metadata.first_name || "You", generateRandomJoinCode());
 
-    // Separate direct profile updates from profile_data updates
-    const directProfileUpdates: Partial<Omit<Profile, 'id' | 'updated_at' | 'profile_data' | 'visibility'>> = {};
-    const profileDataUpdates: Partial<ProfileDataJsonb> = {};
-
-    // Iterate over updates to categorize them
-    for (const key in updates) {
-      if (key === 'bio' || key === 'intention' || key === 'linkedin_url' || key === 'can_help_with' || key === 'need_help_with' || key === 'pronouns') {
-        profileDataUpdates[key as keyof ProfileDataJsonb] = updates[key as keyof ProfileUpdate] as ProfileDataField;
-      } else if (key === 'visibility') {
-        // Handled directly below
-      } else {
-        directProfileUpdates[key as keyof typeof directProfileUpdates] = updates[key as keyof ProfileUpdate] as any;
-      }
-    }
-
-    const updatedProfileData: ProfileDataJsonb = {
-      ...currentProfile.profile_data, // Start with existing profile_data
-      ...profileDataUpdates, // Apply updates to profile_data fields
-    };
-
     const newProfile: Profile = {
       ...currentProfile,
-      ...directProfileUpdates, // Apply direct updates
-      profile_data: updatedProfileData, // Assign the combined JSONB object
+      ...updates, // Apply all direct updates first
+      profile_data: {
+        ...currentProfile.profile_data, // Start with existing profile_data
+        // Apply updates to specific profile_data fields if they exist in updates
+        ...(updates.bio && { bio: updates.bio }),
+        ...(updates.intention && { intention: updates.intention }),
+        ...(updates.linkedin_url && { linkedin_url: updates.linkedin_url }),
+        ...(updates.can_help_with && { can_help_with: updates.can_help_with }),
+        ...(updates.need_help_with && { need_help_with: updates.need_help_with }),
+        ...(updates.pronouns && { pronouns: updates.pronouns }),
+      },
       updated_at: new Date().toISOString(), // Always update timestamp on explicit update
       id: user.id, // Ensure ID is always set
       visibility: updates.visibility || currentProfile.visibility || ['public'], // NEW: Ensure visibility is updated
