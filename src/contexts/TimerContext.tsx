@@ -1901,8 +1901,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setSeshTitle,
     isSeshTitleCustomized,
     formatTime,
-    showSessionsWhileActive,
-    setShowSessionsWhileActive,
     timerIncrement,
     setTimerIncrement: setTimerIncrementInternal,
     getDefaultSeshTitle,
