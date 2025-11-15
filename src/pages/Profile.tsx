@@ -23,6 +23,7 @@ import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClas
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { ProfileUpdate, ProfileDataJsonb } from "@/contexts/ProfileContext";
+import { supabase } from '@/integrations/supabase/client'; // Ensure supabase is imported if used directly here
 
 const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"];
 
@@ -296,12 +297,13 @@ const Profile = () => {
 
   // Effect to initialize local states and originalValues when profile is loaded or changes
   useEffect(() => {
+    console.log("Profile.tsx: useEffect [loading, profile] called. Loading:", loading, "profile:", profile); // ADD LOG
     // This effect should run whenever the 'profile' object from context changes
     // and 'loading' is false, indicating the profile data is stable.
     if (!loading && profile) {
       const currentLinkedinUsername = profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "";
 
-      setOriginalValues({
+      const newOriginalValues: OriginalValuesType = {
         firstName: profile.first_name || "You",
         bio: profile.profile_data?.bio?.value || "",
         intention: profile.profile_data?.intention?.value || "",
@@ -318,7 +320,9 @@ const Profile = () => {
         needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
         pronouns: profile.profile_data?.pronouns?.value || null,
         profileVisibility: profile.visibility || ['public'],
-      });
+      };
+      setOriginalValues(newOriginalValues);
+      console.log("Profile.tsx: setOriginalValues called with:", newOriginalValues); // ADD LOG
 
       // Also, when originalValues are updated from the source of truth,
       // the local input states should also be reset to match,
@@ -342,6 +346,7 @@ const Profile = () => {
       setProfileVisibilityInput(profile.visibility || ['public']);
 
       setHasChanges(false); // No changes immediately after loading/saving
+      console.log("Profile.tsx: setHasChanges(false) after loading/saving"); // ADD LOG
     }
   }, [loading, profile]); // Depend on loading and profile
 
@@ -361,7 +366,9 @@ const Profile = () => {
 
   // This useCallback now correctly compares current local states with the initial originalValues snapshot
   const checkForChanges = useCallback(() => {
+    console.log("Profile.tsx: checkForChanges called"); // ADD LOG
     if (!originalValues) {
+      console.log("Profile.tsx: checkForChanges - no originalValues, setting hasChanges(false)"); // ADD LOG
       setHasChanges(false); // No original values to compare against yet
       return;
     }
@@ -387,6 +394,7 @@ const Profile = () => {
                    (pronounsInput || null) !== originalValues.pronouns ||
                    JSON.stringify(profileVisibilityInput) !== JSON.stringify(originalValues.profileVisibility);
     setHasChanges(changed);
+    console.log("Profile.tsx: checkForChanges - calculated changed:", changed); // ADD LOG
   }, [
     originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organizationInput, linkedinUrlInput, joinCodeInput, // RENAMED
     bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput, profileVisibilityInput
@@ -394,6 +402,7 @@ const Profile = () => {
 
   // This useEffect will now correctly trigger checkForChanges whenever any editable state changes
   useEffect(() => {
+    console.log("Profile.tsx: useEffect [checkForChanges] called"); // ADD LOG
     checkForChanges();
   }, [checkForChanges]); // Dependency on checkForChanges ensures it runs when its internal dependencies changes
 
@@ -437,6 +446,12 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
+    console.log("Profile.tsx: handleSave called. hasChanges:", hasChanges, "loading:", loading); // ADD LOG
+    if (loading || !hasChanges) {
+      console.log("Profile.tsx: handleSave - Skipping save due to loading or no changes."); // ADD LOG
+      return;
+    }
+
     const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
 
     const trimmedJoinCode = joinCodeInput?.trim() || ""; // RENAMED
@@ -464,7 +479,9 @@ const Profile = () => {
       pronouns: { value: pronounsInput?.trim() === "" ? null : pronounsInput, visibility: ['public'] }, // Assuming pronouns are always public
     };
 
+    console.log("Profile.tsx: Data to update:", dataToUpdate); // ADD LOG
     await updateProfile(dataToUpdate); // This updates the profile in context and local storage
+    console.log("Profile.tsx: updateProfile call finished."); // ADD LOG
 
     // The useEffect that depends on 'profile' will now handle updating originalValues and local states.
     // No need to manually set originalValues here.
@@ -487,11 +504,12 @@ const Profile = () => {
         toast.error("Copy Failed", {
           description: "Could not copy join code. Please try again.", // RENAMED
         });
-    }
+      }
     }
   }, [joinCodeInput, areToastsEnabled]); // RENAMED
 
   const handleCancel = useCallback(() => {
+    console.log("Profile.tsx: handleCancel called. Restoring original values:", originalValues); // ADD LOG
     if (originalValues) {
       setFirstNameInput(originalValues.firstName);
       setBioInput(originalValues.bio === "" ? null : originalValues.bio);
@@ -513,6 +531,7 @@ const Profile = () => {
       setProfileVisibilityInput(originalValues.profileVisibility);
     }
     setHasChanges(false); // Explicitly set to false after cancelling
+    console.log("Profile.tsx: setHasChanges(false) after cancel."); // ADD LOG
   }, [originalValues]);
 
   const friends = Object.entries(friendStatuses)
@@ -602,6 +621,8 @@ const Profile = () => {
       default: return Globe;
     }
   };
+
+  console.log("Profile.tsx: Render. hasChanges =", hasChanges, "loading =", loading); // ADD LOG
 
   if (loading) {
     return (
