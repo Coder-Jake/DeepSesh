@@ -277,6 +277,20 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
   }, [user, profile, areToastsEnabled, getDefaultProfileDataJsonb]);
 
+  // Helper function to create a default profile object
+  const createDefaultProfile = useCallback((userId: string, firstName: string, joinCode: string | null = null): Profile => {
+    const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
+    return {
+      id: userId,
+      first_name: firstName,
+      last_name: null, avatar_url: null, organization: null,
+      focus_preference: 50, updated_at: new Date().toISOString(),
+      join_code: joinCode,
+      profile_data: defaultProfileData,
+      visibility: ['public'],
+    };
+  }, [getDefaultProfileDataJsonb]);
+
   // --- Initial Load Effect (Local-First) ---
   useEffect(() => {
     let isMounted = true; // Flag to prevent state updates on unmounted component
@@ -311,16 +325,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
             if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
               console.error("ProfileContext: Error fetching profile from Supabase on initial load:", error.message);
               // Fallback to local default if Supabase fetch fails
-              const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
-              const defaultProfile: Profile = {
-                id: user.id,
-                first_name: user.user_metadata.first_name || "You",
-                last_name: null, avatar_url: null, organization: null,
-                focus_preference: 50, updated_at: new Date().toISOString(),
-                join_code: null, // Let Supabase handle this, or fetch it
-                profile_data: defaultProfileData,
-                visibility: ['public'],
-              };
+              const defaultProfile = createDefaultProfile(user.id, user.user_metadata.first_name || "You", null);
               if (isMounted) {
                 setProfile(defaultProfile);
                 localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
@@ -341,21 +346,21 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
               // No profile found in Supabase, and no error other than "no rows found".
               // This might happen if the trigger hasn't fired yet or there's a delay.
               // Create a minimal local profile, and rely on periodic sync to populate from Supabase later.
-              const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
-              const defaultProfile: Profile = {
-                id: user.id,
-                first_name: user.user_metadata.first_name || "You",
-                last_name: null, avatar_url: null, organization: null,
-                focus_preference: 50, updated_at: new Date().toISOString(),
-                join_code: null, // Let Supabase handle this
-                profile_data: defaultProfileData,
-                visibility: ['public'],
-              };
+              const defaultProfile = createDefaultProfile(user.id, user.user_metadata.first_name || "You", null);
               if (isMounted) {
                 setProfile(defaultProfile);
                 localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
                 console.log("ProfileContext: New minimal local profile created (Supabase not yet populated):", defaultProfile);
               }
+            }
+          } catch (error: any) { // Explicitly type error as 'any'
+            console.error("ProfileContext: Unexpected error during Supabase fetch:", error.message);
+            // Fallback to local default if Supabase fetch fails
+            const defaultProfile = createDefaultProfile(user.id, user.user_metadata.first_name || "You", null);
+            if (isMounted) {
+              setProfile(defaultProfile);
+              localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
+              console.log("ProfileContext: New local profile created as Supabase fetch failed:", defaultProfile);
             }
           }
         }
@@ -379,7 +384,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     return () => {
       isMounted = false;
     };
-  }, [authLoading, user, getDefaultProfileDataJsonb, getDefaultProfileDataField]); // Removed syncProfileToSupabase from dependencies here
+  }, [authLoading, user, getDefaultProfileDataJsonb, getDefaultProfileDataField, createDefaultProfile]);
 
   // --- Effect to sync individual states from the main 'profile' object ---
   useEffect(() => {
@@ -462,7 +467,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     // Create a new profile object based on current 'profile' and 'updates'
-    const currentProfile = profile || { id: user.id, first_name: "You", focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'] } as Profile; // RENAMED: host_code to join_code
+    const currentProfile = profile || createDefaultProfile(user.id, user.user_metadata.first_name || "You", generateRandomJoinCode());
 
     // Separate direct profile updates from profile_data updates
     const directProfileUpdates: Partial<Omit<Profile, 'id' | 'updated_at' | 'profile_data' | 'visibility'>> = {};
@@ -506,7 +511,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     await syncProfileToSupabase();
     console.log("ProfileContext: syncProfileToSupabase call finished."); // ADD LOG
 
-  }, [user, areToastsEnabled, profile, getDefaultProfileDataJsonb, syncProfileToSupabase]);
+  }, [user, areToastsEnabled, profile, getDefaultProfileDataJsonb, syncProfileToSupabase, createDefaultProfile]);
 
   const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => { // Make it async
     console.log("ProfileContext: getPublicProfile called for userId:", userId, "userName:", userName); // ADD LOG
@@ -551,22 +556,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     // 4. If not found anywhere, return a default minimal profile
-    const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
-    const defaultMinimalProfile = {
-      id: userId,
-      first_name: userName,
-      last_name: null,
-      avatar_url: null,
-      organization: null,
-      focus_preference: 50,
-      updated_at: new Date().toISOString(),
-      join_code: null, // RENAMED: host_code to join_code
-      profile_data: defaultProfileData,
-      visibility: ['private'], // Default to private for unknown public profiles
-    };
+    const defaultMinimalProfile = createDefaultProfile(userId, userName, null);
     console.log("ProfileContext: Returning default minimal profile:", defaultMinimalProfile); // ADD LOG
     return defaultMinimalProfile;
-  }, [user?.id, profile, getDefaultProfileDataJsonb]); // Add user and profile to dependencies
+  }, [user?.id, profile, getDefaultProfileDataJsonb, createDefaultProfile]); // Add user and profile to dependencies
 
   const blockUser = useCallback((userName: string) => {
     setBlockedUsers(prev => {
