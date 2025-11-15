@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown, Infinity, Building2 } from "lucide-react"; // NEW: Import Building2
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown, Infinity as InfinityIcon, Building2 } from "lucide-react"; // NEW: Import Building2, Renamed Infinity to InfinityIcon
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -199,6 +199,7 @@ const fetchMockSessions = async (
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
       visibility: session.visibility, // NEW: Map visibility
+      user_id: session.user_id, // ADDED: user_id
     };
   }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -285,6 +286,7 @@ const fetchSupabaseSessions = async (
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
       visibility: session.visibility, // NEW: Map visibility
+      user_id: session.user_id, // ADDED: user_id
     };
   }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -1019,6 +1021,7 @@ const Index = () => {
           location_long: joinedSession.location_long,
           active_asks: (joinedSession.active_asks || []) as ActiveAskItem[],
           visibility: joinedSession.visibility, // NEW: Map visibility
+          user_id: joinedSession.user_id, // ADDED: user_id
         };
         await handleJoinSession(demoSession);
       } else {
@@ -1176,6 +1179,7 @@ const Index = () => {
         distance: distance,
         active_asks: [],
         visibility: 'organisation', // NEW: Set visibility for mock organization sessions
+        user_id: participantNames.find(p => p.role === 'host')?.userId, // ADDED: user_id
       });
     });
 
@@ -1371,7 +1375,7 @@ const Index = () => {
 
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
-      return Infinity;
+      return Number.POSITIVE_INFINITY; // Changed to Number.POSITIVE_INFINITY
     }
 
     const [hours, minutes] = template.commenceTime.split(':').map(Number);
@@ -1384,7 +1388,7 @@ const Index = () => {
     targetDate.setDate(now.getDate() + daysToAdd);
 
     if (targetDate.getTime() < now.getTime() && !template.isRecurring) {
-      return Infinity;
+      return Number.POSITIVE_INFINITY; // Changed to Number.POSITIVE_INFINITY
     }
 
     if (targetDate.getTime() < now.getTime() && template.isRecurring) {
@@ -1397,7 +1401,7 @@ const Index = () => {
         } else if (template.recurrenceFrequency === 'monthly') {
           nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
         } else {
-          return Infinity;
+          return Number.POSITIVE_INFINITY; // Changed to Number.POSITIVE_INFINITY
         }
       }
       return nextCommenceDate.getTime();
@@ -1647,7 +1651,7 @@ const Index = () => {
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Infinity size={16} className="text-muted-foreground ml-1" />
+                      <InfinityIcon size={16} className="text-muted-foreground ml-1" /> {/* Changed to InfinityIcon */}
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
                       Discovery Radius: Unlimited

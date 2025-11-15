@@ -108,6 +108,8 @@ export interface DemoSession {
   distance?: number | null; // NEW: Add distance
   active_asks: ActiveAskItem[]; // NEW: Add active_asks
   visibility: 'public' | 'friends' | 'organisation' | 'private'; // NEW: Add visibility
+  fullSchedule: ScheduledTimer[]; // ADDED: fullSchedule
+  user_id?: string | null; // ADDED: user_id
 }
 
 // NEW: Define a type for Supabase fetched sessions
