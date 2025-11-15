@@ -10,7 +10,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
-import { useNavigate, Link, useLocation } from "react-router-dom"; // MODIFIED: Use useLocation hook
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData, DemoSession } from "@/types/timer";
+import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData, DemoSession } from '@/types/timer';
 import { Accordion
  } from "@/components/ui/accordion";
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
@@ -45,15 +45,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext'; // Import ProfileUpdate
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // NEW: Import Popover components
-import { calculateDistance } from '@/utils/location-utils'; // NEW: Import calculateDistance
+import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { calculateDistance } from '@/utils/location-utils';
 
 interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
-  creatorId: string; // NEW: Add creatorId
+  creatorId: string;
   votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
   status: 'pending' | 'accepted' | 'rejected';
 }
@@ -69,7 +69,7 @@ interface Poll {
   question: string;
   type: 'closed' | 'choice' | 'selection';
   creator: string;
-  creatorId: string; // NEW: Add creatorId
+  creatorId: string;
   options: PollOption[];
   status: 'active' | 'closed';
   allowCustomResponses: boolean;
@@ -78,7 +78,6 @@ interface Poll {
 type ActiveAskItem = ExtendSuggestion | Poll;
 type PollType = 'closed' | 'choice' | 'selection';
 
-// NEW: Define a type for Supabase fetched sessions
 interface SupabaseSessionData {
   id: string;
   session_title: string;
@@ -99,111 +98,65 @@ interface SupabaseSessionData {
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
-  join_code: string | null; // NEW: Add join_code
-  active_asks: ActiveAskItem[]; // ADDED: active_asks property
+  join_code: string | null;
+  active_asks: ActiveAskItem[];
 }
 
-const now = new Date();
-const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
-const pomodoroStartTime = nextHour.getTime();
-
-const beginningOfMostRecentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
-
-const mockNearbySessions: DemoSession[] = [
-  {
-    id: "102",
-    title: "Silicon Syndicate Study Sesh",
-    startTime: Date.now() - (76.8 * 60 * 1000),
-    location: "Science Building - Computer Lab 2B",
-    workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "Modern lab with dual monitors",
-    participants: [
-      { userId: "mock-user-id-bezos", userName: "Altman", role: 'host', joinTime: Date.now(), focusPreference: 15, intention: "Optimizing cloud infrastructure." },
-      { userId: "mock-user-id-musk", userName: "Musk", role: 'coworker', joinTime: Date.now(), focusPreference: 10, intention: "Designing reusable rocket components." },
-      { userId: "mock-user-id-zuckerberg", userName: "Zuckerberg", role: 'coworker', joinTime: Date.now(), focusPreference: 20, intention: "Developing new social algorithms." },
-      { userId: "mock-user-id-gates", userName: "Amodei", role: 'coworker', joinTime: Date.now(), focusPreference: 20, intention: "Refining operating system architecture." },
-      { userId: "mock-user-id-jobs", userName: "Huang", role: 'coworker', joinTime: Date.now(), focusPreference: 30, intention: "Innovating user interface design." },
-    ],
-    fullSchedule: [
-      { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 55 },
-      { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 5 },
-    ],
-    location_lat: -33.8688, // Example latitude for Sydney
-    location_long: 151.2093, // Example longitude for Sydney
-  },
-];
-
-const mockFriendsSessions: DemoSession[] = [
-  {
-    id: "201",
-    title: "Psychology 101 Final Review",
-    startTime: beginningOfMostRecentHour,
-    location: "Main Library - Study Room 12",
-    workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "Private group study room",
-    participants: [
-      { userId: "mock-user-id-freud", userName: "Freud", role: 'host', joinTime: Date.now(), focusPreference: 70, intention: "Reviewing psychoanalytic theories." },
-      { userId: "mock-user-id-skinner", userName: "Skinner", role: 'coworker', joinTime: Date.now(), focusPreference: 70, intention: "Memorizing behavioral principles." },
-      { userId: "mock-user-id-piaget", userName: "Piaget", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Practicing cognitive development questions." },
-      { userId: "mock-user-id-jung", userName: "Jung", role: 'coworker', joinTime: Date.now(), focusPreference: 70, intention: "Summarizing archetypal concepts." },
-      { userId: "mock-user-id-maslow", userName: "Maslow", role: 'coworker', joinTime: Date.now(), focusPreference: 90, intention: "Creating hierarchy of needs flashcards." },
-      { userId: "mock-user-id-rogers", userName: "Rogers", role: 'coworker', joinTime: Date.now(), focusPreference: 95, intention: "Discussing humanistic approaches." },
-      { userId: "mock-user-id-pavlov", userName: "Pavlov", role: 'coworker', joinTime: Date.now(), focusPreference: 80, intention: "Peer teaching classical conditioning." },
-    ],
-    fullSchedule: [
-      { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 25 },
-      { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 5 },
-    ],
-    location_lat: -33.8688, // Example latitude for Sydney
-    location_long: 151.2093, // Example longitude for Sydney
-  },
-];
-
-// NEW: Function to fetch active sessions from Supabase, now including distance calculation
-const fetchSupabaseSessions = async (
-  userId: string | undefined,
-  userLatitude: number | null,
-  userLongitude: number | null
-): Promise<DemoSession[]> => {
+// NEW: Function to fetch mock profiles from Supabase
+const fetchMockProfiles = async (userId: string | undefined): Promise<ProfileType[]> => {
   let query = supabase
-    .from('active_sessions')
-    .select('*')
-    .eq('is_active', true);
-
-  // Apply RLS logic on the client side for filtering, as RLS policies are already in place on the DB
-  // The RLS policy "View own, public, or joined sessions" handles the actual database access.
-  // This client-side filter is for display purposes based on the user's context.
-  if (userId) {
-    query = query.or(`visibility.eq.public,user_id.eq.${userId},participants_data.cs.{{"userId": "${userId}"}}`);
-  } else {
-    query = query.eq('visibility', 'public'); // Only show public sessions for anonymous users
-  }
+    .from('mock_profiles')
+    .select('*');
 
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching active sessions from Supabase:", error);
+    console.error("Error fetching mock profiles from Supabase:", error);
     throw new Error(error.message);
   }
 
-  // --- START DIAGNOSTIC LOG ---
-  console.log("Raw Supabase sessions data:", data);
-  // --- END DIAGNOSTIC LOG ---
+  return data.map((profile: any) => ({
+    ...profile,
+    profile_data: profile.profile_data || {},
+    visibility: profile.visibility || ['public'],
+  }));
+};
+
+// NEW: Function to fetch mock sessions from Supabase
+const fetchMockSessions = async (
+  userId: string | undefined,
+  userLatitude: number | null,
+  userLongitude: number | null,
+  profileOrganization: string | null,
+  mockProfiles: ProfileType[] // Pass mock profiles to resolve participant data
+): Promise<DemoSession[]> => {
+  let query = supabase
+    .from('mock_sessions')
+    .select('*')
+    .eq('is_active', true);
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching mock sessions from Supabase:", error);
+    throw new Error(error.message);
+  }
 
   return data.map((session: SupabaseSessionData) => {
-    // Ensure participants_data is an array, even if null/undefined
     const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
-    const participants: ParticipantSessionData[] = rawParticipantsData.map(p => ({
-      userId: p.userId,
-      userName: p.userName,
-      joinTime: p.joinTime,
-      role: p.role,
-      focusPreference: p.focusPreference || 50,
-      intention: p.intention || undefined,
-      bio: p.bio || undefined,
-    }));
+    const participants: ParticipantSessionData[] = rawParticipantsData.map(p => {
+      const mockProfile = mockProfiles.find(mp => mp.id === p.userId);
+      return {
+        userId: p.userId,
+        userName: mockProfile?.first_name || p.userName,
+        joinTime: p.joinTime,
+        role: p.role,
+        focusPreference: mockProfile?.focus_preference || p.focusPreference || 50,
+        intention: mockProfile?.profile_data?.intention?.value || p.intention || undefined,
+        bio: mockProfile?.profile_data?.bio?.value || p.bio || undefined,
+      };
+    });
 
-    // Ensure schedule_data is an array, even if null/undefined
     const rawScheduleData = (session.schedule_data || []) as ScheduledTimer[];
     let fullSchedule: ScheduledTimer[];
     if (rawScheduleData.length > 0) {
@@ -216,7 +169,6 @@ const fetchSupabaseSessions = async (
         customTitle: item.customTitle || undefined,
       }));
     } else {
-      // Fallback to a single timer based on current_phase_type if schedule_data is empty
       fullSchedule = [{
         id: crypto.randomUUID(),
         title: session.current_phase_type === 'focus' ? 'Focus' : 'Break',
@@ -236,17 +188,18 @@ const fetchSupabaseSessions = async (
       title: session.session_title,
       startTime: new Date(session.created_at).getTime(),
       location: session.location_long && session.location_lat ? `Lat: ${session.location_lat}, Long: ${session.location_lat}` : "Unknown Location",
-      workspaceImage: "/api/placeholder/200/120", // Placeholder
-      workspaceDescription: "Live session from Supabase",
+      workspaceImage: "/api/placeholder/200/120",
+      workspaceDescription: "Mock session from Supabase",
       participants: participants,
       fullSchedule: fullSchedule,
       location_lat: session.location_lat,
       location_long: session.location_long,
       distance: distance,
-      active_asks: (session.active_asks || []) as ActiveAskItem[], // NEW: Defensively default active_asks
+      active_asks: (session.active_asks || []) as ActiveAskItem[],
     };
   });
 };
+
 
 const Index = () => {
   const {
@@ -326,7 +279,7 @@ const Index = () => {
     currentSessionRole,
     setCurrentSessionRole,
     currentSessionHostName,
-    setCurrentSessionHostName, // Destructure setCurrentSessionHostName
+    setCurrentSessionHostName,
     currentSessionOtherParticipants,
     setCurrentSessionOtherParticipants,
     currentSessionParticipantsData,
@@ -350,15 +303,15 @@ const Index = () => {
     showDemoSessions,
     currentPhaseDurationSeconds,
     setCurrentPhaseDurationSeconds,
-    remainingTimeAtPause, // ADDED: Destructure remainingTimeAtPause
+    remainingTimeAtPause,
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility } = useProfile(); // RENAMED: hostCode to joinCode, NEW: Get profileVisibility from useProfile
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility } = useProfile();
   const navigate = useNavigate();
-  const location = useLocation(); // MODIFIED: Use useLocation hook
+  const location = useLocation();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { isDarkMode } = useTheme();
-  const { user, session } = useAuth(); // MODIFIED: Destructure session from useAuth
+  const { user, session } = useAuth();
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
@@ -370,7 +323,7 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaElement>(null); // Corrected typo
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
   
   const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
   const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
@@ -393,26 +346,22 @@ const Index = () => {
   const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIXED: Initialize with null
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
-  const [discoveryDisplayName, setDiscoveryDisplayName] = useState(""); // Initialize empty
+  const [discoveryDisplayName, setDiscoveryDisplayName] = useState("");
 
-  // NEW: State for user's current location
   const [userLocation, setUserLocation] = useState<{ latitude: number | null; longitude: number | null }>({ latitude: null, longitude: null });
 
-  // NEW: Slider drag state and refs for Discovery Setup dialog
   const discoverySliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingDiscoverySlider, setIsDraggingDiscoverySlider] = useState(false);
 
-  // NEW: Effect to sync discoveryDisplayName with localFirstName when dialog opens
   useEffect(() => {
     if (isDiscoverySetupOpen) {
-      setDiscoveryDisplayName(localFirstName === "You" ? (joinCode || "") : (localFirstName || joinCode || "")); // RENAMED: hostCode to joinCode
+      setDiscoveryDisplayName(localFirstName === "You" ? (joinCode || "") : (localFirstName || joinCode || ""));
     }
-  }, [isDiscoverySetupOpen, localFirstName, joinCode]); // RENAMED: hostCode to joinCode
+  }, [isDiscoverySetupOpen, localFirstName, joinCode]);
 
-  // NEW: Function to toggle global private/public status
   const handlePublicPrivateToggle = useCallback(() => {
     setIsGlobalPrivate(prev => !prev);
     if (areToastsEnabled) {
@@ -422,27 +371,95 @@ const Index = () => {
     }
   }, [setIsGlobalPrivate, isGlobalPrivate, areToastsEnabled]);
 
-  // NEW: Fetch Supabase sessions
-  const { data: supabaseNearbySessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude], // Add user.id and userLocation to query key for re-fetching on auth/location change
-    queryFn: async () => { // Made async to allow for error logging
+  // NEW: Fetch mock profiles for participant data resolution
+  const { data: mockProfiles, isLoading: isLoadingMockProfiles, error: mockProfilesError } = useQuery<ProfileType[]>({
+    queryKey: ['mockProfiles', user?.id],
+    queryFn: async () => {
       try {
+        return await fetchMockProfiles(user?.id);
+      } catch (err: any) {
+        console.error("Error fetching mock profiles from Supabase:", err.message);
+        if (areToastsEnabled) {
+          toast.error("Failed to Load Mock Profiles", {
+            description: `Could not load mock profiles: ${err.message}`,
+          });
+        }
+        throw err;
+      }
+    },
+    enabled: showDemoSessions, // Only fetch mock profiles if demo sessions are enabled
+  });
+
+  // NEW: Fetch mock sessions from Supabase
+  const { data: mockSessions, isLoading: isLoadingMockSessions, error: mockSessionsError } = useQuery<DemoSession[]>({
+    queryKey: ['mockSessions', user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, mockProfiles],
+    queryFn: async () => {
+      try {
+        if (!mockProfiles) return []; // Ensure mockProfiles are loaded before fetching sessions
+        return await fetchMockSessions(user?.id, userLocation.latitude, userLocation.longitude, profile?.organization || null, mockProfiles);
+      } catch (err: any) {
+        console.error("Error fetching mock sessions from Supabase:", err.message);
+        if (areToastsEnabled) {
+          toast.error("Failed to Load Mock Sessions", {
+            description: `Could not load mock sessions: ${err.message}`,
+          });
+        }
+        throw err;
+      }
+    },
+    refetchInterval: 5000,
+    enabled: showDemoSessions && !!mockProfiles, // Only fetch mock sessions if demo sessions are enabled and mock profiles are loaded
+  });
+
+  // NEW: Filter mock sessions into nearby, friends, and organization
+  const filteredMockNearbySessions = useMemo(() => {
+    if (!mockSessions || !userLocation.latitude || !userLocation.longitude) return [];
+    return mockSessions.filter(session => {
+      if (session.location_lat && session.location_long && session.distance !== null) {
+        return session.distance <= 5000; // Example: within 5km
+      }
+      return false;
+    });
+  }, [mockSessions, userLocation]);
+
+  const filteredMockFriendsSessions = useMemo(() => {
+    if (!mockSessions || !profile?.id) return [];
+    // For mock data, we'll just use a simple heuristic or hardcoded list for "friends"
+    // For now, let's assume sessions with 'mock-user-id-freud' as host are "friends" sessions
+    return mockSessions.filter(session => session.user_id === 'mock-user-id-freud');
+  }, [mockSessions, profile?.id]);
+
+  const filteredMockOrganizationSessions = useMemo(() => {
+    if (!mockSessions || !profile?.organization) return [];
+    const userOrgNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
+    return mockSessions.filter(session => {
+      const hostProfile = mockProfiles?.find(mp => mp.id === session.user_id);
+      return hostProfile?.organization && userOrgNames.includes(hostProfile.organization);
+    });
+  }, [mockSessions, profile?.organization, mockProfiles]);
+
+
+  const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude],
+    queryFn: async () => {
+      try {
+        // The original fetchSupabaseSessions function is designed to fetch from 'active_sessions'
+        // and applies RLS logic. This is for *real* active sessions.
         return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude);
       } catch (err: any) {
-        console.error("Error fetching active sessions from Supabase:", err.message); // Explicit error logging
+        console.error("Error fetching active sessions from Supabase:", err.message);
         if (areToastsEnabled) {
           toast.error("Failed to Load Sessions", {
             description: `Could not load live sessions: ${err.message}`,
           });
         }
-        throw err; // Re-throw to let TanStack Query handle the error state
+        throw err;
       }
     },
     refetchInterval: 5000,
     enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'),
   });
 
-  // NEW: Effect to get user's location when discovery is activated or on mount
   useEffect(() => {
     const getUserLocation = async () => {
       const { latitude, longitude } = await getLocation();
@@ -454,7 +471,6 @@ const Index = () => {
     }
   }, [isDiscoveryActivated, geolocationPermissionStatus, getLocation]);
 
-  // NEW: Define allParticipantsToDisplayInCard
   const allParticipantsToDisplayInCard = useMemo(() => {
     if (!currentSessionParticipantsData || currentSessionParticipantsData.length === 0) {
       return [];
@@ -503,7 +519,6 @@ const Index = () => {
     setIsDefaultTitleAnimating(isDefault);
   }, [seshTitle, isSeshTitleCustomized, getDefaultSeshTitle]);
 
-  // MODIFIED: Effect to minimize ScheduleForm when navigating away from Index page
   useEffect(() => {
     if (location.pathname !== '/' && isSchedulingMode) {
       setIsSchedulingMode(false);
@@ -575,8 +590,6 @@ const Index = () => {
       setActiveAsks([]);
     }
 
-    // Use the current values of focusMinutes and breakMinutes, which are managed by setHomepageFocusMinutes/setHomepageBreakMinutes
-    // and initialized from defaults or loaded state.
     const currentFocusDuration = focusMinutes;
     const currentBreakDuration = breakMinutes;
 
@@ -589,10 +602,9 @@ const Index = () => {
     setCurrentPhaseStartTime(Date.now());
     setAccumulatedFocusSeconds(0);
     setAccumulatedBreakSeconds(0);
-    // NEW: Set currentPhaseDurationSeconds for manual timer
     const initialDurationSeconds = timerType === 'focus' ? currentFocusDuration * 60 : currentBreakDuration * 60;
     setCurrentPhaseDurationSeconds(initialDurationSeconds);
-    setTimeLeft(initialDurationSeconds); // Initialize timeLeft to full duration
+    setTimeLeft(initialDurationSeconds);
     setIsTimeLeftManagedBySession(true);
 
     const hostParticipant: ParticipantSessionData = {
@@ -601,12 +613,12 @@ const Index = () => {
       joinTime: Date.now(),
       role: 'host',
       focusPreference: focusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || null, // Changed undefined to null
-      bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
+      intention: profile?.profile_data?.intention?.value || null,
+      bio: profile?.profile_data?.bio?.value || null,
     };
 
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(localFirstName); // This uses setCurrentSessionHostName
+    setCurrentSessionHostName(localFirstName);
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
     setCurrentSessionParticipantsData([hostParticipant]);
@@ -633,7 +645,7 @@ const Index = () => {
             location_lat: latitude,
             location_long: longitude,
             participants_data: [hostParticipant],
-            join_code: joinCode, // RENAMED: host_code to join_code
+            join_code: joinCode,
           })
           .select('id')
           .single();
@@ -668,11 +680,9 @@ const Index = () => {
         });
       }
     } else if (currentPhaseStartTime === null) {
-      // This case should ideally not happen if remainingTimeAtPause is correctly set
       setCurrentPhaseStartTime(Date.now());
-      setCurrentPhaseDurationSeconds(timeLeft); // NEW: Set duration to current timeLeft
+      setCurrentPhaseDurationSeconds(timeLeft);
     } else {
-      // NEW: When resuming, set currentPhaseStartTime based on remainingTimeAtPause
       setCurrentPhaseStartTime(Date.now() - (currentPhaseDurationSeconds - remainingTimeAtPause) * 1000);
     }
     setIsTimeLeftManagedBySession(true);
@@ -686,8 +696,6 @@ const Index = () => {
       } else {
         setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
       }
-      // NEW: Store remaining time at pause
-      // setRemainingTimeAtPause(timeLeft); // This is now handled in TimerContext
       setCurrentPhaseStartTime(null);
     }
     setIsPaused(true);
@@ -698,9 +706,7 @@ const Index = () => {
   };
 
   const resetTimer = async () => {
-    // For solo timers, always stop without confirmation
-    // The `stopTimer` function now handles the confirmation logic based on its `confirmPrompt` argument.
-    stopTimer(false, false); // MODIFIED: Added second argument
+    stopTimer(false, false);
   };
 
   const switchToBreak = () => {
@@ -709,7 +715,6 @@ const Index = () => {
       setAccumulatedFocusSeconds((prev: number) => prev + elapsed);
     }
     setTimerType('break');
-    // NEW: Set new phase duration and start time
     const newBreakDurationSeconds = breakMinutes * 60;
     setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
     setTimeLeft(newBreakDurationSeconds);
@@ -728,7 +733,6 @@ const Index = () => {
       setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
     }
     setTimerType('focus');
-    // NEW: Set new phase duration and start time
     const newFocusDurationSeconds = focusMinutes * 60;
     setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
     setTimeLeft(newFocusDurationSeconds);
@@ -747,12 +751,12 @@ const Index = () => {
     if (mode === 'focus') {
       setTimerType('focus');
       const newFocusDurationSeconds = focusMinutes * 60;
-      setCurrentPhaseDurationSeconds(newFocusDurationSeconds); // NEW: Update duration
+      setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
       setTimeLeft(newFocusDurationSeconds);
     } else {
       setTimerType('break');
       const newBreakDurationSeconds = breakMinutes * 60;
-      setCurrentPhaseDurationSeconds(newBreakDurationSeconds); // NEW: Update duration
+      setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
       setTimeLeft(newBreakDurationSeconds);
     }
     setIsTimeLeftManagedBySession(false);
@@ -762,10 +766,8 @@ const Index = () => {
     try {
       const sessionId = session.id;
       const sessionTitle = session.title;
-      // Find the host from the participants array, or fallback to session title
       const hostName = session.participants.find(p => p.role === 'host')?.userName || session.title;
 
-      // Participants and fullSchedule are already robustly constructed by fetchSupabaseSessions
       const participants = session.participants;
       const fullSchedule = session.fullSchedule;
 
@@ -826,11 +828,11 @@ const Index = () => {
           description: `An unexpected error occurred: ${error.message || String(error)}.`,
         });
       }
-      resetSessionStates(); // Ensure states are reset on error
+      resetSessionStates();
     }
   };
 
-  const handleJoinCodeSubmit = async () => { // MODIFIED: Made async
+  const handleJoinCodeSubmit = async () => {
     const trimmedCode = joinSessionCode.trim();
     if (!trimmedCode) {
       if (areToastsEnabled) {
@@ -855,13 +857,13 @@ const Index = () => {
             userId: user?.id || `anon-${crypto.randomUUID()}`,
             userName: localFirstName,
             focusPreference: focusPreference || 50,
-            intention: profile?.profile_data?.intention?.value || null, // Changed undefined to null
-            bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
+            intention: profile?.profile_data?.intention?.value || null,
+            bio: profile?.profile_data?.bio?.value || null,
           },
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`, // MODIFIED: Use session.access_token
+          'Authorization': `Bearer ${session?.access_token}`,
         },
       });
 
@@ -870,19 +872,18 @@ const Index = () => {
 
       const joinedSession = response.data.session;
       if (joinedSession) {
-        // Map SupabaseSessionData to DemoSession for handleJoinSession
         const demoSession: DemoSession = {
           id: joinedSession.id,
           title: joinedSession.session_title,
           startTime: new Date(joinedSession.created_at).getTime(),
           location: joinedSession.location_long && joinedSession.location_lat ? `Lat: ${joinedSession.location_lat}, Long: ${joinedSession.location_lat}` : "Unknown Location",
-          workspaceImage: "/api/placeholder/200/120", // Placeholder
+          workspaceImage: "/api/placeholder/200/120",
           workspaceDescription: "Live session from Supabase",
           participants: (joinedSession.participants_data || []) as ParticipantSessionData[],
           fullSchedule: (joinedSession.schedule_data || []) as ScheduledTimer[],
-          location_lat: joinedSession.location_lat, // NEW: Pass location data
-          location_long: joinedSession.location_long, // NEW: Pass location data
-          active_asks: (joinedSession.active_asks || []) as ActiveAskItem[], // NEW: Pass active_asks
+          location_lat: joinedSession.location_lat,
+          location_long: joinedSession.location_long,
+          active_asks: (joinedSession.active_asks || []) as ActiveAskItem[],
         };
         await handleJoinSession(demoSession);
       } else {
@@ -907,7 +908,6 @@ const Index = () => {
 
   const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
 
-  // Define currentItemDuration based on context
   const currentItemDuration = useMemo(() => {
     if (isScheduleActive && activeSchedule[currentScheduleIndex]) {
       return activeSchedule[currentScheduleIndex].durationMinutes;
@@ -951,7 +951,7 @@ const Index = () => {
   }, [profile?.organization, isDiscoveryActivated]);
 
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
-    if (!profile?.organization || !showDemoSessions) return [];
+    if (!profile?.organization || !showDemoSessions || !mockSessions) return [];
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
@@ -1026,15 +1026,14 @@ const Index = () => {
           userId: id,
           userName: name,
           joinTime: Date.now(),
-          role: i === 0 ? 'host' : 'coworker', // Assign first participant as host
+          role: i === 0 ? 'host' : 'coworker',
           focusPreference: variedFocusPreference,
           intention: `Deep work on ${name}'s theories.`,
           bio: `A dedicated member of ${orgName}.`,
         });
       }
 
-      // NEW: Add mock location data for organization sessions
-      const mockLat = -33.8688 + (Math.random() - 0.5) * 0.05; // Slightly varied from Sydney
+      const mockLat = -33.8688 + (Math.random() - 0.5) * 0.05;
       const mockLong = 151.2093 + (Math.random() - 0.5) * 0.05;
 
       let distance: number | null = null;
@@ -1057,12 +1056,12 @@ const Index = () => {
         location_lat: mockLat,
         location_long: mockLong,
         distance: distance,
-        active_asks: [], // NEW: Default active_asks for mock sessions
+        active_asks: [],
       });
     });
 
     return sessions;
-  }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions, userLocation]);
+  }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions, userLocation, mockSessions]);
 
 
   const handleExtendSubmit = async (minutes: number) => {
@@ -1079,7 +1078,7 @@ const Index = () => {
       id: `extend-${Date.now()}`,
       minutes,
       creator: currentUserName,
-      creatorId: user.id, // Add creatorId for server-side validation
+      creatorId: user.id,
       votes: [],
       status: 'pending',
     };
@@ -1115,7 +1114,7 @@ const Index = () => {
       question,
       type: pollType,
       creator: currentUserName,
-      creatorId: user.id, // Add creatorId for server-side validation
+      creatorId: user.id,
       options: pollOptions,
       status: 'active',
       allowCustomResponses,
@@ -1247,7 +1246,7 @@ const Index = () => {
     }
 
     setCurrentSessionRole('host');
-    setCurrentSessionHostName(currentUserName); // This uses setCurrentSessionHostName
+    setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
   }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, areToastsEnabled, currentUserName, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants]);
 
@@ -1259,7 +1258,7 @@ const Index = () => {
     const [hours, minutes] = template.commenceTime.split(':').map(Number);
     let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
-    const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, etc.
+    const currentDay = now.getDay();
     const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
     
     let daysToAdd = (templateDay - currentDay + 7) % 7;
@@ -1298,7 +1297,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    }); // Corrected line
+    });
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -1324,16 +1323,16 @@ const Index = () => {
   };
 
   const handleShareLink = useCallback(async () => {
-    if (!joinCode) { // RENAMED: hostCode to joinCode
+    if (!joinCode) {
       if (areToastsEnabled) {
-        toast.error("Join Code Missing", { // RENAMED
-          description: "Your join code is not available. Please check your profile settings.", // RENAMED
+        toast.error("Join Code Missing", {
+          description: "Your join code is not available. Please check your profile settings.",
         });
       }
       return;
     }
 
-    const shareUrl = `${window.location.origin}/?joinCode=${joinCode}`; // RENAMED: hostCode to joinCode
+    const shareUrl = `${window.location.origin}/?joinCode=${joinCode}`;
     try {
       await navigator.clipboard.writeText(shareUrl);
       setIsLinkCopied(true);
@@ -1352,13 +1351,13 @@ const Index = () => {
         });
       }
     }
-  }, [joinCode, areToastsEnabled]); // RENAMED: hostCode to joinCode
+  }, [joinCode, areToastsEnabled]);
 
   const handleActivateDiscovery = async () => {
     const trimmedDisplayName = discoveryDisplayName.trim();
-    const currentFocusPreference = focusPreference; // Get current state from context
+    const currentFocusPreference = focusPreference;
 
-    const updates: ProfileUpdate = {}; // Corrected type to ProfileUpdate
+    const updates: ProfileUpdate = {};
     let hasChangesToSave = false;
 
     if (trimmedDisplayName !== "" && trimmedDisplayName !== localFirstName) {
@@ -1380,9 +1379,7 @@ const Index = () => {
     setIsDiscoveryActivated(true);
     console.log("handleActivateDiscovery: After setIsDiscoveryActivated, isDiscoveryActivated (should be true in next render):", true);
 
-    // Add a small delay to allow React to process state updates and useEffects to run,
-    // ensuring localStorage is updated before the dialog potentially unmounts.
-    await new Promise(resolve => setTimeout(resolve, 100)); // Increased delay slightly for robustness
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     setIsDiscoverySetupOpen(false);
 
@@ -1402,7 +1399,6 @@ const Index = () => {
     }
   };
 
-  // NEW: Slider drag handlers for Discovery Setup dialog
   const handleDiscoverySliderDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     if (!discoverySliderContainerRef.current) return;
 
@@ -1417,10 +1413,10 @@ const Index = () => {
   }, [setFocusPreference]);
 
   const handleDiscoveryPointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0) return; // Only respond to left-click
+    if (event.button !== 0) return;
     setIsDraggingDiscoverySlider(true);
-    handleDiscoverySliderDrag(event); // Set initial value on click
-    event.currentTarget.setPointerCapture(event.pointerId); // Capture pointer for continuous drag
+    handleDiscoverySliderDrag(event);
+    event.currentTarget.setPointerCapture(event.pointerId);
   }, [handleDiscoverySliderDrag]);
 
   const handleDiscoveryPointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
@@ -1431,13 +1427,13 @@ const Index = () => {
 
   const handleDiscoveryPointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     setIsDraggingDiscoverySlider(false);
-    event.currentTarget.releasePointerCapture(event.pointerId); // Release pointer capture
+    event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
-        const hasNearbySessions = (supabaseNearbySessions && supabaseNearbySessions.length > 0) || (showDemoSessions && mockNearbySessions.length > 0);
+        const hasNearbySessions = (supabaseActiveSessions && supabaseActiveSessions.length > 0) || (showDemoSessions && filteredMockNearbySessions.length > 0);
         if (!shouldShowNearbySessions || !hasNearbySessions) {
           return null;
         }
@@ -1482,14 +1478,14 @@ const Index = () => {
               <div className="space-y-3">
                 {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
                 {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
-                {supabaseNearbySessions?.map(session => (
+                {supabaseActiveSessions?.map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
                     onJoinSession={handleJoinSession}
                   />
                 ))}
-                {showDemoSessions && mockNearbySessions.map(session => (
+                {showDemoSessions && filteredMockNearbySessions.map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -1501,7 +1497,7 @@ const Index = () => {
           </div>
         );
       case 'friends':
-        const hasFriendsSessions = showDemoSessions && mockFriendsSessions.length > 0;
+        const hasFriendsSessions = showDemoSessions && filteredMockFriendsSessions.length > 0;
         if (!shouldShowFriendsSessions || !hasFriendsSessions) {
           return null;
         }
@@ -1524,7 +1520,7 @@ const Index = () => {
             </button>
             {isFriendsSessionsOpen && (
               <div className="space-y-3">
-                {showDemoSessions && mockFriendsSessions.map(session => (
+                {showDemoSessions && filteredMockFriendsSessions.map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -1754,31 +1750,27 @@ const Index = () => {
                     )}
                   </div>
 
-                  {/* NEW: Container for Stop and Ask buttons */}
                   {(isRunning || isPaused || isScheduleActive || isSchedulePending) && (
                     <div className="flex items-end justify-between px-4 mt-4">
-                      {/* Stop button container */}
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
                         isRunning && "opacity-50",
                         "hover:opacity-100",
-                        isPaused && "text-error-foreground" // Changed to error-foreground
+                        isPaused && "text-error-foreground"
                       )}>
                         <Button
                           variant="ghost"
                           size="icon"
-                          // Removed onMouseDown, onMouseUp, onMouseLeave, onTouchStart, onTouchEnd
-                          onClick={() => stopTimer(true, false)} // MODIFIED: Added second argument
+                          onClick={() => stopTimer(true, false)}
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-primary/5 dark:hover:bg-primary/10",
-                            isPaused ? "text-error-foreground" : "text-secondary-foreground" // Changed to error-foreground
+                            isPaused ? "text-error-foreground" : "text-secondary-foreground"
                           )}
                           data-name="Stop Timer Button"
                         >
                           <Square size={16} fill="currentColor" />
                         </Button>
                       </div>
-                      {/* AskMenu component */}
                       <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />
                     </div>
                   )}
@@ -1869,7 +1861,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend} // Corrected: Use handleVoteExtend for voting on existing asks
+              onVoteExtend={handleVoteExtend}
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
@@ -1961,7 +1953,6 @@ const Index = () => {
                       key={person.userId}
                       className={cn(
                         "flex items-center justify-between p-2 rounded-md select-none",
-                        // NEW: Use the solid focus background color based on theme
                         person.role === 'self' ? (isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]") :
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
                         "hover:bg-muted cursor-pointer"
@@ -2132,7 +2123,6 @@ const Index = () => {
                   value={discoveryDisplayName}
                   onChange={(e) => setDiscoveryDisplayName(e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  // Removed onBlur={handleDiscoveryDisplayNameBlur}
                 />
               </div>
 
@@ -2145,14 +2135,13 @@ const Index = () => {
                     How would you prefer to balance focus vs socialising?
                   </TooltipContent>
                 </Tooltip>
-                {/* NEW: Wrapper div for expanded slider interaction */}
                 <div
                   ref={discoverySliderContainerRef}
                   onPointerDown={handleDiscoveryPointerDown}
                   onPointerMove={handleDiscoveryPointerMove}
                   onPointerUp={handleDiscoveryPointerUp}
-                  onPointerLeave={handleDiscoveryPointerUp} // Handle pointer leaving the element
-                  className="space-y-4 cursor-ew-resize p-2 -m-2 rounded-md" // Added padding and negative margin to expand touch area
+                  onPointerLeave={handleDiscoveryPointerUp}
+                  className="space-y-4 cursor-ew-resize p-2 -m-2 rounded-md"
                 >
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Banter</span>
