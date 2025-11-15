@@ -200,6 +200,84 @@ const fetchMockSessions = async (
   });
 };
 
+// NEW: Function to fetch live sessions from Supabase
+const fetchSupabaseSessions = async (
+  userId: string | undefined,
+  userLatitude: number | null,
+  userLongitude: number | null
+): Promise<DemoSession[]> => {
+  if (!userId) {
+    console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
+    return [];
+  }
+
+  // Fetch sessions where the user is the host, or it's public, or the user is a participant
+  // The RLS policy on active_sessions table handles the filtering based on auth.uid()
+  const { data, error } = await supabase
+    .from('active_sessions')
+    .select('*')
+    .eq('is_active', true); // Only fetch active sessions
+
+  if (error) {
+    console.error("Error fetching active sessions from Supabase:", error);
+    throw new Error(error.message);
+  }
+
+  return data.map((session: SupabaseSessionData) => {
+    const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
+    const participants: ParticipantSessionData[] = rawParticipantsData.map(p => ({
+      userId: p.userId,
+      userName: p.userName,
+      joinTime: p.joinTime,
+      role: p.role,
+      focusPreference: p.focusPreference || 50,
+      intention: p.intention || undefined,
+      bio: p.bio || undefined,
+    }));
+
+    const rawScheduleData = (session.schedule_data || []) as ScheduledTimer[];
+    let fullSchedule: ScheduledTimer[];
+    if (rawScheduleData.length > 0) {
+      fullSchedule = rawScheduleData.map((item: any) => ({
+        id: item.id || crypto.randomUUID(),
+        title: item.title || item.type,
+        type: item.type,
+        durationMinutes: item.durationMinutes,
+        isCustom: item.isCustom || false,
+        customTitle: item.customTitle || undefined,
+      }));
+    } else {
+      fullSchedule = [{
+        id: crypto.randomUUID(),
+        title: session.current_phase_type === 'focus' ? 'Focus' : 'Break',
+        type: session.current_phase_type,
+        durationMinutes: session.current_phase_type === 'focus' ? session.focus_duration : session.break_duration,
+        isCustom: false,
+      }];
+    }
+
+    let distance: number | null = null;
+    if (userLatitude !== null && userLongitude !== null && session.location_lat !== null && session.location_long !== null) {
+      distance = calculateDistance(userLatitude, userLongitude, session.location_lat, session.location_long);
+    }
+
+    return {
+      id: session.id,
+      title: session.session_title,
+      startTime: new Date(session.created_at).getTime(),
+      location: session.location_long && session.location_lat ? `Lat: ${session.location_lat}, Long: ${session.location_lat}` : "Unknown Location",
+      workspaceImage: "/api/placeholder/200/120",
+      workspaceDescription: "Live session from Supabase",
+      participants: participants,
+      fullSchedule: fullSchedule,
+      location_lat: session.location_lat,
+      location_long: session.location_long,
+      distance: distance,
+      active_asks: (session.active_asks || []) as ActiveAskItem[],
+    };
+  });
+};
+
 
 const Index = () => {
   const {
