@@ -468,7 +468,7 @@ const Index = () => {
     enabled: showDemoSessions, // Only fetch mock profiles if demo sessions are enabled
   });
 
-  // NEW: Fetch mock sessions from Supabase
+  // NEW: Function to fetch mock sessions from Supabase
   const { data: mockSessions, isLoading: isLoadingMockSessions, error: mockSessionsError } = useQuery<DemoSession[]>({
     queryKey: ['mockSessions', user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, mockProfiles],
     queryFn: async () => {
@@ -994,38 +994,21 @@ const Index = () => {
   }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType, focusMinutes, breakMinutes]);
 
   const shouldShowNearbySessions = useMemo(() => {
-    if (!isDiscoveryActivated) return false;
-    if (!isActiveTimer) {
-      return !isGlobalPrivate;
-    }
-
-    if (showSessionsWhileActive === 'hidden') {
-      return false;
-    }
-    if (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all') {
-      return !isGlobalPrivate;
-    }
-    return false;
-  }, [isActiveTimer, isGlobalPrivate, showSessionsWhileActive, isDiscoveryActivated]);
+    const result = isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
+    console.log("shouldShowNearbySessions:", result, "isDiscoveryActivated:", isDiscoveryActivated, "isGlobalPrivate:", isGlobalPrivate, "showSessionsWhileActive:", showSessionsWhileActive);
+    return result;
+  }, [isDiscoveryActivated, isGlobalPrivate, showSessionsWhileActive]);
 
   const shouldShowFriendsSessions = useMemo(() => {
-    if (!isDiscoveryActivated) return false;
-    if (!isActiveTimer) {
-      return true;
-    }
-
-    if (showSessionsWhileActive === 'hidden') {
-      return false;
-    }
-    if (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all') {
-      return true;
-    }
-    return false;
-  }, [isActiveTimer, showSessionsWhileActive, isDiscoveryActivated]);
+    const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
+    console.log("shouldShowFriendsSessions:", result, "isDiscoveryActivated:", isDiscoveryActivated, "showSessionsWhileActive:", showSessionsWhileActive);
+    return result;
+  }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganizationSessions = useMemo(() => {
-    if (!isDiscoveryActivated) return false;
-    return !!profile?.organization;
+    const result = isDiscoveryActivated && !!profile?.organization;
+    console.log("shouldShowOrganizationSessions:", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization);
+    return result;
   }, [profile?.organization, isDiscoveryActivated]);
 
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
@@ -1507,6 +1490,32 @@ const Index = () => {
     setIsDraggingDiscoverySlider(false);
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
+
+  // NEW: Diagnostic logs
+  useEffect(() => {
+    console.group("Index.tsx Debugging Session Visibility");
+    console.log("showDemoSessions:", showDemoSessions);
+    console.log("isDiscoveryActivated:", isDiscoveryActivated);
+    console.log("geolocationPermissionStatus:", geolocationPermissionStatus);
+    console.log("userLocation:", userLocation);
+    console.log("isGlobalPrivate:", isGlobalPrivate);
+    console.log("showSessionsWhileActive:", showSessionsWhileActive);
+    console.log("profile?.id:", profile?.id);
+    console.log("profile?.organization:", profile?.organization);
+    console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
+    console.log("filteredMockNearbySessions.length:", filteredMockNearbySessions.length);
+    console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions);
+    console.log("filteredMockFriendsSessions.length:", filteredMockFriendsSessions.length);
+    console.log("shouldShowOrganizationSessions (memo):", shouldShowOrganizationSessions);
+    console.log("mockOrganizationSessions.length:", mockOrganizationSessions.length);
+    console.groupEnd();
+  }, [
+    showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
+    isGlobalPrivate, showSessionsWhileActive, profile?.id, profile?.organization,
+    shouldShowNearbySessions, filteredMockNearbySessions.length,
+    shouldShowFriendsSessions, filteredMockFriendsSessions.length,
+    shouldShowOrganizationSessions, mockOrganizationSessions.length
+  ]);
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
