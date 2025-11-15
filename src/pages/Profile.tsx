@@ -294,9 +294,9 @@ const Profile = () => {
     }
   }, [currentPronounIndex, areToastsEnabled]);
 
-  // Effect to initialize local states and originalValues ONCE when profile is loaded
+  // Effect to initialize local states when profile is loaded or changes
   useEffect(() => {
-    if (!loading && profile && originalValues === null) {
+    if (!loading && profile) { // Run whenever profile changes, not just on initial load
       setFirstNameInput(profile.first_name || "You");
       setBioInput(profile.profile_data?.bio?.value || null);
       setIntentionInput(profile.profile_data?.intention?.value || null);
@@ -317,26 +317,31 @@ const Profile = () => {
 
       setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.profile_data?.pronouns?.value || ""));
 
-      setOriginalValues({
-        firstName: profile.first_name || "You",
-        bio: profile.profile_data?.bio?.value || "",
-        intention: profile.profile_data?.intention?.value || "",
-        canHelpWith: profile.profile_data?.can_help_with?.value || "",
-        needHelpWith: profile.profile_data?.need_help_with?.value || "",
-        focusPreference: profile.focus_preference || 50,
-        organization: profile.organization || "",
-        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
-        joinCode: profile.join_code || "", // RENAMED: hostCode to joinCode
-        bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
-        intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
-        linkedinVisibility: profile.profile_data?.linkedin_url?.visibility || ['public'],
-        canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
-        needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
-        pronouns: profile.profile_data?.pronouns?.value || null,
-        profileVisibility: profile.visibility || ['public'],
-      });
+      // Only set originalValues if it's null (initial load) or if profile.id changes (new user/logout)
+      // This prevents resetting originalValues every time profile updates due to other reasons (e.g., background sync)
+      // A more robust check for "profile changed significantly" might be needed if background syncs frequently
+      if (originalValues === null || originalValues.firstName !== (profile.first_name || "You") || originalValues.joinCode !== (profile.join_code || "")) {
+        setOriginalValues({
+          firstName: profile.first_name || "You",
+          bio: profile.profile_data?.bio?.value || "",
+          intention: profile.profile_data?.intention?.value || "",
+          canHelpWith: profile.profile_data?.can_help_with?.value || "",
+          needHelpWith: profile.profile_data?.need_help_with?.value || "",
+          focusPreference: profile.focus_preference || 50,
+          organization: profile.organization || "",
+          linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
+          joinCode: profile.join_code || "", // RENAMED: hostCode to joinCode
+          bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
+          intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
+          linkedinVisibility: profile.profile_data?.linkedin_url?.visibility || ['public'],
+          canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
+          needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
+          pronouns: profile.profile_data?.pronouns?.value || null,
+          profileVisibility: profile.visibility || ['public'],
+        });
+      }
     }
-  }, [loading, profile, originalValues]);
+  }, [loading, profile]);
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -388,7 +393,7 @@ const Profile = () => {
   // This useEffect will now correctly trigger checkForChanges whenever any editable state changes
   useEffect(() => {
     checkForChanges();
-  }, [checkForChanges]); // Dependency on checkForChanges ensures it runs when its internal dependencies change
+  }, [checkForChanges]); // Dependency on checkForChanges ensures it runs when its internal dependencies changes
 
   const handleJoinCodeClick = () => { // RENAMED
     setIsEditingJoinCode(true); // RENAMED
@@ -459,45 +464,28 @@ const Profile = () => {
 
     await updateProfile(dataToUpdate); // This updates the profile in context and local storage
 
-    // Also update the individual context states directly for immediate reflection
-    setContextFirstName(nameToSave);
-    setContextBio(bioInput);
-    setContextIntention(intentionInput);
-    setContextCanHelpWith(canHelpWithInput);
-    setContextNeedHelpWith(needHelpWithInput);
-    setContextFocusPreference(focusPreferenceInput);
-    setContextOrganization(organizationInput);
-    setContextLinkedinUrl(linkedinUrlInput);
-    setContextJoinCode(joinCodeInput); // RENAMED
-    setContextPronouns(pronounsInput);
-    setContextBioVisibility(bioVisibilityInput);
-    setContextIntentionVisibility(intentionVisibilityInput);
-    setContextLinkedinVisibility(linkedinVisibilityInput);
-    setContextCanHelpWithVisibility(canHelpWithVisibilityInput);
-    setContextNeedHelpWithVisibility(needHelpWithVisibilityInput);
-    setContextProfileVisibility(profileVisibilityInput);
-
-
     // After successful save, update originalValues to reflect the new saved state
-    // This should be done using the *current* state values, which are now the "saved" values
-    setOriginalValues({
-      firstName: nameToSave,
-      bio: bioInput || "",
-      intention: intentionInput || "",
-      canHelpWith: canHelpWithInput || "",
-      needHelpWith: needHelpWithInput || "",
-      focusPreference: focusPreferenceInput,
-      organization: organizationInput || "",
-      linkedinUrl: linkedinUrlInput ? (linkedinUrlInput.startsWith("https://www.linkedin.com/in/") ? linkedinUrlInput.substring("https://www.linkedin.com/in/".length) : linkedinUrlInput) : "",
-      joinCode: trimmedJoinCode, // RENAMED
-      bioVisibility: bioVisibilityInput,
-      intentionVisibility: intentionVisibilityInput,
-      linkedinVisibility: linkedinVisibilityInput,
-      canHelpWithVisibility: canHelpWithVisibilityInput,
-      needHelpWithVisibility: needHelpWithVisibilityInput,
-      pronouns: pronounsInput,
-      profileVisibility: profileVisibilityInput,
-    });
+    // This should be done using the *current* profile object from context, which is the source of truth.
+    if (profile) {
+      setOriginalValues({
+        firstName: profile.first_name || "You",
+        bio: profile.profile_data?.bio?.value || "",
+        intention: profile.profile_data?.intention?.value || "",
+        canHelpWith: profile.profile_data?.can_help_with?.value || "",
+        needHelpWith: profile.profile_data?.need_help_with?.value || "",
+        focusPreference: profile.focus_preference || 50,
+        organization: profile.organization || "",
+        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
+        joinCode: profile.join_code || "",
+        bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
+        intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
+        linkedinVisibility: profile.profile_data?.linkedin_url?.visibility || ['public'],
+        canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
+        needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
+        pronouns: profile.profile_data?.pronouns?.value || null,
+        profileVisibility: profile.visibility || ['public'],
+      });
+    }
     setHasChanges(false); // Explicitly set to false after saving
   };
 
