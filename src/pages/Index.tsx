@@ -1573,6 +1573,15 @@ const Index = () => {
     limitDiscoveryRadius, maxDistance // NEW: Add limitDiscoveryRadius and maxDistance to dependencies
   ]);
 
+  const formatDistance = (distance: number | null) => {
+    if (distance === null || distance === undefined) return null;
+    if (distance < 1000) {
+      return `${Math.round(distance)}m`;
+    } else {
+      return `${(distance / 1000).toFixed(1)}km`;
+    }
+  };
+
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
@@ -1609,6 +1618,20 @@ const Index = () => {
                     </TooltipContent>
                   </Tooltip>
                 <h3>Nearby</h3>
+                {limitDiscoveryRadius ? (
+                  <span className="text-sm text-muted-foreground ml-1">
+                    ({formatDistance(maxDistance)})
+                  </span>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Infinity size={16} className="text-muted-foreground ml-1" />
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                      Discovery Radius: Unlimited
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 {hiddenNearbyCount > 0 && (
