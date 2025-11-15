@@ -192,7 +192,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         profile_data: {
           bio: getDefaultProfileDataField("Designing rockets.", ['public']),
           intention: getDefaultProfileDataField("Innovating space travel.", ['public']),
-          linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/elonmusk", ['public']),
+          linkedin_url: getDefaultOutlinedInput("https://www.linkedin.com/in/elonmusk", ['public']),
           can_help_with: getDefaultProfileDataField("Rocket engineering", ['public']),
           need_help_with: getDefaultProfileDataField("Mars colonization", ['private']),
           pronouns: getDefaultProfileDataField("He/Him", ['public']),
@@ -234,9 +234,16 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     const profileDataToSend = {
-      ...profile,
-      profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
-      visibility: profile.visibility || ['public'], // Ensure visibility is sent
+      id: profile.id,
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      avatar_url: profile.avatar_url,
+      organization: profile.organization,
+      focus_preference: profile.focus_preference,
+      updated_at: profile.updated_at,
+      join_code: profile.join_code,
+      profile_data: profile.profile_data, // This is the JSONB object
+      visibility: profile.visibility,
     };
     console.log("ProfileContext: syncProfileToSupabase: Data to send:", profileDataToSend); // ADD LOG
 
@@ -293,20 +300,63 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       } else {
         if (!authLoading && user) {
-          const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
-          const defaultProfile: Profile = {
-            id: user.id,
-            first_name: user.user_metadata.first_name || "You",
-            last_name: null, avatar_url: null, organization: null,
-            focus_preference: 50, updated_at: new Date().toISOString(),
-            join_code: generateRandomJoinCode(), // RENAMED: host_code to join_code
-            profile_data: defaultProfileData,
-            visibility: ['public'], // Default visibility for new profiles
-          };
-          if (isMounted) {
-            setProfile(defaultProfile);
-            localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
-            console.log("ProfileContext: New profile created and saved to localStorage:", defaultProfile); // ADD LOG
+          // Attempt to fetch from Supabase first, as the trigger should have created it
+          try {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+
+            if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
+              console.error("ProfileContext: Error fetching profile from Supabase on initial load:", error.message);
+              // Fallback to local default if Supabase fetch fails
+              const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
+              const defaultProfile: Profile = {
+                id: user.id,
+                first_name: user.user_metadata.first_name || "You",
+                last_name: null, avatar_url: null, organization: null,
+                focus_preference: 50, updated_at: new Date().toISOString(),
+                join_code: null, // Let Supabase handle this, or fetch it
+                profile_data: defaultProfileData,
+                visibility: ['public'],
+              };
+              if (isMounted) {
+                setProfile(defaultProfile);
+                localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
+                console.log("ProfileContext: New local profile created as Supabase fetch failed:", defaultProfile);
+              }
+            } else if (data) {
+              const fetchedProfile: Profile = {
+                ...data,
+                profile_data: data.profile_data || getDefaultProfileDataJsonb(),
+                visibility: data.visibility || ['public'],
+              };
+              if (isMounted) {
+                setProfile(fetchedProfile);
+                localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(fetchedProfile));
+                console.log("ProfileContext: Profile fetched from Supabase on initial load:", fetchedProfile);
+              }
+            } else {
+              // No profile found in Supabase, and no error other than "no rows found".
+              // This might happen if the trigger hasn't fired yet or there's a delay.
+              // Create a minimal local profile, and rely on periodic sync to populate from Supabase later.
+              const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
+              const defaultProfile: Profile = {
+                id: user.id,
+                first_name: user.user_metadata.first_name || "You",
+                last_name: null, avatar_url: null, organization: null,
+                focus_preference: 50, updated_at: new Date().toISOString(),
+                join_code: null, // Let Supabase handle this
+                profile_data: defaultProfileData,
+                visibility: ['public'],
+              };
+              if (isMounted) {
+                setProfile(defaultProfile);
+                localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
+                console.log("ProfileContext: New minimal local profile created (Supabase not yet populated):", defaultProfile);
+              }
+            }
           }
         }
       }
@@ -414,19 +464,30 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     // Create a new profile object based on current 'profile' and 'updates'
     const currentProfile = profile || { id: user.id, first_name: "You", focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'] } as Profile; // RENAMED: host_code to join_code
 
-    const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
+    // Separate direct profile updates from profile_data updates
+    const directProfileUpdates: Partial<Omit<Profile, 'id' | 'updated_at' | 'profile_data' | 'visibility'>> = {};
+    const profileDataUpdates: Partial<ProfileDataJsonb> = {};
 
-    if (updates.bio !== undefined) updatedProfileData.bio = updates.bio;
-    if (updates.intention !== undefined) updatedProfileData.intention = updates.intention;
-    if (updates.linkedin_url !== undefined) updatedProfileData.linkedin_url = updates.linkedin_url;
-    if (updates.can_help_with !== undefined) updatedProfileData.can_help_with = updates.can_help_with;
-    if (updates.need_help_with !== undefined) updatedProfileData.need_help_with = updates.need_help_with;
-    if (updates.pronouns !== undefined) updatedProfileData.pronouns = updates.pronouns;
+    // Iterate over updates to categorize them
+    for (const key in updates) {
+      if (key === 'bio' || key === 'intention' || key === 'linkedin_url' || key === 'can_help_with' || key === 'need_help_with' || key === 'pronouns') {
+        profileDataUpdates[key as keyof ProfileDataJsonb] = updates[key as keyof ProfileUpdate] as ProfileDataField;
+      } else if (key === 'visibility') {
+        // Handled directly below
+      } else {
+        directProfileUpdates[key as keyof typeof directProfileUpdates] = updates[key as keyof ProfileUpdate] as any;
+      }
+    }
+
+    const updatedProfileData: ProfileDataJsonb = {
+      ...currentProfile.profile_data, // Start with existing profile_data
+      ...profileDataUpdates, // Apply updates to profile_data fields
+    };
 
     const newProfile: Profile = {
       ...currentProfile,
-      ...updates, // Apply direct updates (first_name, focus_preference, etc.)
-      profile_data: updatedProfileData,
+      ...directProfileUpdates, // Apply direct updates
+      profile_data: updatedProfileData, // Assign the combined JSONB object
       updated_at: new Date().toISOString(), // Always update timestamp on explicit update
       id: user.id, // Ensure ID is always set
       visibility: updates.visibility || currentProfile.visibility || ['public'], // NEW: Ensure visibility is updated
