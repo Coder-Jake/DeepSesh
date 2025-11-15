@@ -198,6 +198,7 @@ const fetchMockSessions = async (
       location_long: session.location_long,
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
+      visibility: session.visibility, // NEW: Map visibility
     };
   }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -283,6 +284,7 @@ const fetchSupabaseSessions = async (
       location_long: session.location_long,
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
+      visibility: session.visibility, // NEW: Map visibility
     };
   }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -516,11 +518,17 @@ const Index = () => {
       return [];
     }
     return mockSessions.filter(session => {
-      const isNearby = (session.location_lat && session.location_long && session.distance !== null && session.distance <= maxDistance); // NEW: Use maxDistance
-      console.log(`Session ${session.id} (${session.title}): distance=${session.distance}, isNearby=${isNearby}`);
-      return isNearby;
+      const isPublic = session.visibility === 'public';
+      const isNearbyByDistance = (session.location_lat && session.location_long && session.distance !== null && session.distance <= maxDistance);
+
+      if (limitDiscoveryRadius) {
+        return isPublic && isNearbyByDistance;
+      } else {
+        // If limitDiscoveryRadius is false, ignore distance and only show public sessions
+        return isPublic;
+      }
     });
-  }, [mockSessions, userLocation, maxDistance]); // NEW: Add maxDistance to dependencies
+  }, [mockSessions, userLocation, maxDistance, limitDiscoveryRadius]); // NEW: Add limitDiscoveryRadius to dependencies
 
   const filteredMockFriendsSessions = useMemo(() => {
     console.log("Filtering mock friends sessions...");
@@ -1002,6 +1010,7 @@ const Index = () => {
           location_lat: joinedSession.location_lat,
           location_long: joinedSession.location_long,
           active_asks: (joinedSession.active_asks || []) as ActiveAskItem[],
+          visibility: joinedSession.visibility, // NEW: Map visibility
         };
         await handleJoinSession(demoSession);
       } else {
@@ -1158,6 +1167,7 @@ const Index = () => {
         location_long: mockLong,
         distance: distance,
         active_asks: [],
+        visibility: 'organisation', // NEW: Set visibility for mock organization sessions
       });
     });
 
@@ -1611,7 +1621,7 @@ const Index = () => {
               <div className="space-y-3">
                 {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
                 {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
-                {supabaseActiveSessions?.map(session => (
+                {supabaseActiveSessions?.filter(session => session.visibility === 'public').map(session => ( // Filter live sessions by public visibility
                   <SessionCard
                     key={session.id}
                     session={session}

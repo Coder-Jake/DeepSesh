@@ -938,34 +938,36 @@ const Settings = () => {
                 </Button>
               </div>
 
-              <div>
-                <Label>Maximum Distance for Nearby Sessions</Label>
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm text-muted-foreground select-none">
-                    <span>100m</span>
-                    <span>5km</span>
-                  </div>
-                  <div className="relative group">
-                    <Slider
-                      value={[maxDistance]}
-                      onValueChange={(val) => setMaxDistance(val[0])}
-                      max={5000}
-                      min={100}
-                      step={100}
-                      className="w-full"
-                    />
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none select-none">
-                      {maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`}
+              {limitDiscoveryRadius && ( // Conditionally render based on limitDiscoveryRadius
+                <div>
+                  <Label>Maximum Distance for Nearby Sessions</Label>
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-sm text-muted-foreground select-none">
+                      <span>100m</span>
+                      <span>5km</span>
+                    </div>
+                    <div className="relative group">
+                      <Slider
+                        value={[maxDistance]}
+                        onValueChange={(val) => setMaxDistance(val[0])}
+                        max={5000}
+                        min={100}
+                        step={100}
+                        className="w-full"
+                      />
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none select-none">
+                        {maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`}
+                      </div>
+                    </div>
+                    <div className="text-center mt-3 text-sm text-muted-foreground select-none">
+                      {maxDistance <= 300 && "Very close proximity only"}
+                      {maxDistance > 300 && maxDistance <= 1000 && "Walking distance"}
+                      {maxDistance > 1000 && maxDistance <= 2000 && "Short bike ride"}
+                      {maxDistance > 2000 && "Wider area search"}
                     </div>
                   </div>
-                  <div className="text-center mt-3 text-sm text-muted-foreground select-none">
-                    {maxDistance <= 300 && "Very close proximity only"}
-                    {maxDistance > 300 && maxDistance <= 1000 && "Walking distance"}
-                    {maxDistance > 1000 && maxDistance <= 2000 && "Short bike ride"}
-                    {maxDistance > 2000 && "Wider area search"}
-                  </div>
                 </div>
-              </div>
+              )}
             </AccordionContent>
           </AccordionItem>
 
