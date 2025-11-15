@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown } from "lucide-react";
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown, Infinity } from "lucide-react"; // NEW: Import Infinity
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -36,7 +36,7 @@ import { format } from 'date-fns';
 import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData, DemoSession } from '@/types/timer';
 import { Accordion
  } from "@/components/ui/accordion";
-import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
+import UpcomingScheduleAccordionItem from "@/components/Upcoming/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -128,7 +128,9 @@ const fetchMockSessions = async (
   userLatitude: number | null,
   userLongitude: number | null,
   profileOrganization: string | null,
-  mockProfiles: ProfileType[] // Pass mock profiles to resolve participant data
+  mockProfiles: ProfileType[], // Pass mock profiles to resolve participant data
+  limitDiscoveryRadius: boolean, // NEW: Add limitDiscoveryRadius
+  maxDistance: number // NEW: Add maxDistance
 ): Promise<DemoSession[]> => {
   let query = supabase
     .from('mock_sessions')
@@ -197,6 +199,11 @@ const fetchMockSessions = async (
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
     };
+  }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
+    if (limitDiscoveryRadius && session.distance !== null) {
+      return session.distance <= maxDistance;
+    }
+    return true;
   });
 };
 
@@ -204,7 +211,9 @@ const fetchMockSessions = async (
 const fetchSupabaseSessions = async (
   userId: string | undefined,
   userLatitude: number | null,
-  userLongitude: number | null
+  userLongitude: number | null,
+  limitDiscoveryRadius: boolean, // NEW: Add limitDiscoveryRadius
+  maxDistance: number // NEW: Add maxDistance
 ): Promise<DemoSession[]> => {
   if (!userId) {
     console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
@@ -275,6 +284,11 @@ const fetchSupabaseSessions = async (
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
     };
+  }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
+    if (limitDiscoveryRadius && session.distance !== null) {
+      return session.distance <= maxDistance;
+    }
+    return true;
   });
 };
 
@@ -382,6 +396,8 @@ const Index = () => {
     currentPhaseDurationSeconds,
     setCurrentPhaseDurationSeconds,
     remainingTimeAtPause,
+    limitDiscoveryRadius, // NEW: Get limitDiscoveryRadius
+    maxDistance, // NEW: Get maxDistance
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility } = useProfile();
@@ -470,16 +486,16 @@ const Index = () => {
 
   // NEW: Function to fetch mock sessions from Supabase
   const { data: mockSessions, isLoading: isLoadingMockSessions, error: mockSessionsError } = useQuery<DemoSession[]>({
-    queryKey: ['mockSessions', user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, mockProfiles],
+    queryKey: ['mockSessions', user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, mockProfiles, limitDiscoveryRadius, maxDistance], // NEW: Add limitDiscoveryRadius and maxDistance to queryKey
     queryFn: async () => {
       try {
         if (!mockProfiles) return []; // Ensure mockProfiles are loaded before fetching sessions
-        return await fetchMockSessions(user?.id, userLocation.latitude, userLocation.longitude, profile?.organization || null, mockProfiles);
+        return await fetchMockSessions(user?.id, userLocation.latitude, userLocation.longitude, profile?.organization || null, mockProfiles, limitDiscoveryRadius, maxDistance); // NEW: Pass limitDiscoveryRadius and maxDistance
       } catch (err: any) {
         console.error("Error fetching mock sessions from Supabase:", err.message);
         if (areToastsEnabled) {
-          toast.error("Failed to Load Mock Sessions", {
-            description: `Could not load mock sessions: ${err.message}`,
+          toast.error("Failed to Load Mock Sessions",
+            { description: `Could not load mock sessions: ${err.message}`,
           });
         }
         throw err;
@@ -500,11 +516,11 @@ const Index = () => {
       return [];
     }
     return mockSessions.filter(session => {
-      const isNearby = (session.location_lat && session.location_long && session.distance !== null && session.distance <= 5000);
+      const isNearby = (session.location_lat && session.location_long && session.distance !== null && session.distance <= maxDistance); // NEW: Use maxDistance
       console.log(`Session ${session.id} (${session.title}): distance=${session.distance}, isNearby=${isNearby}`);
       return isNearby;
     });
-  }, [mockSessions, userLocation]);
+  }, [mockSessions, userLocation, maxDistance]); // NEW: Add maxDistance to dependencies
 
   const filteredMockFriendsSessions = useMemo(() => {
     console.log("Filtering mock friends sessions...");
@@ -526,21 +542,27 @@ const Index = () => {
 
   const filteredMockOrganizationSessions = useMemo(() => {
     if (!mockSessions || !profile?.organization) return [];
-    const userOrgNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
-    return mockSessions.filter(session => {
+
+    const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
+    const sessions: DemoSession[] = [];
+
+    mockSessions.forEach(session => {
       const hostProfile = mockProfiles?.find(mp => mp.id === session.user_id);
-      return hostProfile?.organization && userOrgNames.includes(hostProfile.organization);
+      if (hostProfile?.organization && organizationNames.includes(hostProfile.organization)) {
+        sessions.push(session);
+      }
     });
+    return sessions;
   }, [mockSessions, profile?.organization, mockProfiles]);
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude],
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance], // NEW: Add limitDiscoveryRadius and maxDistance to queryKey
     queryFn: async () => {
       try {
         // The original fetchSupabaseSessions function is designed to fetch from 'active_sessions'
         // and applies RLS logic. This is for *real* active sessions.
-        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude);
+        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance); // NEW: Pass limitDiscoveryRadius and maxDistance
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message);
         if (areToastsEnabled) {
@@ -1528,6 +1550,8 @@ const Index = () => {
     console.log("filteredMockFriendsSessions.length:", filteredMockFriendsSessions.length);
     console.log("shouldShowOrganizationSessions (memo):", shouldShowOrganizationSessions);
     console.log("mockOrganizationSessions.length:", mockOrganizationSessions.length);
+    console.log("limitDiscoveryRadius:", limitDiscoveryRadius); // NEW: Log limitDiscoveryRadius
+    console.log("maxDistance:", maxDistance); // NEW: Log maxDistance
     console.groupEnd();
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
@@ -1535,7 +1559,8 @@ const Index = () => {
     mockSessions, // Added mockSessions to dependencies
     shouldShowNearbySessions, filteredMockNearbySessions.length,
     shouldShowFriendsSessions, filteredMockFriendsSessions.length,
-    shouldShowOrganizationSessions, mockOrganizationSessions.length
+    shouldShowOrganizationSessions, mockOrganizationSessions.length,
+    limitDiscoveryRadius, maxDistance // NEW: Add limitDiscoveryRadius and maxDistance to dependencies
   ]);
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {

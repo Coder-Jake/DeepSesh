@@ -314,6 +314,8 @@ export type TimerContextType = {
   setCurrentPhaseDurationSeconds: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setCurrentPhaseDurationSeconds
   remainingTimeAtPause: number; // NEW: Add remainingTimeAtPause
   setRemainingTimeAtPause: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setRemainingTimeAtPause
+  limitDiscoveryRadius: boolean; // NEW: Add limitDiscoveryRadius
+  setLimitDiscoveryRadius: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Add setLimitDiscoveryRadius
 };
 
 // Define the structure for a saved session

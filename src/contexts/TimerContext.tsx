@@ -185,6 +185,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   // NEW: State to store remaining time when paused, for accurate resumption
   const [remainingTimeAtPause, setRemainingTimeAtPause] = useState(0);
 
+  // NEW: State for Limit Discovery Radius
+  const [limitDiscoveryRadius, setLimitDiscoveryRadius] = useState<boolean>(() => {
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      return data.limitDiscoveryRadius ?? false;
+    }
+    return false;
+  });
+
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
 
@@ -1570,6 +1580,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     let loadedIsSchedulePending: boolean = false;
     let loadedCurrentPhaseDurationSeconds: number = 0;
     let loadedActiveSchedule: ScheduledTimer[] = [];
+    let loadedLimitDiscoveryRadius: boolean = false; // NEW: Declare loadedLimitDiscoveryRadius
 
     // ... other loaded variables ...
     let loadedFocusMinutes = 25; // This is actually the homepage focus minutes
@@ -1717,6 +1728,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentSessionParticipantsData(data.currentSessionParticipantsData ?? []);
       setLastActivityTime(loadedLastActivityTime);
       setShowDemoSessions(data.showDemoSessions ?? true);
+      loadedLimitDiscoveryRadius = data.limitDiscoveryRadius ?? false; // NEW: Load limitDiscoveryRadius
+      setLimitDiscoveryRadius(loadedLimitDiscoveryRadius); // NEW: Set limitDiscoveryRadius
 
       initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
@@ -1814,6 +1827,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       showDemoSessions,
       currentPhaseDurationSeconds, // NEW: Add to dependencies
       remainingTimeAtPause, // NEW: Add to dependencies
+      limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius to dependencies
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
     console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
@@ -1850,6 +1864,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     showDemoSessions,
     currentPhaseDurationSeconds, // NEW: Add to dependencies
     remainingTimeAtPause, // NEW: Add to dependencies
+    limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius to dependencies
   ]);
 
   const value: TimerContextType = {
@@ -2034,6 +2049,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentPhaseDurationSeconds, // ADDED
     remainingTimeAtPause, // ADDED
     setRemainingTimeAtPause, // ADDED
+    limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius
+    setLimitDiscoveryRadius, // NEW: Add setLimitDiscoveryRadius
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

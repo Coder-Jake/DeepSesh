@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin } from "lucide-react";
+import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity } from "lucide-react"; // NEW: Import Infinity icon
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -89,6 +89,8 @@ const Settings = () => {
     resetSessionStates, // NEW: Get resetSessionStates from TimerContext
     showDemoSessions, // NEW: Get showDemoSessions
     setShowDemoSessions, // NEW: Get setShowDemoSessions
+    limitDiscoveryRadius, // NEW: Get limitDiscoveryRadius
+    setLimitDiscoveryRadius, // NEW: Get setLimitDiscoveryRadius
   } = useTimer();
 
   const { user } = useAuth(); // Removed 'logout' from destructuring
@@ -144,6 +146,7 @@ const Settings = () => {
     startStopNotifications,
     isDiscoveryActivated, // NEW: Add to saved settings
     showDemoSessions, // NEW: Add to saved settings
+    limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius
   });
 
   // Update currentTimerIncrement when global timerIncrement changes
@@ -188,8 +191,9 @@ const Settings = () => {
       areToastsEnabled,
       blockedUsers,
       startStopNotifications,
-      isDiscoveryActivated, // NEW: Add to current UI settings
-      showDemoSessions, // NEW: Add to current UI settings
+      isDiscoveryActivated, // NEW: Add to dependencies
+      showDemoSessions, // NEW: Add to dependencies
+      limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius
     };
 
     const savedValRef = savedSettingsRef.current; // Capture current ref value
@@ -221,6 +225,7 @@ const Settings = () => {
     startStopNotifications,
     isDiscoveryActivated, // NEW: Add to dependencies
     showDemoSessions, // NEW: Add to dependencies
+    limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -434,6 +439,7 @@ const Settings = () => {
     setStartStopNotifications(startStopNotifications);
     setIsDiscoveryActivated(isDiscoveryActivated); // NEW: Save isDiscoveryActivated
     setShowDemoSessions(showDemoSessions); // NEW: Save showDemoSessions
+    setLimitDiscoveryRadius(limitDiscoveryRadius); // NEW: Save limitDiscoveryRadius
 
     savedSettingsRef.current = {
       showSessionsWhileActive,
@@ -469,6 +475,7 @@ const Settings = () => {
       startStopNotifications,
       isDiscoveryActivated, // NEW: Save isDiscoveryActivated
       showDemoSessions, // NEW: Save showDemoSessions
+      limitDiscoveryRadius, // NEW: Save limitDiscoveryRadius
     };
     setHasChanges(false);
   };
@@ -901,6 +908,33 @@ const Settings = () => {
                   {geolocationPermissionStatus === 'granted' && "Location Enabled"}
                   {geolocationPermissionStatus === 'denied' && "Enable Location"}
                   {geolocationPermissionStatus === 'prompt' && "Enable Location"}
+                </Button>
+              </div>
+
+              {/* NEW: Limit Discovery Radius Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="limit-discovery-radius-toggle" className="cursor-help">Limit Discovery Radius</Label>
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                      <p>Toggle to limit discovery to the specified maximum distance.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Button
+                  id="limit-discovery-radius-toggle"
+                  onClick={() => setLimitDiscoveryRadius(prev => !prev)}
+                  className={cn(
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
+                  )}
+                >
+                  {limitDiscoveryRadius ? (
+                    maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`
+                  ) : (
+                    <Infinity size={20} />
+                  )}
                 </Button>
               </div>
 
