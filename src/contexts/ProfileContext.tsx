@@ -229,23 +229,15 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   const syncProfileToSupabase = useCallback(async (successMessage?: string) => {
     if (!user || !profile) {
-      console.log("ProfileContext: syncProfileToSupabase: Skipping sync. User or local profile not available."); // ADD LOG
+      console.log("syncProfileToSupabase: Skipping sync. User or local profile not available.");
       return;
     }
 
     const profileDataToSend = {
-      id: profile.id,
-      first_name: profile.first_name,
-      last_name: profile.last_name,
-      avatar_url: profile.avatar_url,
-      organization: profile.organization,
-      focus_preference: profile.focus_preference,
-      updated_at: profile.updated_at,
-      join_code: profile.join_code,
-      profile_data: profile.profile_data, // This is the JSONB object
-      visibility: profile.visibility,
+      ...profile,
+      profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
+      visibility: profile.visibility || ['public'], // Ensure visibility is sent
     };
-    console.log("ProfileContext: syncProfileToSupabase: Data to send:", profileDataToSend); // ADD LOG
 
     try {
       const { error } = await supabase
@@ -253,14 +245,14 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         .upsert(profileDataToSend, { onConflict: 'id' });
 
       if (error) {
-        console.error("ProfileContext: Error syncing profile to Supabase:", error.message); // ADD LOG
+        console.error("Error syncing profile to Supabase:", error.message);
         if (areToastsEnabled) {
           toast.error("Offline Sync Failed", {
             description: `Failed to sync profile to cloud: ${error.message}. Changes saved locally.`,
           });
         }
       } else {
-        console.log("ProfileContext: Profile synced to Supabase successfully."); // ADD LOG
+        console.log("Profile synced to Supabase successfully.");
         if (areToastsEnabled && successMessage) {
           toast.success("Profile Synced", {
             description: successMessage,
@@ -268,7 +260,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       }
     } catch (error: any) {
-      console.error("ProfileContext: Unexpected error during Supabase sync:", error.message); // ADD LOG
+      console.error("Unexpected error during Supabase sync:", error.message);
       if (areToastsEnabled) {
         toast.error("Offline Sync Error", {
           description: `An unexpected error occurred during sync: ${error.message}. Changes saved locally.`,
@@ -276,20 +268,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       }
     }
   }, [user, profile, areToastsEnabled, getDefaultProfileDataJsonb]);
-
-  // Helper function to create a default profile object
-  const createDefaultProfile = useCallback((userId: string, firstName: string, joinCode: string | null = null): Profile => {
-    const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
-    return {
-      id: userId,
-      first_name: firstName,
-      last_name: null, avatar_url: null, organization: null,
-      focus_preference: 50, updated_at: new Date().toISOString(),
-      join_code: joinCode,
-      profile_data: defaultProfileData,
-      visibility: ['public'],
-    };
-  }, [getDefaultProfileDataJsonb]);
 
   // --- Initial Load Effect (Local-First) ---
   useEffect(() => {
@@ -310,58 +288,22 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         };
         if (isMounted) {
           setProfile(defaultedProfile); // Set the main profile object
-          console.log("ProfileContext: Profile loaded from localStorage:", defaultedProfile); // ADD LOG
         }
       } else {
         if (!authLoading && user) {
-          // Attempt to fetch from Supabase first, as the trigger should have created it
-          try {
-            const { data, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single();
-
-            if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
-              console.error("ProfileContext: Error fetching profile from Supabase on initial load:", error.message);
-              // Fallback to local default if Supabase fetch fails
-              const defaultProfile = createDefaultProfile(user.id, user.user_metadata.first_name || "You", null);
-              if (isMounted) {
-                setProfile(defaultProfile);
-                localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
-                console.log("ProfileContext: New local profile created as Supabase fetch failed:", defaultProfile);
-              }
-            } else if (data) {
-              const fetchedProfile: Profile = {
-                ...data,
-                profile_data: data.profile_data || getDefaultProfileDataJsonb(),
-                visibility: data.visibility || ['public'],
-              };
-              if (isMounted) {
-                setProfile(fetchedProfile);
-                localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(fetchedProfile));
-                console.log("ProfileContext: Profile fetched from Supabase on initial load:", fetchedProfile);
-              }
-            } else {
-              // No profile found in Supabase, and no error other than "no rows found".
-              // This might happen if the trigger hasn't fired yet or there's a delay.
-              // Create a minimal local profile, and rely on periodic sync to populate from Supabase later.
-              const defaultProfile = createDefaultProfile(user.id, user.user_metadata.first_name || "You", null);
-              if (isMounted) {
-                setProfile(defaultProfile);
-                localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
-                console.log("ProfileContext: New minimal local profile created (Supabase not yet populated):", defaultProfile);
-              }
-            }
-          } catch (error: any) { // Explicitly type error as 'any'
-            console.error("ProfileContext: Unexpected error during Supabase fetch:", error.message);
-            // Fallback to local default if Supabase fetch fails
-            const defaultProfile = createDefaultProfile(user.id, user.user_metadata.first_name || "You", null);
-            if (isMounted) {
-              setProfile(defaultProfile);
-              localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
-              console.log("ProfileContext: New local profile created as Supabase fetch failed:", defaultProfile);
-            }
+          const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
+          const defaultProfile: Profile = {
+            id: user.id,
+            first_name: user.user_metadata.first_name || "You",
+            last_name: null, avatar_url: null, organization: null,
+            focus_preference: 50, updated_at: new Date().toISOString(),
+            join_code: generateRandomJoinCode(), // RENAMED: host_code to join_code
+            profile_data: defaultProfileData,
+            visibility: ['public'], // Default visibility for new profiles
+          };
+          if (isMounted) {
+            setProfile(defaultProfile);
+            localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
           }
         }
       }
@@ -376,7 +318,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         setRecentCoworkers(JSON.parse(storedRecentCoworkers));
       }
       setLoading(false);
-      console.log("ProfileContext: Initial load finished. Loading set to false."); // ADD LOG
     };
 
     loadProfile();
@@ -384,11 +325,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     return () => {
       isMounted = false;
     };
-  }, [authLoading, user, getDefaultProfileDataJsonb, getDefaultProfileDataField, createDefaultProfile]);
+  }, [authLoading, user, getDefaultProfileDataJsonb, getDefaultProfileDataField]); // Removed syncProfileToSupabase from dependencies here
 
   // --- Effect to sync individual states from the main 'profile' object ---
   useEffect(() => {
-    console.log("ProfileContext: useEffect [profile] called. Profile:", profile); // ADD LOG
     if (profile) {
       setLocalFirstName(profile.first_name || "You");
       setFocusPreference(profile.focus_preference || 50);
@@ -431,13 +371,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   // Effect to save the entire profile object to local storage whenever it changes
   useEffect(() => {
-    console.log("ProfileContext: useEffect [profile] for localStorage save called. Profile:", profile); // ADD LOG
     if (profile) {
       localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(profile));
-      console.log("ProfileContext: Profile saved to localStorage:", profile); // ADD LOG
     } else {
       localStorage.removeItem(LOCAL_STORAGE_PROFILE_KEY);
-      console.log("ProfileContext: Profile removed from localStorage."); // ADD LOG
     }
   }, [profile]);
 
@@ -446,7 +383,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     if (!user || !profile) return;
 
     const syncInterval = setInterval(() => {
-      console.log("ProfileContext: Periodic sync triggered."); // ADD LOG
       syncProfileToSupabase();
     }, 30000);
 
@@ -456,7 +392,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   // --- MODIFIED: updateProfile function (now local-first) ---
   const updateProfile = useCallback(async (updates: ProfileUpdate, successMessage?: string) => {
-    console.log("ProfileContext: updateProfile called with updates:", updates); // ADD LOG
     if (!user) {
       if (areToastsEnabled) {
         toast.error("Authentication Required", {
@@ -467,28 +402,27 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     // Create a new profile object based on current 'profile' and 'updates'
-    const currentProfile = profile || createDefaultProfile(user.id, user.user_metadata.first_name || "You", generateRandomJoinCode());
+    const currentProfile = profile || { id: user.id, first_name: "You", focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'] } as Profile; // RENAMED: host_code to join_code
+
+    const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
+
+    if (updates.bio !== undefined) updatedProfileData.bio = updates.bio;
+    if (updates.intention !== undefined) updatedProfileData.intention = updates.intention;
+    if (updates.linkedin_url !== undefined) updatedProfileData.linkedin_url = updates.linkedin_url;
+    if (updates.can_help_with !== undefined) updatedProfileData.can_help_with = updates.can_help_with;
+    if (updates.need_help_with !== undefined) updatedProfileData.need_help_with = updates.need_help_with;
+    if (updates.pronouns !== undefined) updatedProfileData.pronouns = updates.pronouns;
 
     const newProfile: Profile = {
       ...currentProfile,
-      ...updates, // Apply all direct updates first
-      profile_data: {
-        ...currentProfile.profile_data, // Start with existing profile_data
-        // Apply updates to specific profile_data fields if they exist in updates
-        ...(updates.bio && { bio: updates.bio }),
-        ...(updates.intention && { intention: updates.intention }),
-        ...(updates.linkedin_url && { linkedin_url: updates.linkedin_url }),
-        ...(updates.can_help_with && { can_help_with: updates.can_help_with }),
-        ...(updates.need_help_with && { need_help_with: updates.need_help_with }),
-        ...(updates.pronouns && { pronouns: updates.pronouns }),
-      },
+      ...updates, // Apply direct updates (first_name, focus_preference, etc.)
+      profile_data: updatedProfileData,
       updated_at: new Date().toISOString(), // Always update timestamp on explicit update
       id: user.id, // Ensure ID is always set
       visibility: updates.visibility || currentProfile.visibility || ['public'], // NEW: Ensure visibility is updated
     };
 
     setProfile(newProfile); // <-- This is the single source of truth update
-    console.log("ProfileContext: setProfile called with newProfile:", newProfile); // ADD LOG
 
     if (areToastsEnabled && successMessage) {
       toast.success("Profile Updated", {
@@ -498,22 +432,18 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
     // Trigger immediate sync to Supabase
     await syncProfileToSupabase();
-    console.log("ProfileContext: syncProfileToSupabase call finished."); // ADD LOG
 
-  }, [user, areToastsEnabled, profile, getDefaultProfileDataJsonb, syncProfileToSupabase, createDefaultProfile]);
+  }, [user, areToastsEnabled, profile, getDefaultProfileDataJsonb, syncProfileToSupabase]);
 
   const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => { // Make it async
-    console.log("ProfileContext: getPublicProfile called for userId:", userId, "userName:", userName); // ADD LOG
     // 1. Check mock profiles
     const foundMockProfile = mockProfilesRef.current.find(p => p.id === userId);
     if (foundMockProfile) {
-      console.log("ProfileContext: Found mock profile:", foundMockProfile); // ADD LOG
       return foundMockProfile;
     }
 
     // 2. Check if it's the current user's profile
     if (user?.id === userId && profile) {
-      console.log("ProfileContext: Returning current user's profile:", profile); // ADD LOG
       return profile; // Return the current user's full profile from context
     }
 
@@ -526,7 +456,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         .single();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
-        console.error("ProfileContext: Error fetching public profile from Supabase:", error.message); // ADD LOG
+        console.error("Error fetching public profile from Supabase:", error.message);
         // Don't throw, just log and proceed to default
       }
 
@@ -537,18 +467,27 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           profile_data: data.profile_data || getDefaultProfileDataJsonb(),
           visibility: data.visibility || ['public'], // Default visibility if missing
         };
-        console.log("ProfileContext: Fetched profile from Supabase:", fetchedProfile); // ADD LOG
         return fetchedProfile;
       }
     } catch (error: any) {
-      console.error("ProfileContext: Unexpected error fetching public profile from Supabase:", error.message); // ADD LOG
+      console.error("Unexpected error fetching public profile from Supabase:", error.message);
     }
 
     // 4. If not found anywhere, return a default minimal profile
-    const defaultMinimalProfile = createDefaultProfile(userId, userName, null);
-    console.log("ProfileContext: Returning default minimal profile:", defaultMinimalProfile); // ADD LOG
-    return defaultMinimalProfile;
-  }, [user?.id, profile, getDefaultProfileDataJsonb, createDefaultProfile]); // Add user and profile to dependencies
+    const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
+    return {
+      id: userId,
+      first_name: userName,
+      last_name: null,
+      avatar_url: null,
+      organization: null,
+      focus_preference: 50,
+      updated_at: new Date().toISOString(),
+      join_code: null, // RENAMED: host_code to join_code
+      profile_data: defaultProfileData,
+      visibility: ['private'], // Default to private for unknown public profiles
+    };
+  }, [user?.id, profile, getDefaultProfileDataJsonb]); // Add user and profile to dependencies
 
   const blockUser = useCallback((userName: string) => {
     setBlockedUsers(prev => {
@@ -583,7 +522,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   }, [areToastsEnabled]);
 
   const resetProfile = useCallback(() => {
-    console.log("ProfileContext: resetProfile called."); // ADD LOG
     localStorage.removeItem(LOCAL_STORAGE_PROFILE_KEY);
     localStorage.removeItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
     localStorage.removeItem(LOCAL_STORAGE_BLOCKED_USERS_KEY);
