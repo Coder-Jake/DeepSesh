@@ -916,7 +916,7 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Label htmlFor="limit-discovery-radius-toggle" className="cursor-help">Discovery Radius</Label>
+                      <Label htmlFor="discovery-radius-toggle" className="cursor-help">Discovery Radius</Label>
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
                       <p>Toggle to limit discovery to the specified maximum distance.</p>
@@ -924,7 +924,7 @@ const Settings = () => {
                   </Tooltip>
                 </div>
                 <Button
-                  id="limit-discovery-radius-toggle"
+                  id="discovery-radius-toggle"
                   onClick={() => setLimitDiscoveryRadius(prev => !prev)}
                   className={cn(
                     "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
