@@ -36,7 +36,7 @@ import { format } from 'date-fns';
 import { ScheduledTimerTemplate, ScheduledTimer, ParticipantSessionData, DemoSession } from '@/types/timer';
 import { Accordion
  } from "@/components/ui/accordion";
-import UpcomingScheduleAccordionItem from "@/components/Upcoming/UpcomingScheduleAccordionItem";
+import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useTheme } from '@/contexts/ThemeContext';
