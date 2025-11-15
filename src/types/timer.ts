@@ -133,6 +133,7 @@ export interface SupabaseSessionData {
   participants_data: ParticipantSessionData[];
   join_code: string | null; // NEW: Add join_code
   active_asks: ActiveAskItem[]; // ADDED: active_asks property
+  organization: string | null; // NEW: Add organization to SupabaseSessionData
 }
 
 // Define the structure for the TimerContext value
@@ -185,8 +186,8 @@ export type TimerContextType = {
   setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
   commenceDay: number | null;
   setCommenceDay: React.Dispatch<React.SetStateAction<number | null>>;
-  isGlobalPrivate: boolean;
-  setIsGlobalPrivate: React.Dispatch<React.SetStateAction<boolean>>;
+  sessionVisibility: 'public' | 'private' | 'organisation'; // MODIFIED: Changed from isGlobalPrivate
+  setSessionVisibility: React.Dispatch<React.SetStateAction<'public' | 'private' | 'organisation'>>; // MODIFIED: Changed from setIsGlobalPrivate
   isRecurring: boolean;
   setIsRecurring: React.Dispatch<React.SetStateAction<boolean>>;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';

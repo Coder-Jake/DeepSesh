@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity } from "lucide-react"; // NEW: Import Infinity icon
+import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity, Globe, Lock, Building2 } from "lucide-react"; // NEW: Import Globe, Lock, Building2 icons
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -72,8 +72,8 @@ const Settings = () => {
     // REMOVED: setProfileVisibility,
     locationSharing,
     setLocationSharing,
-    isGlobalPrivate,
-    setIsGlobalPrivate,
+    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
+    setSessionVisibility, // MODIFIED: Changed from setIsGlobalPrivate
     openSettingsAccordions,
     setOpenSettingsAccordions,
     is24HourFormat,
@@ -97,7 +97,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const location = useLocation(); // NEW: Initialize useLocation
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile, profileVisibility, setProfileVisibility } = useProfile(); // NEW: Get resetProfile and profileVisibility
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile, profileVisibility, setProfileVisibility, profile } = useProfile(); // NEW: Get resetProfile, profileVisibility, and profile
 
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
   const [userNameToBlock, setUserNameToBlock] = useState("");
@@ -136,7 +136,7 @@ const Settings = () => {
     verificationStandard,
     profileVisibility, // NEW: Add to saved settings
     locationSharing,
-    isGlobalPrivate,
+    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
     timerIncrement,
     shouldPlayEndSound,
     shouldShowEndToast,
@@ -198,7 +198,7 @@ const Settings = () => {
       verificationStandard,
       profileVisibility, // NEW: Add to current UI settings
       locationSharing,
-      isGlobalPrivate,
+      sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
@@ -232,7 +232,7 @@ const Settings = () => {
     askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
     verificationStandard, profileVisibility, // NEW: Add profileVisibility to dependencies
     locationSharing,
-    isGlobalPrivate,
+    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
     isDarkMode,
     is24HourFormat,
@@ -448,7 +448,8 @@ const Settings = () => {
     // NEW: Save profileVisibility from ProfileContext
     // setProfileVisibility(profileVisibility); // This is already handled by ProfileContext's updateProfile
     setLocationSharing(locationSharing);
-    setIsGlobalPrivate(isGlobalPrivate);
+    setSessionVisibility(sessionVisibility); // MODIFIED: Changed from isGlobalPrivate
+    setOpenSettingsAccordions(openSettingsAccordions);
     setShouldPlayEndSound(shouldPlayEndSound);
     setShouldShowEndToast(shouldShowEndToast);
     setAreToastsEnabled(areToastsEnabled);
@@ -480,7 +481,7 @@ const Settings = () => {
       verificationStandard,
       profileVisibility, // NEW: Save profileVisibility
       locationSharing,
-      isGlobalPrivate,
+      sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
@@ -522,6 +523,22 @@ const Settings = () => {
   const handleLocationButtonClick = async () => {
     await getLocation(); // Request/check location permission
     setIsDiscoveryActivated(true); // Activate discovery when location is managed
+  };
+
+  const handleGlobalSessionVisibilityToggle = () => { // NEW: Function to cycle global session visibility
+    const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
+    if (profile?.organization) { // Only add 'organisation' if user has an organization
+      modes.push('organisation');
+    }
+    const currentIndex = modes.indexOf(sessionVisibility);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    const newVisibility = modes[nextIndex];
+    setSessionVisibility(newVisibility);
+    if (areToastsEnabled) {
+      toast.info("Global Session Visibility", {
+        description: `Your sessions will now default to ${newVisibility}.`,
+      });
+    }
   };
 
   return (
@@ -793,13 +810,29 @@ const Settings = () => {
                 <Button
                   id="global-visibility-toggle"
                   variant="outline"
-                  onClick={() => setIsGlobalPrivate((prev: boolean) => !prev)}
+                  onClick={handleGlobalSessionVisibilityToggle} // NEW: Call new handler
                   className={cn(
                     "px-3 py-1 rounded-full transition-colors select-none",
-                    !isGlobalPrivate ? "bg-public-bg text-public-bg-foreground hover:bg-public-bg/80" : "bg-private-bg text-private-bg-foreground hover:bg-private-bg/80"
+                    sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg/80",
+                    sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg/80",
+                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg/80" // NEW: Organization styling
                   )}
                 >
-                  {!isGlobalPrivate ? "Public" : "Private"}
+                  {sessionVisibility === 'public' && (
+                    <>
+                      <Globe size={16} className="mr-1" /> Public
+                    </>
+                  )}
+                  {sessionVisibility === 'private' && (
+                    <>
+                      <Lock size={16} className="mr-1" /> Private
+                    </>
+                  )}
+                  {sessionVisibility === 'organisation' && (
+                    <>
+                      <Building2 size={16} className="mr-1" /> Organisation
+                    </>
+                  )}
                 </Button>
               </div>
 

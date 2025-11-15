@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown, Infinity } from "lucide-react"; // NEW: Import Infinity
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown, Infinity, Building2 } from "lucide-react"; // NEW: Import Building2
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -100,6 +100,7 @@ interface SupabaseSessionData {
   participants_data: ParticipantSessionData[];
   join_code: string | null;
   active_asks: ActiveAskItem[];
+  organization: string | null; // NEW: Add organization
 }
 
 // NEW: Function to fetch mock profiles from Supabase
@@ -134,8 +135,7 @@ const fetchMockSessions = async (
 ): Promise<DemoSession[]> => {
   let query = supabase
     .from('mock_sessions')
-    .select('*')
-    .eq('is_active', true);
+    .select('*');
 
   const { data, error } = await query;
 
@@ -341,8 +341,8 @@ const Index = () => {
     scheduleTitle,
     commenceTime,
     commenceDay,
-    isGlobalPrivate,
-    setIsGlobalPrivate,
+    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
+    setSessionVisibility, // MODIFIED: Changed from setIsGlobalPrivate
     activeScheduleDisplayTitle,
 
     sessionStartTime,
@@ -458,14 +458,21 @@ const Index = () => {
     }
   }, [isDiscoverySetupOpen, localFirstName, joinCode]);
 
-  const handlePublicPrivateToggle = useCallback(() => {
-    setIsGlobalPrivate(prev => !prev);
+  const handleSessionVisibilityToggle = useCallback(() => { // MODIFIED: Renamed function
+    const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
+    if (profile?.organization) { // Only add 'organisation' if user has an organization
+      modes.push('organisation');
+    }
+    const currentIndex = modes.indexOf(sessionVisibility);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    const newVisibility = modes[nextIndex];
+    setSessionVisibility(newVisibility); // MODIFIED: Use setSessionVisibility
     if (areToastsEnabled) {
       toast.info("Session Visibility", {
-        description: `Your sessions are now ${isGlobalPrivate ? 'Public' : 'Private'}.`,
+        description: `Your sessions are now ${newVisibility}.`,
       });
     }
-  }, [setIsGlobalPrivate, isGlobalPrivate, areToastsEnabled]);
+  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, profile?.organization]); // MODIFIED: sessionVisibility and profile?.organization
 
   // NEW: Fetch mock profiles for participant data resolution
   const { data: mockProfiles, isLoading: isLoadingMockProfiles, error: mockProfilesError } = useQuery<ProfileType[]>({
@@ -582,7 +589,7 @@ const Index = () => {
       }
     },
     refetchInterval: 5000,
-    enabled: isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'),
+    enabled: isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends'), // MODIFIED: Check sessionVisibility
   });
 
   useEffect(() => {
@@ -749,7 +756,7 @@ const Index = () => {
     setActiveJoinedSessionCoworkerCount(0);
     setCurrentSessionParticipantsData([hostParticipant]);
 
-    if (!isGlobalPrivate) {
+    if (sessionVisibility !== 'private') { // MODIFIED: Check sessionVisibility
       const { latitude, longitude } = await getLocation();
       const currentPhaseDuration = timerType === 'focus' ? currentFocusDuration : currentBreakDuration;
       const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
@@ -760,7 +767,7 @@ const Index = () => {
             user_id: hostParticipant.userId,
             host_name: hostParticipant.userName,
             session_title: seshTitle,
-            visibility: 'public',
+            visibility: sessionVisibility, // MODIFIED: Use sessionVisibility
             focus_duration: currentFocusDuration,
             break_duration: currentBreakDuration,
             current_phase_type: timerType,
@@ -772,6 +779,7 @@ const Index = () => {
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: joinCode,
+            organization: profile?.organization || null, // NEW: Add organization
           })
           .select('id')
           .single();
@@ -789,7 +797,7 @@ const Index = () => {
       }
     }
   }, [
-    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, isGlobalPrivate, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle
+    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, profile?.organization // MODIFIED: sessionVisibility, NEW: profile?.organization
   ]);
 
   const resumeTimer = () => {
@@ -1043,10 +1051,10 @@ const Index = () => {
   }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType, focusMinutes, breakMinutes]);
 
   const shouldShowNearbySessions = useMemo(() => {
-    const result = isDiscoveryActivated && !isGlobalPrivate && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
-    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "isGlobalPrivate:", isGlobalPrivate, "showSessionsWhileActive:", showSessionsWhileActive);
+    const result = isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'); // MODIFIED: Check sessionVisibility
+    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "sessionVisibility:", sessionVisibility, "showSessionsWhileActive:", showSessionsWhileActive); // MODIFIED: sessionVisibility
     return result;
-  }, [isDiscoveryActivated, isGlobalPrivate, showSessionsWhileActive]);
+  }, [isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]); // MODIFIED: sessionVisibility
 
   const shouldShowFriendsSessions = useMemo(() => {
     const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
@@ -1055,10 +1063,10 @@ const Index = () => {
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganizationSessions = useMemo(() => {
-    const result = isDiscoveryActivated && !!profile?.organization;
-    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization);
+    const result = isDiscoveryActivated && !!profile?.organization && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check sessionVisibility
+    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization, "sessionVisibility:", sessionVisibility); // MODIFIED: sessionVisibility
     return result;
-  }, [profile?.organization, isDiscoveryActivated]);
+  }, [profile?.organization, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]); // MODIFIED: sessionVisibility
 
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
     if (!profile?.organization || !showDemoSessions || !mockSessions) return [];
@@ -1549,7 +1557,7 @@ const Index = () => {
     console.log("geolocationPermissionStatus:", geolocationPermissionStatus);
     console.log("userLocation.latitude:", userLocation.latitude); // More specific log
     console.log("userLocation.longitude:", userLocation.longitude); // More specific log
-    console.log("isGlobalPrivate:", isGlobalPrivate);
+    console.log("sessionVisibility:", sessionVisibility); // MODIFIED: sessionVisibility
     console.log("showSessionsWhileActive:", showSessionsWhileActive);
     console.log("profile?.id:", profile?.id);
     console.log("profile?.organization:", profile?.organization);
@@ -1565,7 +1573,7 @@ const Index = () => {
     console.groupEnd();
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
-    isGlobalPrivate, showSessionsWhileActive, profile?.id, profile?.organization,
+    sessionVisibility, showSessionsWhileActive, profile?.id, profile?.organization, // MODIFIED: sessionVisibility
     mockSessions, // Added mockSessions to dependencies
     shouldShowNearbySessions, filteredMockNearbySessions.length,
     shouldShowFriendsSessions, filteredMockFriendsSessions.length,
@@ -1722,7 +1730,10 @@ const Index = () => {
               onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
-              <h3>Organisations</h3>
+              <div className="flex items-center gap-2">
+                <Building2 size={16} className="text-olive-foreground" /> {/* NEW: Icon for Organization */}
+                <h3>Organisations</h3>
+              </div>
               <div className="flex items-center gap-2">
                 {isOrganizationSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
@@ -1752,10 +1763,12 @@ const Index = () => {
           <div className="space-y-6">
             <div className={cn(
               "relative rounded-lg border border-border pt-1 pb-4 px-1 text-center transition-colors mt-[5px]",
-              !isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
-              !isGlobalPrivate && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-light))] to-[hsl(var(--public-gradient-end-light))]",
-              isGlobalPrivate && isDarkMode && "bg-gradient-to-r from-[hsl(var(--private-gradient-start-dark))] to-[hsl(var(--private-gradient-end-dark))]",
-              isGlobalPrivate && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--private-gradient-start-light))] to-[hsl(var(--private-gradient-end-light))]"
+              sessionVisibility === 'public' && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))]",
+              sessionVisibility === 'public' && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-light))] to-[hsl(var(--public-gradient-end-light))]",
+              sessionVisibility === 'private' && isDarkMode && "bg-gradient-to-r from-[hsl(var(--private-gradient-start-dark))] to-[hsl(var(--private-gradient-end-dark))]",
+              sessionVisibility === 'private' && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--private-gradient-start-light))] to-[hsl(var(--private-gradient-end-light))]",
+              sessionVisibility === 'organisation' && isDarkMode && "bg-gradient-to-r from-[hsl(var(--organisation-gradient-start-dark))] to-[hsl(var(--organisation-gradient-end-dark))]", // NEW: Organization gradient
+              sessionVisibility === 'organisation' && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--organisation-gradient-start-light))] to-[hsl(var(--organisation-gradient-end-light))]" // NEW: Organization gradient
             )}>
               {isSchedulingMode ? (
                 <ScheduleForm />
@@ -1786,30 +1799,37 @@ const Index = () => {
                         </h2>
                       ) : (
                         <p className="text-sm md:text-base font-bold text-muted-foreground">
-                          Sync focus with <span className="whitespace-nowrap">{isGlobalPrivate ? "known coworkers" : "nearby coworkers"}</span>
+                          Sync focus with <span className="whitespace-nowrap">{sessionVisibility === 'private' ? "known coworkers" : (sessionVisibility === 'organisation' ? "organisation coworkers" : "nearby coworkers")}</span> {/* MODIFIED: Text based on sessionVisibility */}
                         </p>
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <button
-                        onMouseDown={() => handleLongPressStart(handlePublicPrivateToggle)}
+                        onMouseDown={() => handleLongPressStart(handleSessionVisibilityToggle)} // MODIFIED: Call new toggle function
                         onMouseUp={handleLongPressEnd}
                         onMouseLeave={handleLongPressEnd}
-                        onTouchStart={() => handleLongPressStart(handlePublicPrivateToggle)}
+                        onTouchStart={() => handleLongPressStart(handleSessionVisibilityToggle)} // MODIFIED: Call new toggle function
                         onTouchEnd={handleLongPressEnd}
-                        onClick={handlePublicPrivateToggle}
+                        onClick={handleSessionVisibilityToggle} // MODIFIED: Call new toggle function
                         className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors select-none"
-                        data-name="Public/Private Toggle Button"
+                        data-name="Session Visibility Toggle Button"
                       >
-                        {!isGlobalPrivate ? (
+                        {sessionVisibility === 'public' && (
                             <>
                               <Globe size={16} />
                               <span className="text-sm font-medium">Public</span>
                             </>
-                          ) : (
+                          )}
+                        {sessionVisibility === 'private' && (
                             <>
                               <Lock size={16} />
                               <span className="text-sm font-medium">Private</span>
+                            </>
+                          )}
+                        {sessionVisibility === 'organisation' && (
+                            <>
+                              <Building2 size={16} className="text-olive-foreground" /> {/* NEW: Icon for Organization */}
+                              <span className="text-sm font-medium">Organisation</span>
                             </>
                           )}
                       </button>

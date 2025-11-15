@@ -50,7 +50,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [commenceTime, setCommenceTime] = useState("");
   const [commenceDay, setCommenceDay] = useState<number | null>(null);
   
-  // Synchronous initialization for isGlobalPrivate, isDiscoveryActivated, geolocationPermissionStatus
+  // Synchronous initialization for isDiscoveryActivated, geolocationPermissionStatus, and sessionVisibility
   const [isDiscoveryActivated, setIsDiscoveryActivated] = useState<boolean>(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     if (storedData) {
@@ -69,22 +69,22 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     return 'prompt';
   });
 
-  const [isGlobalPrivate, setIsGlobalPrivate] = useState<boolean>(() => {
+  const [sessionVisibility, setSessionVisibility] = useState<'public' | 'private' | 'organisation'>(() => { // MODIFIED: Changed from isGlobalPrivate
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     if (storedData) {
       const data = JSON.parse(storedData);
       const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
       const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
-      const storedIsGlobalPrivate = data.isGlobalPrivate ?? false;
+      const storedSessionVisibility = data.sessionVisibility ?? 'private'; // MODIFIED: Default to 'private'
 
       if (loadedIsDiscoveryActivated && loadedGeolocationPermissionStatus === 'denied') {
-        return true; // Force private if discovery active but location denied
+        return 'private'; // Force private if discovery active but location denied
       } else if (!loadedIsDiscoveryActivated) {
-        return true; // Force private if discovery is not activated
+        return 'private'; // Force private if discovery is not activated
       }
-      return storedIsGlobalPrivate; // Otherwise, use the stored value
+      return storedSessionVisibility; // Otherwise, use the stored value
     }
-    return true; // Default to private if no stored data
+    return 'private'; // Default to private if no stored data
   });
   // End synchronous initialization
 
@@ -301,7 +301,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .from('active_sessions')
           .update({ session_title: newTitle })
           .eq('id', activeSessionRecordId)
-          .eq('user.id', user.id);
+          .eq('user_id', user.id); // MODIFIED: Use user_id for RLS
 
         if (error) {
           console.error("Error updating session title in Supabase:", error);
@@ -334,6 +334,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           });
         }
         setGeolocationPermissionStatus('denied');
+        setSessionVisibility('private'); // MODIFIED: Force private if geolocation not supported
         resolve({ latitude: null, longitude: null });
         return;
       }
@@ -350,10 +351,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       } else if (permissionStatus.state === 'denied') {
         if (areToastsEnabled) {
           toast.error("Location Access Denied", {
-            description: "Please enable location access for this site in your browser settings.",
+            description: "Location access denied. Your session has been set to private. Please enable in browser settings.",
           });
         }
-        setIsGlobalPrivate(true);
+        setSessionVisibility('private'); // MODIFIED: Force private if location denied
         setGeolocationPermissionStatus('denied');
         resolve({ latitude: null, longitude: null });
         return;
@@ -362,7 +363,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setGeolocationPermissionStatus('granted');
-          setIsGlobalPrivate(false);
+          // Do not force sessionVisibility here, it's managed by the toggle
           resolve({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -374,7 +375,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             let errorMessage = "Failed to get your location.";
             if (error.code === error.PERMISSION_DENIED) {
               errorMessage = "Location access denied. Your session has been set to private. Please enable in browser settings.";
-              setIsGlobalPrivate(true);
+              setSessionVisibility('private'); // MODIFIED: Force private if location denied
               setGeolocationPermissionStatus('denied');
             } else if (error.code === error.POSITION_UNAVAILABLE) {
               errorMessage = "Location information is unavailable.";
@@ -394,18 +395,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
       );
     });
-  }, [areToastsEnabled, setIsGlobalPrivate, setGeolocationPermissionStatus]); // Added setGeolocationPermissionStatus to dependencies
+  }, [areToastsEnabled, setSessionVisibility, setGeolocationPermissionStatus]); // MODIFIED: setSessionVisibility to dependencies
 
   useEffect(() => {
-    if (isDiscoveryActivated && geolocationPermissionStatus === 'denied' && !isGlobalPrivate) {
-      setIsGlobalPrivate(true);
+    if (isDiscoveryActivated && geolocationPermissionStatus === 'denied' && sessionVisibility !== 'private') {
+      setSessionVisibility('private'); // MODIFIED: Force private if discovery active but location denied
       if (areToastsEnabled) {
         toast.info("Discovery Privacy Adjusted", {
           description: "Location access is denied, so your sessions are now private.",
         });
       }
     }
-  }, [isDiscoveryActivated, geolocationPermissionStatus, isGlobalPrivate, areToastsEnabled]);
+  }, [isDiscoveryActivated, geolocationPermissionStatus, sessionVisibility, areToastsEnabled, setSessionVisibility]); // MODIFIED: sessionVisibility to dependencies
 
   useEffect(() => {
     if (navigator.permissions) {
@@ -441,10 +442,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       schedule_id: isScheduleActive ? activeSchedule[0]?.id : null,
       current_schedule_index: isScheduleActive ? currentScheduleIndex : 0,
       schedule_data: activeSchedule,
-      visibility: isGlobalPrivate ? 'private' : 'public',
+      visibility: sessionVisibility, // MODIFIED: Use sessionVisibility
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
       join_code: userJoinCode, // RENAMED: host_code to join_code
+      organization: profile?.organization || null, // NEW: Add organization
     };
 
     try {
@@ -469,8 +471,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
-    currentScheduleIndex, timeLeft, isGlobalPrivate, currentSessionParticipantsData, areToastsEnabled,
-    userJoinCode // RENAMED: userHostCode to userJoinCode
+    currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled, // MODIFIED: sessionVisibility
+    userJoinCode, profile?.organization // NEW: Add profile.organization
   ]);
 
   useEffect(() => {
@@ -483,7 +485,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [
     isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
-    focusMinutes, breakMinutes, isScheduleActive, isGlobalPrivate, activeSessionRecordId, user?.id,
+    focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, user?.id, // MODIFIED: sessionVisibility
     currentSessionParticipantsData, syncSessionToSupabase
   ]);
 
@@ -573,8 +575,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setLastActivityTime(null);
     setCurrentPhaseDurationSeconds(0); // NEW: Reset current phase duration
     setRemainingTimeAtPause(0); // NEW: Reset remaining time at pause
+    setSessionVisibility('private'); // MODIFIED: Reset to private
   }, [
-    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
+    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setSessionVisibility
   ]);
 
   const resetSchedule = useCallback(async () => {
@@ -885,7 +888,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     console.log("initialScheduleTitle (value being sent to Supabase):", initialScheduleTitle);
     console.log("--- End Debugging Session Title ---");
 
-    if (!isGlobalPrivate) {
+    if (sessionVisibility !== 'private') { // MODIFIED: Check sessionVisibility
       const { latitude, longitude } = await getLocation();
       const currentScheduleItem = initialSchedule[0];
       const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
@@ -896,7 +899,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             user_id: hostParticipant.userId,
             host_name: hostParticipant.userName,
             session_title: initialScheduleTitle,
-            visibility: 'public',
+            visibility: sessionVisibility, // MODIFIED: Use sessionVisibility
             focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
             break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
             current_phase_type: currentScheduleItem.type,
@@ -911,6 +914,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: userJoinCode, // RENAMED: host_code to join_code
+            organization: profile?.organization || null, // NEW: Add organization
           })
           .select('id')
           .single();
@@ -932,8 +936,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
-    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, isGlobalPrivate, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized,
-    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode // RENAMED: userHostCode to userJoinCode
+    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized,
+    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode, sessionVisibility, profile?.organization // MODIFIED: sessionVisibility, NEW: profile?.organization
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1581,6 +1585,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     let loadedCurrentPhaseDurationSeconds: number = 0;
     let loadedActiveSchedule: ScheduledTimer[] = [];
     let loadedLimitDiscoveryRadius: boolean = false; // NEW: Declare loadedLimitDiscoveryRadius
+    let loadedSessionVisibility: 'public' | 'private' | 'organisation' = 'private'; // MODIFIED: Declare loadedSessionVisibility
 
     // ... other loaded variables ...
     let loadedFocusMinutes = 25; // This is actually the homepage focus minutes
@@ -1730,6 +1735,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setShowDemoSessions(data.showDemoSessions ?? true);
       loadedLimitDiscoveryRadius = data.limitDiscoveryRadius ?? false; // NEW: Load limitDiscoveryRadius
       setLimitDiscoveryRadius(loadedLimitDiscoveryRadius); // NEW: Set limitDiscoveryRadius
+      loadedSessionVisibility = data.sessionVisibility ?? 'private'; // MODIFIED: Load sessionVisibility
+      setSessionVisibility(loadedSessionVisibility); // MODIFIED: Set sessionVisibility
 
       initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
@@ -1793,7 +1800,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsSeshTitleCustomized(loadedIsSeshTitleCustomized);
     }
     // REMOVED: setLoading(false); // This should be the last thing in the useEffect
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setIsGlobalPrivate, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules]);
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules]);
 
   useEffect(() => {
     const dataToSave = {
@@ -1802,7 +1809,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       isRunning, isPaused, timeLeft, timerType, isFlashing,
       notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
       isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
-      isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
+      sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // MODIFIED: sessionVisibility
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
       isTimeLeftManagedBySession,
@@ -1839,7 +1846,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isRunning, isPaused, timeLeft, timerType, isFlashing,
     notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
     isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
-    isGlobalPrivate, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
+    sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // MODIFIED: sessionVisibility
     currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
     isTimeLeftManagedBySession,
@@ -1920,8 +1927,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCommenceTime,
     commenceDay,
     setCommenceDay,
-    isGlobalPrivate,
-    setIsGlobalPrivate,
+    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
+    setSessionVisibility, // MODIFIED: Changed from setIsGlobalPrivate
     isRecurring,
     setIsRecurring,
     recurrenceFrequency,
@@ -2030,6 +2037,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setStartStopNotifications,
     playSound,
     triggerVibration,
+    showSessionsWhileActive,
+    setShowSessionsWhileActive,
     hasWonPrize,
     setHasWonPrize,
     getLocation,

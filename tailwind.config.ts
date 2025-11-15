@@ -81,6 +81,10 @@ export default {
 					DEFAULT: 'hsl(var(--private-background-solid))',
 					foreground: 'hsl(var(--private-foreground-solid))',
 				},
+				'organisation-bg': { // NEW: Organisation background color
+					DEFAULT: 'hsl(var(--organisation-background-solid))',
+					foreground: 'hsl(var(--organisation-foreground-solid))',
+				},
 				success: { // NEW: Success color for granted states
 					DEFAULT: 'hsl(var(--success-bg))',
 					foreground: 'hsl(var(--success-fg))',
