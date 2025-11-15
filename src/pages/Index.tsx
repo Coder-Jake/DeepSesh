@@ -10,7 +10,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
-import { useNavigate, Link, useLocation } from "react-router-dom"; // MODIFIED: Import useLocation
+import { useNavigate, Link, useLocation } from "react-router-dom"; // MODIFIED: Use useLocation hook
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
@@ -92,7 +92,8 @@ interface SupabaseSessionData {
   current_phase_type: 'focus' | 'break';
   current_phase_end_time: string;
   total_session_duration_seconds: number;
-  schedule_data: any;
+  schedule_id: string | null;
+  schedule_data: ScheduledTimer[];
   is_active: boolean;
   is_paused: boolean;
   current_schedule_index: number;
@@ -242,6 +243,7 @@ const fetchSupabaseSessions = async (
       location_lat: session.location_lat,
       location_long: session.location_long,
       distance: distance,
+      active_asks: (session.active_asks || []) as ActiveAskItem[], // NEW: Defensively default active_asks
     };
   });
 };
@@ -880,6 +882,7 @@ const Index = () => {
           fullSchedule: (joinedSession.schedule_data || []) as ScheduledTimer[],
           location_lat: joinedSession.location_lat, // NEW: Pass location data
           location_long: joinedSession.location_long, // NEW: Pass location data
+          active_asks: (joinedSession.active_asks || []) as ActiveAskItem[], // NEW: Pass active_asks
         };
         await handleJoinSession(demoSession);
       } else {
@@ -1054,6 +1057,7 @@ const Index = () => {
         location_lat: mockLat,
         location_long: mockLong,
         distance: distance,
+        active_asks: [], // NEW: Default active_asks for mock sessions
       });
     });
 

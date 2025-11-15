@@ -107,6 +107,7 @@ export interface DemoSession {
   location_lat?: number | null; // NEW: Add location_lat
   location_long?: number | null; // NEW: Add location_long
   distance?: number | null; // NEW: Add distance
+  active_asks: ActiveAskItem[]; // NEW: Add active_asks
 }
 
 // NEW: Define a type for Supabase fetched sessions
