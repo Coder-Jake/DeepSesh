@@ -14,7 +14,7 @@ import { NotificationSettings } from "@/types/timer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // NEW: Import useLocation
 import { toast } from 'sonner';
 import { useTheme } from "@/contexts/ThemeContext";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -95,6 +95,7 @@ const Settings = () => {
 
   const { user } = useAuth(); // Removed 'logout' from destructuring
   const navigate = useNavigate();
+  const location = useLocation(); // NEW: Initialize useLocation
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile, profileVisibility, setProfileVisibility } = useProfile(); // NEW: Get resetProfile and profileVisibility
 
@@ -148,6 +149,21 @@ const Settings = () => {
     showDemoSessions, // NEW: Add to saved settings
     limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius
   });
+
+  // NEW: Effect to open specific accordion if state is passed via navigation
+  useEffect(() => {
+    if (location.state && (location.state as any).openAccordion) {
+      const accordionToOpen = (location.state as any).openAccordion;
+      setOpenSettingsAccordions(prev => {
+        if (!prev.includes(accordionToOpen)) {
+          return [...prev, accordionToOpen];
+        }
+        return prev;
+      });
+      // Clear the state after using it to prevent re-opening on subsequent visits
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, setOpenSettingsAccordions]);
 
   // Update currentTimerIncrement when global timerIncrement changes
   useEffect(() => {

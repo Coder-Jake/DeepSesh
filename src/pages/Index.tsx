@@ -1592,7 +1592,21 @@ const Index = () => {
         return (
           <div className="mb-6" data-name="Nearby Sessions Section">
             <button
-              onClick={() => setIsNearbySessionsOpen(prev => !prev)}
+              onClick={(e) => {
+                // Only toggle if it's not a long press
+                if (!isLongPress.current) {
+                  setIsNearbySessionsOpen(prev => !prev);
+                }
+              }}
+              onMouseDown={() => handleLongPressStart(() => {
+                navigate('/settings', { state: { openAccordion: 'location' } });
+              })}
+              onMouseUp={handleLongPressEnd}
+              onMouseLeave={handleLongPressEnd}
+              onTouchStart={() => handleLongPressStart(() => {
+                navigate('/settings', { state: { openAccordion: 'location' } });
+              })}
+              onTouchEnd={handleLongPressEnd}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
@@ -2228,7 +2242,7 @@ const Index = () => {
         )}
 
         {sortedPreparedSchedules.length > 0 && (
-          <div className="mt-8" data-name="Upcoming Section">
+          <div className="mt-8" data-name="Upcoming Schedules Section">
             <h3 className="text-xl font-bold text-foreground mb-4">Upcoming Schedules</h3>
             <Accordion
               type="multiple"
