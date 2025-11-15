@@ -294,9 +294,35 @@ const Profile = () => {
     }
   }, [currentPronounIndex, areToastsEnabled]);
 
-  // Effect to initialize local states when profile is loaded or changes
+  // Effect to initialize local states and originalValues when profile is loaded or changes
   useEffect(() => {
-    if (!loading && profile) { // Run whenever profile changes, not just on initial load
+    // This effect should run whenever the 'profile' object from context changes
+    // and 'loading' is false, indicating the profile data is stable.
+    if (!loading && profile) {
+      const currentLinkedinUsername = profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "";
+
+      setOriginalValues({
+        firstName: profile.first_name || "You",
+        bio: profile.profile_data?.bio?.value || "",
+        intention: profile.profile_data?.intention?.value || "",
+        canHelpWith: profile.profile_data?.can_help_with?.value || "",
+        needHelpWith: profile.profile_data?.need_help_with?.value || "",
+        focusPreference: profile.focus_preference || 50,
+        organization: profile.organization || "",
+        linkedinUrl: currentLinkedinUsername,
+        joinCode: profile.join_code || "",
+        bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
+        intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
+        linkedinVisibility: profile.profile_data?.linkedin_url?.visibility || ['public'],
+        canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
+        needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
+        pronouns: profile.profile_data?.pronouns?.value || null,
+        profileVisibility: profile.visibility || ['public'],
+      });
+
+      // Also, when originalValues are updated from the source of truth,
+      // the local input states should also be reset to match,
+      // and hasChanges should be set to false.
       setFirstNameInput(profile.first_name || "You");
       setBioInput(profile.profile_data?.bio?.value || null);
       setIntentionInput(profile.profile_data?.intention?.value || null);
@@ -304,10 +330,10 @@ const Profile = () => {
       setNeedHelpWithInput(profile.profile_data?.need_help_with?.value || null);
       setFocusPreferenceInput(profile.focus_preference || 50);
       setOrganizationInput(profile.organization);
-      setLinkedinUrlInput(profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : null);
-      setJoinCodeInput(profile.join_code); // RENAMED: setHostCodeInput to setJoinCodeInput
+      setLinkedinUrlInput(currentLinkedinUsername === "" ? null : currentLinkedinUsername);
+      setJoinCodeInput(profile.join_code);
       setPronounsInput(profile.profile_data?.pronouns?.value || null);
-
+      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.profile_data?.pronouns?.value || ""));
       setBioVisibilityInput(profile.profile_data?.bio?.visibility || ['public']);
       setIntentionVisibilityInput(profile.profile_data?.intention?.visibility || ['public']);
       setLinkedinVisibilityInput(profile.profile_data?.linkedin_url?.visibility || ['public']);
@@ -315,33 +341,9 @@ const Profile = () => {
       setNeedHelpWithVisibilityInput(profile.profile_data?.need_help_with?.visibility || ['public']);
       setProfileVisibilityInput(profile.visibility || ['public']);
 
-      setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(profile.profile_data?.pronouns?.value || ""));
-
-      // Only set originalValues if it's null (initial load) or if profile.id changes (new user/logout)
-      // This prevents resetting originalValues every time profile updates due to other reasons (e.g., background sync)
-      // A more robust check for "profile changed significantly" might be needed if background syncs frequently
-      if (originalValues === null || originalValues.firstName !== (profile.first_name || "You") || originalValues.joinCode !== (profile.join_code || "")) {
-        setOriginalValues({
-          firstName: profile.first_name || "You",
-          bio: profile.profile_data?.bio?.value || "",
-          intention: profile.profile_data?.intention?.value || "",
-          canHelpWith: profile.profile_data?.can_help_with?.value || "",
-          needHelpWith: profile.profile_data?.need_help_with?.value || "",
-          focusPreference: profile.focus_preference || 50,
-          organization: profile.organization || "",
-          linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
-          joinCode: profile.join_code || "", // RENAMED: hostCode to joinCode
-          bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
-          intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
-          linkedinVisibility: profile.profile_data?.linkedin_url?.visibility || ['public'],
-          canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
-          needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
-          pronouns: profile.profile_data?.pronouns?.value || null,
-          profileVisibility: profile.visibility || ['public'],
-        });
-      }
+      setHasChanges(false); // No changes immediately after loading/saving
     }
-  }, [loading, profile]);
+  }, [loading, profile]); // Depend on loading and profile
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -464,29 +466,9 @@ const Profile = () => {
 
     await updateProfile(dataToUpdate); // This updates the profile in context and local storage
 
-    // After successful save, update originalValues to reflect the new saved state
-    // This should be done using the *current* profile object from context, which is the source of truth.
-    if (profile) {
-      setOriginalValues({
-        firstName: profile.first_name || "You",
-        bio: profile.profile_data?.bio?.value || "",
-        intention: profile.profile_data?.intention?.value || "",
-        canHelpWith: profile.profile_data?.can_help_with?.value || "",
-        needHelpWith: profile.profile_data?.need_help_with?.value || "",
-        focusPreference: profile.focus_preference || 50,
-        organization: profile.organization || "",
-        linkedinUrl: profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "",
-        joinCode: profile.join_code || "",
-        bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
-        intentionVisibility: profile.profile_data?.intention?.visibility || ['public'],
-        linkedinVisibility: profile.profile_data?.linkedin_url?.visibility || ['public'],
-        canHelpWithVisibility: profile.profile_data?.can_help_with?.visibility || ['public'],
-        needHelpWithVisibility: profile.profile_data?.need_help_with?.visibility || ['public'],
-        pronouns: profile.profile_data?.pronouns?.value || null,
-        profileVisibility: profile.visibility || ['public'],
-      });
-    }
-    setHasChanges(false); // Explicitly set to false after saving
+    // The useEffect that depends on 'profile' will now handle updating originalValues and local states.
+    // No need to manually set originalValues here.
+    // setHasChanges(false); // This will be set by the useEffect
   };
 
   const handleCopyJoinCode = useCallback(async () => { // RENAMED
