@@ -449,12 +449,12 @@ const Profile = () => {
       join_code: trimmedJoinCode, // RENAMED
       visibility: profileVisibilityInput,
       // Update profile_data fields
-      bio: { value: bioInput, visibility: bioVisibilityInput },
-      intention: { value: intentionInput, visibility: intentionVisibilityInput },
+      bio: { value: bioInput?.trim() === "" ? null : bioInput, visibility: bioVisibilityInput },
+      intention: { value: intentionInput?.trim() === "" ? null : intentionInput, visibility: intentionVisibilityInput },
       linkedin_url: { value: (linkedinUrlInput === null || linkedinUrlInput.trim() === "") ? null : `https://www.linkedin.com/in/${linkedinUrlInput.trim()}`, visibility: linkedinVisibilityInput },
-      can_help_with: { value: canHelpWithInput, visibility: canHelpWithVisibilityInput },
-      need_help_with: { value: needHelpWithInput, visibility: needHelpWithVisibilityInput },
-      pronouns: { value: pronounsInput, visibility: ['public'] }, // Assuming pronouns are always public
+      can_help_with: { value: canHelpWithInput?.trim() === "" ? null : canHelpWithInput, visibility: canHelpWithVisibilityInput },
+      need_help_with: { value: needHelpWithInput?.trim() === "" ? null : needHelpWithInput, visibility: needHelpWithVisibilityInput },
+      pronouns: { value: pronounsInput?.trim() === "" ? null : pronounsInput, visibility: ['public'] }, // Assuming pronouns are always public
     };
 
     await updateProfile(dataToUpdate); // This updates the profile in context and local storage
