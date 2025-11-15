@@ -783,33 +783,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     sessionStartTime, activeAsks, allParticipantsToDisplay, areToastsEnabled, resetSessionStates, playSound, triggerVibration
   ]);
 
-  // NEW: Helper function to handle cleanup of any existing session/timer before starting a new one
-  const handleExistingSessionBeforeJoin = useCallback(async () => {
-    if (currentSessionRole === 'host' && activeSessionRecordId) {
-      if (areToastsEnabled) {
-        toast.info("Ending Hosted Session", {
-          description: "You are currently hosting a session. It will be ended before joining a new one.",
-        });
-      }
-      await resetSchedule(); // This will delete from Supabase and reset local states
-    } else if (currentSessionRole === 'coworker' && activeSessionRecordId) {
-      if (areToastsEnabled) {
-        toast.info("Leaving Current Session", {
-          description: "You are currently in a session. You will leave it before joining a new one.",
-        });
-      }
-      await leaveSession(); // This will update Supabase and reset local states
-    } else if (isRunning || isPaused || isScheduleActive || isSchedulePending) {
-      // This covers solo timers or prepared schedules not yet published
-      if (areToastsEnabled) {
-        toast.info("Resetting Local Timer", {
-          description: "Your local timer/schedule will be reset before joining a new session.",
-        });
-      }
-      resetSessionStates(); // This resets local states only
-    }
-  }, [currentSessionRole, activeSessionRecordId, isRunning, isPaused, isScheduleActive, isSchedulePending, areToastsEnabled, resetSchedule, leaveSession, resetSessionStates]);
-
 
   const startSessionCommonLogic = useCallback(async (
     sessionType: 'manual' | 'schedule',
@@ -823,8 +796,43 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     initialRecurrenceFrequency: 'daily' | 'weekly' | 'monthly',
     isPendingStart: boolean = false
   ) => {
-    // Handle any existing active session or local timer first
-    await handleExistingSessionBeforeJoin();
+    let needsOverrideConfirmation = false;
+    let confirmationMessageParts: string[] = [];
+    let shouldResetManualTimer = false;
+    let shouldResetExistingActiveSchedule = false;
+
+    if (isScheduleActive) {
+        confirmationMessageParts.push("An active schedule is running.");
+        shouldResetExistingActiveSchedule = true;
+    }
+    if (isRunning || isPaused) {
+        confirmationMessageParts.push("A manual timer is also active.");
+        shouldResetManualTimer = true;
+    }
+
+    if (confirmationMessageParts.length > 0) {
+        const finalMessage = `${confirmationMessageParts.join(" ")} Do you want to override them and start this new session now?`;
+        if (!confirm(finalMessage)) {
+            return false;
+        }
+        if (shouldResetExistingActiveSchedule) {
+            await resetSchedule();
+        }
+        if (shouldResetManualTimer) {
+            setIsRunning(false);
+            setIsPaused(false);
+            setIsFlashing(false);
+            setAccumulatedFocusSeconds(0);
+            setAccumulatedBreakSeconds(0);
+            _setSeshTitle(getDefaultSeshTitle());
+            setIsSeshTitleCustomized(false);
+            setActiveAsks([]);
+            console.log("TimerContext: Manual timer reset during session start. activeAsks cleared.");
+            setHasWonPrize(false);
+            setIsHomepageFocusCustomized(false);
+            setIsHomepageBreakCustomized(false);
+        }
+    }
 
     setActiveSchedule(initialSchedule);
     setActiveTimerColors(initialTimerColors);
@@ -929,7 +937,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized,
-    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode, sessionVisibility, profile?.organization, handleExistingSessionBeforeJoin // MODIFIED: sessionVisibility, NEW: profile?.organization, handleExistingSessionBeforeJoin
+    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode, sessionVisibility, profile?.organization // MODIFIED: sessionVisibility, NEW: profile?.organization
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1104,8 +1112,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return;
     }
 
-    // Handle any existing active session or local timer first
-    await handleExistingSessionBeforeJoin();
+    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
+      if (isScheduleActive || isSchedulePrepared) await resetSchedule();
+      setIsRunning(false);
+      setIsPaused(false);
+      setIsFlashing(false);
+      setAccumulatedFocusSeconds(0);
+      setAccumulatedBreakSeconds(0);
+      setSeshTitle(getDefaultSeshTitle());
+      setActiveAsks([]);
+      setHasWonPrize(false);
+      setIsHomepageFocusCustomized(false);
+      setIsHomepageBreakCustomized(false);
+    }
 
     setActiveSessionRecordId(sessionId);
     setActiveSchedule(fullSchedule);
@@ -1193,14 +1212,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       resetSessionStates();
     }
   }, [
-    user?.id, areToastsEnabled, handleExistingSessionBeforeJoin, // Add new dependency
-    setActiveSessionRecordId, setActiveSchedule, setActiveScheduleDisplayTitleInternal, setTimerType,
-    setIsTimeLeftManagedBySession, setCurrentPhaseDurationSeconds, setTimeLeft, setIsRunning, setIsPaused,
-    setIsFlashing, setCurrentPhaseStartTime, setSessionStartTime, setAccumulatedFocusSeconds,
-    setAccumulatedBreakSeconds, setHomepageFocusMinutes, setHomepageBreakMinutes, _defaultBreakMinutes,
-    _defaultFocusMinutes, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants,
-    localFirstName, userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value,
-    playSound, triggerVibration, resetSessionStates, session?.access_token
+    user?.id, areToastsEnabled, isRunning, isPaused, isScheduleActive, isSchedulePrepared,
+    resetSchedule, setIsRunning, setIsPaused, setIsFlashing, setAccumulatedFocusSeconds,
+    setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setHasWonPrize,
+    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setActiveSessionRecordId,
+    setActiveSchedule, setActiveScheduleDisplayTitleInternal, setTimerType,
+    setIsTimeLeftManagedBySession, setTimeLeft, setSessionStartTime, setCurrentPhaseStartTime,
+    setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
+    setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
+    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, _defaultBreakMinutes, _defaultFocusMinutes,
+    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds, session?.access_token
   ]);
 
   // NEW: Main timer countdown effect
