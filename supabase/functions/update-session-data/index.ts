@@ -317,6 +317,7 @@ serve(async (req) => {
         user_id: newHostId,
         host_name: newHostName,
         join_code: originalJoinCode,
+        last_heartbeat: new Date().toISOString(), // ADDED: last_heartbeat
       })
       .eq('id', sessionId)
       .select()

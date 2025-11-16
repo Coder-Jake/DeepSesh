@@ -299,7 +299,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       try {
         const { error } = await supabase
           .from('active_sessions')
-          .update({ session_title: newTitle })
+          .update({ session_title: newTitle, last_heartbeat: new Date().toISOString() }) // ADDED: last_heartbeat
           .eq('id', activeSessionRecordId)
           .eq('user_id', user.id); // MODIFIED: Use user_id for RLS
 
@@ -447,6 +447,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
       join_code: userJoinCode, // RENAMED: host_code to join_code
       organization: profile?.organization || null, // NEW: Add organization
+      last_heartbeat: new Date().toISOString(), // ADDED: last_heartbeat
     };
 
     try {
@@ -915,6 +916,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             participants_data: [hostParticipant],
             join_code: userJoinCode, // RENAMED: host_code to join_code
             organization: profile?.organization || null, // NEW: Add organization
+            last_heartbeat: new Date().toISOString(), // ADDED: last_heartbeat
           })
           .select('id')
           .single();
@@ -1610,8 +1612,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
       // 2. Load homepage customization flags
       loadedIsHomepageFocusCustomized = data.isHomepageFocusCustomized ?? false;
-      loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
       setIsHomepageFocusCustomized(loadedIsHomepageFocusCustomized);
+      loadedIsHomepageBreakCustomized = data.isHomepageBreakCustomized ?? false;
       setIsHomepageBreakCustomized(loadedIsHomepageBreakCustomized);
 
       // 3. Set homepage focus/break minutes based on customization or defaults
