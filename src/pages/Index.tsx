@@ -48,6 +48,7 @@ import { Slider } from '@/components/ui/slider';
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { calculateDistance } from '@/utils/location-utils';
+import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data'; // NEW: Import local mock data
 
 interface ExtendSuggestion {
   id: string;
@@ -103,112 +104,48 @@ interface SupabaseSessionData {
   organization: string | null;
 }
 
-// NEW: Function to fetch mock profiles from Supabase
-const fetchMockProfiles = async (userId: string | undefined): Promise<ProfileType[]> => {
-  let query = supabase
-    .from('mock_profiles')
-    .select('*');
+// REMOVED: fetchMockProfiles function
+// REMOVED: fetchMockSessions function
 
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("Error fetching mock profiles from Supabase:", error);
-    throw new Error(error.message);
-  }
-
-  return data.map((profile: any) => ({
-    ...profile,
-    profile_data: profile.profile_data || {},
-    visibility: profile.visibility || ['public'],
-  }));
-};
-
-// NEW: Function to fetch mock sessions from Supabase
-const fetchMockSessions = async (
+// NEW: Helper function to filter local mock sessions
+const filterLocalMockSessions = (
+  mockSessions: DemoSession[],
+  mockProfiles: ProfileType[],
   userId: string | undefined,
   userLatitude: number | null,
   userLongitude: number | null,
   profileOrganization: string | null,
-  mockProfiles: ProfileType[], // Pass mock profiles to resolve participant data
   limitDiscoveryRadius: boolean,
   maxDistance: number
-): Promise<DemoSession[]> => {
-  let query = supabase
-    .from('mock_sessions')
-    .select('*');
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("Error fetching mock sessions from Supabase:", error);
-    throw new Error(error.message);
-  }
-
-  return data.map((session: SupabaseSessionData) => {
-    const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
-    const participants: ParticipantSessionData[] = rawParticipantsData.map(p => {
-      const mockProfile = mockProfiles.find(mp => mp.id === p.userId);
-      return {
-        userId: p.userId,
-        userName: mockProfile?.first_name || p.userName,
-        joinTime: p.joinTime,
-        role: p.role,
-        focusPreference: mockProfile?.focus_preference || p.focusPreference || 50,
-        intention: mockProfile?.profile_data?.intention?.value || p.intention || undefined,
-        bio: mockProfile?.profile_data?.bio?.value || p.bio || undefined,
-      };
-    });
-
-    const rawScheduleData = (session.schedule_data || []) as ScheduledTimer[];
-    let fullSchedule: ScheduledTimer[];
-    if (rawScheduleData.length > 0) {
-      fullSchedule = rawScheduleData.map((item: any) => ({
-        id: item.id || crypto.randomUUID(),
-        title: item.title || item.type,
-        type: item.type,
-        durationMinutes: item.durationMinutes,
-        isCustom: item.isCustom || false,
-        customTitle: item.customTitle || undefined,
-      }));
-    } else {
-      fullSchedule = [{
-        id: crypto.randomUUID(),
-        title: session.current_phase_type === 'focus' ? 'Focus' : 'Break',
-        type: session.current_phase_type,
-        durationMinutes: session.current_phase_type === 'focus' ? session.focus_duration : session.break_duration,
-        isCustom: false,
-      }];
-    }
-
+): DemoSession[] => {
+  return mockSessions.map(session => {
     let distance: number | null = null;
     if (userLatitude !== null && userLongitude !== null && session.location_lat !== null && session.location_long !== null) {
       distance = calculateDistance(userLatitude, userLongitude, session.location_lat, session.location_long);
     }
-
-    return {
-      id: session.id,
-      title: session.session_title,
-      startTime: new Date(session.created_at).getTime(),
-      location: session.location_long && session.location_lat ? `Lat: ${session.location_lat}, Long: ${session.location_lat}` : "Unknown Location",
-      workspaceImage: "/api/placeholder/200/120",
-      workspaceDescription: "Mock session from Supabase",
-      participants: participants,
-      fullSchedule: fullSchedule,
-      location_lat: session.location_lat,
-      location_long: session.location_long,
-      distance: distance,
-      active_asks: (session.active_asks || []) as ActiveAskItem[],
-      visibility: session.visibility,
-      user_id: session.user_id,
-      join_code: session.join_code, // NEW: Map join_code from mock_sessions
-    };
+    return { ...session, distance };
   }).filter(session => {
+    // Apply distance filter if enabled
     if (limitDiscoveryRadius && session.distance !== null) {
-      return session.distance <= maxDistance;
+      if (session.distance > maxDistance) {
+        return false;
+      }
     }
-    return true;
+
+    // Apply visibility filters
+    const isPublic = session.visibility === 'public';
+    const isFriends = session.visibility === 'friends';
+    const isOrganization = session.visibility === 'organisation';
+
+    // For mock data, we'll simplify "friends" and "organization" logic
+    // A real implementation would check actual friend lists and organization memberships.
+    const isHostFriend = isFriends && session.participants.some(p => p.userId === userId && p.role === 'host'); // Simplified friend check
+    const isHostOrgMember = isOrganization && session.organization && profileOrganization && session.organization === profileOrganization;
+
+    return isPublic || isHostFriend || isHostOrgMember;
   });
 };
+
 
 // NEW: Function to fetch live sessions from Supabase
 const fetchSupabaseSessions = async (
@@ -478,57 +415,41 @@ const Index = () => {
     }
   }, [setSessionVisibility, sessionVisibility, areToastsEnabled, profile?.organization]);
 
-  // NEW: Fetch mock profiles for participant data resolution
-  const { data: mockProfiles, isLoading: isLoadingMockProfiles, error: mockProfilesError } = useQuery<ProfileType[]>({
-    queryKey: ['mockProfiles', user?.id],
-    queryFn: async () => {
-      try {
-        return await fetchMockProfiles(user?.id);
-      } catch (err: any) {
-        console.error("Error fetching mock profiles from Supabase:", err.message);
-        if (areToastsEnabled) {
-          toast.error("Failed to Load Mock Profiles", {
-            description: `Could not load mock profiles: ${err.message}`,
-          });
-        }
-        throw err;
-      }
-    },
-    enabled: showDemoSessions,
-  });
+  // REMOVED: useQuery for mockProfiles
+  // REMOVED: useQuery for mockSessions
 
-  // NEW: Function to fetch mock sessions from Supabase
-  const { data: mockSessions, isLoading: isLoadingMockSessions, error: mockSessionsError } = useQuery<DemoSession[]>({
-    queryKey: ['mockSessions', user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, mockProfiles, limitDiscoveryRadius, maxDistance],
-    queryFn: async () => {
-      try {
-        if (!mockProfiles) return [];
-        return await fetchMockSessions(user?.id, userLocation.latitude, userLocation.longitude, profile?.organization || null, mockProfiles, limitDiscoveryRadius, maxDistance);
-      } catch (err: any) {
-        console.error("Error fetching mock sessions from Supabase:", err.message);
-        if (areToastsEnabled) {
-          toast.error("Failed to Load Mock Sessions",
-            { description: `Could not load mock sessions: ${err.message}`,
-          });
-        }
-        throw err;
-      }
-    },
-    refetchInterval: 5000,
-    enabled: showDemoSessions && !!mockProfiles,
-  });
+  // NEW: Use local MOCK_PROFILES directly
+  const mockProfiles = MOCK_PROFILES;
+  const isLoadingMockProfiles = false;
+  const mockProfilesError = null;
+
+  // NEW: Filter local MOCK_SESSIONS
+  const filteredLocalMockSessions = useMemo(() => {
+    if (!MOCK_SESSIONS || !mockProfiles) return [];
+    return filterLocalMockSessions(
+      MOCK_SESSIONS,
+      mockProfiles,
+      user?.id,
+      userLocation.latitude,
+      userLocation.longitude,
+      profile?.organization || null,
+      limitDiscoveryRadius,
+      maxDistance
+    );
+  }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, limitDiscoveryRadius, maxDistance]);
+
 
   // NEW: Filter mock sessions into nearby, friends, and organization
   const filteredMockNearbySessions = useMemo(() => {
     console.log("Filtering mock nearby sessions...");
-    console.log("mockSessions:", mockSessions);
+    console.log("filteredLocalMockSessions:", filteredLocalMockSessions);
     console.log("userLocation.latitude:", userLocation.latitude, "userLocation.longitude:", userLocation.longitude);
 
-    if (!mockSessions || !userLocation.latitude || !userLocation.longitude) {
-      console.log("Skipping nearby filter: mockSessions or userLocation missing.");
+    if (!filteredLocalMockSessions || !userLocation.latitude || !userLocation.longitude) {
+      console.log("Skipping nearby filter: filteredLocalMockSessions or userLocation missing.");
       return [];
     }
-    return mockSessions.filter(session => {
+    return filteredLocalMockSessions.filter(session => {
       const isPublic = session.visibility === 'public';
       const isNearbyByDistance = (session.location_lat && session.location_long && session.distance !== null && session.distance <= maxDistance);
 
@@ -539,40 +460,40 @@ const Index = () => {
         return isPublic;
       }
     });
-  }, [mockSessions, userLocation, maxDistance, limitDiscoveryRadius]);
+  }, [filteredLocalMockSessions, userLocation, maxDistance, limitDiscoveryRadius]);
 
   const filteredMockFriendsSessions = useMemo(() => {
     console.log("Filtering mock friends sessions...");
-    console.log("mockSessions:", mockSessions);
+    console.log("filteredLocalMockSessions:", filteredLocalMockSessions);
     console.log("profile?.id:", profile?.id);
 
-    if (!mockSessions || !profile?.id) {
-      console.log("Skipping friends filter: mockSessions or profile ID missing.");
+    if (!filteredLocalMockSessions || !profile?.id) {
+      console.log("Skipping friends filter: filteredLocalMockSessions or profile ID missing.");
       return [];
     }
     // For mock data, we'll just use a simple heuristic or hardcoded list for "friends"
     // For now, let's assume sessions with 'mock-user-id-freud' as host are "friends" sessions
-    return mockSessions.filter(session => {
-      const isFriendSession = session.user_id === 'mock-user-id-freud';
+    return filteredLocalMockSessions.filter(session => {
+      const isFriendSession = session.user_id === 'c3d4e5f6-a7b8-4901-8234-567890abcdef01'; // Freud's ID
       console.log(`Session ${session.id} (${session.title}): user_id=${session.user_id}, isFriendSession=${isFriendSession}`);
       return isFriendSession;
     });
-  }, [mockSessions, profile?.id]);
+  }, [filteredLocalMockSessions, profile?.id]);
 
-  const filteredMockOrganizationSessions = useMemo(() => {
-    if (!mockSessions || !profile?.organization) return [];
+  const mockOrganizationSessions = useMemo(() => {
+    if (!filteredLocalMockSessions || !profile?.organization) return [];
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
 
-    mockSessions.forEach(session => {
+    filteredLocalMockSessions.forEach(session => {
       const hostProfile = mockProfiles?.find(mp => mp.id === session.user_id);
       if (hostProfile?.organization && organizationNames.includes(hostProfile.organization)) {
         sessions.push(session);
       }
     });
     return sessions;
-  }, [mockSessions, profile?.organization, mockProfiles]);
+  }, [filteredLocalMockSessions, profile?.organization, mockProfiles]);
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
@@ -1073,121 +994,21 @@ const Index = () => {
     return result;
   }, [profile?.organization, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
+  // NEW: Use local MOCK_SESSIONS for organization sessions
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
-    if (!profile?.organization || !showDemoSessions || !mockSessions) return [];
+    if (!profile?.organization || !showDemoSessions || !filteredLocalMockSessions) return [];
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
 
-    const famousNamesWithIds = [
-      { id: "mock-user-id-aristotle", name: "Aristotle" },
-      { id: "mock-user-id-plato", name: "Plato" },
-      { id: "mock-user-id-socrates", name: "Socrates" },
-      { id: "mock-user-id-descartes", name: "Descartes" },
-      { id: "mock-user-id-kant", name: "Kant" },
-      { id: "mock-user-id-locke", name: "Locke" },
-      { id: "mock-user-id-hume", name: "Hume" },
-      { id: "mock-user-id-rousseau", name: "Rousseau" },
-      { id: "mock-user-id-newton", name: "Newton" },
-      { id: "mock-user-id-einstein", name: "Einstein" },
-      { id: "mock-user-id-curie", name: "Curie" },
-      { id: "mock-user-id-darwin", name: "Darwin" },
-      { id: "mock-user-id-galileo", name: "Galileo" },
-      { id: "mock-user-id-hawking", name: "Hawking" },
-      { id: "mock-user-id-turing", name: "Turing" },
-      { id: "mock-user-id-hypatia", name: "Hypatia" },
-      { id: "mock-user-id-copernicus", name: "Copernicus" },
-      { id: "mock-user-id-kepler", name: "Kepler" },
-      { id: "mock-user-id-bohr", name: "Bohr" },
-      { id: "mock-user-id-heisenberg", name: "Heisenberg" },
-      { id: "mock-user-id-schrodinger", name: "Schrödinger" },
-      { id: "mock-user-id-maxwell", name: "Maxwell" },
-      { id: "mock-user-id-faraday", name: "Faraday" },
-      { id: "mock-user-id-pascal", name: "Pascal" },
-      { id: "mock-user-id-leibniz", name: "Leibniz" },
-      { id: "mock-user-id-pythagoras", name: "Pythagoras" },
-      { id: "mock-user-id-euclid", name: "Euclid" },
-      { id: "mock-user-id-archimedes", name: "Archimedes" },
-      { id: "mock-user-id-davinci", name: "Da Vinci" },
-      { id: "mock-user-id-franklin", name: "Franklin" }
-    ];
-
-    organizationNames.forEach((orgName) => {
-      const getDeterministicOffset = (name: string) => {
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-          const char = name.charCodeAt(i);
-          hash = ((hash << 5) - hash) + char;
-          hash |= 0;
-        }
-        return Math.abs(hash);
-      };
-
-      const hashValue = getDeterministicOffset(orgName);
-      const minuteOffset = (hashValue % 12) * 5;
-
-      const now = new Date();
-      const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0).getTime();
-
-      const staggeredStartTime = currentHourStart + minuteOffset * 60 * 1000;
-
-      const participantNames: ParticipantSessionData[] = [];
-      const usedIndices = new Set<number>();
-
-      for (let i = 0; i < 3; i++) {
-        let randomIndex = (hashValue + i) % famousNamesWithIds.length;
-        while (usedIndices.has(randomIndex)) {
-          randomIndex = (randomIndex + 1) % famousNamesWithIds.length;
-        }
-        usedIndices.add(randomIndex);
-        const { id, name } = famousNamesWithIds[randomIndex];
-
-        const focusPreferenceOffset = Math.floor(Math.random() * 15) - 7;
-        const variedFocusPreference = Math.max(0, Math.min(100, (focusPreference || 50) + focusPreferenceOffset));
-
-        participantNames.push({
-          userId: id,
-          userName: name,
-          joinTime: Date.now(),
-          role: i === 0 ? 'host' : 'coworker',
-          focusPreference: variedFocusPreference,
-          intention: `Deep work on ${name}'s theories.`,
-          bio: `A dedicated member of ${orgName}.`,
-        });
+    filteredLocalMockSessions.forEach(session => {
+      const hostProfile = MOCK_PROFILES.find(mp => mp.id === session.user_id); // Use MOCK_PROFILES directly
+      if (hostProfile?.organization && organizationNames.includes(hostProfile.organization)) {
+        sessions.push(session);
       }
-
-      const mockLat = -33.8688 + (Math.random() - 0.5) * 0.05;
-      const mockLong = 151.2093 + (Math.random() - 0.5) * 0.05;
-
-      let distance: number | null = null;
-      if (userLocation.latitude !== null && userLocation.longitude !== null) {
-        distance = calculateDistance(userLocation.latitude, userLocation.longitude, mockLat, mockLong);
-      }
-
-      sessions.push({
-        id: `org-session-${orgName.replace(/\s/g, '-')}`,
-        title: `${orgName} DeepSesh`,
-        startTime: staggeredStartTime,
-        location: `${orgName} HQ - Study Room`,
-        workspaceImage: "/api/placeholder/200/120",
-        workspaceDescription: "Dedicated study space for organization members",
-        participants: participantNames,
-        fullSchedule: [
-          { id: crypto.randomUUID(), type: "focus", title: "Focus", durationMinutes: 50 },
-          { id: crypto.randomUUID(), type: "break", title: "Break", durationMinutes: 10 },
-        ],
-        location_lat: mockLat,
-        location_long: mockLong,
-        distance: distance,
-        active_asks: [],
-        visibility: 'organisation',
-        user_id: participantNames.find(p => p.role === 'host')?.userId,
-        join_code: `ORG-${orgName.substring(0, 3).toUpperCase()}-${Math.floor(Math.random() * 1000)}`, // Mock join_code
-      });
     });
-
     return sessions;
-  }, [profile, currentUserId, currentUserName, focusPreference, showDemoSessions, userLocation, mockSessions]);
+  }, [profile, showDemoSessions, filteredLocalMockSessions]);
 
 
   const handleExtendSubmit = async (minutes: number) => {
@@ -1568,7 +1389,7 @@ const Index = () => {
     console.log("showSessionsWhileActive:", showSessionsWhileActive);
     console.log("profile?.id:", profile?.id);
     console.log("profile?.organization:", profile?.organization);
-    console.log("mockSessions (raw from query):", mockSessions);
+    console.log("filteredLocalMockSessions (local data):", filteredLocalMockSessions);
     console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
     console.log("filteredMockNearbySessions.length:", filteredMockNearbySessions.length);
     console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions);
@@ -1581,7 +1402,7 @@ const Index = () => {
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
     sessionVisibility, showSessionsWhileActive, profile?.id, profile?.organization,
-    mockSessions,
+    filteredLocalMockSessions,
     shouldShowNearbySessions, filteredMockNearbySessions.length,
     shouldShowFriendsSessions, filteredMockFriendsSessions.length,
     shouldShowOrganizationSessions, mockOrganizationSessions.length,

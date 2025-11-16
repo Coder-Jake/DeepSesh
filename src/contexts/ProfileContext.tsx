@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useAuth } from "./AuthContext";
 import { supabase } from '@/integrations/supabase/client';
 import { colors, animals } from '@/lib/constants';
+import { MOCK_PROFILES } from '@/lib/mock-data'; // NEW: Import local mock profiles
 
 // Define the structure for a single field within profile_data
 export type ProfileDataField = {
@@ -158,7 +159,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [recentCoworkers, setRecentCoworkers] = useState<string[]>([]);
 
-  const mockProfilesRef = useRef<Profile[]>([]);
+  const mockProfilesRef = useRef<Profile[]>([]); // Use useRef for mock profiles
 
   const getDefaultProfileDataField = useCallback((value: string | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
     value,
@@ -174,58 +175,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     pronouns: getDefaultProfileDataField(null, ['public']),
   }), [getDefaultProfileDataField]);
 
-  const fetchMockProfiles = useCallback(async () => {
-    mockProfilesRef.current = [
-      {
-        id: "mock-user-id-bezos", first_name: "Sam Altman", last_name: null, avatar_url: null, focus_preference: 20, updated_at: new Date().toISOString(), organization: "OpenAI", join_code: "Goldfish", visibility: ['public'], // RENAMED
-        profile_data: {
-          bio: getDefaultProfileDataField("Leading AI research.", ['public']),
-          intention: getDefaultProfileDataField("Focusing on AGI.", ['public']),
-          linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/samaltman", ['public']),
-          can_help_with: getDefaultProfileDataField("AI strategy", ['public']),
-          need_help_with: getDefaultProfileDataField("AI safety", ['private']),
-          pronouns: getDefaultProfileDataField("He/Him", ['public']),
-        }
-      },
-      {
-        id: "mock-user-id-musk", first_name: "Musk", last_name: null, avatar_url: null, focus_preference: 10, updated_at: new Date().toISOString(), organization: "SpaceX", join_code: "Silverfalcon", visibility: ['public'], // RENAMED
-        profile_data: {
-          bio: getDefaultProfileDataField("Designing rockets.", ['public']),
-          intention: getDefaultProfileDataField("Innovating space travel.", ['public']),
-          linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/elonmusk", ['public']),
-          can_help_with: getDefaultProfileDataField("Rocket engineering", ['public']),
-          need_help_with: getDefaultProfileDataField("Mars colonization", ['private']),
-          pronouns: getDefaultProfileDataField("He/Him", ['public']),
-        }
-      },
-      {
-        id: "mock-user-id-freud", first_name: "Freud", last_name: null, avatar_url: null, focus_preference: 60, updated_at: new Date().toISOString(), organization: "Psychology Dept.", join_code: "Tealshark", visibility: ['public'], // RENAMED
-        profile_data: {
-          bio: getDefaultProfileDataField("Reviewing psychoanalytic theories.", ['public']),
-          intention: getDefaultProfileDataField("Unraveling human behavior.", ['public']),
-          linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/sigmundfreud", ['public']),
-          can_help_with: getDefaultProfileDataField("Psychoanalysis", ['friends']),
-          need_help_with: getDefaultProfileDataField("Modern neuroscience", ['friends']),
-          pronouns: getDefaultProfileDataField("He/Him", ['public']),
-        }
-      },
-      {
-        id: "mock-user-id-aristotle", first_name: "Aristotle", last_name: null, avatar_url: null, focus_preference: 50, updated_at: new Date().toISOString(), organization: "Ancient Philosophy Guild", join_code: "Redphilosopher", visibility: ['organisation'], // RENAMED
-        profile_data: {
-          bio: getDefaultProfileDataField("Studying logic.", ['public']),
-          intention: getDefaultProfileDataField("Deep work on theories.", ['public']),
-          linkedin_url: getDefaultProfileDataField(null, ['public']),
-          can_help_with: getDefaultProfileDataField("Logic", ['organisation']),
-          need_help_with: getDefaultProfileDataField("Modern science", ['organisation']),
-          pronouns: getDefaultProfileDataField("He/Him", ['public']),
-        }
-      },
-    ];
-  }, [getDefaultProfileDataField]);
-
+  // NEW: Directly assign MOCK_PROFILES to the ref
   useEffect(() => {
-    fetchMockProfiles();
-  }, [fetchMockProfiles]);
+    mockProfilesRef.current = MOCK_PROFILES;
+  }, []);
 
   const syncProfileToSupabase = useCallback(async (successMessage?: string) => {
     if (!user || !profile) {
@@ -446,7 +399,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   }, [user, areToastsEnabled, profile, getDefaultProfileDataJsonb, syncProfileToSupabase]);
 
   const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => { // Make it async
-    // 1. Check mock profiles
+    // 1. Check mock profiles (local data)
     const foundMockProfile = mockProfilesRef.current.find(p => p.id === userId);
     if (foundMockProfile) {
       return foundMockProfile;
