@@ -24,14 +24,14 @@ serve(async (req) => {
       }
     );
 
-    // Calculate the timestamp for 1 minute ago
-    const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    // Calculate the timestamp for 90 minutes ago
+    const ninetyMinutesAgo = new Date(Date.now() - 90 * 60 * 1000).toISOString();
 
-    // Fetch sessions that haven't been updated in the last minute
+    // Fetch sessions that haven't been updated in the last 90 minutes
     const { data: sessionsToDelete, error: fetchError } = await supabaseClient
       .from('active_sessions')
       .select('id, session_title, last_heartbeat')
-      .lt('last_heartbeat', oneMinuteAgo);
+      .lt('last_heartbeat', ninetyMinutesAgo);
 
     if (fetchError) {
       console.error('Error fetching inactive sessions:', fetchError.message);
