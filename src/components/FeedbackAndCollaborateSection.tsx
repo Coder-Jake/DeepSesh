@@ -11,17 +11,17 @@ import { Link } from 'react-router-dom'; // Import Link
 const FeedbackAndCollaborateSection = () => {
   return (
     <Card className="mt-8">
-      <CardHeader className="p-0">
-        <Link // Changed from <a> to <Link>
-          to="/feedback" // Link to the new Feedback page
-          className="block p-6 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer"
-        >
+      <Link // Moved Link to wrap CardHeader
+        to="/feedback" // Link to the new Feedback page
+        className="block p-0 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer"
+      >
+        <CardHeader className="p-6"> {/* Adjusted padding here */}
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
             Get in Touch
           </CardTitle>
-        </Link>
-      </CardHeader>
+        </CardHeader>
+      </Link>
       {/* CardContent removed as requested */}
     </Card>
   );
