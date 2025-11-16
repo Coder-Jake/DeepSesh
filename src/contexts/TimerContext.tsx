@@ -1249,8 +1249,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         },
       });
 
-      if (response.error) throw response.error;
-      if (response.data.error) throw new Error(response.data.error);
+      if (response.error) {
+        console.error("Supabase Edge Function 'join-session' returned an error:", response.error);
+        throw response.error; // Re-throw to be caught by the outer catch block
+      }
+      if (response.data.error) {
+        console.error("Supabase Edge Function 'join-session' returned a data error:", response.data.error);
+        throw new Error(response.data.error); // Throw the specific error message from data
+      }
 
       const updatedSession = response.data.session;
       const updatedParticipantsData: ParticipantSessionData[] = (updatedSession?.participants_data || []) as ParticipantSessionData[];
