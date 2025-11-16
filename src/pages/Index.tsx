@@ -46,7 +46,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
-import { calculateDistance, formatDistance } from '@/utils/location-utils'; // MODIFIED: Import formatDistance
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { calculateDistance } from '@/utils/location-utils';
 
 interface ExtendSuggestion {
   id: string;
@@ -1583,6 +1584,15 @@ const Index = () => {
     shouldShowOrganizationSessions, mockOrganizationSessions.length,
     limitDiscoveryRadius, maxDistance
   ]);
+
+  const formatDistance = (distance: number | null) => {
+    if (distance === null || distance === undefined) return null;
+    if (distance < 1000) {
+      return `${Math.round(distance)}m`;
+    } else {
+      return `${(distance / 1000).toFixed(1)}km`;
+    }
+  };
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {

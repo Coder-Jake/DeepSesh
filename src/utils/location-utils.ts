@@ -32,18 +32,3 @@ export const calculateDistance = (
   const distance = R * c; // Distance in meters
   return distance;
 };
-
-/**
- * Formats a distance in meters into a human-readable string (meters or kilometers).
- * Returns "Unknown distance" if the distance is null or undefined.
- * @param distance Distance in meters (or null/undefined)
- * @returns Formatted distance string
- */
-export const formatDistance = (distance: number | null | undefined): string => {
-  if (distance === null || distance === undefined) return "Unknown distance";
-  if (distance < 1000) {
-    return `~${Math.round(distance)}m`;
-  } else {
-    return `~${(distance / 1000).toFixed(1)}km`;
-  }
-};
