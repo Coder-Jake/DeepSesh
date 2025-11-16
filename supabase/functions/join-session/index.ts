@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { verify } from 'https://deno.land/x/djwt@v2.8/mod.ts';
+// import { verify } from 'https://deno.land/x/djwt@v2.8/mod.ts'; // Removed JWT verification
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,35 +13,23 @@ serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.warn('JOIN_SESSION_EDGE_FUNCTION: Unauthorized: Missing Authorization header');
-      return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
+    // --- SECURITY WARNING: JWT authentication has been removed as per user request. ---
+    // --- This function now trusts the userId provided in the request body.           ---
+    // --- Re-enable JWT verification for production environments.                     ---
+
+    const { sessionCode, participantData } = await req.json();
+
+    if (!sessionCode || !participantData || !participantData.userId || !participantData.userName) {
+      console.warn('JOIN_SESSION_EDGE_FUNCTION: Bad Request: Missing sessionCode or participantData');
+      return new Response(JSON.stringify({ error: 'Missing sessionCode or participantData' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
+        status: 400,
       });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    console.log('JOIN_SESSION_EDGE_FUNCTION: Received token (first 10 chars):', token.substring(0, 10));
-    const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
-    if (!jwtSecret) {
-      console.error('JOIN_SESSION_EDGE_FUNCTION: SUPABASE_JWT_SECRET is not set in environment variables.');
-      throw new Error('SUPABASE_JWT_SECRET is not set in environment variables.');
-    }
-
-    let authenticatedUserId: string | null = null;
-    try {
-      const { sub } = await verify(token, jwtSecret, 'HS256');
-      authenticatedUserId = sub || null;
-      console.log('JOIN_SESSION_EDGE_FUNCTION: Authenticated User ID:', authenticatedUserId);
-    } catch (jwtError: any) {
-      console.warn('JOIN_SESSION_EDGE_FUNCTION: JWT verification failed:', jwtError.message);
-      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid JWT' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
-      });
-    }
+    // Directly use participantData.userId as the authenticated user ID (reduced security)
+    const authenticatedUserId = participantData.userId;
+    console.log('JOIN_SESSION_EDGE_FUNCTION: Authenticated User ID (bypassed JWT):', authenticatedUserId);
 
     const supabaseServiceRoleClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -54,24 +42,6 @@ serve(async (req) => {
     );
     console.log('JOIN_SESSION_EDGE_FUNCTION: SUPABASE_SERVICE_ROLE_KEY (first 10 chars):', (Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '').substring(0, 10));
 
-
-    const { sessionCode, participantData } = await req.json();
-
-    if (!sessionCode || !participantData || !participantData.userId || !participantData.userName) {
-      console.warn('JOIN_SESSION_EDGE_FUNCTION: Bad Request: Missing sessionCode or participantData');
-      return new Response(JSON.stringify({ error: 'Missing sessionCode or participantData' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
-    }
-
-    if (authenticatedUserId !== participantData.userId) {
-      console.warn('JOIN_SESSION_EDGE_FUNCTION: Forbidden: Participant ID mismatch with authenticated user. Auth ID:', authenticatedUserId, 'Participant Data ID:', participantData.userId);
-      return new Response(JSON.stringify({ error: 'Forbidden: Participant ID mismatch with authenticated user' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 403,
-      });
-    }
 
     const { data: userProfile, error: userProfileError } = await supabaseServiceRoleClient
       .from('profiles')
