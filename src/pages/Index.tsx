@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown, Infinity as InfinityIcon, Building2 } from "lucide-react"; // NEW: Import Building2, Renamed Infinity to InfinityIcon
+import { Globe, Lock, CalendarPlus, Share2, Square, ChevronDown, ChevronUp, Users, MapPin, Crown, Infinity as InfinityIcon, Building2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -100,7 +100,7 @@ interface SupabaseSessionData {
   participants_data: ParticipantSessionData[];
   join_code: string | null;
   active_asks: ActiveAskItem[];
-  organization: string | null; // NEW: Add organization
+  organization: string | null;
 }
 
 // NEW: Function to fetch mock profiles from Supabase
@@ -130,8 +130,8 @@ const fetchMockSessions = async (
   userLongitude: number | null,
   profileOrganization: string | null,
   mockProfiles: ProfileType[], // Pass mock profiles to resolve participant data
-  limitDiscoveryRadius: boolean, // NEW: Add limitDiscoveryRadius
-  maxDistance: number // NEW: Add maxDistance
+  limitDiscoveryRadius: boolean,
+  maxDistance: number
 ): Promise<DemoSession[]> => {
   let query = supabase
     .from('mock_sessions')
@@ -198,10 +198,10 @@ const fetchMockSessions = async (
       location_long: session.location_long,
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
-      visibility: session.visibility, // NEW: Map visibility
-      user_id: session.user_id, // ADDED: user_id
+      visibility: session.visibility,
+      user_id: session.user_id,
     };
-  }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
+  }).filter(session => {
     if (limitDiscoveryRadius && session.distance !== null) {
       return session.distance <= maxDistance;
     }
@@ -214,8 +214,8 @@ const fetchSupabaseSessions = async (
   userId: string | undefined,
   userLatitude: number | null,
   userLongitude: number | null,
-  limitDiscoveryRadius: boolean, // NEW: Add limitDiscoveryRadius
-  maxDistance: number // NEW: Add maxDistance
+  limitDiscoveryRadius: boolean,
+  maxDistance: number
 ): Promise<DemoSession[]> => {
   if (!userId) {
     console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
@@ -227,7 +227,7 @@ const fetchSupabaseSessions = async (
   const { data, error } = await supabase
     .from('active_sessions')
     .select('*')
-    .eq('is_active', true); // Only fetch active sessions
+    .eq('is_active', true);
 
   if (error) {
     console.error("Error fetching active sessions from Supabase:", error);
@@ -285,10 +285,10 @@ const fetchSupabaseSessions = async (
       location_long: session.location_long,
       distance: distance,
       active_asks: (session.active_asks || []) as ActiveAskItem[],
-      visibility: session.visibility, // NEW: Map visibility
-      user_id: session.user_id, // ADDED: user_id
+      visibility: session.visibility,
+      user_id: session.user_id,
     };
-  }).filter(session => { // NEW: Filter based on limitDiscoveryRadius and maxDistance
+  }).filter(session => {
     if (limitDiscoveryRadius && session.distance !== null) {
       return session.distance <= maxDistance;
     }
@@ -343,8 +343,8 @@ const Index = () => {
     scheduleTitle,
     commenceTime,
     commenceDay,
-    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
-    setSessionVisibility, // MODIFIED: Changed from setIsGlobalPrivate
+    sessionVisibility,
+    setSessionVisibility,
     activeScheduleDisplayTitle,
 
     sessionStartTime,
@@ -400,8 +400,8 @@ const Index = () => {
     currentPhaseDurationSeconds,
     setCurrentPhaseDurationSeconds,
     remainingTimeAtPause,
-    limitDiscoveryRadius, // NEW: Get limitDiscoveryRadius
-    maxDistance, // NEW: Get maxDistance
+    limitDiscoveryRadius,
+    maxDistance,
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility } = useProfile();
@@ -460,21 +460,21 @@ const Index = () => {
     }
   }, [isDiscoverySetupOpen, localFirstName, joinCode]);
 
-  const handleSessionVisibilityToggle = useCallback(() => { // MODIFIED: Renamed function
+  const handleSessionVisibilityToggle = useCallback(() => {
     const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
-    if (profile?.organization) { // Only add 'organisation' if user has an organization
+    if (profile?.organization) {
       modes.push('organisation');
     }
     const currentIndex = modes.indexOf(sessionVisibility);
     const nextIndex = (currentIndex + 1) % modes.length;
     const newVisibility = modes[nextIndex];
-    setSessionVisibility(newVisibility); // MODIFIED: Use setSessionVisibility
+    setSessionVisibility(newVisibility);
     if (areToastsEnabled) {
       toast.info("Session Visibility", {
         description: `Your sessions are now ${newVisibility}.`,
       });
     }
-  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, profile?.organization]); // MODIFIED: sessionVisibility and profile?.organization
+  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, profile?.organization]);
 
   // NEW: Fetch mock profiles for participant data resolution
   const { data: mockProfiles, isLoading: isLoadingMockProfiles, error: mockProfilesError } = useQuery<ProfileType[]>({
@@ -492,16 +492,16 @@ const Index = () => {
         throw err;
       }
     },
-    enabled: showDemoSessions, // Only fetch mock profiles if demo sessions are enabled
+    enabled: showDemoSessions,
   });
 
   // NEW: Function to fetch mock sessions from Supabase
   const { data: mockSessions, isLoading: isLoadingMockSessions, error: mockSessionsError } = useQuery<DemoSession[]>({
-    queryKey: ['mockSessions', user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, mockProfiles, limitDiscoveryRadius, maxDistance], // NEW: Add limitDiscoveryRadius and maxDistance to queryKey
+    queryKey: ['mockSessions', user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, mockProfiles, limitDiscoveryRadius, maxDistance],
     queryFn: async () => {
       try {
-        if (!mockProfiles) return []; // Ensure mockProfiles are loaded before fetching sessions
-        return await fetchMockSessions(user?.id, userLocation.latitude, userLocation.longitude, profile?.organization || null, mockProfiles, limitDiscoveryRadius, maxDistance); // NEW: Pass limitDiscoveryRadius and maxDistance
+        if (!mockProfiles) return [];
+        return await fetchMockSessions(user?.id, userLocation.latitude, userLocation.longitude, profile?.organization || null, mockProfiles, limitDiscoveryRadius, maxDistance);
       } catch (err: any) {
         console.error("Error fetching mock sessions from Supabase:", err.message);
         if (areToastsEnabled) {
@@ -513,7 +513,7 @@ const Index = () => {
       }
     },
     refetchInterval: 5000,
-    enabled: showDemoSessions && !!mockProfiles, // Only fetch mock sessions if demo sessions are enabled and mock profiles are loaded
+    enabled: showDemoSessions && !!mockProfiles,
   });
 
   // NEW: Filter mock sessions into nearby, friends, and organization
@@ -537,7 +537,7 @@ const Index = () => {
         return isPublic;
       }
     });
-  }, [mockSessions, userLocation, maxDistance, limitDiscoveryRadius]); // NEW: Add limitDiscoveryRadius to dependencies
+  }, [mockSessions, userLocation, maxDistance, limitDiscoveryRadius]);
 
   const filteredMockFriendsSessions = useMemo(() => {
     console.log("Filtering mock friends sessions...");
@@ -574,12 +574,12 @@ const Index = () => {
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance], // NEW: Add limitDiscoveryRadius and maxDistance to queryKey
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance],
     queryFn: async () => {
       try {
         // The original fetchSupabaseSessions function is designed to fetch from 'active_sessions'
         // and applies RLS logic. This is for *real* active sessions.
-        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance); // NEW: Pass limitDiscoveryRadius and maxDistance
+        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance);
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message);
         if (areToastsEnabled) {
@@ -591,14 +591,14 @@ const Index = () => {
       }
     },
     refetchInterval: 5000,
-    enabled: isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends'), // MODIFIED: Check sessionVisibility
+    enabled: isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends'),
   });
 
   useEffect(() => {
     const getUserLocation = async () => {
       const { latitude, longitude } = await getLocation();
       setUserLocation({ latitude, longitude });
-      console.log("User location set:", { latitude, longitude }); // NEW: Log userLocation after setting
+      console.log("User location set:", { latitude, longitude });
     };
 
     if (isDiscoveryActivated && geolocationPermissionStatus === 'granted') {
@@ -758,7 +758,7 @@ const Index = () => {
     setActiveJoinedSessionCoworkerCount(0);
     setCurrentSessionParticipantsData([hostParticipant]);
 
-    if (sessionVisibility !== 'private') { // MODIFIED: Check sessionVisibility
+    if (sessionVisibility !== 'private') {
       const { latitude, longitude } = await getLocation();
       const currentPhaseDuration = timerType === 'focus' ? currentFocusDuration : currentBreakDuration;
       const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
@@ -769,7 +769,7 @@ const Index = () => {
             user_id: hostParticipant.userId,
             host_name: hostParticipant.userName,
             session_title: seshTitle,
-            visibility: sessionVisibility, // MODIFIED: Use sessionVisibility
+            visibility: sessionVisibility,
             focus_duration: currentFocusDuration,
             break_duration: currentBreakDuration,
             current_phase_type: timerType,
@@ -781,7 +781,7 @@ const Index = () => {
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: joinCode,
-            organization: profile?.organization || null, // NEW: Add organization
+            organization: profile?.organization || null,
           })
           .select('id')
           .single();
@@ -799,7 +799,7 @@ const Index = () => {
       }
     }
   }, [
-    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, profile?.organization // MODIFIED: sessionVisibility, NEW: profile?.organization
+    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, profile?.organization
   ]);
 
   const resumeTimer = () => {
@@ -1020,8 +1020,8 @@ const Index = () => {
           location_lat: joinedSession.location_lat,
           location_long: joinedSession.location_long,
           active_asks: (joinedSession.active_asks || []) as ActiveAskItem[],
-          visibility: joinedSession.visibility, // NEW: Map visibility
-          user_id: joinedSession.user_id, // ADDED: user_id
+          visibility: joinedSession.visibility,
+          user_id: joinedSession.user_id,
         };
         await handleJoinSession(demoSession);
       } else {
@@ -1035,7 +1035,7 @@ const Index = () => {
       console.error("Error joining session by code:", err);
       if (areToastsEnabled) {
         toast.error("Join Failed", {
-          description: `An error occurred: ${err.message || String(err)}`,
+          description: `An error occurred: ${err.message || String(err)}.`,
         });
       }
     } finally {
@@ -1054,10 +1054,10 @@ const Index = () => {
   }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType, focusMinutes, breakMinutes]);
 
   const shouldShowNearbySessions = useMemo(() => {
-    const result = isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all'); // MODIFIED: Check sessionVisibility
-    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "sessionVisibility:", sessionVisibility, "showSessionsWhileActive:", showSessionsWhileActive); // MODIFIED: sessionVisibility
+    const result = isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
+    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "sessionVisibility:", sessionVisibility, "showSessionsWhileActive:", showSessionsWhileActive);
     return result;
-  }, [isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]); // MODIFIED: sessionVisibility
+  }, [isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
   const shouldShowFriendsSessions = useMemo(() => {
     const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
@@ -1066,10 +1066,10 @@ const Index = () => {
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganizationSessions = useMemo(() => {
-    const result = isDiscoveryActivated && !!profile?.organization && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check sessionVisibility
-    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization, "sessionVisibility:", sessionVisibility); // MODIFIED: sessionVisibility
+    const result = isDiscoveryActivated && !!profile?.organization && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all');
+    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization, "sessionVisibility:", sessionVisibility);
     return result;
-  }, [profile?.organization, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]); // MODIFIED: sessionVisibility
+  }, [profile?.organization, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
     if (!profile?.organization || !showDemoSessions || !mockSessions) return [];
@@ -1178,8 +1178,8 @@ const Index = () => {
         location_long: mockLong,
         distance: distance,
         active_asks: [],
-        visibility: 'organisation', // NEW: Set visibility for mock organization sessions
-        user_id: participantNames.find(p => p.role === 'host')?.userId, // ADDED: user_id
+        visibility: 'organisation',
+        user_id: participantNames.find(p => p.role === 'host')?.userId,
       });
     });
 
@@ -1375,7 +1375,7 @@ const Index = () => {
 
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
-      return Number.POSITIVE_INFINITY; // Changed to Number.POSITIVE_INFINITY
+      return Number.POSITIVE_INFINITY;
     }
 
     const [hours, minutes] = template.commenceTime.split(':').map(Number);
@@ -1388,7 +1388,7 @@ const Index = () => {
     targetDate.setDate(now.getDate() + daysToAdd);
 
     if (targetDate.getTime() < now.getTime() && !template.isRecurring) {
-      return Number.POSITIVE_INFINITY; // Changed to Number.POSITIVE_INFINITY
+      return Number.POSITIVE_INFINITY;
     }
 
     if (targetDate.getTime() < now.getTime() && template.isRecurring) {
@@ -1401,7 +1401,7 @@ const Index = () => {
         } else if (template.recurrenceFrequency === 'monthly') {
           nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
         } else {
-          return Number.POSITIVE_INFINITY; // Changed to Number.POSITIVE_INFINITY
+          return Number.POSITIVE_INFINITY;
         }
       }
       return nextCommenceDate.getTime();
@@ -1559,30 +1559,30 @@ const Index = () => {
     console.log("showDemoSessions:", showDemoSessions);
     console.log("isDiscoveryActivated:", isDiscoveryActivated);
     console.log("geolocationPermissionStatus:", geolocationPermissionStatus);
-    console.log("userLocation.latitude:", userLocation.latitude); // More specific log
-    console.log("userLocation.longitude:", userLocation.longitude); // More specific log
-    console.log("sessionVisibility:", sessionVisibility); // MODIFIED: sessionVisibility
+    console.log("userLocation.latitude:", userLocation.latitude);
+    console.log("userLocation.longitude:", userLocation.longitude);
+    console.log("sessionVisibility:", sessionVisibility);
     console.log("showSessionsWhileActive:", showSessionsWhileActive);
     console.log("profile?.id:", profile?.id);
     console.log("profile?.organization:", profile?.organization);
-    console.log("mockSessions (raw from query):", mockSessions); // Log raw mockSessions
+    console.log("mockSessions (raw from query):", mockSessions);
     console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
     console.log("filteredMockNearbySessions.length:", filteredMockNearbySessions.length);
     console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions);
     console.log("filteredMockFriendsSessions.length:", filteredMockFriendsSessions.length);
     console.log("shouldShowOrganizationSessions (memo):", shouldShowOrganizationSessions);
     console.log("mockOrganizationSessions.length:", mockOrganizationSessions.length);
-    console.log("limitDiscoveryRadius:", limitDiscoveryRadius); // NEW: Log limitDiscoveryRadius
-    console.log("maxDistance:", maxDistance); // NEW: Log maxDistance
+    console.log("limitDiscoveryRadius:", limitDiscoveryRadius);
+    console.log("maxDistance:", maxDistance);
     console.groupEnd();
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
-    sessionVisibility, showSessionsWhileActive, profile?.id, profile?.organization, // MODIFIED: sessionVisibility
-    mockSessions, // Added mockSessions to dependencies
+    sessionVisibility, showSessionsWhileActive, profile?.id, profile?.organization,
+    mockSessions,
     shouldShowNearbySessions, filteredMockNearbySessions.length,
     shouldShowFriendsSessions, filteredMockFriendsSessions.length,
     shouldShowOrganizationSessions, mockOrganizationSessions.length,
-    limitDiscoveryRadius, maxDistance // NEW: Add limitDiscoveryRadius and maxDistance to dependencies
+    limitDiscoveryRadius, maxDistance
   ]);
 
   const formatDistance = (distance: number | null) => {
@@ -1605,7 +1605,6 @@ const Index = () => {
           <div className="mb-6" data-name="Nearby Sessions Section">
             <button
               onClick={(e) => {
-                // Only toggle if it's not a long press
                 if (!isLongPress.current) {
                   setIsNearbySessionsOpen(prev => !prev);
                 }
@@ -1651,7 +1650,7 @@ const Index = () => {
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <InfinityIcon size={16} className="text-muted-foreground ml-1" /> {/* Changed to InfinityIcon */}
+                      <InfinityIcon size={16} className="text-muted-foreground ml-1" />
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
                       Discovery Radius: Unlimited
@@ -1670,7 +1669,7 @@ const Index = () => {
               <div className="space-y-3">
                 {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
                 {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
-                {supabaseActiveSessions?.filter(session => session.visibility === 'public').map(session => ( // Filter live sessions by public visibility
+                {supabaseActiveSessions?.filter(session => session.visibility === 'public').map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -1735,7 +1734,7 @@ const Index = () => {
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
-                <Building2 size={16} className="text-olive-foreground" /> {/* NEW: Icon for Organization */}
+                <Building2 size={16} className="text-olive-foreground" />
                 <h3>Organisations</h3>
               </div>
               <div className="flex items-center gap-2">
@@ -1771,8 +1770,8 @@ const Index = () => {
               sessionVisibility === 'public' && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-light))] to-[hsl(var(--public-gradient-end-light))]",
               sessionVisibility === 'private' && isDarkMode && "bg-gradient-to-r from-[hsl(var(--private-gradient-start-dark))] to-[hsl(var(--private-gradient-end-dark))]",
               sessionVisibility === 'private' && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--private-gradient-start-light))] to-[hsl(var(--private-gradient-end-light))]",
-              sessionVisibility === 'organisation' && isDarkMode && "bg-gradient-to-r from-[hsl(var(--organisation-gradient-start-dark))] to-[hsl(var(--organisation-gradient-end-dark))]", // NEW: Organization gradient
-              sessionVisibility === 'organisation' && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--organisation-gradient-start-light))] to-[hsl(var(--organisation-gradient-end-light))]" // NEW: Organization gradient
+              sessionVisibility === 'organisation' && isDarkMode && "bg-gradient-to-r from-[hsl(var(--organisation-gradient-start-dark))] to-[hsl(var(--organisation-gradient-end-dark))]",
+              sessionVisibility === 'organisation' && !isDarkMode && "bg-gradient-to-r from-[hsl(var(--organisation-gradient-start-light))] to-[hsl(var(--organisation-gradient-end-light))]"
             )}>
               {isSchedulingMode ? (
                 <ScheduleForm />
@@ -1803,18 +1802,18 @@ const Index = () => {
                         </h2>
                       ) : (
                         <p className="text-sm md:text-base font-bold text-muted-foreground">
-                          Sync focus with <span className="whitespace-nowrap">{sessionVisibility === 'private' ? "known coworkers" : (sessionVisibility === 'organisation' ? "organisation coworkers" : "nearby coworkers")}</span> {/* MODIFIED: Text based on sessionVisibility */}
+                          Sync focus with <span className="whitespace-nowrap">{sessionVisibility === 'private' ? "known coworkers" : (sessionVisibility === 'organisation' ? "organisation coworkers" : "nearby coworkers")}</span>
                         </p>
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <button
-                        onMouseDown={() => handleLongPressStart(handleSessionVisibilityToggle)} // MODIFIED: Call new toggle function
+                        onMouseDown={() => handleLongPressStart(handleSessionVisibilityToggle)}
                         onMouseUp={handleLongPressEnd}
                         onMouseLeave={handleLongPressEnd}
-                        onTouchStart={() => handleLongPressStart(handleSessionVisibilityToggle)} // MODIFIED: Call new toggle function
+                        onTouchStart={() => handleLongPressStart(handleSessionVisibilityToggle)}
                         onTouchEnd={handleLongPressEnd}
-                        onClick={handleSessionVisibilityToggle} // MODIFIED: Call new toggle function
+                        onClick={handleSessionVisibilityToggle}
                         className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors select-none"
                         data-name="Session Visibility Toggle Button"
                       >
@@ -1832,7 +1831,7 @@ const Index = () => {
                           )}
                         {sessionVisibility === 'organisation' && (
                             <>
-                              <Building2 size={16} className="text-olive-foreground" /> {/* NEW: Icon for Organization */}
+                              <Building2 size={16} className="text-olive-foreground" />
                               <span className="text-sm font-medium">Organisation</span>
                             </>
                           )}

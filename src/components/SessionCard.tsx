@@ -7,9 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { getSociabilityGradientColor } from '@/lib/utils';
-import { DemoSession, ParticipantSessionData } from '@/types/timer'; // NEW: Import DemoSession and ParticipantSessionData
-
-// REMOVED: interface DemoSession { ... }
+import { DemoSession, ParticipantSessionData } from '@/types/timer';
 
 interface SessionCardProps {
   session: DemoSession;
@@ -190,7 +188,10 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
           <div className="flex items-center gap-4 flex-grow mr-4">
             <Popover>
               <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
-                {session.distance !== null ? formatDistance(session.distance) : `~${totalDurationMinutes}m`} {/* MODIFIED: Display distance if available */}
+                {/* FIX: Wrap conditional text in a span */}
+                <span>
+                  {session.distance !== null ? formatDistance(session.distance) : `~${totalDurationMinutes}m`}
+                </span>
               </PopoverTrigger>
               <PopoverContent className="select-none">
                 <div className="text-center">
@@ -206,7 +207,10 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
             </Popover>
             <Popover>
               <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer select-none">
-                {session.participants.length} {session.participants.length === 1 ? 'coworker' : 'coworkers'}
+                {/* FIX: Wrap conditional text in a span */}
+                <span>
+                  {session.participants.length} {session.participants.length === 1 ? 'coworker' : 'coworkers'}
+                </span>
               </PopoverTrigger>
               <PopoverContent className="select-none">
                 <div className="space-y-3">
