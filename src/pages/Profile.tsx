@@ -48,7 +48,7 @@ type OriginalValuesType = {
 
 const Profile = () => {
   const {
-    profile, loading, updateProfile, getPublicProfile, blockedUsers, unblockUser,
+    profile, loading, updateProfile, getPublicProfile, blockedUsers, unblockUser, blockUser,
     friendStatuses,
     // Context setters are now only called on save
     setLocalFirstName: setContextFirstName,
