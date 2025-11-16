@@ -1107,58 +1107,57 @@ const Settings = () => {
 
               <div className="border-t border-border pt-6 mt-6 opacity-50 pointer-events-none">
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="cursor-help"> {/* NEW: Wrap content in a single div */}
-                      <h3 className="text-lg font-semibold mb-4">Verification</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <p className="text-sm text-muted-foreground">
-                          Get security clearance
-                        </p>
-                        <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
-                        <p className="text-sm text-muted-foreground">Build trust with peers</p>
-                        <p className="text-sm text-muted-foreground">Compete for prizes!</p>
-                      </div>
-                        <Label className="mt-4 block">Your Verification</Label>
-                        <Select 
-                          value={verificationStandard}
-                          onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select verification status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="anyone">None</SelectItem>
-                            <SelectItem value="phone1">Phone</SelectItem>
-                            <SelectItem value="organisation">Enterprise</SelectItem>
-                            <SelectItem value="id1">ID Verified</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      
+                  {/* Removed asChild and made TooltipTrigger the wrapper div */}
+                  <TooltipTrigger className="cursor-help block w-full text-left">
+                    <h3 className="text-lg font-semibold mb-4">Verification</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p className="text-sm text-muted-foreground">
+                        Get security clearance
+                      </p>
+                      <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
+                      <p className="text-sm text-muted-foreground">Build trust with peers</p>
+                      <p className="text-sm text-muted-foreground">Compete for prizes!</p>
+                    </div>
+                      <Label className="mt-4 block">Your Verification</Label>
+                      <Select 
+                        value={verificationStandard}
+                        onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select verification status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="anyone">None</SelectItem>
+                          <SelectItem value="phone1">Phone</SelectItem>
+                          <SelectItem value="organisation">Enterprise</SelectItem>
+                          <SelectItem value="id1">ID Verified</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    
 
-                      <div className="space-y-2 mt-6">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Label className="block cursor-help">Minimum Verification Status</Label>
-                          </TooltipTrigger>
-                          <TooltipContent className="select-none">
-                            <p>for users to interact with sessions you host</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Select 
-                          value={verificationStandard} 
-                          onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select verification standard" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="anyone">Anyone - No verification required</SelectItem>
-                            <SelectItem value="phone1">Phone - Number verified</SelectItem>
-                            <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
-                            <SelectItem value="id1">ID Verified - verified government ID</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div className="space-y-2 mt-6">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label className="block cursor-help">Minimum Verification Status</Label>
+                        </TooltipTrigger>
+                        <TooltipContent className="select-none">
+                          <p>for users to interact with sessions you host</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Select 
+                        value={verificationStandard} 
+                        onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select verification standard" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="anyone">Anyone - No verification required</SelectItem>
+                          <SelectItem value="phone1">Phone - Number verified</SelectItem>
+                          <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
+                          <SelectItem value="id1">ID Verified - verified government ID</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="select-none">
