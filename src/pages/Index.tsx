@@ -14,7 +14,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskSection";
+import ActiveAskSection from "@/components/ActiveAskAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
@@ -414,7 +414,7 @@ const Index = () => {
   const { user, session } = useAuth();
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
-  const isLongPress = useRef(false);
+  const isLongPressDetected = useRef(false); // Renamed to avoid confusion with the function parameter
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   const [isHoveringTimer, setIsHoveringTimer] = useState(false);
 
@@ -662,29 +662,28 @@ const Index = () => {
     }
   }, [location.pathname, isSchedulingMode, setIsSchedulingMode]);
 
-  const handleLongPressStart = (callback: () => void) => {
-    isLongPress.current = false;
+  const handlePressStart = (callback: () => void) => {
+    isLongPressDetected.current = false;
     longPressRef.current = setTimeout(() => {
-      isLongPress.current = true;
+      isLongPressDetected.current = true;
       callback();
-    }, 500);
+    }, 500); // 500ms for long press
   };
 
-  const handleLongPressEnd = () => {
+  const handlePressEnd = () => {
     if (longPressRef.current) {
       clearTimeout(longPressRef.current);
     }
-    isLongPress.current = false;
   };
 
   const handleIntentionLongPress = () => {
-    if (isLongPress.current) {
+    if (isLongPressDetected.current) {
       navigate('/profile');
     }
   };
 
   const handleTitleClick = () => {
-    if (!isLongPress.current) {
+    if (!isLongPressDetected.current) {
       setIsEditingSeshTitle(true);
     }
   };
@@ -707,7 +706,7 @@ const Index = () => {
   };
 
   const handleTitleLongPress = () => {
-    if (isLongPress.current) {
+    if (isLongPressDetected.current) {
       setIsEditingSeshTitle(true);
     }
   };
@@ -950,7 +949,7 @@ const Index = () => {
       }
 
       await joinSessionAsCoworker(
-        sessionId,
+        session,
         sessionTitle,
         hostName,
         participants,
@@ -1598,6 +1597,19 @@ const Index = () => {
     }
   };
 
+  const handleStopButtonAction = (event: React.MouseEvent | React.TouchEvent) => {
+    if (isLongPressDetected.current) {
+      isLongPressDetected.current = false;
+      return;
+    }
+    stopTimer(true, false); // With confirmation
+  };
+
+  const handleLongPressStop = () => {
+    stopTimer(false, true); // Without confirmation
+    isLongPressDetected.current = true; // Mark as long press handled
+  };
+
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
@@ -1609,19 +1621,19 @@ const Index = () => {
           <div className="mb-6" data-name="Nearby Sessions Section">
             <button
               onClick={(e) => {
-                if (!isLongPress.current) {
+                if (!isLongPressDetected.current) {
                   setIsNearbySessionsOpen(prev => !prev);
                 }
               }}
-              onMouseDown={() => handleLongPressStart(() => {
+              onMouseDown={() => handlePressStart(() => {
                 navigate('/settings', { state: { openAccordion: 'location' } });
               })}
-              onMouseUp={handleLongPressEnd}
-              onMouseLeave={handleLongPressEnd}
-              onTouchStart={() => handleLongPressStart(() => {
+              onMouseUp={handlePressEnd}
+              onMouseLeave={handlePressEnd}
+              onTouchStart={() => handlePressStart(() => {
                 navigate('/settings', { state: { openAccordion: 'location' } });
               })}
-              onTouchEnd={handleLongPressEnd}
+              onTouchEnd={handlePressEnd}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
@@ -1796,11 +1808,11 @@ const Index = () => {
                       {isActiveTimer ? (
                         <h2
                           className="text-xl font-bold text-foreground"
-                          onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
-                          onMouseUp={handleLongPressEnd}
-                          onMouseLeave={handleLongPressEnd}
-                          onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
-                          onTouchEnd={handleLongPressEnd}
+                          onMouseDown={() => handlePressStart(handleTitleLongPress)}
+                          onMouseUp={handlePressEnd}
+                          onMouseLeave={handlePressEnd}
+                          onTouchStart={() => handlePressStart(handleTitleLongPress)}
+                          onTouchEnd={handlePressEnd}
                         >
                           {seshTitle}
                         </h2>
@@ -1812,11 +1824,11 @@ const Index = () => {
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <button
-                        onMouseDown={() => handleLongPressStart(handleSessionVisibilityToggle)}
-                        onMouseUp={handleLongPressEnd}
-                        onMouseLeave={handleLongPressEnd}
-                        onTouchStart={() => handleLongPressStart(handleSessionVisibilityToggle)}
-                        onTouchEnd={handleLongPressEnd}
+                        onMouseDown={() => handlePressStart(handleSessionVisibilityToggle)}
+                        onMouseUp={handlePressEnd}
+                        onMouseLeave={handlePressEnd}
+                        onTouchStart={() => handlePressStart(handleSessionVisibilityToggle)}
+                        onTouchEnd={handlePressEnd}
                         onClick={handleSessionVisibilityToggle}
                         className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors select-none"
                         data-name="Session Visibility Toggle Button"
@@ -1968,7 +1980,12 @@ const Index = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => stopTimer(true, false)}
+                          onClick={handleStopButtonAction} // Use the new handler
+                          onMouseDown={() => handlePressStart(handleLongPressStop)} // Start long press detection
+                          onMouseUp={handlePressEnd}
+                          onMouseLeave={handlePressEnd}
+                          onTouchStart={() => handlePressStart(handleLongPressStop)}
+                          onTouchEnd={handlePressEnd}
                           className={cn(
                             "w-full h-full rounded-none bg-transparent hover:bg-primary/5 dark:hover:bg-primary/10",
                             isPaused ? "text-error-foreground" : "text-secondary-foreground"
@@ -2083,13 +2100,13 @@ const Index = () => {
                 <CardContent>
                   <p
                     className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
-                    onMouseDown={() => handleLongPressStart(handleIntentionLongPress)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(handleIntentionLongPress)}
-                    onTouchEnd={() => handleLongPressEnd()}
+                    onMouseDown={() => handlePressStart(handleIntentionLongPress)}
+                    onMouseUp={handlePressEnd}
+                    onMouseLeave={handlePressEnd}
+                    onTouchStart={() => handlePressStart(handleIntentionLongPress)}
+                    onTouchEnd={() => handlePressEnd()}
                     onClick={() => {
-                      if (!isLongPress.current) {
+                      if (!isLongPressDetected.current) {
                       }
                     }}
                     data-name="My Intention Text"
@@ -2122,11 +2139,11 @@ const Index = () => {
                         isDefaultTitleAnimating && "animate-fade-in-out"
                       )}
                       onClick={handleTitleClick}
-                      onMouseDown={() => handleLongPressStart(handleTitleLongPress)}
-                      onMouseUp={handleLongPressEnd}
-                      onMouseLeave={handleLongPressEnd}
-                      onTouchStart={() => handleLongPressStart(handleTitleLongPress)}
-                      onTouchEnd={handleLongPressEnd}
+                      onMouseDown={() => handlePressStart(handleTitleLongPress)}
+                      onMouseUp={handlePressEnd}
+                      onMouseLeave={handlePressEnd}
+                      onTouchStart={() => handlePressStart(handleTitleLongPress)}
+                      onTouchEnd={handlePressEnd}
                       data-name="Sesh Title Display"
                     >
                       {seshTitle}
