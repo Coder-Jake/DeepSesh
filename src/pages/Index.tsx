@@ -116,8 +116,7 @@ const filterLocalMockSessions = (
   userLongitude: number | null,
   profileOrganization: string | null,
   limitDiscoveryRadius: boolean,
-  maxDistance: number,
-  showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'all' // NEW: Add showSessionsWhileActive
+  maxDistance: number
 ): DemoSession[] => {
   return mockSessions.map(session => {
     let distance: number | null = null;
@@ -133,24 +132,17 @@ const filterLocalMockSessions = (
       }
     }
 
-    // Apply visibility filters based on session's own visibility and user's viewing preference
-    const isPublicSession = session.visibility === 'public';
-    const isFriendsSession = session.visibility === 'friends';
-    const isOrganizationSession = session.visibility === 'organisation';
-    const isPrivateSession = session.visibility === 'private';
+    // Apply visibility filters
+    const isPublic = session.visibility === 'public';
+    const isFriends = session.visibility === 'friends';
+    const isOrganization = session.visibility === 'organisation';
 
-    // A session is visible if:
-    // 1. It's a public session AND the user wants to see nearby/all sessions.
-    // 2. It's a friends-only session AND the user wants to see friends/all sessions (simplified friend check for mock data).
-    // 3. It's an organization-only session AND the user wants to see organization/all sessions (simplified org check for mock data).
-    // 4. It's a private session AND the current user is the host.
+    // For mock data, we'll simplify "friends" and "organization" logic
+    // A real implementation would check actual friend lists and organization memberships.
+    const isHostFriend = isFriends && session.participants.some(p => p.userId === userId && p.role === 'host'); // Simplified friend check
+    const isHostOrgMember = isOrganization && session.organization && profileOrganization && session.organization === profileOrganization;
 
-    const canSeePublic = isPublicSession && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
-    const canSeeFriends = isFriendsSession && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all') && session.participants.some(p => p.userId === userId); // Simplified friend check
-    const canSeeOrganization = isOrganizationSession && (showSessionsWhileActive === 'organization' || showSessionsWhileActive === 'all') && session.organization && profileOrganization && session.organization === profileOrganization; // Simplified org check
-    const canSeePrivate = isPrivateSession && session.user_id === userId; // Only host can see their own private mock session
-
-    return canSeePublic || canSeeFriends || canSeeOrganization || canSeePrivate;
+    return isPublic || isHostFriend || isHostOrgMember;
   });
 };
 
@@ -161,8 +153,7 @@ const fetchSupabaseSessions = async (
   userLatitude: number | null,
   userLongitude: number | null,
   limitDiscoveryRadius: boolean,
-  maxDistance: number,
-  showSessionsWhileActive: 'hidden' | 'nearby' | 'friends' | 'all' // NEW: Add showSessionsWhileActive
+  maxDistance: number
 ): Promise<DemoSession[]> => {
   if (!userId) {
     console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
@@ -237,21 +228,9 @@ const fetchSupabaseSessions = async (
       join_code: session.join_code, // NEW: Map join_code from active_sessions
     };
   }).filter(session => {
-    // Apply client-side filtering based on showSessionsWhileActive
-    if (showSessionsWhileActive === 'hidden') return false;
-    if (showSessionsWhileActive === 'nearby') {
-      return session.visibility === 'public' && session.distance !== null && session.distance <= maxDistance;
+    if (limitDiscoveryRadius && session.distance !== null) {
+      return session.distance <= maxDistance;
     }
-    if (showSessionsWhileActive === 'friends') {
-      // For live sessions, this would involve checking actual friend relationships
-      // For now, we'll assume RLS handles this, or a simplified check
-      return session.visibility === 'friends' || session.participants.some(p => p.userId === userId);
-    }
-    if (showSessionsWhileActive === 'organization') {
-      // For live sessions, this would involve checking actual organization membership
-      return session.visibility === 'organisation' && session.organization === profile?.organization;
-    }
-    // 'all' or any other case, return true (RLS should have already filtered private/unauthorized)
     return true;
   });
 };
@@ -455,10 +434,9 @@ const Index = () => {
       userLocation.longitude,
       profile?.organization || null,
       limitDiscoveryRadius,
-      maxDistance,
-      showSessionsWhileActive // NEW: Pass showSessionsWhileActive
+      maxDistance
     );
-  }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, limitDiscoveryRadius, maxDistance, showSessionsWhileActive]);
+  }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, limitDiscoveryRadius, maxDistance]);
 
 
   // NEW: Filter mock sessions into nearby, friends, and organization
@@ -520,12 +498,12 @@ const Index = () => {
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showSessionsWhileActive], // NEW: Add showSessionsWhileActive
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance],
     queryFn: async () => {
       try {
         // The original fetchSupabaseSessions function is designed to fetch from 'active_sessions'
         // and applies RLS logic. This is for *real* active sessions.
-        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showSessionsWhileActive); // NEW: Pass showSessionsWhileActive
+        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance);
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message);
         if (areToastsEnabled) {
@@ -537,7 +515,7 @@ const Index = () => {
       }
     },
     refetchInterval: 5000,
-    enabled: isDiscoveryActivated && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'organization'), // MODIFIED: Enable for all relevant showSessionsWhileActive options
+    enabled: isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends'),
   });
 
   useEffect(() => {
@@ -1000,11 +978,10 @@ const Index = () => {
   }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType, focusMinutes, breakMinutes]);
 
   const shouldShowNearbySessions = useMemo(() => {
-    // MODIFIED: Removed sessionVisibility from this condition
-    const result = isDiscoveryActivated && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
-    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "showSessionsWhileActive:", showSessionsWhileActive);
+    const result = isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
+    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "sessionVisibility:", sessionVisibility, "showSessionsWhileActive:", showSessionsWhileActive);
     return result;
-  }, [isDiscoveryActivated, showSessionsWhileActive]);
+  }, [isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
   const shouldShowFriendsSessions = useMemo(() => {
     const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
@@ -1013,11 +990,10 @@ const Index = () => {
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganizationSessions = useMemo(() => {
-    // MODIFIED: Removed sessionVisibility from this condition
-    const result = isDiscoveryActivated && !!profile?.organization && (showSessionsWhileActive === 'organization' || showSessionsWhileActive === 'all');
-    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization, "showSessionsWhileActive:", showSessionsWhileActive);
+    const result = isDiscoveryActivated && !!profile?.organization && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all');
+    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization, "sessionVisibility:", sessionVisibility);
     return result;
-  }, [profile?.organization, isDiscoveryActivated, showSessionsWhileActive]);
+  }, [profile?.organization, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
   const handleExtendSubmit = async (minutes: number) => {
     if (!user?.id || !activeSessionRecordId) {
