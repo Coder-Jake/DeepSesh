@@ -233,11 +233,16 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       return;
     }
 
-    const profileDataToSend = {
+    const profileDataToSend: any = { // Use 'any' temporarily for deletion
       ...profile,
       profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
       visibility: profile.visibility || ['public'], // Ensure visibility is sent
     };
+
+    // Explicitly remove the old 'host_code' field if it exists
+    if ('host_code' in profileDataToSend) {
+      delete profileDataToSend.host_code;
+    }
 
     try {
       const { error } = await supabase
@@ -281,6 +286,11 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
       if (storedProfile) {
         const parsedProfile: Profile = JSON.parse(storedProfile);
+        // NEW: Clean up old 'host_code' if it exists in local storage
+        if ((parsedProfile as any).host_code !== undefined) {
+          (parsedProfile as any).join_code = (parsedProfile as any).host_code;
+          delete (parsedProfile as any).host_code;
+        }
         const defaultedProfile: Profile = {
           ...parsedProfile,
           profile_data: parsedProfile.profile_data || getDefaultProfileDataJsonb(),
