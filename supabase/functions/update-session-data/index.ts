@@ -302,6 +302,11 @@ serve(async (req) => {
         }
         break;
       }
+      case 'heartbeat': {
+        // The `last_heartbeat` will be updated by the general update statement below.
+        // No specific data manipulation for participants_data or active_asks for a simple heartbeat.
+        break;
+      }
       default:
         return new Response(JSON.stringify({ error: 'Invalid actionType' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -490,6 +490,45 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentSessionParticipantsData, syncSessionToSupabase
   ]);
 
+  // NEW: Periodic heartbeat sender for all participants
+  useEffect(() => {
+    let heartbeatInterval: NodeJS.Timeout | null = null;
+
+    if (user?.id && activeSessionRecordId) {
+      heartbeatInterval = setInterval(async () => {
+        try {
+          const response = await supabase.functions.invoke('update-session-data', {
+            body: JSON.stringify({
+              sessionId: activeSessionRecordId,
+              actionType: 'heartbeat',
+              payload: {
+                participantId: user.id,
+              },
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`,
+            },
+          });
+
+          if (response.error) throw response.error;
+          if (response.data.error) throw new Error(response.data.error);
+          console.log("Heartbeat sent for session:", activeSessionRecordId);
+        } catch (error: any) {
+          console.error("Error sending heartbeat:", error.message);
+          // Optionally, handle disconnection or session termination if heartbeats consistently fail
+        }
+      }, 30000); // Send heartbeat every 30 seconds
+    }
+
+    return () => {
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+      }
+    };
+  }, [user?.id, activeSessionRecordId, session?.access_token]);
+
+
   // NEW: Supabase Realtime Subscription for active sessions
   useEffect(() => {
     let subscription: RealtimeChannel | null = null;
