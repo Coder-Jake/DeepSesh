@@ -8,6 +8,7 @@ import { saveSessionToDatabase } from '@/utils/session-utils';
 import { useProfile } from '../contexts/ProfileContext';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js'; // Import RealtimeChannel
+import { isValidUUID } from '@/lib/utils'; // NEW: Import isValidUUID
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -440,7 +441,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       focus_duration: focusMinutes,
       break_duration: breakMinutes,
       total_session_duration_seconds: isScheduleActive ? activeSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60 : currentPhaseDuration * 60,
-      schedule_id: isScheduleActive ? activeSchedule[0]?.id : null,
+      schedule_id: isScheduleActive && activeSchedule[0]?.id && isValidUUID(activeSchedule[0].id) ? activeSchedule[0].id : null, // MODIFIED: Added isValidUUID check
       current_schedule_index: isScheduleActive ? currentScheduleIndex : 0,
       schedule_data: activeSchedule,
       visibility: sessionVisibility, // MODIFIED: Use sessionVisibility
@@ -946,7 +947,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             current_phase_type: currentScheduleItem.type,
             current_phase_end_time: currentPhaseEndTime,
             total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
-            schedule_id: initialSchedule[0]?.id,
+            schedule_id: initialSchedule[0]?.id && isValidUUID(initialSchedule[0].id) ? initialSchedule[0].id : null, // MODIFIED: Added isValidUUID check
             is_active: true,
             is_paused: false,
             current_schedule_index: 0,

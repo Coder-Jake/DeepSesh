@@ -3,15 +3,15 @@ import { DAYS_OF_WEEK } from "@/lib/constants";
 
 // Helper to generate unique IDs for timers within templates
 const generateId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return Date.now().toString() + Math.random().toString(36).substring(2, 9);
+  // Ensure crypto.randomUUID is available in the environment.
+  // If not, this will throw an error, indicating a critical environment issue
+  // where UUID generation is expected but not supported.
+  return crypto.randomUUID();
 };
 
 export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
   {
-    id: "default-pomodoro",
+    id: "a1b2c3d4-e5f6-4789-8012-34567890abcd", // NEW UUID
     title: "Pomodoro",
     schedule: [
       { id: generateId(), title: "Focus", type: "focus", durationMinutes: 25, isCustom: false },
@@ -31,7 +31,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     timerColors: {},
   },
   {
-    id: "default-school-timetable",
+    id: "b2c3d4e5-f6a7-4890-8123-4567890abcdef0", // NEW UUID
     title: "School Timetable",
     schedule: [
       { id: generateId(), title: "Mathematics", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Math" },
@@ -51,7 +51,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     timerColors: {},
   },
   {
-    id: "default-conference",
+    id: "c3d4e5f6-a7b8-4901-8234-567890abcdef01", // NEW UUID
     title: "Conference",
     schedule: [
       { id: generateId(), title: "Keynote Address", type: "focus", durationMinutes: 60, isCustom: true, customTitle: "Keynote Address" },
@@ -71,7 +71,7 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     timerColors: {},
   },
   {
-    id: "default-hackathon",
+    id: "d4e5f6a7-b8c9-4012-8345-67890abcdef012", // NEW UUID
     title: "Hackathon",
     schedule: [
       { id: generateId(), title: "Mission & Assignment", type: "focus", durationMinutes: 20, isCustom: true, customTitle: "Mission & Assignment" },

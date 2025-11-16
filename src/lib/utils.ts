@@ -54,3 +54,10 @@ export const getSociabilityGradientColor = (focusPreference: number): string => 
     return `hsl(260 ${saturation}% ${minLightness}%)`;
   }
 };
+
+// NEW: Helper function to validate if a string is a UUID
+export function isValidUUID(uuid: string | null | undefined): boolean {
+  if (!uuid) return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
