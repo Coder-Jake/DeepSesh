@@ -307,7 +307,7 @@ export type TimerContextType = {
   setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>;
   activeSessionRecordId: string | null;
   setActiveSessionRecordId: React.Dispatch<React.SetStateAction<string | null>>;
-  joinSessionAsCoworker: (sessionId: string, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>;
+  joinSessionAsCoworker: (sessionToJoin: DemoSession, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>;
   leaveSession: () => Promise<void>;
   transferHostRole: () => Promise<void>;
   stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>;
@@ -315,7 +315,7 @@ export type TimerContextType = {
   showDemoSessions: boolean; // NEW: Add showDemoSessions
   setShowDemoSessions: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Add setShowDemoSessions
   currentPhaseDurationSeconds: number; // NEW: Add currentPhaseDurationSeconds
-  setCurrentPhaseDurationSeconds: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setCurrentPhaseDurationSeconds
+  setCurrentPhaseDurationSeconds: React.Dispatch<React.SetStateAction<number>>; // NEW: Add currentPhaseDurationSeconds
   remainingTimeAtPause: number; // NEW: Add remainingTimeAtPause
   setRemainingTimeAtPause: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setRemainingTimeAtPause
   limitDiscoveryRadius: boolean; // NEW: Add limitDiscoveryRadius
