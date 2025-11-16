@@ -132,7 +132,7 @@ const Profile = () => {
   const [isCanHelpWithIconHoverTooltipOpen, setIsCanHelpWithIconHoverTooltipOpen] = useState(false);
   const canHelpWithIconHoverTooltipRef = useRef<NodeJS.Timeout | null>(null);
   const [isNeedHelpWithIconHoverTooltipOpen, setIsNeedHelpWithIconHoverTooltipOpen] = useState(false);
-  const needHelpWithIconHoverTooltipRef = useRef<Node NodeJS.Timeout | null>(null);
+  const needHelpWithIconHoverTooltipRef = useRef<NodeJS.Timeout | null>(null);
 
 
   const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
