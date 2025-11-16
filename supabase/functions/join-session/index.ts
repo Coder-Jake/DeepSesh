@@ -15,6 +15,7 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.warn('Unauthorized: Missing Authorization header');
       return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
@@ -22,8 +23,10 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('Received token (first 10 chars):', token.substring(0, 10)); // Log token for debugging
     const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
     if (!jwtSecret) {
+      console.error('SUPABASE_JWT_SECRET is not set in environment variables.');
       throw new Error('SUPABASE_JWT_SECRET is not set in environment variables.');
     }
 
@@ -31,7 +34,8 @@ serve(async (req) => {
     try {
       const { sub } = await verify(token, jwtSecret, 'HS256');
       authenticatedUserId = sub || null;
-    } catch (jwtError) {
+      console.log('Authenticated User ID:', authenticatedUserId); // Log authenticated user ID
+    } catch (jwtError: any) {
       console.warn('JWT verification failed:', jwtError.message);
       return new Response(JSON.stringify({ error: 'Unauthorized: Invalid JWT' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -40,7 +44,6 @@ serve(async (req) => {
     }
 
     // Initialize Supabase client with the service role key for operations that bypass RLS
-    // This client will be used for both SELECT and UPDATE to ensure the function can always access the session.
     const supabaseServiceRoleClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -54,6 +57,7 @@ serve(async (req) => {
     const { sessionCode, participantData } = await req.json();
 
     if (!sessionCode || !participantData || !participantData.userId || !participantData.userName) {
+      console.warn('Bad Request: Missing sessionCode or participantData');
       return new Response(JSON.stringify({ error: 'Missing sessionCode or participantData' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
@@ -62,6 +66,7 @@ serve(async (req) => {
 
     // SECURITY FIX: Ensure the userId in participantData matches the authenticated user
     if (authenticatedUserId !== participantData.userId) {
+      console.warn('Forbidden: Participant ID mismatch with authenticated user. Auth ID:', authenticatedUserId, 'Participant Data ID:', participantData.userId);
       return new Response(JSON.stringify({ error: 'Forbidden: Participant ID mismatch with authenticated user' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
@@ -84,6 +89,7 @@ serve(async (req) => {
     }
 
     const joiningUserOrganization = userProfile?.organization;
+    console.log('Joining User Organization:', joiningUserOrganization); // Log joining user's organization
 
     // Fetch the session using the join_code (now using the service role client to bypass RLS for read)
     const { data: sessions, error: fetchError } = await supabaseServiceRoleClient
@@ -102,6 +108,7 @@ serve(async (req) => {
     }
 
     if (!sessions || sessions.length === 0) {
+      console.warn('Not Found: Session not found or not active for code:', sessionCode);
       return new Response(JSON.stringify({ error: 'Session not found or not active' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404,
@@ -109,16 +116,22 @@ serve(async (req) => {
     }
 
     const session = sessions[0];
+    console.log('Session ID:', session.id);
+    console.log('Session Visibility:', session.visibility);
+    console.log('Session Organization:', session.organization); // Log session's organization
+
     const currentParticipants = (session.participants_data || []) as any[];
 
     // Enforce session visibility rules within the Edge Function
     if (session.visibility === 'private' && session.user_id !== authenticatedUserId) {
+      console.warn('Forbidden: Private session access denied. Session Host ID:', session.user_id, 'Auth User ID:', authenticatedUserId); // Log specific denial
       return new Response(JSON.stringify({ error: 'Forbidden: This is a private session.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
       });
     } else if (session.visibility === 'organisation') {
       if (!session.organization || session.organization !== joiningUserOrganization) {
+        console.warn('Forbidden: Organization session access denied. Session Org:', session.organization, 'Joining User Org:', joiningUserOrganization); // Log specific denial
         return new Response(JSON.stringify({ error: 'Forbidden: This is an organization-only session.' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 403,
@@ -131,6 +144,7 @@ serve(async (req) => {
 
     // Check if the user is already a participant
     if (currentParticipants.some(p => p.userId === participantData.userId)) {
+      console.log('Already a participant:', participantData.userId);
       return new Response(JSON.stringify({ message: 'Already a participant' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -161,13 +175,14 @@ serve(async (req) => {
       });
     }
 
+    console.log('Successfully joined session:', session.id, 'New participant:', newParticipant.userName);
     return new Response(JSON.stringify({ message: 'Successfully joined session', session: updatedSession }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error: any) {
-    console.error('Unexpected error:', error.message);
+    console.error('Unexpected error in join-session Edge Function:', error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
