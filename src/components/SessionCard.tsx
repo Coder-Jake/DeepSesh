@@ -8,6 +8,7 @@ import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { getSociabilityGradientColor } from '@/lib/utils';
 import { DemoSession, ParticipantSessionData } from '@/types/timer';
+import { formatDistance } from '@/utils/location-utils'; // NEW: Import formatDistance
 
 interface SessionCardProps {
   session: DemoSession;
@@ -146,15 +147,6 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
     }
   };
 
-  const formatDistance = (distance: number | null) => {
-    if (distance === null || distance === undefined) return null;
-    if (distance < 1000) {
-      return `~${Math.round(distance)}m`;
-    } else {
-      return `~${(distance / 1000).toFixed(1)}km`;
-    }
-  };
-
   return (
     <Card key={session.id}>
       <CardHeader className="p-4 pb-2">
@@ -188,9 +180,9 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
           <div className="flex items-center gap-4 flex-grow mr-4">
             <Popover>
               <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
-                {/* FIX: Wrap conditional text in a span */}
+                {/* MODIFIED: Use formatDistance directly */}
                 <span>
-                  {session.distance !== null ? formatDistance(session.distance) : `~${totalDurationMinutes}m`}
+                  {formatDistance(session.distance)}
                 </span>
               </PopoverTrigger>
               <PopoverContent className="select-none">
