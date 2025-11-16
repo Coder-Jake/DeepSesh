@@ -480,20 +480,21 @@ const Index = () => {
     });
   }, [filteredLocalMockSessions, profile?.id]);
 
-  const mockOrganizationSessions = useMemo(() => {
-    if (!filteredLocalMockSessions || !profile?.organization) return [];
+  // NEW: Use local MOCK_SESSIONS for organization sessions
+  const mockOrganizationSessions: DemoSession[] = useMemo(() => {
+    if (!profile?.organization || !showDemoSessions || !filteredLocalMockSessions) return [];
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
     const sessions: DemoSession[] = [];
 
     filteredLocalMockSessions.forEach(session => {
-      const hostProfile = mockProfiles?.find(mp => mp.id === session.user_id);
+      const hostProfile = MOCK_PROFILES.find(mp => mp.id === session.user_id); // Use MOCK_PROFILES directly
       if (hostProfile?.organization && organizationNames.includes(hostProfile.organization)) {
         sessions.push(session);
       }
     });
     return sessions;
-  }, [filteredLocalMockSessions, profile?.organization, mockProfiles]);
+  }, [profile, showDemoSessions, filteredLocalMockSessions]);
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
@@ -993,23 +994,6 @@ const Index = () => {
     console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization, "sessionVisibility:", sessionVisibility);
     return result;
   }, [profile?.organization, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
-
-  // NEW: Use local MOCK_SESSIONS for organization sessions
-  const mockOrganizationSessions: DemoSession[] = useMemo(() => {
-    if (!profile?.organization || !showDemoSessions || !filteredLocalMockSessions) return [];
-
-    const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
-    const sessions: DemoSession[] = [];
-
-    filteredLocalMockSessions.forEach(session => {
-      const hostProfile = MOCK_PROFILES.find(mp => mp.id === session.user_id); // Use MOCK_PROFILES directly
-      if (hostProfile?.organization && organizationNames.includes(hostProfile.organization)) {
-        sessions.push(session);
-      }
-    });
-    return sessions;
-  }, [profile, showDemoSessions, filteredLocalMockSessions]);
-
 
   const handleExtendSubmit = async (minutes: number) => {
     if (!user?.id || !activeSessionRecordId) {
