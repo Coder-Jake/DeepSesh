@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity, Globe, Lock, Building2 } from "lucide-react"; // NEW: Import Globe, Lock, Building2 icons
+import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity, Globe, Lock, Building2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -14,11 +14,11 @@ import { NotificationSettings } from "@/types/timer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom"; // NEW: Import useLocation
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from 'sonner';
 import { useTheme } from "@/contexts/ThemeContext";
 import { useProfile } from "@/contexts/ProfileContext";
-import { supabase } from '@/integrations/supabase/client'; // NEW: Import supabase client
+import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const { 
@@ -68,12 +68,10 @@ const Settings = () => {
     setBreakNotificationsVibrate,
     verificationStandard,
     setVerificationStandard,
-    // REMOVED: profileVisibility,
-    // REMOVED: setProfileVisibility,
     locationSharing,
     setLocationSharing,
-    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
-    setSessionVisibility, // MODIFIED: Changed from setIsGlobalPrivate
+    sessionVisibility,
+    setSessionVisibility,
     openSettingsAccordions,
     setOpenSettingsAccordions,
     is24HourFormat,
@@ -82,28 +80,27 @@ const Settings = () => {
     setAreToastsEnabled,
     startStopNotifications,
     setStartStopNotifications,
-    getLocation, // NEW: Get getLocation from TimerContext
-    geolocationPermissionStatus, // NEW: Get geolocationPermissionStatus from TimerContext
-    isDiscoveryActivated, // NEW: Get isDiscoveryActivated from TimerContext
-    setIsDiscoveryActivated, // NEW: Get setIsDiscoveryActivated from TimerContext
-    resetSessionStates, // NEW: Get resetSessionStates from TimerContext
-    showDemoSessions, // NEW: Get showDemoSessions
-    setShowDemoSessions, // NEW: Get setShowDemoSessions
-    limitDiscoveryRadius, // NEW: Get limitDiscoveryRadius
-    setLimitDiscoveryRadius, // NEW: Get setLimitDiscoveryRadius
+    getLocation,
+    geolocationPermissionStatus,
+    isDiscoveryActivated,
+    setIsDiscoveryActivated,
+    resetSessionStates,
+    showDemoSessions,
+    setShowDemoSessions,
+    limitDiscoveryRadius,
+    setLimitDiscoveryRadius,
   } = useTimer();
 
-  const { user } = useAuth(); // Removed 'logout' from destructuring
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // NEW: Initialize useLocation
+  const location = useLocation();
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile, profileVisibility, setProfileVisibility, profile } = useProfile(); // NEW: Get resetProfile, profileVisibility, and profile
+  const { blockedUsers, blockUser, unblockUser, recentCoworkers, loading, resetProfile, profileVisibility, setProfileVisibility, profile } = useProfile();
 
   const [currentTimerIncrement, setCurrentTimerIncrement] = useState(timerIncrement);
   const [userNameToBlock, setUserNameToBlock] = useState("");
   const [selectedCoworkerToBlock, setSelectedCoworkerToBlock] = useState<string | undefined>(undefined);
 
-  // Local states for input values, initialized directly from global defaults
   const [localFocusMinutes, setLocalFocusMinutes] = useState(String(defaultFocusMinutes));
   const [localBreakMinutes, setLocalBreakMinutes] = useState(String(defaultBreakMinutes));
 
@@ -112,7 +109,6 @@ const Settings = () => {
   const [momentaryText, setMomentaryText] = useState<{ [key: string]: string | null }>({});
   const timeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
-  // Ref to store the initial/saved state for comparison
   const savedSettingsRef = useRef({
     showSessionsWhileActive,
     isBatchNotificationsEnabled,
@@ -134,9 +130,9 @@ const Settings = () => {
     sessionInvites,
     friendActivity,
     verificationStandard,
-    profileVisibility, // NEW: Add to saved settings
+    profileVisibility,
     locationSharing,
-    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
+    sessionVisibility,
     timerIncrement,
     shouldPlayEndSound,
     shouldShowEndToast,
@@ -145,12 +141,11 @@ const Settings = () => {
     areToastsEnabled,
     blockedUsers,
     startStopNotifications,
-    isDiscoveryActivated, // NEW: Add to saved settings
-    showDemoSessions, // NEW: Add to saved settings
-    limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius
+    isDiscoveryActivated,
+    showDemoSessions,
+    limitDiscoveryRadius,
   });
 
-  // NEW: Effect to open specific accordion if state is passed via navigation
   useEffect(() => {
     if (location.state && (location.state as any).openAccordion) {
       const accordionToOpen = (location.state as any).openAccordion;
@@ -160,17 +155,14 @@ const Settings = () => {
         }
         return prev;
       });
-      // Clear the state after using it to prevent re-opening on subsequent visits
       window.history.replaceState({}, document.title);
     }
   }, [location.state, setOpenSettingsAccordions]);
 
-  // Update currentTimerIncrement when global timerIncrement changes
   useEffect(() => {
     setCurrentTimerIncrement(timerIncrement);
   }, [timerIncrement]);
 
-  // Check for changes to enable/disable Save button
   useEffect(() => {
     const currentFocusVal = parseInt(localFocusMinutes) || 0;
     const currentBreakVal = parseInt(localBreakMinutes) || 0;
@@ -196,9 +188,9 @@ const Settings = () => {
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility, // NEW: Add to current UI settings
+      profileVisibility,
       locationSharing,
-      sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
+      sessionVisibility,
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
@@ -207,16 +199,16 @@ const Settings = () => {
       areToastsEnabled,
       blockedUsers,
       startStopNotifications,
-      isDiscoveryActivated, // NEW: Add to dependencies
-      showDemoSessions, // NEW: Add to dependencies
-      limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius
+      isDiscoveryActivated,
+      showDemoSessions,
+      limitDiscoveryRadius,
     };
 
-    const savedValRef = savedSettingsRef.current; // Capture current ref value
+    const savedValRef = savedSettingsRef.current;
 
     const changed = Object.keys(currentUiSettings).some(key => {
       const currentVal = currentUiSettings[key as keyof typeof currentUiSettings];
-      const savedVal = savedValRef[key as keyof typeof savedValRef]; // Use captured ref value
+      const savedVal = savedValRef[key as keyof typeof savedValRef];
 
       if (typeof currentVal === 'object' && currentVal !== null) {
         return JSON.stringify(currentVal) !== JSON.stringify(savedVal);
@@ -230,18 +222,18 @@ const Settings = () => {
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     manualTransition, localFocusMinutes, localBreakMinutes, maxDistance,
     askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
-    verificationStandard, profileVisibility, // NEW: Add profileVisibility to dependencies
+    verificationStandard, profileVisibility,
     locationSharing,
-    sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
+    sessionVisibility,
     currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
     isDarkMode,
     is24HourFormat,
     areToastsEnabled,
     blockedUsers,
     startStopNotifications,
-    isDiscoveryActivated, // NEW: Add to dependencies
-    showDemoSessions, // NEW: Add to dependencies
-    limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius
+    isDiscoveryActivated,
+    showDemoSessions,
+    limitDiscoveryRadius,
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -416,7 +408,6 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    // Parse local input values before saving to global state
     const parsedFocus = parseInt(localFocusMinutes);
     const finalFocusMinutes = isNaN(parsedFocus) || parsedFocus <= 0 ? currentTimerIncrement : parsedFocus;
 
@@ -445,18 +436,16 @@ const Settings = () => {
     setFriendActivity(friendActivity);
     setBreakNotificationsVibrate(breakNotificationsVibrate);
     setVerificationStandard(verificationStandard);
-    // NEW: Save profileVisibility from ProfileContext
-    // setProfileVisibility(profileVisibility); // This is already handled by ProfileContext's updateProfile
     setLocationSharing(locationSharing);
-    setSessionVisibility(sessionVisibility); // MODIFIED: Changed from isGlobalPrivate
+    setSessionVisibility(sessionVisibility);
     setOpenSettingsAccordions(openSettingsAccordions);
     setShouldPlayEndSound(shouldPlayEndSound);
     setShouldShowEndToast(shouldShowEndToast);
     setAreToastsEnabled(areToastsEnabled);
     setStartStopNotifications(startStopNotifications);
-    setIsDiscoveryActivated(isDiscoveryActivated); // NEW: Save isDiscoveryActivated
-    setShowDemoSessions(showDemoSessions); // NEW: Save showDemoSessions
-    setLimitDiscoveryRadius(limitDiscoveryRadius); // NEW: Save limitDiscoveryRadius
+    setIsDiscoveryActivated(isDiscoveryActivated);
+    setShowDemoSessions(showDemoSessions);
+    setLimitDiscoveryRadius(limitDiscoveryRadius);
 
     savedSettingsRef.current = {
       showSessionsWhileActive,
@@ -470,8 +459,8 @@ const Settings = () => {
       workApps,
       intentionalBreaches,
       manualTransition,
-      focusMinutes: finalFocusMinutes, // Save parsed values
-      breakMinutes: finalBreakMinutes, // Save parsed values
+      focusMinutes: finalFocusMinutes,
+      breakMinutes: finalBreakMinutes,
       maxDistance,
       askNotifications,
       joinNotifications, 
@@ -479,9 +468,9 @@ const Settings = () => {
       sessionInvites,
       friendActivity,
       verificationStandard,
-      profileVisibility, // NEW: Save profileVisibility
+      profileVisibility,
       locationSharing,
-      sessionVisibility, // MODIFIED: Changed from isGlobalPrivate
+      sessionVisibility,
       timerIncrement: currentTimerIncrement,
       shouldPlayEndSound,
       shouldShowEndToast,
@@ -490,17 +479,17 @@ const Settings = () => {
       areToastsEnabled,
       blockedUsers,
       startStopNotifications,
-      isDiscoveryActivated, // NEW: Save isDiscoveryActivated
-      showDemoSessions, // NEW: Save showDemoSessions
-      limitDiscoveryRadius, // NEW: Save limitDiscoveryRadius
+      isDiscoveryActivated,
+      showDemoSessions,
+      limitDiscoveryRadius,
     };
     setHasChanges(false);
   };
 
-  const handleLogout = async () => { // Made async
-    await supabase.auth.signOut(); // Call Supabase signOut directly
-    resetProfile(); // Clear all local storage for profile
-    resetSessionStates(); // Clear all local storage for timer
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    resetProfile();
+    resetSessionStates();
     if (areToastsEnabled) {
       toast.success("Logged Out", {
         description: "You have been successfully logged out and your local profile cleared.",
@@ -519,15 +508,14 @@ const Settings = () => {
     setManualTransition(prev => !prev);
   };
 
-  // NEW: Handle location button click
   const handleLocationButtonClick = async () => {
-    await getLocation(); // Request/check location permission
-    setIsDiscoveryActivated(true); // Activate discovery when location is managed
+    await getLocation();
+    setIsDiscoveryActivated(true);
   };
 
-  const handleGlobalSessionVisibilityToggle = () => { // NEW: Function to cycle global session visibility
+  const handleGlobalSessionVisibilityToggle = () => {
     const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
-    if (profile?.organization) { // Only add 'organisation' if user has an organization
+    if (profile?.organization) {
       modes.push('organisation');
     }
     const currentIndex = modes.indexOf(sessionVisibility);
@@ -545,7 +533,6 @@ const Settings = () => {
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        {/* Removed the login button */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -610,7 +597,6 @@ const Settings = () => {
                 </Tooltip>
               </div>
 
-              {/* NEW: Demo Sessions Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Tooltip>
@@ -820,12 +806,12 @@ const Settings = () => {
                 <Button
                   id="global-visibility-toggle"
                   variant="outline"
-                  onClick={handleGlobalSessionVisibilityToggle} // NEW: Call new handler
+                  onClick={handleGlobalSessionVisibilityToggle}
                   className={cn(
                     "px-3 py-1 rounded-full transition-colors select-none",
                     sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg/80",
                     sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg/80",
-                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg/80" // NEW: Organization styling
+                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg/80"
                   )}
                 >
                   {sessionVisibility === 'public' && (
@@ -897,7 +883,7 @@ const Settings = () => {
                         const parsedValue = parseInt(localFocusMinutes);
                         const finalValue = isNaN(parsedValue) || parsedValue <= 0 ? currentTimerIncrement : parsedValue;
                         setDefaultFocusMinutes(finalValue);
-                        setLocalFocusMinutes(String(finalValue)); // Update local state to reflect enforced value
+                        setLocalFocusMinutes(String(finalValue));
                       }}
                       min={currentTimerIncrement}
                       step={currentTimerIncrement}
@@ -918,7 +904,7 @@ const Settings = () => {
                         const parsedValue = parseInt(localBreakMinutes);
                         const finalValue = isNaN(parsedValue) || parsedValue <= 0 ? currentTimerIncrement : parsedValue;
                         setDefaultBreakMinutes(finalValue);
-                        setLocalBreakMinutes(String(finalValue)); // Update local state to reflect enforced value
+                        setLocalBreakMinutes(String(finalValue));
                       }}
                       min={currentTimerIncrement}
                       step={currentTimerIncrement}
@@ -944,7 +930,6 @@ const Settings = () => {
               Location & Discovery
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4">
-              {/* NEW: Location Sharing Section */}
               <div className="space-y-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -961,7 +946,7 @@ const Settings = () => {
                     geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover",
                     geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover"
                   )}
-                  onClick={handleLocationButtonClick} // Call the new handler
+                  onClick={handleLocationButtonClick}
                 >
                   <MapPin size={16} />
                   {geolocationPermissionStatus === 'granted' && "Location Enabled"}
@@ -970,7 +955,6 @@ const Settings = () => {
                 </Button>
               </div>
 
-              {/* NEW: Discovery Radius Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Tooltip>
@@ -997,7 +981,7 @@ const Settings = () => {
                 </Button>
               </div>
 
-              {limitDiscoveryRadius && ( // Conditionally render based on limitDiscoveryRadius
+              {limitDiscoveryRadius && (
                 <div>
                   <Label>Maximum Distance for Nearby Sessions</Label>
                   <div className="space-y-4">
@@ -1107,58 +1091,59 @@ const Settings = () => {
 
               <div className="border-t border-border pt-6 mt-6 opacity-50 pointer-events-none">
                 <Tooltip>
-                  {/* Removed asChild and made TooltipTrigger the wrapper div */}
                   <TooltipTrigger className="cursor-help block w-full text-left">
-                    <h3 className="text-lg font-semibold mb-4">Verification</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <p className="text-sm text-muted-foreground">
-                        Get security clearance
-                      </p>
-                      <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
-                      <p className="text-sm text-muted-foreground">Build trust with peers</p>
-                      <p className="text-sm text-muted-foreground">Compete for prizes!</p>
-                    </div>
-                      <Label className="mt-4 block">Your Verification</Label>
-                      <Select 
-                        value={verificationStandard}
-                        onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select verification status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="anyone">None</SelectItem>
-                          <SelectItem value="phone1">Phone</SelectItem>
-                          <SelectItem value="organisation">Enterprise</SelectItem>
-                          <SelectItem value="id1">ID Verified</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    
+                    <div> {/* NEW: Wrapped content in a single div */}
+                      <h3 className="text-lg font-semibold mb-4">Verification</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <p className="text-sm text-muted-foreground">
+                          Get security clearance
+                        </p>
+                        <p className="text-sm text-muted-foreground">Access exclusive sessions</p>
+                        <p className="text-sm text-muted-foreground">Build trust with peers</p>
+                        <p className="text-sm text-muted-foreground">Compete for prizes!</p>
+                      </div>
+                        <Label className="mt-4 block">Your Verification</Label>
+                        <Select 
+                          value={verificationStandard}
+                          onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select verification status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="anyone">None</SelectItem>
+                            <SelectItem value="phone1">Phone</SelectItem>
+                            <SelectItem value="organisation">Enterprise</SelectItem>
+                            <SelectItem value="id1">ID Verified</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      
 
-                    <div className="space-y-2 mt-6">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Label className="block cursor-help">Minimum Verification Status</Label>
-                        </TooltipTrigger>
-                        <TooltipContent className="select-none">
-                          <p>for users to interact with sessions you host</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Select 
-                        value={verificationStandard} 
-                        onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select verification standard" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="anyone">Anyone - No verification required</SelectItem>
-                          <SelectItem value="phone1">Phone - Number verified</SelectItem>
-                          <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
-                          <SelectItem value="id1">ID Verified - verified government ID</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                      <div className="space-y-2 mt-6">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label className="block cursor-help">Minimum Verification Status</Label>
+                          </TooltipTrigger>
+                          <TooltipContent className="select-none">
+                            <p>for users to interact with sessions you host</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Select 
+                          value={verificationStandard} 
+                          onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select verification standard" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="anyone">Anyone - No verification required</SelectItem>
+                            <SelectItem value="phone1">Phone - Number verified</SelectItem>
+                            <SelectItem value="organisation">Enterprise - verified organisation email</SelectItem>
+                            <SelectItem value="id1">ID Verified - verified government ID</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div> {/* NEW: Closing div for the content */}
                   </TooltipTrigger>
                   <TooltipContent className="select-none">
                     <p>Requires App development</p>
@@ -1316,8 +1301,6 @@ const Settings = () => {
           Save Settings
         </Button>
       </div>
-
-      {/* Removed the logout button */}
     </main>
   );
 };
