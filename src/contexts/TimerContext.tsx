@@ -1862,14 +1862,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     // REMOVED: setLoading(false); // This should be the last thing in the useEffect
   }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules]);
 
+  // MODIFIED: Optimized local storage saving
   useEffect(() => {
+    // Capture current state values for saving
     const dataToSave = {
       _defaultFocusMinutes, _defaultBreakMinutes,
       focusMinutes, breakMinutes,
       isRunning, isPaused, timeLeft, timerType, isFlashing,
       notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
       isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
-      sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // MODIFIED: sessionVisibility
+      sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
       isTimeLeftManagedBySession,
@@ -1877,7 +1879,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
       friendActivity, breakNotificationsVibrate, verificationStandard,
-      // REMOVED: profileVisibility,
       locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
       is24HourFormat,
       preparedSchedules,
@@ -1888,33 +1889,39 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       isHomepageFocusCustomized, isHomepageBreakCustomized,
       activeSessionRecordId,
       isDiscoveryActivated,
-      geolocationPermissionStatus, // NEW: Add to dependencies
+      geolocationPermissionStatus,
       currentSessionParticipantsData,
       lastActivityTime,
       showDemoSessions,
-      currentPhaseDurationSeconds, // NEW: Add to dependencies
-      remainingTimeAtPause, // NEW: Add to dependencies
-      limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius to dependencies
+      currentPhaseDurationSeconds,
+      remainingTimeAtPause,
+      limitDiscoveryRadius,
     };
-    localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
-    console.log("TimerContext: Saving activeAsks to local storage:", activeAsks);
-    console.log("TimerContext: Saving activeSessionRecordId to local storage:", activeSessionRecordId);
-    console.log("TimerContext: Saving lastActivityTime to local storage:", lastActivityTime);
+
+    // Debounce the localStorage.setItem call
+    const handler = setTimeout(() => {
+      localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
+      console.log("TimerContext: State saved to local storage.");
+    }, 500); // 500ms debounce
+
+    return () => {
+      clearTimeout(handler);
+    };
   }, [
+    // Dependencies for triggering the save (excluding rapidly changing timer values)
     _defaultFocusMinutes, _defaultBreakMinutes,
     focusMinutes, breakMinutes,
-    isRunning, isPaused, timeLeft, timerType, isFlashing,
+    isRunning, isPaused, /* timeLeft removed */ timerType, isFlashing,
     notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
     isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
-    sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime, // MODIFIED: sessionVisibility
-    currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
+    sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, /* sessionStartTime removed */
+    /* currentPhaseStartTime removed */ /* accumulatedFocusSeconds removed */ /* accumulatedBreakSeconds removed */
     activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
     isTimeLeftManagedBySession,
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
     intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
     friendActivity, breakNotificationsVibrate, verificationStandard,
-    // REMOVED: profileVisibility,
     locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
     is24HourFormat,
     preparedSchedules,
@@ -1925,13 +1932,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isHomepageFocusCustomized, isHomepageBreakCustomized,
     activeSessionRecordId,
     isDiscoveryActivated,
-    geolocationPermissionStatus, // NEW: Add to dependencies
+    geolocationPermissionStatus,
     currentSessionParticipantsData,
     lastActivityTime,
     showDemoSessions,
-    currentPhaseDurationSeconds, // NEW: Add to dependencies
-    remainingTimeAtPause, // NEW: Add to dependencies
-    limitDiscoveryRadius, // NEW: Add limitDiscoveryRadius to dependencies
+    /* currentPhaseDurationSeconds removed */
+    remainingTimeAtPause,
+    limitDiscoveryRadius,
   ]);
 
   const value: TimerContextType = {
