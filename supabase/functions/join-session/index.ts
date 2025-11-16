@@ -39,14 +39,14 @@ serve(async (req) => {
       });
     }
 
-    // MODIFIED: Initialize Supabase client with the user's JWT to enforce RLS
+    // Initialize Supabase client with the user's JWT for initial read operations (RLS applies)
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '', // Use anon key for client-side operations
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
           headers: {
-            Authorization: authHeader, // Pass the user's JWT
+            Authorization: authHeader,
           },
         },
         auth: {
@@ -55,7 +55,18 @@ serve(async (req) => {
       }
     );
 
-    const { sessionCode, participantData } = await req.json(); // sessionCode is now the join_code
+    // Initialize a separate Supabase client with the service role key for operations that bypass RLS
+    const supabaseServiceRoleClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          persistSession: false,
+        },
+      }
+    );
+
+    const { sessionCode, participantData } = await req.json();
 
     if (!sessionCode || !participantData || !participantData.userId || !participantData.userName) {
       return new Response(JSON.stringify({ error: 'Missing sessionCode or participantData' }), {
@@ -72,11 +83,11 @@ serve(async (req) => {
       });
     }
 
-    // Fetch the session using the join_code
+    // Fetch the session using the join_code (using the user's client, RLS applies)
     const { data: sessions, error: fetchError } = await supabaseClient
       .from('active_sessions')
-      .select('id, participants_data, is_active, visibility, user_id, join_code') // Select join_code and user_id
-      .eq('join_code', sessionCode) // Use join_code for lookup
+      .select('id, participants_data, is_active, visibility, user_id, join_code')
+      .eq('join_code', sessionCode)
       .eq('is_active', true)
       .limit(1);
 
@@ -122,7 +133,8 @@ serve(async (req) => {
     };
     const updatedParticipants = [...currentParticipants, newParticipant];
 
-    const { data: updatedSession, error: updateError } = await supabaseClient
+    // Perform the update using the service role client (bypasses RLS)
+    const { data: updatedSession, error: updateError } = await supabaseServiceRoleClient
       .from('active_sessions')
       .update({ participants_data: updatedParticipants })
       .eq('id', session.id)
@@ -142,7 +154,7 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Unexpected error:', error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
