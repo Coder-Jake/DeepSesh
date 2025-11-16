@@ -48,7 +48,7 @@ type OriginalValuesType = {
 
 const Profile = () => {
   const {
-    profile, loading, updateProfile, getPublicProfile, blockedUsers, blockUser, unblockUser,
+    profile, loading, updateProfile, getPublicProfile, blockedUsers, unblockUser,
     friendStatuses,
     // Context setters are now only called on save
     setLocalFirstName: setContextFirstName,
@@ -63,7 +63,7 @@ const Profile = () => {
     setPronouns: setContextPronouns,
     setBioVisibility: setContextBioVisibility,
     setIntentionVisibility: setContextIntentionVisibility,
-    setLinkedinVisibility: setContextIntentionVisibility, // Corrected: setLinkedinVisibility
+    setLinkedinVisibility: setContextLinkedinVisibility, // Corrected: setLinkedinVisibility
     setCanHelpWithVisibility: setContextCanHelpWithVisibility,
     setNeedHelpWithVisibility: setContextNeedHelpWithVisibility,
     profileVisibility: contextProfileVisibility,
