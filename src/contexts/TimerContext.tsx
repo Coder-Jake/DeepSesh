@@ -1625,6 +1625,56 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [isRunning, isPaused, isFlashing, isScheduleActive, isSchedulePending]);
 
+  // Helper function to get the current state for saving
+  const getTimerContextDataToSave = useCallback(() => {
+    return {
+      _defaultFocusMinutes, _defaultBreakMinutes,
+      focusMinutes, breakMinutes,
+      isRunning, isPaused, timeLeft, timerType, isFlashing,
+      notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
+      isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
+      sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
+      currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
+      activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
+      isTimeLeftManagedBySession,
+      shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
+      customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
+      intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
+      friendActivity, breakNotificationsVibrate, verificationStandard,
+      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
+      is24HourFormat,
+      preparedSchedules,
+      timerIncrement,
+      startStopNotifications,
+      hasWonPrize,
+      currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
+      isHomepageFocusCustomized, isHomepageBreakCustomized,
+      activeSessionRecordId,
+      isDiscoveryActivated,
+      geolocationPermissionStatus,
+      currentSessionParticipantsData,
+      lastActivityTime,
+      showDemoSessions,
+      currentPhaseDurationSeconds,
+      remainingTimeAtPause,
+      limitDiscoveryRadius,
+    };
+  }, [
+    _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
+    notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, isSchedulingMode,
+    isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
+    savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
+    activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
+    shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
+    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
+    askNotifications, joinNotifications, sessionInvites, friendActivity, breakNotificationsVibrate, verificationStandard,
+    locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, is24HourFormat,
+    preparedSchedules, timerIncrement, startStopNotifications, hasWonPrize, currentSessionRole, currentSessionHostName,
+    currentSessionOtherParticipants, isHomepageFocusCustomized, isHomepageBreakCustomized, activeSessionRecordId,
+    isDiscoveryActivated, geolocationPermissionStatus, currentSessionParticipantsData, lastActivityTime, showDemoSessions,
+    currentPhaseDurationSeconds, remainingTimeAtPause, limitDiscoveryRadius,
+  ]);
+
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     let initialSavedSchedules: ScheduledTimerTemplate[] = [];
@@ -1664,8 +1714,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
       // 1. Load default settings
       loadedDefaultFocusMinutesFromData = data._defaultFocusMinutes ?? 25; // Assign if data exists
-      loadedDefaultBreakMinutesFromData = data._defaultBreakMinutes ?? 5;   // Assign if data exists
       _setDefaultFocusMinutes(loadedDefaultFocusMinutesFromData);
+      loadedDefaultBreakMinutesFromData = data._defaultBreakMinutes ?? 5;   // Assign if data exists
       _setDefaultBreakMinutes(loadedDefaultBreakMinutesFromData);
 
       // 2. Load homepage customization flags
@@ -1864,44 +1914,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   // MODIFIED: Optimized local storage saving
   useEffect(() => {
-    // Capture current state values for saving
-    const dataToSave = {
-      _defaultFocusMinutes, _defaultBreakMinutes,
-      focusMinutes, breakMinutes,
-      isRunning, isPaused, timeLeft, timerType, isFlashing,
-      notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
-      isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
-      sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
-      currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
-      activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
-      isTimeLeftManagedBySession,
-      shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
-      customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
-      intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
-      friendActivity, breakNotificationsVibrate, verificationStandard,
-      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
-      is24HourFormat,
-      preparedSchedules,
-      timerIncrement,
-      startStopNotifications,
-      hasWonPrize,
-      currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
-      isHomepageFocusCustomized, isHomepageBreakCustomized,
-      activeSessionRecordId,
-      isDiscoveryActivated,
-      geolocationPermissionStatus,
-      currentSessionParticipantsData,
-      lastActivityTime,
-      showDemoSessions,
-      currentPhaseDurationSeconds,
-      remainingTimeAtPause,
-      limitDiscoveryRadius,
-    };
-
     // Debounce the localStorage.setItem call
     const handler = setTimeout(() => {
+      const dataToSave = getTimerContextDataToSave();
       localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
-      console.log("TimerContext: State saved to local storage.");
+      console.log("TimerContext: Debounced state saved to local storage.");
     }, 500); // 500ms debounce
 
     return () => {
@@ -1911,7 +1928,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     // Dependencies for triggering the save (excluding rapidly changing timer values)
     _defaultFocusMinutes, _defaultBreakMinutes,
     focusMinutes, breakMinutes,
-    isRunning, isPaused, /* timeLeft removed */ timerType, isFlashing,
+    /* isRunning removed */ /* isPaused removed */ /* timeLeft removed */ timerType, isFlashing,
     notes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
     isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
     sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, /* sessionStartTime removed */
@@ -1939,7 +1956,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     /* currentPhaseDurationSeconds removed */
     remainingTimeAtPause,
     limitDiscoveryRadius,
+    getTimerContextDataToSave, // Add the helper function to dependencies
   ]);
+
+  // NEW: Effect for immediate saving of isRunning/isPaused
+  useEffect(() => {
+    if (isRunning || isPaused || isScheduleActive || isSchedulePending) {
+      const dataToSave = getTimerContextDataToSave();
+      localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
+      console.log("TimerContext: Immediate state saved to local storage (isRunning/isPaused change).");
+    }
+  }, [isRunning, isPaused, isScheduleActive, isSchedulePending, getTimerContextDataToSave]);
+
 
   const value: TimerContextType = {
     focusMinutes,
