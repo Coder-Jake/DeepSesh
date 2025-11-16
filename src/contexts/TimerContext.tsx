@@ -23,6 +23,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const { user, session } = useAuth(); // MODIFIED: Destructure session from useAuth
   const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode } = useProfile(); // RENAMED: hostCode to joinCode
 
+  // Define getDefaultSeshTitle early so it can be used in useState initializers
+  const getDefaultSeshTitle = useCallback(() => {
+    const name = user?.user_metadata?.first_name || profile?.first_name || "You";
+    return (name && name !== "You") ? `${name}'s DeepSesh` : "My DeepSesh";
+  }, [user?.user_metadata?.first_name, profile?.first_name]);
+
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
   const [_defaultFocusMinutes, _setDefaultFocusMinutes] = useState(25);
@@ -37,7 +43,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
-  const [_seshTitle, _setSeshTitle] = useState("Notes");
+  const [_seshTitle, _setSeshTitle] = useState(getDefaultSeshTitle()); // MODIFIED: Use getDefaultSeshTitle
   const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false);
   const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('all');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -46,7 +52,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
   const [isSchedulingMode, setIsSchedulingMode] = useState(false);
   const [isScheduleActive, setIsScheduleActive] = useState(false);
-  const [scheduleTitle, setScheduleTitle] = useState("My DeepSesh");
+  const [scheduleTitle, setScheduleTitle] = useState(getDefaultSeshTitle()); // MODIFIED: Use getDefaultSeshTitle
   const [commenceTime, setCommenceTime] = useState("");
   const [commenceDay, setCommenceDay] = useState<number | null>(null);
   
@@ -94,7 +100,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const [activeSchedule, setActiveSchedule] = useState<ScheduledTimer[]>([]);
   const [activeTimerColors, setActiveTimerColors] = useState<Record<string, string>>({});
-  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitleInternal] = useState("My DeepSesh");
+  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitleInternal] = useState(getDefaultSeshTitle()); // MODIFIED: Use getDefaultSeshTitle
 
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]);
 
@@ -218,11 +224,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   // REMOVED: useEffect that reset focusMinutes to _defaultFocusMinutes
   // REMOVED: useEffect that reset breakMinutes to _defaultBreakMinutes
-
-  const getDefaultSeshTitle = useCallback(() => {
-    const name = user?.user_metadata?.first_name || profile?.first_name || "You";
-    return (name && name !== "You") ? `${name}'s DeepSesh` : "My DeepSesh";
-  }, [user?.user_metadata?.first_name, profile?.first_name]);
 
   const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
 
@@ -1123,7 +1124,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       _setSeshTitle(getDefaultSeshTitle()); // Reset seshTitle to default
       setIsSeshTitleCustomized(false); // Reset seshTitle customization
     }
-  }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized]);
+  }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, getDefaultSeshTitle]);
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));

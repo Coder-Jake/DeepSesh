@@ -22,8 +22,8 @@ const ScheduleForm: React.FC = () => {
     setSchedule, 
     setIsSchedulingMode, 
     startSchedule, 
-    scheduleTitle, 
-    setScheduleTitle, 
+    scheduleTitle: contextScheduleTitle, // Renamed to avoid conflict with local state
+    setScheduleTitle: setContextScheduleTitle, // Renamed to avoid conflict with local state
     commenceTime, 
     setCommenceTime, 
     commenceDay, 
@@ -50,6 +50,14 @@ const ScheduleForm: React.FC = () => {
   } = useTimer();
 
   const { isDarkMode } = useTheme(); // NEW: Get isDarkMode
+
+  // Local state for scheduleTitle, initialized from context or default
+  const [scheduleTitle, setScheduleTitle] = useState(contextScheduleTitle || getDefaultSeshTitle());
+
+  // Sync local scheduleTitle with contextScheduleTitle when context changes
+  useEffect(() => {
+    setScheduleTitle(contextScheduleTitle || getDefaultSeshTitle());
+  }, [contextScheduleTitle, getDefaultSeshTitle]);
 
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
@@ -148,6 +156,7 @@ const ScheduleForm: React.FC = () => {
       if (scheduleTitle.trim() === "") {
         setScheduleTitle(getDefaultSeshTitle());
       }
+      setContextScheduleTitle(scheduleTitle.trim() === "" ? getDefaultSeshTitle() : scheduleTitle); // Update context
       handleEnterKeyNavigation(e);
     }
   };
@@ -157,6 +166,7 @@ const ScheduleForm: React.FC = () => {
     if (scheduleTitle.trim() === "") {
       setScheduleTitle(getDefaultSeshTitle());
     }
+    setContextScheduleTitle(scheduleTitle.trim() === "" ? getDefaultSeshTitle() : scheduleTitle); // Update context
   };
 
   const handleAddTimer = () => {
@@ -251,10 +261,12 @@ const ScheduleForm: React.FC = () => {
       return;
     }
 
+    setContextScheduleTitle(scheduleTitle); // Ensure context is updated before starting
     startSchedule();
   };
 
   const handleSaveSchedule = () => {
+    setContextScheduleTitle(scheduleTitle); // Ensure context is updated before saving
     saveCurrentScheduleAsTemplate();
     setIsSaveButtonBlue(true);
     setTimeout(() => setIsSaveButtonBlue(false), 1000);
