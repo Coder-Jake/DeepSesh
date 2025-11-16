@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings, ParticipantSessionData, SupabaseSessionData } from '@/types/timer';
+import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings, ParticipantSessionData, SupabaseSessionData, DemoSession } from '@/types/timer';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
@@ -1136,7 +1136,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [areToastsEnabled, toast]);
 
   const joinSessionAsCoworker = useCallback(async (
-    sessionId: string,
+    sessionToJoin: DemoSession, // MODIFIED: Accept DemoSession directly
     sessionTitle: string,
     hostName: string,
     participants: ParticipantSessionData[], // This is the list of participants from the *mock* session
@@ -1168,7 +1168,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsHomepageBreakCustomized(false);
     }
 
-    setActiveSessionRecordId(sessionId);
+    setActiveSessionRecordId(sessionToJoin.id); // Use the actual session ID
     setActiveSchedule(fullSchedule);
     setActiveScheduleDisplayTitleInternal(sessionTitle);
     setTimerType(currentPhaseType);
@@ -1218,10 +1218,28 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
     };
 
+    // NEW: Check if it's a mock session (no user_id means it's a mock session)
+    if (!sessionToJoin.user_id) {
+      console.log("Joining mock session locally:", sessionToJoin.id);
+      // Simulate joining locally for mock sessions
+      const updatedParticipantsData = [...participants, newCoworker];
+      setCurrentSessionParticipantsData(updatedParticipantsData);
+      setActiveJoinedSessionCoworkerCount(updatedParticipantsData.filter(p => p.role === 'coworker').length);
+      if (areToastsEnabled) {
+        toast.success("Mock Sesh Joined!", {
+          description: `You've joined "${sessionTitle}" (mock session).`,
+        });
+      }
+      playSound();
+      triggerVibration();
+      return; // Exit early for mock sessions
+    }
+
+    // For real sessions, invoke the Edge Function
     try {
       const response = await supabase.functions.invoke('join-session', {
         body: JSON.stringify({
-          sessionCode: sessionId, // For mock sessions, sessionId acts as the "code"
+          sessionCode: sessionToJoin.join_code, // MODIFIED: Use sessionToJoin.join_code
           participantData: newCoworker,
         }),
         headers: {

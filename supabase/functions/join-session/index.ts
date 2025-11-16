@@ -55,7 +55,7 @@ serve(async (req) => {
       }
     );
 
-    const { sessionCode, participantData } = await req.json();
+    const { sessionCode, participantData } = await req.json(); // sessionCode is now the join_code
 
     if (!sessionCode || !participantData || !participantData.userId || !participantData.userName) {
       return new Response(JSON.stringify({ error: 'Missing sessionCode or participantData' }), {
@@ -76,7 +76,7 @@ serve(async (req) => {
     const { data: sessions, error: fetchError } = await supabaseClient
       .from('active_sessions')
       .select('id, participants_data, is_active, visibility, user_id, join_code') // Select join_code and user_id
-      .eq('join_code', sessionCode) // Use join_code
+      .eq('join_code', sessionCode) // Use join_code for lookup
       .eq('is_active', true)
       .limit(1);
 

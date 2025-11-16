@@ -110,6 +110,7 @@ export interface DemoSession {
   visibility: 'public' | 'friends' | 'organisation' | 'private'; // NEW: Add visibility
   fullSchedule: ScheduledTimer[]; // ADDED: fullSchedule
   user_id?: string | null; // ADDED: user_id
+  join_code?: string | null; // NEW: Add join_code
 }
 
 // NEW: Define a type for Supabase fetched sessions

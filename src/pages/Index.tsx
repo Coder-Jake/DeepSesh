@@ -98,7 +98,7 @@ interface SupabaseSessionData {
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
-  join_code: string | null;
+  join_code: string | null; // NEW: Add join_code
   active_asks: ActiveAskItem[];
   organization: string | null;
 }
@@ -200,6 +200,7 @@ const fetchMockSessions = async (
       active_asks: (session.active_asks || []) as ActiveAskItem[],
       visibility: session.visibility,
       user_id: session.user_id,
+      join_code: session.join_code, // NEW: Map join_code from mock_sessions
     };
   }).filter(session => {
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -287,6 +288,7 @@ const fetchSupabaseSessions = async (
       active_asks: (session.active_asks || []) as ActiveAskItem[],
       visibility: session.visibility,
       user_id: session.user_id,
+      join_code: session.join_code, // NEW: Map join_code from active_sessions
     };
   }).filter(session => {
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -1022,6 +1024,7 @@ const Index = () => {
           active_asks: (joinedSession.active_asks || []) as ActiveAskItem[],
           visibility: joinedSession.visibility,
           user_id: joinedSession.user_id,
+          join_code: joinedSession.join_code, // NEW: Map join_code from Supabase response
         };
         await handleJoinSession(demoSession);
       } else {
@@ -1180,6 +1183,7 @@ const Index = () => {
         active_asks: [],
         visibility: 'organisation',
         user_id: participantNames.find(p => p.role === 'host')?.userId,
+        join_code: `ORG-${orgName.substring(0, 3).toUpperCase()}-${Math.floor(Math.random() * 1000)}`, // Mock join_code
       });
     });
 
