@@ -52,6 +52,8 @@ serve(async (req) => {
         },
       }
     );
+    console.log('JOIN_SESSION_EDGE_FUNCTION: SUPABASE_SERVICE_ROLE_KEY (first 10 chars):', (Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '').substring(0, 10));
+
 
     const { sessionCode, participantData } = await req.json();
 
@@ -78,7 +80,7 @@ serve(async (req) => {
       .single();
 
     if (userProfileError && userProfileError.code !== 'PGRST116') {
-      console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching joining user profile:', userProfileError.message);
+      console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching joining user profile:', userProfileError); // Log full error object
       return new Response(JSON.stringify({ error: 'Failed to verify user organization.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -96,7 +98,7 @@ serve(async (req) => {
       .limit(1);
 
     if (fetchError) {
-      console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching session:', fetchError.message);
+      console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching session:', fetchError); // Log full error object
       return new Response(JSON.stringify({ error: fetchError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -157,7 +159,7 @@ serve(async (req) => {
       .single();
 
     if (updateError) {
-      console.error('JOIN_SESSION_EDGE_FUNCTION: Error updating participants:', updateError.message);
+      console.error('JOIN_SESSION_EDGE_FUNCTION: Error updating participants:', updateError); // Log full error object
       return new Response(JSON.stringify({ error: updateError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -171,7 +173,7 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    console.error('JOIN_SESSION_EDGE_FUNCTION: Unexpected error in join-session Edge Function:', error.message);
+    console.error('JOIN_SESSION_EDGE_FUNCTION: Unexpected error in join-session Edge Function:', error); // Log full error object
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
