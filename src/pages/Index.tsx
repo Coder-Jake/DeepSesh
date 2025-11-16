@@ -481,7 +481,7 @@ const Index = () => {
   }, [filteredLocalMockSessions, profile?.id]);
 
   // NEW: Use local MOCK_SESSIONS for organization sessions
-  const mockOrganizationSessions = useMemo(() => {
+  const mockOrganizationSessions: DemoSession[] = useMemo(() => {
     if (!profile?.organization || !showDemoSessions || !filteredLocalMockSessions) return [];
 
     const organizationNames = profile.organization.split(';').map(name => name.trim()).filter(name => name.length > 0);
@@ -515,7 +515,7 @@ const Index = () => {
       }
     },
     refetchInterval: 5000,
-    enabled: isDiscoveryActivated && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends'), // MODIFIED: Removed sessionVisibility !== 'private'
+    enabled: isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends'),
   });
 
   useEffect(() => {
@@ -978,11 +978,10 @@ const Index = () => {
   }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType, focusMinutes, breakMinutes]);
 
   const shouldShowNearbySessions = useMemo(() => {
-    // MODIFIED: Removed sessionVisibility !== 'private'
-    const result = isDiscoveryActivated && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
-    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "showSessionsWhileActive:", showSessionsWhileActive);
+    const result = isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
+    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "sessionVisibility:", sessionVisibility, "showSessionsWhileActive:", showSessionsWhileActive);
     return result;
-  }, [isDiscoveryActivated, showSessionsWhileActive]);
+  }, [isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
   const shouldShowFriendsSessions = useMemo(() => {
     const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
@@ -991,11 +990,10 @@ const Index = () => {
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganizationSessions = useMemo(() => {
-    // MODIFIED: Removed sessionVisibility === 'organisation'
-    const result = isDiscoveryActivated && !!profile?.organization && (showSessionsWhileActive === 'organization' || showSessionsWhileActive === 'all');
-    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization, "showSessionsWhileActive:", showSessionsWhileActive);
+    const result = isDiscoveryActivated && !!profile?.organization && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all');
+    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "profile?.organization:", profile?.organization, "sessionVisibility:", sessionVisibility);
     return result;
-  }, [profile?.organization, isDiscoveryActivated, showSessionsWhileActive]);
+  }, [profile?.organization, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
   const handleExtendSubmit = async (minutes: number) => {
     if (!user?.id || !activeSessionRecordId) {
