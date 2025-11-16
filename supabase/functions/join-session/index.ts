@@ -68,10 +68,27 @@ serve(async (req) => {
       });
     }
 
+    // Fetch the joining user's profile to check their organization
+    const { data: userProfile, error: userProfileError } = await supabaseServiceRoleClient
+      .from('profiles')
+      .select('organization')
+      .eq('id', authenticatedUserId)
+      .single();
+
+    if (userProfileError && userProfileError.code !== 'PGRST116') { // PGRST116 means "no rows found"
+      console.error('Error fetching joining user profile:', userProfileError.message);
+      return new Response(JSON.stringify({ error: 'Failed to verify user organization.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    const joiningUserOrganization = userProfile?.organization;
+
     // Fetch the session using the join_code (now using the service role client to bypass RLS for read)
     const { data: sessions, error: fetchError } = await supabaseServiceRoleClient
       .from('active_sessions')
-      .select('id, participants_data, is_active, visibility, user_id, join_code')
+      .select('id, participants_data, is_active, visibility, user_id, join_code, organization') // ADDED: organization
       .eq('join_code', sessionCode)
       .eq('is_active', true)
       .limit(1);
@@ -95,17 +112,21 @@ serve(async (req) => {
     const currentParticipants = (session.participants_data || []) as any[];
 
     // Enforce session visibility rules within the Edge Function
-    // This ensures that even though the service role client can read the session,
-    // the business logic still prevents unauthorized joins.
     if (session.visibility === 'private' && session.user_id !== authenticatedUserId) {
       return new Response(JSON.stringify({ error: 'Forbidden: This is a private session.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
       });
+    } else if (session.visibility === 'organisation') {
+      if (!session.organization || session.organization !== joiningUserOrganization) {
+        return new Response(JSON.stringify({ error: 'Forbidden: This is an organization-only session.' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 403,
+        });
+      }
     }
-    // Add similar checks for 'friends' or 'organisation' visibility if needed,
-    // comparing authenticatedUserId with existing friends/organization data.
-    // For now, assuming 'public' and 'organisation' are handled by RLS on the client side
+    // For 'friends' visibility, we would need a 'friends' table or similar relationship.
+    // For now, assuming 'public' and 'friends' are handled by RLS on the client side
     // or that the host explicitly invites.
 
     // Check if the user is already a participant
