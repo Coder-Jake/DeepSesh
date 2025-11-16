@@ -563,7 +563,14 @@ const Settings = () => {
             <AccordionContent className="space-y-6 pt-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="show-sessions-while-active">Show other sessions while active</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="show-sessions-while-active">Show other sessions while active</Label>
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                      <p>Require confirmation to move between Focus/Break.</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <Button
                   id="show-sessions-while-active"
@@ -589,15 +596,18 @@ const Settings = () => {
                     </TooltipContent>
                   </Tooltip>
                 </div >
-                <Button
-                  id="timer-transition-toggle"
-                  onClick={cycleTimerTransitions}
-                  className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
-                  )}
-                >
-                  {manualTransition ? "Manual" : "Auto"}
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Switch
+                        id="lock"
+                        checked={lock}
+                        onCheckedChange={setLock}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                        <p>Requires App development</p>
+                    </TooltipContent>
+                </Tooltip>
               </div>
 
               {/* NEW: Demo Sessions Toggle */}
@@ -1098,7 +1108,7 @@ const Settings = () => {
               <div className="border-t border-border pt-6 mt-6 opacity-50 pointer-events-none">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="">
+                    <div className="cursor-help"> {/* NEW: Wrap content in a single div */}
                       <h3 className="text-lg font-semibold mb-4">Verification</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <p className="text-sm text-muted-foreground">
