@@ -96,6 +96,15 @@ export default {
 					foreground: 'hsl(var(--error-fg))',
 					border: 'hsl(var(--error-border))',
 					hover: 'hsl(var(--error-hover))',
+				},
+				'public-text': { // NEW: Public text color
+					DEFAULT: 'hsl(var(--public-text))',
+				},
+				'private-text': { // NEW: Private text color
+					DEFAULT: 'hsl(var(--private-text))',
+				},
+				'organisation-text': { // NEW: Organisation text color
+					DEFAULT: 'hsl(var(--organisation-text))',
 				}
 			},
 			borderRadius: {

@@ -125,13 +125,6 @@ const filterLocalMockSessions = (
     }
     return { ...session, distance };
   }).filter(session => {
-    // Apply distance filter if enabled
-    if (limitDiscoveryRadius && session.distance !== null) {
-      if (session.distance > maxDistance) {
-        return false;
-      }
-    }
-
     // Apply visibility filters
     const isPublic = session.visibility === 'public';
     const isFriends = session.visibility === 'friends';
@@ -1612,7 +1605,12 @@ const Index = () => {
                     <div className="flex-grow self-center text-center transition-opacity duration-300 ease-in-out">
                       {isActiveTimer ? (
                         <h2
-                          className="text-xl font-bold text-foreground"
+                          className={cn(
+                            "text-xl font-bold",
+                            sessionVisibility === 'public' ? "text-public-text" :
+                            sessionVisibility === 'private' ? "text-private-text" :
+                            sessionVisibility === 'organisation' ? "text-organisation-text" : "text-foreground"
+                          )}
                           onMouseDown={() => handlePressStart(handleTitleLongPress)}
                           onMouseUp={handlePressEnd}
                           onMouseLeave={handlePressEnd}
