@@ -98,7 +98,7 @@
     --success-bg-light: 120 60% 90%; /* Light green */
     --success-fg-light: 120 60% 30%; /* Darker green text */
     --success-border-light: 120 60% 80%; /* Border color */
-    --success-hover-light: 120 60% 80%; /* MODIFIED: 10% darker than base */
+    --success-hover-light: 120 60% 40%; /* MODIFIED: Standardized hover color */
 
     --error-bg-light: 0 80% 90%; /* Light red */
     --error-fg-light: 0 80% 40%; /* Darker red text */
@@ -197,7 +197,7 @@
     --success-bg-dark: 120 40% 20%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
     --success-border-dark: 120 40% 30%; /* Border color */
-    --success-hover-dark: 120 50% 15%; /* MODIFIED: Increased saturation and lightness for a richer, darker green */
+    --success-hover-dark: 120 60% 40%; /* MODIFIED: Standardized hover color */
 
     /* Error colors for dark mode */
     --error-bg-dark: 0 60% 20%; /* Dark red */
