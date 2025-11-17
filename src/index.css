@@ -191,7 +191,7 @@
 
     /* Opacity for outline/ghost button hover effects */
     --outline-hover-opacity-dark: 0.5;
-    --ghost-hover-opacity-dark: 0.5;
+    --ghost-hover-opacity-dark: 0;
 
     /* Success colors for dark mode */
     --success-bg-dark: 120 40% 40%; /* Dark green */
