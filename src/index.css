@@ -26,12 +26,29 @@
     --secondary-foreground: 222.2 47.4% 11.2%;
     --secondary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --destructive-hover: 0 84.2% 70.2%; /* 10% lighter */
+
+    --muted: {
+      DEFAULT: 'hsl(var(--muted))';
+      foreground: 'hsl(var(--muted-foreground))';
+    }
+
+    --accent: {
+      DEFAULT: 'hsl(var(--accent))';
+      foreground: 'hsl(var(--accent-foreground))';
+    }
+
+    --popover: {
+      DEFAULT: 'hsl(var(--popover))';
+      foreground: 'hsl(var(--popover-foreground))';
+    }
+
+    --card: {
+      DEFAULT: 'hsl(var(--card))';
+      foreground: 'hsl(var(--card-foreground))';
+    }
 
     --ring: 215 20.2% 65.1%;
 
@@ -197,7 +214,7 @@
     --success-bg-dark: 120 40% 20%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
     --success-border-dark: 120 40% 30%; /* Border color */
-    --success-hover-dark: 120 40% 30%; /* 10% lighter */
+    --success-hover-dark: 120 70% 50%; /* Adjusted to a more vibrant green */
 
     /* Error colors for dark mode */
     --error-bg-dark: 0 60% 20%; /* Dark red */
