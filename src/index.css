@@ -197,7 +197,7 @@
     --success-bg-dark: 120 40% 20%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
     --success-border-dark: 120 40% 30%; /* Border color */
-    --success-hover-dark: 120 60% 25%; /* MODIFIED: More saturated, slightly lighter green for hover */
+    --success-hover-dark: 120 50% 15%; /* MODIFIED: Increased saturation and lightness for a richer, darker green */
 
     /* Error colors for dark mode */
     --error-bg-dark: 0 60% 20%; /* Dark red */
