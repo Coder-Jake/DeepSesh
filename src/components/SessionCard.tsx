@@ -160,7 +160,14 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg">{session.title}</CardTitle>
+            <CardTitle className={cn(
+              "text-lg",
+              session.visibility === 'public' ? "text-public-text" :
+              session.visibility === 'private' ? "text-private-text" :
+              session.visibility === 'organisation' ? "text-organisation-text" : "text-foreground"
+            )}>
+              {session.title}
+            </CardTitle>
           </div>
           <div
             className="text-sm text-muted-foreground cursor-pointer select-none flex flex-col items-end"

@@ -39,7 +39,7 @@ import { Accordion
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } '@/contexts/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -1606,10 +1606,7 @@ const Index = () => {
                       {isActiveTimer ? (
                         <h2
                           className={cn(
-                            "text-xl font-bold",
-                            sessionVisibility === 'public' ? "text-public-text" :
-                            sessionVisibility === 'private' ? "text-private-text" :
-                            sessionVisibility === 'organisation' ? "text-organisation-text" : "text-foreground"
+                            "text-xl font-bold text-foreground" // Reverted to default text-foreground
                           )}
                           onMouseDown={() => handlePressStart(handleTitleLongPress)}
                           onMouseUp={handlePressEnd}
