@@ -111,6 +111,7 @@ export interface DemoSession {
   fullSchedule: ScheduledTimer[]; // ADDED: fullSchedule
   user_id?: string | null; // ADDED: user_id
   join_code?: string | null; // NEW: Add join_code
+  organization?: string | null; // NEW: Add organization
 }
 
 // NEW: Define a type for Supabase fetched sessions
