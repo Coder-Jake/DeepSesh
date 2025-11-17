@@ -194,7 +194,7 @@
     --ghost-hover-opacity-dark: 0.9;
 
     /* Success colors for dark mode */
-    --success-bg-dark: 120 40% 20%; /* Dark green */
+    --success-bg-dark: 120 40% 40%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
     --success-border-dark: 120 40% 30%; /* Border color */
     --success-hover-dark: 120 50% 30%; /* MODIFIED: Increased saturation and lightness for a richer, darker green */
