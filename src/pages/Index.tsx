@@ -1242,7 +1242,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    });
+    );
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -1651,7 +1651,12 @@ const Index = () => {
                         onTouchStart={() => handlePressStart(handleSessionVisibilityToggle)}
                         onTouchEnd={handlePressEnd}
                         onClick={handleSessionVisibilityToggle}
-                        className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors select-none"
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors select-none",
+                          sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover",
+                          sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover",
+                          sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover"
+                        )}
                         data-name="Session Visibility Toggle Button"
                       >
                         {sessionVisibility === 'public' && (
@@ -2227,7 +2232,8 @@ const Index = () => {
                   className={cn(
                     "w-full flex items-center gap-2",
                     geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover",
-                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover"
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover",
+                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-secondary-hover" // NEW: Added specific styles for 'prompt'
                   )}
                   onClick={getLocation}
                 >
