@@ -93,17 +93,22 @@
     --success-bg-light: 120 60% 90%; /* Light green */
     --success-fg-light: 120 60% 30%; /* Darker green text */
     --success-border-light: 120 60% 80%; /* Border color */
-    --success-hover-light: 120 60% 85%; /* Slightly darker green on hover */
+    --success-hover-light: 120 60% 80%; /* 10% darker green on hover */
 
     --error-bg-light: 0 80% 90%; /* Light red */
     --error-fg-light: 0 80% 40%; /* Darker red text */
     --error-border-light: 0 80% 80%; /* Border color */
-    --error-hover-light: 0 80% 85%; /* Slightly darker red on hover */
+    --error-hover-light: 0 80% 80%; /* 10% darker red on hover */
 
     /* NEW: Text colors for session visibility (light mode) */
     --public-text: 200 90% 30%; /* Darker blue */
     --private-text: 270 100% 30%; /* Darker purple */
     --organisation-text: 80 60% 20%; /* Darker olive */
+
+    /* NEW: Hover colors for session visibility buttons (light mode) */
+    --public-bg-hover-light: 200 90% 72.5%; /* 10% darker than public-background-solid */
+    --private-bg-hover-light: 270 100% 77.5%; /* 10% darker than private-background-solid */
+    --organisation-bg-hover-light: 80 60% 72.5%; /* 10% darker than organisation-background-solid */
 
     --radius: 0.5rem; /* Explicitly defining default border radius */
   }
@@ -187,18 +192,23 @@
     --success-bg-dark: 120 40% 20%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
     --success-border-dark: 120 40% 30%; /* Border color */
-    --success-hover-dark: 120 40% 25%; /* Slightly lighter green on hover */
+    --success-hover-dark: 120 40% 30%; /* 10% lighter green on hover */
 
     /* Error colors for dark mode */
     --error-bg-dark: 0 60% 20%; /* Dark red */
     --error-fg-dark: 0 60% 80%; /* Lighter red text */
     --error-border-dark: 0 60% 30%; /* Border color */
-    --error-hover-dark: 0 60% 25%; /* Slightly lighter red on hover */
+    --error-hover-dark: 0 60% 30%; /* 10% lighter red on hover */
 
     /* NEW: Text colors for session visibility (dark mode) */
     --public-text: 200 90% 70%; /* Lighter blue */
     --private-text: 270 100% 70%; /* Lighter purple */
     --organisation-text: 80 60% 80%; /* Lighter olive */
+
+    /* NEW: Hover colors for session visibility buttons (dark mode) */
+    --public-bg-hover-dark: 220 50% 52.5%; /* 10% lighter than public-background-solid-dark */
+    --private-bg-hover-dark: 270 30% 52.5%; /* 10% lighter than private-background-solid-dark */
+    --organisation-bg-hover-dark: 80 40% 52.5%; /* 10% lighter than organisation-background-solid-dark */
   }
 }
 

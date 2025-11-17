@@ -100,7 +100,6 @@ interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null; // NEW: Add join_code
-  active_asks: ActiveAskItem[];
   organization: string | null;
 }
 
@@ -485,7 +484,7 @@ const Index = () => {
       console.log("Skipping friends filter: filteredLocalMockSessions or profile ID missing.");
       return [];
     }
-    // For mock data, we'll just use a simple heuristic or hardcoded list for "friends"
+    // For mock data, we'll simplify "friends" and "organization" logic
     // For now, let's assume sessions with 'mock-user-id-freud' as host are "friends" sessions
     return filteredLocalMockSessions.filter(session => {
       const isFriendSession = session.user_id === 'c3d4e5f6-a7b8-4901-8234-567890abcdef01'; // Freud's ID
@@ -1651,7 +1650,12 @@ const Index = () => {
                         onTouchStart={() => handlePressStart(handleSessionVisibilityToggle)}
                         onTouchEnd={handlePressEnd}
                         onClick={handleSessionVisibilityToggle}
-                        className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors select-none"
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors select-none",
+                          sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg/hover-dark dark:hover:bg-public-bg/hover-dark",
+                          sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg/hover-dark dark:hover:bg-private-bg/hover-dark",
+                          sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg/hover-dark dark:hover:bg-organisation-bg/hover-dark"
+                        )}
                         data-name="Session Visibility Toggle Button"
                       >
                         {sessionVisibility === 'public' && (
@@ -2226,8 +2230,8 @@ const Index = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover",
-                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover"
+                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success",
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error"
                   )}
                   onClick={getLocation}
                 >
