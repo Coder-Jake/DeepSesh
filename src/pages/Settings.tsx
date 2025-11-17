@@ -86,6 +86,7 @@ const Settings = () => {
     setIsDiscoveryActivated,
     resetSessionStates,
     showDemoSessions,
+    setShowDemoSessions,
     limitDiscoveryRadius,
     setLimitDiscoveryRadius,
   } = useTimer();
@@ -808,9 +809,9 @@ const Settings = () => {
                   onClick={handleGlobalSessionVisibilityToggle}
                   className={cn(
                     "px-3 py-1 rounded-full transition-colors select-none",
-                    sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg/hover-dark dark:hover:bg-public-bg/hover-dark",
-                    sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg/hover-dark dark:hover:bg-private-bg/hover-dark",
-                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg/hover-dark dark:hover:bg-organisation-bg/hover-dark"
+                    sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover",
+                    sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover",
+                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover"
                   )}
                 >
                   {sessionVisibility === 'public' && (
