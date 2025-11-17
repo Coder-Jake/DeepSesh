@@ -132,9 +132,9 @@
     --primary-foreground: 222.2 47.4% 11.2%;
     --primary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 250 30% 17.5%; /* Changed hue to purple */
     --secondary-foreground: 210 40% 98%;
-    --secondary-hover: 217.2 32.6% 27.5%; /* 10% lighter */
+    --secondary-hover: 250 30% 27.5%; /* Changed hue to purple, 10% lighter */
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
