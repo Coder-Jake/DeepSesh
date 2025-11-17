@@ -76,17 +76,14 @@ export default {
 				'public-bg': { // NEW: Public background color
 					DEFAULT: 'hsl(var(--public-background-solid))',
 					foreground: 'hsl(var(--public-foreground-solid))',
-					hover: 'hsl(var(--public-background-solid-hover))', // NEW
 				},
 				'private-bg': { // NEW: Private background color
 					DEFAULT: 'hsl(var(--private-background-solid))',
 					foreground: 'hsl(var(--private-foreground-solid))',
-					hover: 'hsl(var(--private-background-solid-hover))', // NEW
 				},
 				'organisation-bg': { // NEW: Organisation background color
 					DEFAULT: 'hsl(var(--organisation-background-solid))',
 					foreground: 'hsl(var(--organisation-foreground-solid))',
-					hover: 'hsl(var(--organisation-background-solid-hover))', // NEW
 				},
 				success: { // NEW: Success color for granted states
 					DEFAULT: 'hsl(var(--success-bg))',

@@ -53,11 +53,6 @@
     --private-background-solid: 270 100% 87.5%;
     --private-foreground-solid: var(--foreground);
 
-    /* NEW: Solid public/private/organisation hover backgrounds for light mode (10% darker) */
-    --public-background-solid-hover-light: 200 90% 72.5%;
-    --private-background-solid-hover-light: 270 100% 77.5%;
-    --organisation-background-solid-hover-light: 80 60% 72.5%;
-
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 10%; /* Darker olive for text */
 
@@ -98,12 +93,12 @@
     --success-bg-light: 120 60% 90%; /* Light green */
     --success-fg-light: 120 60% 30%; /* Darker green text */
     --success-border-light: 120 60% 80%; /* Border color */
-    --success-hover-light: 120 60% 80%; /* 10% darker */
+    --success-hover-light: 120 60% 85%; /* Slightly darker green on hover */
 
     --error-bg-light: 0 80% 90%; /* Light red */
     --error-fg-light: 0 80% 40%; /* Darker red text */
     --error-border-light: 0 80% 80%; /* Border color */
-    --error-hover-light: 0 80% 80%; /* 10% darker */
+    --error-hover-light: 0 80% 85%; /* Slightly darker red on hover */
 
     /* NEW: Text colors for session visibility (light mode) */
     --public-text: 200 90% 30%; /* Darker blue */
@@ -164,11 +159,6 @@
     --organisation-background-solid: 80 40% 42.5%;
     --organisation-foreground-solid: var(--foreground);
 
-    /* NEW: Solid public/private/organisation hover backgrounds for dark mode (10% darker) */
-    --public-background-solid-hover-dark: 220 50% 32.5%;
-    --private-background-solid-hover-dark: 270 30% 32.5%;
-    --organisation-background-solid-hover-dark: 80 40% 32.5%;
-
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */
 
@@ -197,13 +187,13 @@
     --success-bg-dark: 120 40% 20%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
     --success-border-dark: 120 40% 30%; /* Border color */
-    --success-hover-dark: 120 40% 10%; /* 10% darker */
+    --success-hover-dark: 120 40% 25%; /* Slightly lighter green on hover */
 
     /* Error colors for dark mode */
     --error-bg-dark: 0 60% 20%; /* Dark red */
     --error-fg-dark: 0 60% 80%; /* Lighter red text */
     --error-border-dark: 0 60% 30%; /* Border color */
-    --error-hover-dark: 0 60% 10%; /* 10% darker */
+    --error-hover-dark: 0 60% 25%; /* Slightly lighter red on hover */
 
     /* NEW: Text colors for session visibility (dark mode) */
     --public-text: 200 90% 70%; /* Lighter blue */
