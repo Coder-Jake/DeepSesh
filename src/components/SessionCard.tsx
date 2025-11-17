@@ -15,9 +15,20 @@ interface SessionCardProps {
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => {
-  const { formatTime } = useTimer();
+  const { formatTime, isRunning, isPaused, isScheduleActive, isSchedulePending } = useTimer();
   const { toggleProfilePopUp } = useProfilePopUp();
-  const { getPublicProfile } = useProfile();
+  const { getPublicProfile, profile } = useProfile(); // Get profile from useProfile
+
+  const currentUserId = profile?.id; // Get current user's ID
+
+  // Check if the current user is a participant in this specific session
+  const isUserInThisSession = useMemo(() => {
+    if (!currentUserId) return false;
+    return session.participants.some(p => p.userId === currentUserId);
+  }, [session.participants, currentUserId]);
+
+  // Determine if any timer/schedule is active for the current user
+  const isAnySessionActive = isRunning || isPaused || isScheduleActive || isSchedulePending;
 
   // Calculate total duration from fullSchedule
   const totalDurationMinutes = useMemo(() => {
@@ -117,7 +128,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       type: lastPhase?.type || 'focus',
       durationMinutes: lastPhase?.durationMinutes || 0,
       remainingSeconds: 0,
-      isEnded: false,
+      isEnded: true, // Mark as ended if it falls outside the schedule
     };
   }
 
@@ -162,9 +173,11 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
           <div>
             <CardTitle className={cn(
               "text-lg",
-              session.visibility === 'public' ? "text-public-text" :
-              session.visibility === 'private' ? "text-private-text" :
-              session.visibility === 'organisation' ? "text-organisation-text" : "text-foreground"
+              isUserInThisSession ? (
+                session.visibility === 'public' ? "text-public-text" :
+                session.visibility === 'private' ? "text-private-text" :
+                session.visibility === 'organisation' ? "text-organisation-text" : "text-foreground"
+              ) : "text-foreground" // Default to text-foreground if user is not in session
             )}>
               {session.title}
             </CardTitle>
@@ -247,7 +260,9 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
             </div>
           </div>
 
-          <Button size="sm" onClick={() => onJoinSession(session)}>Join</Button>
+          {!isAnySessionActive && ( // Hide join button if any session is active
+            <Button size="sm" onClick={() => onJoinSession(session)}>Join</Button>
+          )}
         </div>
       </CardContent>
     </Card>
