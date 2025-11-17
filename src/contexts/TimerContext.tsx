@@ -26,9 +26,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   // Define getDefaultSeshTitle early so it can be used in useState initializers
   const getDefaultSeshTitle = useCallback(() => {
-    const name = user?.user_metadata?.first_name || profile?.first_name || "You";
-    return (name && name !== "You") ? `${name}'s DeepSesh` : "My DeepSesh";
-  }, [user?.user_metadata?.first_name, profile?.first_name]);
+    const name = user?.user_metadata?.first_name || profile?.first_name;
+    const code = profile?.join_code; // Get join_code from profile
+
+    if (name && name !== "You") {
+      return `${name}'s DeepSesh`;
+    } else if (code) { // Use join_code if name is not available
+      return `${code}'s DeepSesh`;
+    }
+    return "My DeepSesh"; // Fallback
+  }, [user?.user_metadata?.first_name, profile?.first_name, profile?.join_code]); // Add profile?.join_code to dependencies
 
   const [timerIncrement, setTimerIncrementInternal] = useState(5);
 
