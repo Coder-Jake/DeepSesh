@@ -228,6 +228,27 @@ const fetchSupabaseSessions = async (
   });
 };
 
+// NEW: Helper function to sort sessions
+const sortSessions = (sessions: DemoSession[], currentUserId: string | undefined) => {
+  return [...sessions].sort((a, b) => {
+    const isUserInA = currentUserId ? a.participants.some(p => p.userId === currentUserId) : false;
+    const isUserInB = currentUserId ? b.participants.some(p => p.userId === currentUserId) : false;
+
+    // Primary sort: user in session comes first
+    if (isUserInA && !isUserInB) return -1;
+    if (!isUserInA && isUserInB) return 1;
+
+    // Secondary sort: by distance (ascending)
+    if (a.distance !== null && b.distance !== null) {
+      return a.distance - b.distance;
+    }
+    if (a.distance !== null) return -1; // A has distance, B doesn't, A comes first
+    if (b.distance !== null) return 1;  // B has distance, A doesn't, B comes first
+
+    return 0; // No change in order if distances are null or equal
+  });
+};
+
 
 const Index = () => {
   const {
@@ -1411,8 +1432,11 @@ const Index = () => {
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
-        const hasNearbySessions = (supabaseActiveSessions && supabaseActiveSessions.length > 0) || (showDemoSessions && filteredMockNearbySessions.length > 0);
-        if (!shouldShowNearbySessions || !hasNearbySessions) {
+        const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
+        const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
+        const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+
+        if (!shouldShowNearbySessions || allNearbySessions.length === 0) {
           return null;
         }
         return (
@@ -1483,14 +1507,7 @@ const Index = () => {
               <div className="space-y-3">
                 {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
                 {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
-                {supabaseActiveSessions?.filter(session => session.visibility === 'public').map(session => (
-                  <SessionCard
-                    key={session.id}
-                    session={session}
-                    onJoinSession={handleJoinSession}
-                  />
-                ))}
-                {showDemoSessions && filteredMockNearbySessions.map(session => (
+                {allNearbySessions.map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -1502,8 +1519,10 @@ const Index = () => {
           </div>
         );
       case 'friends':
-        const hasFriendsSessions = showDemoSessions && filteredMockFriendsSessions.length > 0;
-        if (!shouldShowFriendsSessions || !hasFriendsSessions) {
+        const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
+        const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
+
+        if (!shouldShowFriendsSessions || allFriendsSessions.length === 0) {
           return null;
         }
         return (
@@ -1525,7 +1544,7 @@ const Index = () => {
             </button>
             {isFriendsSessionsOpen && (
               <div className="space-y-3">
-                {showDemoSessions && filteredMockFriendsSessions.map(session => (
+                {allFriendsSessions.map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -1537,8 +1556,10 @@ const Index = () => {
           </div>
         );
       case 'organization':
-        const hasOrganizationSessions = mockOrganizationSessions.length > 0;
-        if (!shouldShowOrganizationSessions || !hasOrganizationSessions) {
+        const orgMockSessions = mockOrganizationSessions;
+        const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
+
+        if (!shouldShowOrganizationSessions || allOrganizationSessions.length === 0) {
           return null;
         }
         return (
@@ -1557,7 +1578,7 @@ const Index = () => {
             </button>
             {isOrganizationSessionsOpen && (
               <div className="space-y-3">
-                {mockOrganizationSessions.map(session => (
+                {allOrganizationSessions.map(session => (
                   <SessionCard
                     key={session.id}
                     session={session}
