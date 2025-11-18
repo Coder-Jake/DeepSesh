@@ -11,7 +11,7 @@ const Credits = () => {
   const supporters = [
     { name: "Passionate Philanthropist", amount: "$1800" },
     { name: "Grateful Giver", amount: "$120" },
-    { name: "Community Champion", amount: "$85" },
+    { name: "Community Champion", "amount": "$85" },
     { name: "DeepSesh Diehard", amount: "$60" },
     { name: "Anonymous Ally", amount: "$55" },
   ];
@@ -47,7 +47,7 @@ const Credits = () => {
                       href={`https://github.com/${dev.github}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-xs text-blue-500 hover:underline mt-1 block"
+                      className="text-xs text-blue-500 mt-1 block"
                     >
                       GitHub: {dev.github}
                     </a>
@@ -75,7 +75,7 @@ const Credits = () => {
                     href="https://www.linkedin.com/in/anjsimmo/" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-blue-500 hover:underline"
+                    className="text-blue-500"
                   >
                     Angie S.
                   </a>
@@ -85,7 +85,7 @@ const Credits = () => {
                     href="https://www.linkedin.com/in/theo-adis-270b6516/" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-blue-500 hover:underline"
+                    className="text-blue-500"
                   >
                     Theo Adis
                   </a>

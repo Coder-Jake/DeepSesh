@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb, Linkedin } from "lucide-react"; // Import Linkedin icon
-import { toast } from 'sonner'; // Import toast from sonner directly
+import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb, Linkedin } from "lucide-react";
+import { toast } from 'sonner';
 import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
 import { useTimer } from '@/contexts/TimerContext';
@@ -12,7 +12,7 @@ import { useTimer } from '@/contexts/TimerContext';
 const ChipIn = () => {
   const [amount, setAmount] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [isBTCMode, setIsBTCMode] = useState(false); // NEW: State to toggle between $ and BTC
+  const [isBTCMode, setIsBTCMode] = useState(false);
   const { setHasWonPrize } = useTimer();
 
   const quickAmounts = [5, 10, 25, 50];
@@ -27,7 +27,7 @@ const ChipIn = () => {
     setAmount(value);
   };
 
-  const toggleCurrencyMode = () => { // NEW: Function to toggle currency
+  const toggleCurrencyMode = () => {
     setIsBTCMode(prev => !prev);
   };
 
@@ -95,15 +95,15 @@ const ChipIn = () => {
                     onClick={() => handleQuickAmount(value)}
                     className="h-12"
                   >
-                    {isBTCMode ? value : `$${value}`} {/* MODIFIED: Conditional display */}
+                    {isBTCMode ? value : `$${value}`}
                   </Button>
                 ))}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="custom-amount" onClick={toggleCurrencyMode} className="cursor-pointer select-none"> {/* MODIFIED: Added onClick and cursor style */}
-                Custom amount ({isBTCMode ? "BTC" : "$"}) {/* MODIFIED: Conditional display */}
+              <Label htmlFor="custom-amount" onClick={toggleCurrencyMode} className="cursor-pointer select-none">
+                Custom amount ({isBTCMode ? "BTC" : "$"})
               </Label>
               <Input
                 id="custom-amount"
@@ -134,7 +134,7 @@ const ChipIn = () => {
               disabled={!amount || parseFloat(amount) <= 0}
             >
               <Heart className="h-4 w-4 mr-2" />
-              Donate {isBTCMode ? `${amount || "0"} BTC` : `$${amount || "0"}`} {/* MODIFIED: Conditional display */}
+              Donate {isBTCMode ? `${amount || "0"} BTC` : `$${amount || "0"}`}
             </Button>
           </CardContent>
         </Card>
@@ -170,7 +170,7 @@ const ChipIn = () => {
                   <p>$4,500 (from early supporters)</p>
                 </div>
               </div>
-              <Link to="/upcoming-features" className="block cursor-pointer hover:bg-muted rounded-md p-2 -mx-2 -my-1 transition-colors">
+              <Link to="/upcoming-features" className="block cursor-pointer rounded-md p-2 -mx-2 -my-1 transition-colors">
                 <div className="flex items-center gap-3">
                   <Lightbulb className="h-5 w-5 text-primary" />
                   <div>
@@ -199,7 +199,7 @@ const ChipIn = () => {
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>• Sharing DeepSesh with friends</li>
-                <li>• Providing <Link to="/feedback" className="text-blue-500 hover:underline">feedback and suggestions</Link></li>
+                <li>• Providing <Link to="/feedback" className="text-blue-500 underline">feedback and suggestions</Link></li>
                 <li>• Reporting bugs you encounter</li>
                 <li>• Contributing to our community</li>
               </ul>
@@ -213,12 +213,12 @@ const ChipIn = () => {
           href="https://www.linkedin.com/company/deepsesh/" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="text-muted-foreground hover:text-blue-600 transition-colors"
+          className="text-muted-foreground transition-colors"
           aria-label="DeepSesh LinkedIn Profile"
         >
           <Linkedin className="h-5 w-5" />
         </a>
-        <Link to="/credits" className="text-sm text-muted-foreground hover:underline">
+        <Link to="/credits" className="text-sm text-muted-foreground underline">
           Credits
         </Link>
         {/* Empty div for balance */}

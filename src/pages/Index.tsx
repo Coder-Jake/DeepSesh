@@ -14,7 +14,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskSection"; // Corrected import path
+import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
@@ -47,7 +47,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
 import { calculateDistance } from '@/utils/location-utils';
-import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data'; // NEW: Import local mock data
+import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data';
 
 interface ExtendSuggestion {
   id: string;
@@ -98,13 +98,10 @@ interface SupabaseSessionData {
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
-  join_code: string | null; // NEW: Add join_code
+  join_code: string | null;
   active_asks: ActiveAskItem[];
   organization: string | null;
 }
-
-// REMOVED: fetchMockProfiles function
-// REMOVED: fetchMockSessions function
 
 // NEW: Helper function to filter local mock sessions
 const filterLocalMockSessions = (
@@ -217,7 +214,7 @@ const fetchSupabaseSessions = async (
       active_asks: (session.active_asks || []) as ActiveAskItem[],
       visibility: session.visibility,
       user_id: session.user_id,
-      join_code: session.join_code, // NEW: Map join_code from active_sessions
+      join_code: session.join_code,
     };
   }).filter(session => {
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -364,7 +361,7 @@ const Index = () => {
   const { user, session } = useAuth();
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
-  const isLongPressDetected = useRef(false); // Renamed to avoid confusion with the function parameter
+  const isLongPressDetected = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   const [isHoveringTimer, setIsHoveringTimer] = useState(false);
 
@@ -427,9 +424,6 @@ const Index = () => {
       });
     }
   }, [setSessionVisibility, sessionVisibility, areToastsEnabled, profile?.organization]);
-
-  // REMOVED: useQuery for mockProfiles
-  // REMOVED: useQuery for mockSessions
 
   // NEW: Use local MOCK_PROFILES directly
   const mockProfiles = MOCK_PROFILES;
@@ -501,7 +495,7 @@ const Index = () => {
     const sessions: DemoSession[] = [];
 
     filteredLocalMockSessions.forEach(session => {
-      const hostProfile = MOCK_PROFILES.find(mp => mp.id === session.user_id); // Use MOCK_PROFILES directly
+      const hostProfile = MOCK_PROFILES.find(mp => mp.id === session.user_id);
       if (hostProfile?.organization && organizationNames.includes(hostProfile.organization)) {
         sessions.push(session);
       }
@@ -602,7 +596,7 @@ const Index = () => {
     longPressRef.current = setTimeout(() => {
       isLongPressDetected.current = true;
       callback();
-    }, 500); // 500ms for long press
+    }, 500);
   };
 
   const handlePressEnd = () => {
@@ -958,7 +952,7 @@ const Index = () => {
           active_asks: (joinedSession.active_asks || []) as ActiveAskItem[],
           visibility: joinedSession.visibility,
           user_id: joinedSession.user_id,
-          join_code: joinedSession.join_code, // NEW: Map join_code from Supabase response
+          join_code: joinedSession.join_code,
         };
         await handleJoinSession(demoSession);
       } else {
@@ -1239,7 +1233,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    }); // Added missing parenthesis here
+    });
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -1314,7 +1308,7 @@ const Index = () => {
 
     if (hasChangesToSave) {
       console.log("handleActivateDiscovery: Updating profile with changes:", updates);
-      await updateProfile(updates, "Profile updated for discovery.");
+      await updateProfile(updates, "Display name and focus preference updated for discovery.");
     }
 
     console.log("handleActivateDiscovery: Before setIsDiscoveryActivated, isDiscoveryActivated:", isDiscoveryActivated);
@@ -1418,12 +1412,12 @@ const Index = () => {
       isLongPressDetected.current = false;
       return;
     }
-    stopTimer(true, false); // With confirmation
+    stopTimer(true, false);
   };
 
   const handleLongPressStop = () => {
-    stopTimer(false, true); // Without confirmation
-    isLongPressDetected.current = true; // Mark as long press handled
+    stopTimer(false, true);
+    isLongPressDetected.current = true;
   };
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
@@ -1624,7 +1618,7 @@ const Index = () => {
                       {isActiveTimer ? (
                         <h2
                           className={cn(
-                            "text-xl font-bold text-foreground" // Reverted to default text-foreground
+                            "text-xl font-bold text-foreground"
                           )}
                           onMouseDown={() => handlePressStart(handleTitleLongPress)}
                           onMouseUp={handlePressEnd}
@@ -1797,14 +1791,14 @@ const Index = () => {
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
                         isRunning && "opacity-50",
-                        "hover:opacity-100",
+                        "opacity-100",
                         isPaused && "text-error-foreground"
                       )}>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={handleStopButtonAction} // Use the new handler
-                          onMouseDown={() => handlePressStart(handleLongPressStop)} // Start long press detection
+                          onClick={handleStopButtonAction}
+                          onMouseDown={() => handlePressStart(handleLongPressStop)}
                           onMouseUp={handlePressEnd}
                           onMouseLeave={handlePressEnd}
                           onTouchStart={() => handlePressStart(handleLongPressStop)}
@@ -2230,7 +2224,7 @@ const Index = () => {
                     "w-full flex items-center gap-2",
                     geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success",
                     geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error",
-                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground" // NEW: Added specific styles for 'prompt'
+                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground"
                   )}
                   onClick={getLocation}
                 >
