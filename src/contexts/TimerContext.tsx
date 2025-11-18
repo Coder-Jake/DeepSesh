@@ -85,22 +85,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     return 'prompt';
   });
 
-  const [sessionVisibility, setSessionVisibility] = useState<'public' | 'private' | 'organisation'>(() => { // MODIFIED: Changed from isGlobalPrivate
+  const [sessionVisibility, setSessionVisibility] = useState<'public' | 'private' | 'organisation'>(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     if (storedData) {
       const data = JSON.parse(storedData);
-      const loadedIsDiscoveryActivated = data.isDiscoveryActivated ?? false;
-      const loadedGeolocationPermissionStatus = data.geolocationPermissionStatus ?? 'prompt';
-      const storedSessionVisibility = data.sessionVisibility ?? 'private'; // MODIFIED: Default to 'private'
-
-      if (loadedIsDiscoveryActivated && loadedGeolocationPermissionStatus === 'denied') {
-        return 'private'; // Force private if discovery active but location denied
-      } else if (!loadedIsDiscoveryActivated) {
-        return 'private'; // Force private if discovery is not activated
-      }
-      return storedSessionVisibility; // Otherwise, use the stored value
+      return data.sessionVisibility ?? 'private';
     }
-    return 'private'; // Default to private if no stored data
+    return 'private';
   });
   // End synchronous initialization
 
@@ -626,7 +617,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setLastActivityTime(null);
     setCurrentPhaseDurationSeconds(0); // NEW: Reset current phase duration
     setRemainingTimeAtPause(0); // NEW: Reset remaining time at pause
-    // setSessionVisibility('private'); // MODIFIED: Reset to private // REMOVED THIS LINE
+    // REMOVED: setIsDiscoveryActivated(false); // REMOVED THIS LINE
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
   ]);
