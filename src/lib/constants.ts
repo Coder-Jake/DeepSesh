@@ -18,5 +18,15 @@ export const animals = [
   "shark", "whale", "dolphin", "octopus", "squid", "crab", "lobster", "jellyfish", "starfish",
   "snake", "lizard", "frog", "toad", "turtle", "snail", "spider", "bee", "ant", "butterfly",
   "elephant", "giraffe", "monkey", "gorilla", "chimpanzee", "hippopotamus", "rhinoceros", "camel",
-  "horse", "cow", "pig", "sheep", "goat", "chicken", "rabbit", "mouse", "rat", "squirrel", "badger"
+  "horse", "cow", "pig", "sheep", "goat", "chicken", "rabbit", "mouse", "rat", "squirrel", "badger",
+  "bison", "buffalo", "moose", "reindeer", "kangaroo", "wallaby", "wombat", "possum", "otter",
+  "weasel", "ferret", "mink", "hedgehog", "chipmunk", "beaver", "porcupine", "armadillo", "sloth",
+  "anteater", "hyena", "lynx", "bobcat", "caracal", "leopard", "cheetah", "meerkat", "gazelle",
+  "antelope", "mule", "alpaca", "llama", "bat", "pigeon", "dove", "turkey", "goose", "falcon",
+  "heron", "crane", "stork", "pelican", "seagull", "finch", "hummingbird", "woodpecker", "kingfisher",
+  "crow", "raven", "magpie", "peacock", "pheasant", "quail", "emu", "ostrich", "salmon", "trout",
+  "carp", "goldfish", "tuna", "mackerel", "sardine", "anchovy", "eel", "stingray", "swordfish",
+  "barracuda", "crocodile", "alligator", "gecko", "iguana", "chameleon", "dragon", "newt",
+  "salamander", "wasp", "beetle", "moth", "grasshopper", "cricket", "dragonfly", "firefly",
+  "centipede", "millipede", "scorpion", "earthworm", "clam", "mussel", "oyster"
 ];
