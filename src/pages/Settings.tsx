@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { NotificationSettings } from "@/types/timer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useAuth } from "@/contexts/Auth/AuthContext";
+import { useAuth } from "@/contexts/AuthContext"; // Corrected import path
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from 'sonner';
 import { useTheme } from "@/contexts/ThemeContext";
