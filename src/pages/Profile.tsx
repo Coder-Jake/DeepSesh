@@ -15,7 +15,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/AuthContext"; // Corrected import path
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Linkedin, Clipboard, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, MessageSquare, Lightbulb } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -35,8 +35,8 @@ type OriginalValuesType = {
   needHelpWith: string;
   focusPreference: number;
   organization: string;
-  linkedinUrl: string; // raw username part
-  joinCode: string; // RENAMED: hostCode to joinCode
+  linkedinUrl: string;
+  joinCode: string;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
   intentionVisibility: ("public" | "friends" | "organisation" | "private")[];
   linkedinVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -50,24 +50,8 @@ const Profile = () => {
   const {
     profile, loading, updateProfile, getPublicProfile, blockedUsers, unblockUser, blockUser,
     friendStatuses,
-    // Context setters are now only called on save
-    setLocalFirstName: setContextFirstName,
-    setBio: setContextBio,
-    setIntention: setContextIntention,
-    setCanHelpWith: setContextCanHelpWith,
-    setNeedHelpWith: setContextNeedHelpWith,
-    setFocusPreference: setContextFocusPreference,
-    setOrganization: setContextOrganization,
-    setLinkedinUrl: setContextLinkedinUrl,
-    setJoinCode: setContextJoinCode, // RENAMED: setHostCode to setJoinCode
-    setPronouns: setContextPronouns,
-    setBioVisibility: setContextBioVisibility,
-    setIntentionVisibility: setContextIntentionVisibility,
-    setLinkedinVisibility: setContextLinkedinVisibility,
-    setCanHelpWithVisibility: setContextCanHelpWithVisibility,
-    setNeedHelpWithVisibility: setContextNeedHelpWithVisibility,
+    joinCode: contextJoinCode,
     profileVisibility: contextProfileVisibility,
-    setProfileVisibility: setContextProfileVisibility,
   } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -75,15 +59,15 @@ const Profile = () => {
   const { toggleProfilePopUp } = useProfilePopUp();
 
   // Local states for editable fields
-  const [firstNameInput, setFirstNameInput] = useState("You");
+  const [firstNameInput, setFirstNameInput] = useState("");
   const [bioInput, setBioInput] = useState<string | null>(null);
   const [intentionInput, setIntentionInput] = useState<string | null>(null);
   const [canHelpWithInput, setCanHelpWithInput] = useState<string | null>(null);
   const [needHelpWithInput, setNeedHelpWithInput] = useState<string | null>(null);
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
   const [organizationInput, setOrganizationInput] = useState<string | null>(null);
-  const [linkedinUrlInput, setLinkedinUrlInput] = useState<string | null>(null); // Stores username part
-  const [joinCodeInput, setJoinCodeInput] = useState<string | null>(null); // RENAMED: hostCodeInput to joinCodeInput
+  const [linkedinUrlInput, setLinkedinUrlInput] = useState<string | null>(null);
+  const [joinCodeInput, setJoinCodeInput] = useState<string | null>(null);
   const [pronounsInput, setPronounsInput] = useState<string | null>(null);
 
   // Local states for visibility settings
@@ -96,8 +80,8 @@ const Profile = () => {
 
   const [currentPronounIndex, setCurrentPronounIndex] = useState(0);
 
-  const [isEditingJoinCode, setIsEditingJoinCode] = useState(false); // RENAMED: isEditingHostCode to isEditingJoinCode
-  const joinCodeInputRef = useRef<HTMLInputElement>(null); // RENAMED: hostCodeInputRef to joinCodeInputRef
+  const [isEditingJoinCode, setIsEditingJoinCode] = useState(false);
+  const joinCodeInputRef = useRef<HTMLInputElement>(null);
   const [isCopied, setIsCopied] = useState(false);
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -168,7 +152,7 @@ const Profile = () => {
     currentVisibility: ("public" | "friends" | "organisation" | "private")[],
     visibilitySetter: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>,
     fieldName: keyof ProfileDataJsonb | 'profileVisibility',
-    clickTooltipSetter: React.Dispatch<React.SetStateAction<boolean>> // NEW: Add clickTooltipSetter
+    clickTooltipSetter: React.Dispatch<React.SetStateAction<boolean>>
   ) => {
     const currentIndex = getIndexFromVisibility(currentVisibility);
     const nextIndex = (currentIndex + 1) % VISIBILITY_OPTIONS_MAP.length;
@@ -176,7 +160,6 @@ const Profile = () => {
 
     visibilitySetter(newVisibility);
 
-    // NEW: Show momentary tooltip (click-triggered)
     clickTooltipSetter(true);
     const key = fieldName.toString();
     if (clickTooltipTimeoutRefs.current[key]) {
@@ -185,7 +168,7 @@ const Profile = () => {
     clickTooltipTimeoutRefs.current[key] = setTimeout(() => {
       clickTooltipSetter(false);
       clickTooltipTimeoutRefs.current[key] = null;
-    }, 1000); // Display for 1 second
+    }, 1000);
 
     if (areToastsEnabled) {
       const fieldDisplayName = fieldName === 'profileVisibility' ? 'Profile Visibility' : getDisplayFieldName(fieldName as keyof ProfileDataJsonb);
@@ -196,7 +179,6 @@ const Profile = () => {
     }
   }, [areToastsEnabled, getDisplayFieldName, getDisplayVisibilityStatus]);
 
-  // NEW: Generic handler for icon hover tooltips
   const handleIconHoverTooltip = useCallback((
     isOpen: boolean,
     hoverTooltipSetter: React.Dispatch<React.SetStateAction<boolean>>,
@@ -210,7 +192,7 @@ const Profile = () => {
       hoverTimeoutRef.current = setTimeout(() => {
         hoverTooltipSetter(false);
         hoverTimeoutRef.current = null;
-      }, 1000); // 1 second duration
+      }, 1000);
     } else {
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
@@ -272,7 +254,6 @@ const Profile = () => {
   }, [longPressedFriendId, handleNameClick]);
 
   const handleUnfriend = useCallback((friendId: string) => {
-    // TODO: Implement actual unfriend logic here
     if (areToastsEnabled) {
       toast.info("Unfriend Action", {
         description: `Unfriending user with ID: ${friendId}`,
@@ -296,13 +277,14 @@ const Profile = () => {
 
   // Effect to initialize local states and originalValues when profile is loaded or changes
   useEffect(() => {
-    // This effect should run whenever the 'profile' object from context changes
-    // and 'loading' is false, indicating the profile data is stable.
     if (!loading && profile) {
       const currentLinkedinUsername = profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "";
 
+      // Determine the effective display name for comparison
+      const effectiveFirstName = profile.first_name || profile.join_code || "Coworker";
+
       setOriginalValues({
-        firstName: profile.first_name || "You",
+        firstName: effectiveFirstName, // Use effective display name for original value
         bio: profile.profile_data?.bio?.value || "",
         intention: profile.profile_data?.intention?.value || "",
         canHelpWith: profile.profile_data?.can_help_with?.value || "",
@@ -320,10 +302,8 @@ const Profile = () => {
         profileVisibility: profile.visibility || ['public'],
       });
 
-      // Also, when originalValues are updated from the source of truth,
-      // the local input states should also be reset to match,
-      // and hasChanges should be set to false.
-      setFirstNameInput(profile.first_name || "You");
+      // Set local input states to match the effective display name
+      setFirstNameInput(effectiveFirstName);
       setBioInput(profile.profile_data?.bio?.value || null);
       setIntentionInput(profile.profile_data?.intention?.value || null);
       setCanHelpWithInput(profile.profile_data?.can_help_with?.value || null);
@@ -341,9 +321,9 @@ const Profile = () => {
       setNeedHelpWithVisibilityInput(profile.profile_data?.need_help_with?.visibility || ['public']);
       setProfileVisibilityInput(profile.visibility || ['public']);
 
-      setHasChanges(false); // No changes immediately after loading/saving
+      setHasChanges(false);
     }
-  }, [loading, profile]); // Depend on loading and profile
+  }, [loading, profile]);
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -353,16 +333,15 @@ const Profile = () => {
   }, [isEditingFirstName]);
 
   useEffect(() => {
-    if (isEditingJoinCode && joinCodeInputRef.current) { // RENAMED
+    if (isEditingJoinCode && joinCodeInputRef.current) {
       joinCodeInputRef.current.focus();
       joinCodeInputRef.current.select();
     }
-  }, [isEditingJoinCode]); // RENAMED
+  }, [isEditingJoinCode]);
 
-  // This useCallback now correctly compares current local states with the initial originalValues snapshot
   const checkForChanges = useCallback(() => {
-    if (!originalValues) {
-      setHasChanges(false); // No original values to compare against yet
+    if (!originalValues || !profile) {
+      setHasChanges(false);
       return;
     }
 
@@ -370,7 +349,11 @@ const Profile = () => {
                                     ? linkedinUrlInput.substring("https://www.linkedin.com/in/".length)
                                     : linkedinUrlInput) : "";
 
-    const changed = firstNameInput !== originalValues.firstName ||
+    // Determine the current effective display name for comparison
+    const currentEffectiveFirstName = firstNameInput.trim();
+    const originalEffectiveFirstName = originalValues.firstName;
+
+    const changed = currentEffectiveFirstName !== originalEffectiveFirstName ||
                    (bioInput || "") !== originalValues.bio ||
                    (intentionInput || "") !== originalValues.intention ||
                    (canHelpWithInput || "") !== originalValues.canHelpWith ||
@@ -378,7 +361,7 @@ const Profile = () => {
                    focusPreferenceInput !== originalValues.focusPreference ||
                    (organizationInput || "") !== originalValues.organization ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
-                   (joinCodeInput || "") !== originalValues.joinCode || // RENAMED
+                   (joinCodeInput || "") !== originalValues.joinCode ||
                    JSON.stringify(bioVisibilityInput) !== JSON.stringify(originalValues.bioVisibility) ||
                    JSON.stringify(intentionVisibilityInput) !== JSON.stringify(originalValues.intentionVisibility) ||
                    JSON.stringify(linkedinVisibilityInput) !== JSON.stringify(originalValues.linkedinVisibility) ||
@@ -388,30 +371,27 @@ const Profile = () => {
                    JSON.stringify(profileVisibilityInput) !== JSON.stringify(originalValues.profileVisibility);
     setHasChanges(changed);
   }, [
-    originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organizationInput, linkedinUrlInput, joinCodeInput, // RENAMED
-    bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput, profileVisibilityInput
+    originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organizationInput, linkedinUrlInput, joinCodeInput,
+    bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput, profileVisibilityInput, profile
   ]);
 
-  // This useEffect will now correctly trigger checkForChanges whenever any editable state changes
   useEffect(() => {
     checkForChanges();
-  }, [checkForChanges]); // Dependency on checkForChanges ensures it runs when its internal dependencies changes
+  }, [checkForChanges]);
 
-  const handleJoinCodeClick = () => { // RENAMED
-    setIsEditingJoinCode(true); // RENAMED
+  const handleJoinCodeClick = () => {
+    setIsEditingJoinCode(true);
   };
 
-  const handleJoinCodeInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => { // RENAMED
+  const handleJoinCodeInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      setIsEditingJoinCode(false); // RENAMED
+      setIsEditingJoinCode(false);
       e.currentTarget.blur();
-      // No direct save here, will be handled by global save
     }
   };
 
-  const handleJoinCodeInputBlur = async () => { // RENAMED
-    setIsEditingJoinCode(false); // RENAMED
-    // No direct save here, will be handled by global save
+  const handleJoinCodeInputBlur = async () => {
+    setIsEditingJoinCode(false);
   };
 
   const handleFirstNameClick = () => {
@@ -432,18 +412,23 @@ const Profile = () => {
   const handleSaveOrganization = async () => {
     const trimmedOrganization = organizationInput?.trim() || "";
     await updateProfile({ organization: trimmedOrganization === "" ? null : trimmedOrganization }, "Organization Saved!");
-    setContextOrganization(trimmedOrganization === "" ? null : trimmedOrganization); // Update context
     setIsOrganizationDialogOpen(false);
   };
 
   const handleSave = async () => {
-    const nameToSave = firstNameInput.trim() === "" ? "You" : firstNameInput.trim();
+    if (!profile) return;
 
-    const trimmedJoinCode = joinCodeInput?.trim() || ""; // RENAMED
+    const nameInput = firstNameInput.trim();
+    const defaultDisplayName = profile.join_code || "Coworker";
+    
+    // If the user's input matches the current default display name, save null to first_name
+    const nameToSave = (nameInput === defaultDisplayName) ? null : nameInput;
+
+    const trimmedJoinCode = joinCodeInput?.trim() || "";
     if (trimmedJoinCode.length < 4 || trimmedJoinCode.length > 20) {
       if (areToastsEnabled) {
-        toast.error("Invalid Join Code", { // RENAMED
-          description: "Join code must be between 4 and 20 characters. Please correct it before saving.", // RENAMED
+        toast.error("Invalid Join Code", {
+          description: "Join code must be between 4 and 20 characters. Please correct it before saving.",
         });
       }
       return;
@@ -453,43 +438,38 @@ const Profile = () => {
       first_name: nameToSave,
       focus_preference: focusPreferenceInput,
       organization: organizationInput?.trim() === "" ? null : organizationInput?.trim(),
-      join_code: trimmedJoinCode, // RENAMED
+      join_code: trimmedJoinCode,
       visibility: profileVisibilityInput,
-      // Update profile_data fields
       bio: { value: bioInput?.trim() === "" ? null : bioInput, visibility: bioVisibilityInput },
       intention: { value: intentionInput?.trim() === "" ? null : intentionInput, visibility: intentionVisibilityInput },
       linkedin_url: { value: (linkedinUrlInput === null || linkedinUrlInput.trim() === "") ? null : `https://www.linkedin.com/in/${linkedinUrlInput.trim()}`, visibility: linkedinVisibilityInput },
       can_help_with: { value: canHelpWithInput?.trim() === "" ? null : canHelpWithInput, visibility: canHelpWithVisibilityInput },
       need_help_with: { value: needHelpWithInput?.trim() === "" ? null : needHelpWithInput, visibility: needHelpWithVisibilityInput },
-      pronouns: { value: pronounsInput?.trim() === "" ? null : pronounsInput, visibility: ['public'] }, // Assuming pronouns are always public
+      pronouns: { value: pronounsInput?.trim() === "" ? null : pronounsInput, visibility: ['public'] },
     };
 
-    await updateProfile(dataToUpdate); // This updates the profile in context and local storage
-
-    // The useEffect that depends on 'profile' will now handle updating originalValues and local states.
-    // No need to manually set originalValues here.
-    // setHasChanges(false); // This will be set by the useEffect
+    await updateProfile(dataToUpdate);
   };
 
-  const handleCopyJoinCode = useCallback(async () => { // RENAMED
+  const handleCopyJoinCode = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(joinCodeInput || ""); // RENAMED
+      await navigator.clipboard.writeText(joinCodeInput || "");
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 3000);
       if (areToastsEnabled) {
         toast.success("Copied to clipboard!", {
-          description: "Your join code has been copied.", // RENAMED
+          description: "Your join code has been copied.",
         });
       }
     } catch (err) {
-      console.error('Failed to copy join code: ', err); // RENAMED
+      console.error('Failed to copy join code: ', err);
       if (areToastsEnabled) {
         toast.error("Copy Failed", {
-          description: "Could not copy join code. Please try again.", // RENAMED
+          description: "Could not copy join code. Please try again.",
         });
     }
     }
-  }, [joinCodeInput, areToastsEnabled]); // RENAMED
+  }, [joinCodeInput, areToastsEnabled]);
 
   const handleCancel = useCallback(() => {
     if (originalValues) {
@@ -501,7 +481,7 @@ const Profile = () => {
       setFocusPreferenceInput(originalValues.focusPreference);
       setOrganizationInput(originalValues.organization === "" ? null : originalValues.organization);
       setLinkedinUrlInput(originalValues.linkedinUrl === "" ? null : originalValues.linkedinUrl);
-      setJoinCodeInput(originalValues.joinCode === "" ? null : originalValues.joinCode); // RENAMED
+      setJoinCodeInput(originalValues.joinCode === "" ? null : originalValues.joinCode);
       setPronounsInput(originalValues.pronouns);
       setCurrentPronounIndex(PRONOUN_OPTIONS.indexOf(originalValues.pronouns || ""));
 
@@ -512,7 +492,7 @@ const Profile = () => {
       setNeedHelpWithVisibilityInput(originalValues.needHelpWithVisibility);
       setProfileVisibilityInput(originalValues.profileVisibility);
     }
-    setHasChanges(false); // Explicitly set to false after cancelling
+    setHasChanges(false);
   }, [originalValues]);
 
   const friends = Object.entries(friendStatuses)
@@ -527,7 +507,6 @@ const Profile = () => {
     unblockUser(userName);
   };
 
-  // NEW: Slider drag handlers
   const handleSliderDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     if (!sliderContainerRef.current) return;
 
@@ -542,10 +521,10 @@ const Profile = () => {
   }, [setFocusPreferenceInput]);
 
   const handlePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0) return; // Only respond to left-click
+    if (event.button !== 0) return;
     setIsDraggingSlider(true);
-    handleSliderDrag(event); // Set initial value on click
-    event.currentTarget.setPointerCapture(event.pointerId); // Capture pointer for continuous drag
+    handleSliderDrag(event);
+    event.currentTarget.setPointerCapture(event.pointerId);
   }, [handleSliderDrag]);
 
   const handlePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
@@ -556,28 +535,23 @@ const Profile = () => {
 
   const handlePointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     setIsDraggingSlider(false);
-    event.currentTarget.releasePointerCapture(event.pointerId); // Release pointer capture
+    event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
-  // NEW: Effect for global 'Enter' keydown to save
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
       if (hasChanges && !loading) {
         const activeElement = document.activeElement;
         const isTypingInInputOrTextarea = activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement;
 
-        // Condition for Ctrl/Cmd + Enter
         if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-          event.preventDefault(); // Prevent default Enter behavior (e.g., new line in textarea)
+          event.preventDefault();
           handleSave();
         }
-        // Existing condition for Enter without modifier keys (only for single-line inputs or when no input is focused)
         else if (event.key === 'Enter' && !event.metaKey && !event.ctrlKey) {
           if (isTypingInInputOrTextarea && activeElement instanceof HTMLTextAreaElement) {
-            // If in a textarea, allow new line, don't save
             return;
           }
-          // For single-line inputs or when no input is focused, save
           event.preventDefault();
           handleSave();
         }
@@ -589,16 +563,15 @@ const Profile = () => {
     return () => {
       document.removeEventListener('keydown', handleGlobalKeyDown);
     };
-  }, [hasChanges, loading, handleSave]); // Dependencies for the effect
+  }, [hasChanges, loading, handleSave]);
 
-  // Helper to get the correct icon component based on visibility index
   const getPrivacyIcon = (index: number) => {
     switch (index) {
-      case 0: return Globe; // Public
-      case 1: return UserStar; // Friends
-      case 2: return Building2; // Organisation
-      case 3: return HeartHandshake; // Friends & Organisation
-      case 4: return Lock; // Private
+      case 0: return Globe;
+      case 1: return UserStar;
+      case 2: return Building2;
+      case 3: return HeartHandshake;
+      case 4: return Lock;
       default: return Globe;
     }
   };
@@ -615,11 +588,10 @@ const Profile = () => {
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-[100px] lg:pt-20 lg:px-6 lg:pb-[100px]">
       <div className="mb-6 flex justify-between items-center relative">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-        {/* Top-right Save Profile button */}
         <div className="absolute right-0">
           <Button
             onClick={handleSave}
-            disabled={loading || !hasChanges} /* Disabled when no changes */
+            disabled={loading || !hasChanges}
             className="shadow-lg"
           >
             {loading ? "Saving..." : "Save Profile"}
@@ -640,7 +612,7 @@ const Profile = () => {
                     onChange={(e) => { e.stopPropagation(); setFirstNameInput(e.target.value); }}
                     onKeyDown={handleFirstNameInputKeyDown}
                     onBlur={handleFirstNameInputBlur}
-                    placeholder="your name"
+                    placeholder={profile?.join_code || "Coworker"}
                     className="text-lg font-semibold h-auto py-1 px-2 italic"
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -649,7 +621,7 @@ const Profile = () => {
                     className={cn("select-none", pronounsInput ? "" : "flex-grow")}
                     onClick={(e) => { e.stopPropagation(); handleFirstNameClick(); }}
                   >
-                    {firstNameInput || "You"}
+                    {firstNameInput}
                   </span>
                 )}
                 {pronounsInput && (
@@ -844,7 +816,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Join Code section */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold mb-2">
                     <Tooltip>
@@ -873,7 +844,6 @@ const Profile = () => {
                     <span
                       className={cn(
                         "text-lg font-semibold flex-grow select-none",
-                        // Removed: "text-foreground cursor-pointer hover:text-primary"
                       )}
                       onClick={handleJoinCodeClick}
                     >
@@ -885,7 +855,7 @@ const Profile = () => {
                       variant="ghost"
                       size="icon"
                       onClick={handleCopyJoinCode}
-                      className="text-muted-foreground hover:text-foreground hover:bg-accent-hover" // NEW: Added hover effect
+                      className="text-muted-foreground hover:text-foreground hover:bg-accent-hover"
                       aria-label="Copy join code"
                     >
                       <Clipboard size={16} className={cn(isCopied ? "text-green-500" : "text-muted-foreground")} />
@@ -905,7 +875,6 @@ const Profile = () => {
                 <p className="text-sm text-muted-foreground mb-6">
                   How would you prefer to balance focus vs socialising?
                 </p>
-                {/* NEW: Wrapper div for expanded slider interaction */}
                 <div
                   ref={sliderContainerRef}
                   onPointerDown={handlePointerDown}
@@ -1016,7 +985,6 @@ const Profile = () => {
           </Card>
         </div>
 
-        {/* Floating Save Profile button */}
         {hasChanges && (
           <div className="fixed bottom-4 right-4 z-50 transition-opacity duration-300 opacity-100 pointer-events-auto">
             <Button
@@ -1029,12 +997,11 @@ const Profile = () => {
           </div>
         )}
 
-        {/* Floating Cancel button */}
         {hasChanges && (
           <div className="fixed bottom-4 left-4 z-50">
             <Button
               onClick={handleCancel}
-              className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel-hover" // NEW: Added hover effect
+              className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel-hover"
             >
               Cancel
             </Button>
