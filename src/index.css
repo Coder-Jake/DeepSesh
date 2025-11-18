@@ -88,7 +88,6 @@
     --error-bg-light: 0 80% 90%; /* Light red */
     --error-fg-light: 0 80% 40%; /* Darker red text */
     --error-border-light: 0 80% 80%; /* Border color */
-    /* --error-hover-light: 0 80% 100%; */
 
     /* NEW: Text colors for session visibility (light mode) */
     --public-text: 200 90% 30%; /* Darker blue */
