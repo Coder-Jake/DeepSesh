@@ -2231,7 +2231,7 @@ const Index = () => {
                   onClick={getLocation}
                 >
                   <MapPin size={16} />
-                  {geolocationPermissionStatus === 'granted' && "Location Enabled"}
+                  {geolocationPermissionStatus === 'granted' && "Enabled"}
                   {geolocationPermissionStatus === 'denied' && "Enable Location"}
                   {geolocationPermissionStatus === 'prompt' && "Enable Location"}
                 </Button>
