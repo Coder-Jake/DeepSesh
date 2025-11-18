@@ -70,10 +70,6 @@
     --cancel: 0 100% 95%; /* Light red */
     --cancel-foreground: 0 80% 30%; /* Darker red for text */
 
-    /* Opacity for outline/ghost button hover effects */
-    /* --outline-hover-opacity-light: 0.05; */
-    /* --ghost-hover-opacity-light: 0.05; */
-
     /* Success colors */
     --success-bg: var(--success-bg-light);
     --success-fg: var(--success-fg-light);
