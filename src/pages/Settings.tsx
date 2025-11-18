@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { NotificationSettings } from "@/types/timer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from 'sonner';
 import { useTheme } from "@/contexts/ThemeContext";
@@ -576,25 +576,18 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Label htmlFor="timer-transition-toggle" className="cursor-help">Timer Transitions</Label>
+                      <Label htmlFor="manual-transition-toggle" className="cursor-help">Timer Transitions</Label>
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
                       <p>Require confirmation to move between Focus/Break.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div >
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Switch
-                        id="lock"
-                        checked={lock}
-                        onCheckedChange={setLock}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none">
-                        <p>Requires App development</p>
-                    </TooltipContent>
-                </Tooltip>
+                <Switch
+                  id="manual-transition-toggle"
+                  checked={manualTransition}
+                  onCheckedChange={setManualTransition}
+                />
               </div>
 
               <div className="flex items-center justify-between">
