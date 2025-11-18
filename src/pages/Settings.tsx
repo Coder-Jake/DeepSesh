@@ -88,6 +88,7 @@ const Settings = () => {
     showDemoSessions,
     setShowDemoSessions,
     limitDiscoveryRadius,
+    setMaxDistance,
     setLimitDiscoveryRadius,
   } = useTimer();
 
@@ -309,7 +310,10 @@ const Settings = () => {
             <Button
               variant="outline"
               size="icon"
-              className={`w-10 h-10 rounded-full transition-colors ${value.push ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'}`} {/* NEW: Added hover effects */}
+              className={cn(
+                "w-10 h-10 rounded-full transition-colors",
+                value.push ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'
+              )}
               onClick={() => updateNotificationSetting(type, 'push', !value.push)}
             >
               <MessageSquareWarning size={20} />
@@ -328,7 +332,10 @@ const Settings = () => {
           <Button
             variant="outline"
             size="icon"
-            className={`w-10 h-10 rounded-full transition-colors ${value.vibrate ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'}`} {/* NEW: Added hover effects */}
+            className={cn(
+              "w-10 h-10 rounded-full transition-colors",
+              value.vibrate ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'
+            )}
             onClick={() => updateNotificationSetting(type, 'vibrate', !value.vibrate)}
           >
             <Vibrate size={20} /> 
@@ -344,7 +351,10 @@ const Settings = () => {
           <Button
             variant="outline"
             size="icon"
-            className={`w-10 h-10 rounded-full transition-colors ${value.sound ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'}`} {/* NEW: Added hover effects */}
+            className={cn(
+              "w-10 h-10 rounded-full transition-colors",
+              value.sound ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'
+            )}
             onClick={() => updateNotificationSetting(type, 'sound', !value.sound)}
           >
             <Volume2 size={20} />
