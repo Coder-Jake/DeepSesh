@@ -626,9 +626,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setLastActivityTime(null);
     setCurrentPhaseDurationSeconds(0); // NEW: Reset current phase duration
     setRemainingTimeAtPause(0); // NEW: Reset remaining time at pause
-    setSessionVisibility('private'); // MODIFIED: Reset to private
+    // setSessionVisibility('private'); // MODIFIED: Reset to private // REMOVED THIS LINE
   }, [
-    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setSessionVisibility
+    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
   ]);
 
   const resetSchedule = useCallback(async () => {
