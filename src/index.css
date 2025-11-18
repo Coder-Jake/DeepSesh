@@ -79,7 +79,6 @@
     --error-bg: var(--error-bg-light);
     --error-fg: var(--error-fg-light);
     --error-border: var(--error-border-light);
-    /* --error-hover: var(--error-hover-light); */
 
     /* Light Mode specific definitions */
     --success-bg-light: 120 60% 90%; /* Light green */
