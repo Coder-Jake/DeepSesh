@@ -74,7 +74,6 @@
     --success-bg: var(--success-bg-light);
     --success-fg: var(--success-fg-light);
     --success-border: var(--success-border-light);
-    /* --success-hover: var(--success-hover-light); */
 
     /* Error colors */
     --error-bg: var(--error-bg-light);
