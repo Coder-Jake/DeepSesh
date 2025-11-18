@@ -220,7 +220,7 @@ const Timeline: React.FC<TimelineProps> = ({
                 isCurrent && (item.isCustom ? "bg-blue-100 text-blue-800 shadow-md" :
                               item.type === 'focus' ? "bg-public-bg/20 text-public-bg-foreground shadow-md" :
                               "bg-private-bg/20 text-private-bg-foreground shadow-md"),
-                !isCurrent && !isCompleted && "bg-background hover:bg-muted/50"
+                !isCurrent && !isCompleted && "bg-background"
               )}
               style={{ backgroundColor: itemBackgroundColor }} // Apply custom background color
               data-name={`Timeline Item ${index + 1}: ${item.title}`}

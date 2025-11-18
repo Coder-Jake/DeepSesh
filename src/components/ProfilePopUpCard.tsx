@@ -258,9 +258,9 @@ const ProfilePopUpCard: React.FC = () => {
               size="icon"
               className={cn(
                 "ml-auto h-8 w-8",
-                currentFriendStatus === 'none' && "text-foreground hover:text-primary",
+                currentFriendStatus === 'none' && "text-foreground",
                 currentFriendStatus === 'pending' && "text-gray-500 cursor-default",
-                currentFriendStatus === 'friends' && "text-green-500 hover:text-green-600"
+                currentFriendStatus === 'friends' && "text-green-500"
               )}
               onClick={() => {
                 if (areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
@@ -374,7 +374,7 @@ const ProfilePopUpCard: React.FC = () => {
               href={targetLinkedinUrl.value}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline text-sm mt-1 block"
+              className="text-blue-500 text-sm mt-1 block"
             >
               {targetLinkedinUrl.value.replace('https://www.linkedin.com/in/', '')}
             </a>
@@ -398,7 +398,7 @@ const ProfilePopUpCard: React.FC = () => {
         variant="ghost"
         size="icon"
         onClick={closeProfilePopUp}
-        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-foreground"
+        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground"
         aria-label="Close profile pop-up"
       >
         <X className="h-4 w-4" />

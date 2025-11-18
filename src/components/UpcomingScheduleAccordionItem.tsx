@@ -77,7 +77,7 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
 
   return (
     <AccordionItem value={template.id} className="border rounded-lg px-4">
-      <AccordionTrigger className="flex items-center justify-between py-3 text-base font-medium hover:no-underline">
+      <AccordionTrigger className="flex items-center justify-between py-3 text-base font-medium no-underline">
         <div className="flex items-center gap-2">
           <ListTodo className="h-4 w-4 text-primary" />
           <span className="font-semibold">{template.title}</span>

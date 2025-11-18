@@ -53,7 +53,7 @@ const Header = () => {
         <div className="relative flex items-center">
           <Link 
             to="/" 
-            className="hover:opacity-80 transition-opacity flex items-center relative"
+            className="transition-opacity flex items-center relative"
             onClick={handleHeaderClick}
           >
             <img 
@@ -95,7 +95,7 @@ const Header = () => {
         
         {/* Timer display on non-home pages */}
         {!isHomePage && (isRunning || isPaused || isFlashing) && (
-          <Link to="/" className="hover:opacity-80 transition-opacity">
+          <Link to="/" className="transition-opacity">
             <div 
               className={`text-lg font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'animate-pulse' : ''} select-none`}
               style={hasWonPrize ? { color: 'hsl(50 100% 40%)' } : {}}

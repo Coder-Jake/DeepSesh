@@ -225,7 +225,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
         variant="ghost"
         size="icon"
         onClick={() => onHide(poll.id)}
-        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-foreground"
+        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground"
         aria-label="Hide ask"
       >
         <X className="h-4 w-4" />

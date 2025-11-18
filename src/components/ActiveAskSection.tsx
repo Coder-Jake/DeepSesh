@@ -60,7 +60,7 @@ const ActiveAskSection: React.FC<ActiveAskSectionProps> = ({ activeAsks, onVoteE
     <div className="space-y-6 mt-8">
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className="flex items-center justify-between w-full text-xl font-bold text-foreground hover:opacity-80 transition-opacity"
+        className="flex items-center justify-between w-full text-xl font-bold text-foreground transition-opacity"
       >
         <h2>Active Asks</h2>
         {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -96,7 +96,7 @@ const ActiveAskSection: React.FC<ActiveAskSectionProps> = ({ activeAsks, onVoteE
             <button 
               onClick={handleShowAllHidden}
               className={cn(
-                "w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors",
+                "w-full text-center text-sm text-muted-foreground transition-colors",
                 !isOpen && "mt-0" // Adjust margin if section is closed
               )}
             >

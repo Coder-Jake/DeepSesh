@@ -109,8 +109,8 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
             htmlFor="type-closed"
             onClick={() => setPollType('closed')}
             className={cn(
-              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors select-none",
-              pollType === 'closed' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer select-none",
+              pollType === 'closed' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border"
             )}
           >
             <ThumbsUp size={16} />
@@ -120,8 +120,8 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
             htmlFor="type-choice"
             onClick={() => setPollType('choice')}
             className={cn(
-              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors select-none",
-              pollType === 'choice' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer select-none",
+              pollType === 'choice' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border"
             )}
           >
             <Circle size={16} />
@@ -131,8 +131,8 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
             htmlFor="type-selection"
             onClick={() => setPollType('selection')}
             className={cn(
-              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer transition-colors select-none",
-              pollType === 'selection' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border hover:bg-accent"
+              "flex items-center space-x-1 px-3 py-1 rounded-full border cursor-pointer select-none",
+              pollType === 'selection' ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border"
             )}
           >
             <CheckSquare size={16} />
@@ -165,7 +165,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
             "ml-auto h-auto px-3 py-1 rounded-full text-sm",
             allowCustomResponses && isDarkMode && "bg-gradient-to-r from-[hsl(var(--public-gradient-start-dark))] to-[hsl(var(--public-gradient-end-dark))] text-foreground border-public-bg",
             allowCustomResponses && !isDarkMode && "bg-[hsl(var(--public-bg))] text-black border-public-bg",
-            !allowCustomResponses && "text-muted-foreground hover:bg-muted"
+            !allowCustomResponses && "text-muted-foreground"
           )}
         >
           Custom Responses

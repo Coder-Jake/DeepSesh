@@ -13,7 +13,7 @@ const FeedbackAndCollaborateSection = () => {
     <Card className="mt-8">
       <Link // Moved Link to wrap CardHeader
         to="/feedback" // Link to the new Feedback page
-        className="block p-0 hover:bg-accent/50 rounded-t-lg transition-colors cursor-pointer"
+        className="block p-0 rounded-t-lg transition-colors cursor-pointer"
       >
         <CardHeader className="p-6"> {/* Adjusted padding here */}
           <CardTitle className="flex items-center gap-2">

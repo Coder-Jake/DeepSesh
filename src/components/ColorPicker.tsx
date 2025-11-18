@@ -161,7 +161,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
               <button
                 key={color}
                 className={cn(
-                  "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+                  "w-6 h-6 rounded-full border-2 border-transparent transition-all",
                   currentColor === color && "border-primary"
                 )}
                 style={{ backgroundColor: color }}
@@ -179,7 +179,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
           <button
             key={color}
             className={cn(
-              "w-6 h-6 rounded-full border-2 border-transparent hover:border-primary transition-all",
+              "w-6 h-6 rounded-full border-2 border-transparent transition-all",
               currentColor === color && "border-primary"
             )}
             style={{ backgroundColor: color }}
@@ -188,7 +188,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onSelectColor, onClose, curre
           />
         ))}
       </div>
-      <button onClick={onClose} className="mt-2 w-full text-sm text-muted-foreground hover:text-foreground">
+      <button onClick={onClose} className="mt-2 w-full text-sm text-muted-foreground">
         Close
       </button>
     </div>

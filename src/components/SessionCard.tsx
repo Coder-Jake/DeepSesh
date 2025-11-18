@@ -207,7 +207,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4 flex-grow mr-4">
             <Popover>
-              <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none">
+              <PopoverTrigger className="text-sm text-muted-foreground cursor-pointer select-none">
                 {/* FIX: Wrap conditional text in a span */}
                 <span>
                   {session.distance !== null ? formatDistance(session.distance) : `~${totalDurationMinutes}m`}
@@ -239,7 +239,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                       <span
                         className={cn(
                           "min-w-0",
-                          p.userId !== "mock-user-id-123" && "cursor-pointer hover:text-primary"
+                          p.userId !== "mock-user-id-123" && "cursor-pointer"
                         )}
                         onClick={(e) => handleParticipantNameClick(p.userId, p.userName, e)}
                       >
