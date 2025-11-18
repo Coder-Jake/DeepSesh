@@ -50,11 +50,6 @@
     --private-background-solid: 270 100% 87.5%;
     --private-foreground-solid: var(--foreground);
 
-    /* NEW: Solid public/private/organisation hover backgrounds for light mode (10% lighter) */
-    /* --public-background-solid-hover: 200 90% 92.5%; */
-    /* --private-background-solid-hover: 270 100% 97.5%; */
-    /* --organisation-background-solid-hover: 80 60% 92.5%; */
-
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 10%; /* Darker olive for text */
 
