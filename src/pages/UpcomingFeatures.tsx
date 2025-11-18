@@ -20,7 +20,7 @@ const UpcomingFeatures = () => {
   return (
     <main className="max-w-4xl mx-auto pt-16 px-4 pb-4 lg:pt-20 lg:px-6 lg:pb-6">
       <div className="mb-8 flex items-center justify-between">
-        <Button variant="ghost" onClick={() => window.history.back()} className="flex items-center gap-2">
+        <Button variant="ghost" onClick={() => window.history.back()} className="flex items-center gap-2 hover:bg-accent-hover"> {/* NEW: Added hover effect */}
           <ChevronLeft className="h-5 w-5" />
           Back
         </Button>

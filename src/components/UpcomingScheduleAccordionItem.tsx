@@ -91,7 +91,7 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
               e.stopPropagation(); // Prevent accordion from toggling
               commencePreparedSchedule(template.id);
             }}
-            className="h-8 px-3 text-xs flex items-center gap-1"
+            className="h-8 px-3 text-xs flex items-center gap-1 hover:bg-accent-hover" // NEW: Added hover effect
           >
             <Play className="h-3 w-3" /> Commence
           </Button>

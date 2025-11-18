@@ -27,7 +27,7 @@ const Navigation = () => {
         variant="ghost"
         size="sm"
         onClick={toggleMenu}
-        className="p-2"
+        className="p-2 hover:bg-accent-hover" // NEW: Added hover effect
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
       </Button>
@@ -56,7 +56,7 @@ const Navigation = () => {
                     className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
                       isActive 
                         ? "bg-muted text-primary font-medium" 
-                        : "text-foreground"
+                        : "text-foreground hover:bg-accent-hover" // NEW: Added hover effect
                     }`}
                   >
                     <Icon size={16} />

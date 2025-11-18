@@ -309,7 +309,7 @@ const Settings = () => {
             <Button
               variant="outline"
               size="icon"
-              className={`w-10 h-10 rounded-full transition-colors ${value.push ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+              className={`w-10 h-10 rounded-full transition-colors ${value.push ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'}`} {/* NEW: Added hover effects */}
               onClick={() => updateNotificationSetting(type, 'push', !value.push)}
             >
               <MessageSquareWarning size={20} />
@@ -328,7 +328,7 @@ const Settings = () => {
           <Button
             variant="outline"
             size="icon"
-            className={`w-10 h-10 rounded-full transition-colors ${value.vibrate ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+            className={`w-10 h-10 rounded-full transition-colors ${value.vibrate ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'}`} {/* NEW: Added hover effects */}
             onClick={() => updateNotificationSetting(type, 'vibrate', !value.vibrate)}
           >
             <Vibrate size={20} /> 
@@ -344,7 +344,7 @@ const Settings = () => {
           <Button
             variant="outline"
             size="icon"
-            className={`w-10 h-10 rounded-full transition-colors ${value.sound ? 'bg-olive text-olive-foreground' : 'text-muted-foreground hover:bg-muted'}`}
+            className={`w-10 h-10 rounded-full transition-colors ${value.sound ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'}`} {/* NEW: Added hover effects */}
             onClick={() => updateNotificationSetting(type, 'sound', !value.sound)}
           >
             <Volume2 size={20} />
@@ -563,7 +563,8 @@ const Settings = () => {
                   id="show-sessions-while-active"
                   onClick={cycleSessionVisibility}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted select-none",
+                    "hover:bg-muted-hover" // NEW: Added hover effect
                   )}
                 >
                   {showSessionsWhileActive === 'hidden' && "Hidden"}
@@ -803,9 +804,9 @@ const Settings = () => {
                   className={cn(
                     "px-3 py-1 rounded-full transition-colors select-none",
                     "hover:bg-transparent", // Add this to clear default hover
-                    sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover",
-                    sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover",
-                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover"
+                    sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover", // NEW: Added hover effect
+                    sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover", // NEW: Added hover effect
+                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover" // NEW: Added hover effect
                   )}
                 >
                   {sessionVisibility === 'public' && (
@@ -834,7 +835,8 @@ const Settings = () => {
                   id="time-format-toggle"
                   onClick={() => setIs24HourFormat(prev => !prev)}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted select-none",
+                    "hover:bg-muted-hover" // NEW: Added hover effect
                   )}
                 >
                   {is24HourFormat ? "24hr" : "AM/PM"}
@@ -856,7 +858,8 @@ const Settings = () => {
                   id="timer-increments-toggle"
                   onClick={() => setCurrentTimerIncrement(prev => prev === 1 ? 5 : 1)}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted select-none",
+                    "hover:bg-muted-hover" // NEW: Added hover effect
                   )}
                 >
                   {currentTimerIncrement}
@@ -937,9 +940,9 @@ const Settings = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover",
-                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover",
-                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-secondary-hover" // NEW: Added specific styles for 'prompt'
+                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover", // NEW: Added hover effect
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover", // NEW: Added hover effect
+                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover" // NEW: Added hover effect
                   )}
                   onClick={handleLocationButtonClick}
                 >
@@ -965,7 +968,8 @@ const Settings = () => {
                   id="discovery-radius-toggle"
                   onClick={() => setLimitDiscoveryRadius(prev => !prev)}
                   className={cn(
-                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted hover:bg-secondary-hover select-none"
+                    "px-4 py-2 rounded-full transition-colors text-foreground bg-muted select-none",
+                    "hover:bg-muted-hover" // NEW: Added hover effect
                   )}
                 >
                   {limitDiscoveryRadius ? (

@@ -260,7 +260,8 @@ const ProfilePopUpCard: React.FC = () => {
                 "ml-auto h-8 w-8",
                 currentFriendStatus === 'none' && "text-foreground",
                 currentFriendStatus === 'pending' && "text-gray-500 cursor-default",
-                currentFriendStatus === 'friends' && "text-green-500"
+                currentFriendStatus === 'friends' && "text-green-500",
+                "hover:bg-accent-hover" // NEW: Added hover effect
               )}
               onClick={() => {
                 if (areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
@@ -398,7 +399,7 @@ const ProfilePopUpCard: React.FC = () => {
         variant="ghost"
         size="icon"
         onClick={closeProfilePopUp}
-        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground"
+        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:bg-accent-hover" // NEW: Added hover effect
         aria-label="Close profile pop-up"
       >
         <X className="h-4 w-4" />

@@ -885,7 +885,7 @@ const Profile = () => {
                       variant="ghost"
                       size="icon"
                       onClick={handleCopyJoinCode}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground hover:bg-accent-hover" // NEW: Added hover effect
                       aria-label="Copy join code"
                     >
                       <Clipboard size={16} className={cn(isCopied ? "text-green-500" : "text-muted-foreground")} />
@@ -1034,7 +1034,7 @@ const Profile = () => {
           <div className="fixed bottom-4 left-4 z-50">
             <Button
               onClick={handleCancel}
-              className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel/80"
+              className="shadow-lg bg-cancel text-cancel-foreground hover:bg-cancel-hover" // NEW: Added hover effect
             >
               Cancel
             </Button>

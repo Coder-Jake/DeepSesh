@@ -525,7 +525,8 @@ const ScheduleForm: React.FC = () => {
                 onClick={() => setIsRecurring(prev => !prev)} 
                 className={cn(
                   "h-8 w-8 rounded-full focus:bg-transparent active:bg-transparent", 
-                  isRecurring ? "text-[hsl(120_30%_45%)]" : "text-muted-foreground" 
+                  isRecurring ? "text-[hsl(120_30%_45%)]" : "text-muted-foreground",
+                  "hover:bg-accent-hover" // NEW: Added hover effect
                 )}
                 aria-label="Toggle schedule loop"
               >
@@ -550,7 +551,7 @@ const ScheduleForm: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   onClick={handleTrashAllTimers}
-                  className="h-8 w-8 text-destructive"
+                  className="h-8 w-8 text-destructive hover:bg-destructive-hover" // NEW: Added hover effect
                   aria-label="Trash all schedule lines"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -602,7 +603,7 @@ const ScheduleForm: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={handleSaveSchedule}
-                className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500")}
+                className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500", "hover:bg-accent-hover")} // NEW: Added hover effect
                 onKeyDown={handleEnterKeyNavigation}
                 data-input-type="save-schedule-button"
               >

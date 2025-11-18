@@ -93,7 +93,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-6 h-6"
+                className="w-6 h-6 hover:bg-accent-hover" // NEW: Added hover effect
               >
                 <Share2 className="h-4 w-4 text-foreground" />
               </Button>
@@ -119,7 +119,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
         variant="ghost"
         size="icon"
         onClick={handleDelete}
-        className="absolute top-0 right-0"
+        className="absolute top-0 right-0 hover:bg-accent-hover" // NEW: Added hover effect
       >
         <Trash2 className="h-3 w-3 text-foreground" />
       </Button>

@@ -22,35 +22,45 @@ export default {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
+				background: {
+					DEFAULT: 'hsl(var(--background))',
+					hover: 'hsl(var(--background-hover))', // NEW
+				},
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))',
+					hover: 'hsl(var(--primary-hover))', // NEW
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))',
+					hover: 'hsl(var(--secondary-hover))', // NEW
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))',
+					hover: 'hsl(var(--destructive-hover))', // NEW
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+					foreground: 'hsl(var(--muted-foreground))',
+					hover: 'hsl(var(--muted-hover))', // NEW
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					foreground: 'hsl(var(--accent-foreground))',
+					hover: 'hsl(var(--accent-hover))', // NEW
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
+					foreground: 'hsl(var(--popover-foreground))',
+					hover: 'hsl(var(--popover-hover))', // NEW
 				},
 				card: {
 					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
+					foreground: 'hsl(var(--card-foreground))',
+					hover: 'hsl(var(--card-hover))', // NEW
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -63,34 +73,41 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				olive: {
-					DEFAULT: 'hsl(80 60% 40%)', // A shade of olive green
-					foreground: 'hsl(0 0% 100%)', // White text for contrast
+					DEFAULT: 'hsl(var(--olive))',
+					foreground: 'hsl(var(--olive-foreground))',
+					hover: 'hsl(var(--olive-hover))', // NEW
 				},
 				cancel: { // NEW: Added cancel color
 					DEFAULT: 'hsl(var(--cancel))',
-					foreground: 'hsl(var(--cancel-foreground))'
+					foreground: 'hsl(var(--cancel-foreground))',
+					hover: 'hsl(var(--cancel-hover))', // NEW
 				},
 				'public-bg': { // NEW: Public background color
 					DEFAULT: 'hsl(var(--public-background-solid))',
 					foreground: 'hsl(var(--public-foreground-solid))',
+					hover: 'hsl(var(--public-background-solid-hover))', // NEW
 				},
 				'private-bg': { // NEW: Private background color
 					DEFAULT: 'hsl(var(--private-background-solid))',
 					foreground: 'hsl(var(--private-foreground-solid))',
+					hover: 'hsl(var(--private-background-solid-hover))', // NEW
 				},
 				'organisation-bg': { // NEW: Organisation background color
 					DEFAULT: 'hsl(var(--organisation-background-solid))',
 					foreground: 'hsl(var(--organisation-foreground-solid))',
+					hover: 'hsl(var(--organisation-background-solid-hover))', // NEW
 				},
 				success: { // NEW: Success color for granted states
 					DEFAULT: 'hsl(var(--success-bg))',
 					foreground: 'hsl(var(--success-fg))',
 					border: 'hsl(var(--success-border))',
+					hover: 'hsl(var(--success-bg-hover))', // NEW
 				},
 				error: { // NEW: Error color for denied states
 					DEFAULT: 'hsl(var(--error-bg))',
 					foreground: 'hsl(var(--error-fg))',
 					border: 'hsl(var(--error-border))',
+					hover: 'hsl(var(--error-bg-hover))', // NEW
 				},
 				'public-text': { // NEW: Public text color
 					DEFAULT: 'hsl(var(--public-text))',

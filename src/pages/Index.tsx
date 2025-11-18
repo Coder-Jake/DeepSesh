@@ -1609,7 +1609,7 @@ const Index = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsSchedulingMode(true)}
-                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors"
+                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover" // NEW: Added hover effect
                       data-name="Schedule Button"
                     >
                       <CalendarPlus size={16} />
@@ -1645,9 +1645,9 @@ const Index = () => {
                         onClick={handleSessionVisibilityToggle}
                         className={cn(
                           "flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors select-none",
-                          sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground",
-                          sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground",
-                          sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground"
+                          sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover", // NEW: Added hover effect
+                          sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover", // NEW: Added hover effect
+                          sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover" // NEW: Added hover effect
                         )}
                         data-name="Session Visibility Toggle Button"
                       >
@@ -1677,7 +1677,7 @@ const Index = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors"
+                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover" // NEW: Added hover effect
                               data-name="Share Options Button"
                             >
                               <Share2 size={16} />
@@ -1694,7 +1694,7 @@ const Index = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => setShowJoinInput(true)}
-                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors"
+                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover" // NEW: Added hover effect
                           data-name="Join Sesh Button"
                         >
                           <Users size={16} />
@@ -1806,7 +1806,8 @@ const Index = () => {
                           onTouchEnd={handlePressEnd}
                           className={cn(
                             "w-full h-full rounded-none bg-transparent",
-                            isPaused ? "text-error-foreground" : "text-secondary-foreground"
+                            isPaused ? "text-error-foreground" : "text-secondary-foreground",
+                            "hover:bg-accent-hover" // NEW: Added hover effect
                           )}
                           data-name="Stop Timer Button"
                         >
@@ -2223,9 +2224,9 @@ const Index = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success",
-                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error",
-                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground"
+                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover", // NEW: Added hover effect
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover", // NEW: Added hover effect
+                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover" // NEW: Added hover effect
                   )}
                   onClick={getLocation}
                 >

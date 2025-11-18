@@ -225,7 +225,7 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
         variant="ghost"
         size="icon"
         onClick={() => onHide(poll.id)}
-        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground"
+        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:bg-accent-hover" // NEW: Added hover effect
         aria-label="Hide ask"
       >
         <X className="h-4 w-4" />
@@ -247,7 +247,8 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
                   onClick={() => handleClosedPollVote('closed-yes')} 
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 text-green-600 disabled:opacity-50 w-16 h-16 rounded-lg border select-none",
-                    selectedOption === 'closed-yes' && "font-bold bg-green-100 border-green-200"
+                    selectedOption === 'closed-yes' && "font-bold bg-green-100 border-green-200",
+                    "hover:bg-success-hover" // NEW: Added hover effect
                   )}
                 >
                   <ThumbsUp className="h-6 w-6" fill={selectedOption === 'closed-yes' ? "currentColor" : "none"} /> {yesVotes}
@@ -256,7 +257,8 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
                   onClick={() => handleClosedPollVote('closed-dont-mind')} 
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 text-blue-500 disabled:opacity-50 w-16 h-16 rounded-lg border select-none",
-                    selectedOption === 'closed-dont-mind' && "font-bold bg-blue-100 border-blue-200"
+                    selectedOption === 'closed-dont-mind' && "font-bold bg-blue-100 border-blue-200",
+                    "hover:bg-muted-hover" // NEW: Added hover effect
                   )}
                 >
                   <Minus className="h-6 w-6" fill={selectedOption === 'closed-dont-mind' ? "currentColor" : "none"} /> {neutralVotes}
@@ -265,7 +267,8 @@ const PollCard: React.FC<PollCardProps> = ({ poll, onVote, currentUserId, onHide
                   onClick={() => handleClosedPollVote('closed-no')} 
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 text-red-600 disabled:opacity-50 w-16 h-16 rounded-lg border select-none",
-                    selectedOption === 'closed-no' && "font-bold bg-red-100 border-red-200"
+                    selectedOption === 'closed-no' && "font-bold bg-red-100 border-red-200",
+                    "hover:bg-destructive-hover" // NEW: Added hover effect
                   )}
                 >
                   <ThumbsDown className="h-6 w-6" fill={selectedOption === 'closed-no' ? "currentColor" : "none"} /> {noVotes}

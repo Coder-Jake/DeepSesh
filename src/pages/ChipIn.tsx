@@ -213,7 +213,7 @@ const ChipIn = () => {
           href="https://www.linkedin.com/company/deepsesh/" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="text-muted-foreground transition-colors"
+          className="text-muted-foreground transition-colors hover:text-foreground" // NEW: Added hover effect
           aria-label="DeepSesh LinkedIn Profile"
         >
           <Linkedin className="h-5 w-5" />
