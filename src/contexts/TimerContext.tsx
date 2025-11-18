@@ -1354,7 +1354,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           const nextPhaseDurationSeconds = activeSchedule[nextIndex].durationMinutes * 60;
           setCurrentPhaseDurationSeconds(nextPhaseDurationSeconds);
           setTimeLeft(nextPhaseDurationSeconds);
-          setCurrentPhaseStartTime(Date.Now());
+          setCurrentPhaseStartTime(Date.now()); // Corrected to Date.now()
 
           setIsRunning(true);
           setIsFlashing(false);
@@ -1462,17 +1462,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   // Effect to update _seshTitle when profile or customization changes
   useEffect(() => {
-    if (!profileLoading) { // Only update once profile is done loading
+    // Only update if no timer is active
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !profileLoading) {
       const defaultTitle = getDefaultSeshTitle();
       if (!isSeshTitleCustomized && _seshTitle !== defaultTitle) {
         _setSeshTitle(defaultTitle);
       }
     }
-  }, [profileLoading, getDefaultSeshTitle, isSeshTitleCustomized, _seshTitle]);
+  }, [profileLoading, getDefaultSeshTitle, isSeshTitleCustomized, _seshTitle, isRunning, isPaused, isScheduleActive, isSchedulePending]);
 
   // Effect to update scheduleTitle when profile changes
   useEffect(() => {
-    if (!profileLoading) { // Only update once profile is done loading
+    // Only update if no timer is active
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !profileLoading) {
       const defaultTitle = getDefaultSeshTitle();
       // Only update if the current scheduleTitle is still the generic default,
       // or if it's the old default derived from an empty profile.
@@ -1481,17 +1483,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setScheduleTitle(defaultTitle);
       }
     }
-  }, [profileLoading, getDefaultSeshTitle, scheduleTitle]);
+  }, [profileLoading, getDefaultSeshTitle, scheduleTitle, isRunning, isPaused, isScheduleActive, isSchedulePending]);
 
   // Effect to update activeScheduleDisplayTitle when profile changes
   useEffect(() => {
-    if (!profileLoading) { // Only update once profile is done loading
+    // Only update if no timer is active
+    if (!isRunning && !isPaused && !isScheduleActive && !isSchedulePending && !profileLoading) {
       const defaultTitle = getDefaultSeshTitle();
       if (activeScheduleDisplayTitle === "Coworker's DeepSesh") { // Only update if it's still the initial placeholder
         setActiveScheduleDisplayTitleInternal(defaultTitle);
       }
     }
-  }, [profileLoading, getDefaultSeshTitle, activeScheduleDisplayTitle]);
+  }, [profileLoading, getDefaultSeshTitle, activeScheduleDisplayTitle, isRunning, isPaused, isScheduleActive, isSchedulePending]);
 
 
   const addAsk = useCallback(async (ask: ActiveAskItem) => {
@@ -1715,48 +1718,104 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     let initialSavedSchedules: ScheduledTimerTemplate[] = [];
 
-    // Declare variables with default values at the top of the useEffect
     let data: any = {}; 
-    let loadedLastActivityTime: number | null = null;
-    let loadedIsHomepageFocusCustomized: boolean = false;
-    let loadedIsHomepageBreakCustomized: boolean = false;
-    let loadedSeshTitle: string = "Coworker's DeepSesh"; // MODIFIED: Initial placeholder
-    let loadedIsSeshTitleCustomized: boolean = false;
-    let loadedTimerType: 'focus' | 'break' = 'focus';
     let loadedIsRunning: boolean = false;
     let loadedIsPaused: boolean = false;
-    let loadedIsFlashing: boolean = false;
     let loadedIsScheduleActive: boolean = false;
     let loadedIsSchedulePending: boolean = false;
-    let loadedCurrentPhaseDurationSeconds: number = 0;
-    let loadedActiveSchedule: ScheduledTimer[] = [];
-    let loadedLimitDiscoveryRadius: boolean = false; // NEW: Declare loadedLimitDiscoveryRadius
-    let loadedSessionVisibility: 'public' | 'private' | 'organisation' = 'private'; // MODIFIED: Declare loadedSessionVisibility
-
-    // ... other loaded variables ...
-    let loadedFocusMinutes = 25; // This is actually the homepage focus minutes
-    let loadedBreakMinutes = 5;  // This is actually the homepage break minutes
-
-    // Declare these variables with a wider scope and default values
-    let loadedDefaultFocusMinutesFromData = 25; 
-    let loadedDefaultBreakMinutesFromData = 5;   
-
-    const now = new Date(); // Declare 'now' here
 
     if (storedData) {
-      data = JSON.parse(storedData); // Assign data here
+      data = JSON.parse(storedData); 
+      loadedIsRunning = data.isRunning ?? false;
+      loadedIsPaused = data.isPaused ?? false;
+      loadedIsScheduleActive = data.isScheduleActive ?? false;
+      loadedIsSchedulePending = data.isSchedulePending ?? false;
 
-      // ... loading other data ...
+      // Restore active timer states if a timer was active
+      if (loadedIsRunning || loadedIsPaused || loadedIsScheduleActive || loadedIsSchedulePending) {
+        _setFocusMinutes(data.focusMinutes ?? _defaultFocusMinutes);
+        _setBreakMinutes(data.breakMinutes ?? _defaultBreakMinutes);
+        setIsRunning(loadedIsRunning);
+        setIsPaused(loadedIsPaused);
+        setTimeLeft(data.timeLeft ?? (data.focusMinutes ?? _defaultFocusMinutes) * 60);
+        setTimerType(data.timerType ?? 'focus');
+        setIsFlashing(data.isFlashing ?? false);
+        setNotes(data.notes ?? "");
+        _setSeshTitle(data._seshTitle ?? getDefaultSeshTitle());
+        setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
+        setShowSessionsWhileActive(data.showSessionsWhileActive ?? 'all');
+        setSchedule(data.schedule ?? []);
+        setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
+        setIsSchedulingMode(data.isSchedulingMode ?? false);
+        setIsScheduleActive(loadedIsScheduleActive);
+        setScheduleTitle(data.scheduleTitle ?? getDefaultSeshTitle());
+        setCommenceTime(data.commenceTime ?? "");
+        setCommenceDay(data.commenceDay ?? null);
+        setSessionVisibility(data.sessionVisibility ?? 'private');
+        setIsRecurring(data.isRecurring ?? false);
+        setRecurrenceFrequency(data.recurrenceFrequency ?? 'daily');
+        setScheduleStartOption(data.scheduleStartOption ?? 'now');
+        setActiveSchedule(data.activeSchedule ?? []);
+        setActiveTimerColors(data.activeTimerColors ?? {});
+        setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? getDefaultSeshTitle());
+        setTimerColors(data.timerColors ?? {});
+        setSessionStartTime(data.sessionStartTime ?? null);
+        setCurrentPhaseStartTime(data.currentPhaseStartTime ?? null);
+        setAccumulatedFocusSeconds(data.accumulatedFocusSeconds ?? 0);
+        setAccumulatedBreakSeconds(data.accumulatedBreakSeconds ?? 0);
+        setActiveJoinedSessionCoworkerCount(data.activeJoinedSessionCoworkerCount ?? 0);
+        setActiveAsks(data.activeAsks ?? []);
+        setIsSchedulePending(loadedIsSchedulePending);
+        setIsTimeLeftManagedBySession(data.isTimeLeftManagedBySession ?? false);
+        setShouldPlayEndSound(data.shouldPlayEndSound ?? false);
+        setShouldShowEndToast(data.shouldShowEndToast ?? false);
+        setIsBatchNotificationsEnabled(data.isBatchNotificationsEnabled ?? false);
+        setBatchNotificationPreference(data.batchNotificationPreference ?? 'break');
+        setCustomBatchMinutes(data.customBatchMinutes ?? timerIncrement);
+        setLock(data.lock ?? false);
+        setExemptionsEnabled(data.exemptionsEnabled ?? false);
+        setPhoneCalls(data.phoneCalls ?? false);
+        setFavourites(data.favourites ?? false);
+        setWorkApps(data.workApps ?? false);
+        setIntentionalBreaches(data.intentionalBreaches ?? false);
+        setManualTransition(data.manualTransition ?? false);
+        setMaxDistance(data.maxDistance ?? 1000);
+        setAskNotifications(data.askNotifications ?? { push: false, vibrate: false, sound: false });
+        setJoinNotifications(data.joinNotifications ?? { push: false, vibrate: false, sound: false });
+        setSessionInvites(data.sessionInvites ?? { push: false, vibrate: false, sound: false });
+        setFriendActivity(data.friendActivity ?? { push: false, vibrate: false, sound: false });
+        setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? false);
+        setVerificationStandard(data.verificationStandard ?? 'anyone');
+        setLocationSharing(data.locationSharing ?? false);
+        setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
+        setIs24HourFormat(data.is24HourFormat ?? true);
+        setAreToastsEnabled(data.areToastsEnabled ?? false);
+        setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false });
+        setHasWonPrize(data.hasWonPrize ?? false);
+        setCurrentSessionRole(data.currentSessionRole ?? null);
+        setCurrentSessionHostName(data.currentSessionHostName ?? null);
+        setCurrentSessionOtherParticipants(data.currentSessionOtherParticipants ?? []);
+        setCurrentSessionParticipantsData(data.currentSessionParticipantsData ?? []);
+        setIsHomepageFocusCustomized(data.isHomepageFocusCustomized ?? false);
+        setIsHomepageBreakCustomized(data.isHomepageBreakCustomized ?? false);
+        setActiveSessionRecordId(data.activeSessionRecordId ?? null);
+        setIsDiscoveryActivated(data.isDiscoveryActivated ?? false);
+        setGeolocationPermissionStatus(data.geolocationPermissionStatus ?? 'prompt');
+        setLastActivityTime(data.lastActivityTime ?? null);
+        setShowDemoSessions(data.showDemoSessions ?? true);
+        setCurrentPhaseDurationSeconds(data.currentPhaseDurationSeconds ?? 0);
+        setRemainingTimeAtPause(data.remainingTimeAtPause ?? 0);
+        setLimitDiscoveryRadius(data.limitDiscoveryRadius ?? false);
+      }
 
       initialSavedSchedules = data.savedSchedules ?? [];
       setPreparedSchedules(data.preparedSchedules ?? []);
     }
 
-    const mergedSchedulesMap = new Map<string, ScheduledTimerTemplate>(); // This is correctly defined
+    const mergedSchedulesMap = new Map<string, ScheduledTimerTemplate>(); 
 
-    DEFAULT_SCHEDULE_TEMPLATES.forEach(template => mergedSchedulesMap.set(template.id, template)); // <-- ERROR HERE
-    // Should be `mergedSchedulesMap.set`
-
+    DEFAULT_SCHEDULE_TEMPLATES.forEach(template => mergedSchedulesMap.set(template.id, template)); 
+    
     initialSavedSchedules.forEach(localSchedule => {
       mergedSchedulesMap.set(localSchedule.id, localSchedule);
     });
@@ -1764,53 +1823,51 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const finalSavedSchedules = Array.from(mergedSchedulesMap.values());
     setSavedSchedules(finalSavedSchedules);
 
-    const initialScheduleToLoad = finalSavedSchedules.find(
-      (template) => template.id === "default-school-timetable"
-    );
+    // Only apply default template or homepage defaults if no timer was active
+    if (!(loadedIsRunning || loadedIsPaused || loadedIsScheduleActive || loadedIsSchedulePending)) {
+      const initialScheduleToLoad = finalSavedSchedules.find(
+        (template) => template.id === "default-school-timetable"
+      );
 
-    if (initialScheduleToLoad) {
-      setSchedule(initialScheduleToLoad.schedule);
-      setScheduleTitle(initialScheduleToLoad.title);
-      setCommenceTime(initialScheduleToLoad.commenceTime);
-      setCommenceDay(initialScheduleToLoad.commenceDay);
-      setScheduleStartOption(initialScheduleToLoad.scheduleStartOption);
-      setIsRecurring(initialScheduleToLoad.isRecurring);
-      setRecurrenceFrequency(initialScheduleToLoad.recurrenceFrequency);
-      setTimerColors(initialScheduleToLoad.timerColors || {});
+      if (initialScheduleToLoad) {
+        setSchedule(initialScheduleToLoad.schedule);
+        setScheduleTitle(initialScheduleToLoad.title);
+        setCommenceTime(initialScheduleToLoad.commenceTime);
+        setCommenceDay(initialScheduleToLoad.commenceDay);
+        setScheduleStartOption(initialScheduleToLoad.scheduleStartOption);
+        setIsRecurring(initialScheduleToLoad.isRecurring);
+        setRecurrenceFrequency(initialScheduleToLoad.recurrenceFrequency);
+        setTimerColors(initialScheduleToLoad.timerColors || {});
 
-      // When a template is loaded, reset homepage customization flags
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
+        setIsHomepageFocusCustomized(false);
+        setIsHomepageBreakCustomized(false);
 
-      // Set homepage focus/break minutes to the first item of the loaded schedule, or its default
-      const firstScheduleItem = initialScheduleToLoad.schedule[0];
-      if (firstScheduleItem) {
-        // REMOVED: _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
-        // REMOVED: _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
-        // REMOVED: setTimerType(firstScheduleItem.type);
-        // REMOVED: setTimeLeft(firstScheduleItem.durationMinutes * 60);
-        // REMOVED: setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
+        const firstScheduleItem = initialScheduleToLoad.schedule[0];
+        if (firstScheduleItem) {
+          _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
+          _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
+          setTimerType(firstScheduleItem.type);
+          setTimeLeft(firstScheduleItem.durationMinutes * 60);
+          setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
+        } else {
+          setTimerType('focus');
+          setTimeLeft(_defaultFocusMinutes * 60);
+          setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
+        }
+        _setSeshTitle(getDefaultSeshTitle()); 
+        setIsSeshTitleCustomized(false); 
       } else {
-        // If schedule is empty, fall back to loaded defaults
-        // REMOVED: setTimerType('focus');
-        // REMOVED: setTimeLeft(_defaultFocusMinutes * 60);
-        // REMOVED: setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
-      }
-      _setSeshTitle(getDefaultSeshTitle()); // Reset seshTitle to default
-      setIsSeshTitleCustomized(false); // Reset seshTitle customization
-    } else {
-      // If no initial schedule to load, ensure timeLeft and currentPhaseDurationSeconds reflect the loaded homepage values
-      const currentHomepageFocus = loadedIsHomepageFocusCustomized ? (data.focusMinutes ?? loadedDefaultFocusMinutesFromData) : loadedDefaultFocusMinutesFromData;
-      const currentHomepageBreak = loadedIsHomepageBreakCustomized ? (data.breakMinutes ?? loadedDefaultBreakMinutesFromData) : loadedDefaultBreakMinutesFromData;
-      const currentTimerType = loadedTimerType;
+        const currentHomepageFocus = data.focusMinutes ?? _defaultFocusMinutes;
+        const currentHomepageBreak = data.breakMinutes ?? _defaultBreakMinutes;
+        const currentTimerType = data.timerType ?? 'focus';
 
-      setTimerType(currentTimerType);
-      setTimeLeft((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
-      setCurrentPhaseDurationSeconds((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
-      _setSeshTitle(loadedSeshTitle);
-      setIsSeshTitleCustomized(loadedIsSeshTitleCustomized);
+        setTimerType(currentTimerType);
+        setTimeLeft((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
+        setCurrentPhaseDurationSeconds((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
+        _setSeshTitle(data._seshTitle ?? getDefaultSeshTitle());
+        setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
+      }
     }
-    // REMOVED: setLoading(false); // This should be the last thing in the useEffect
   }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules]);
 
   // MODIFIED: Optimized local storage saving
