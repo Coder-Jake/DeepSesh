@@ -73,7 +73,6 @@ export default {
 				'public-bg': { // NEW: Public background color
 					DEFAULT: 'hsl(var(--public-background-solid))',
 					foreground: 'hsl(var(--public-foreground-solid))',
-					// Removed: hover: 'hsl(var(--public-background-solid-hover))',
 				},
 				'private-bg': { // NEW: Private background color
 					DEFAULT: 'hsl(var(--private-background-solid))',
