@@ -81,7 +81,6 @@ export default {
 				'organisation-bg': { // NEW: Organisation background color
 					DEFAULT: 'hsl(var(--organisation-background-solid))',
 					foreground: 'hsl(var(--organisation-foreground-solid))',
-					// Removed: hover: 'hsl(var(--organisation-background-solid-hover))',
 				},
 				success: { // NEW: Success color for granted states
 					DEFAULT: 'hsl(var(--success-bg))',
