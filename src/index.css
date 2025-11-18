@@ -169,13 +169,11 @@
     --success-bg-dark: 120 40% 40%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
     --success-border-dark: 120 40% 30%; /* Border color */
-    /* --success-hover-dark: 120 50% 30%; */
 
     /* Error colors for dark mode */
     --error-bg-dark: 0 60% 20%; /* Dark red */
     --error-fg-dark: 0 60% 80%; /* Lighter red text */
     --error-border-dark: 0 60% 30%; /* Border color */
-    /* --error-hover-dark: 0 60% 30%; */
 
     /* NEW: Text colors for session visibility (dark mode) */
     --public-text: 200 90% 70%; /* Lighter blue */
