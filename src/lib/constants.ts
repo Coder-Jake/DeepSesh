@@ -3,7 +3,14 @@ export const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 export const colors = [
   "red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "grey", "black", "white",
   "gold", "silver", "bronze", "indigo", "violet", "teal", "cyan", "magenta", "lime", "maroon",
-  "navy", "olive", "aqua", "fuchsia", "azure", "beige", "coral", "crimson", "lavender", "plum"
+  "navy", "olive", "aqua", "fuchsia", "azure", "beige", "coral", "crimson", "lavender", "plum",
+  "turquoise", "mint", "peach", "tan", "cream", "burgundy", "charcoal", "lilac", "forest",
+  "mustard", "rust", "rose", "mauve", "khaki", "copper", "amber", "saffron", "slate",
+  "periwinkle", "sand", "chocolate", "umber", "sage", "seafoam", "denim", "canary", "scarlet",
+  "emerald", "jade", "ruby", "sapphire", "topaz", "onyx", "ivory", "snow", "steel",
+  "cerulean", "ultramarine", "cobalt", "ochre", "sepia", "mocha", "pewter", "gunmetal",
+  "mahogany", "chestnut", "aubergine", "blush", "vanilla", "honey", "caramel", "latte",
+  "pistachio", "pine", "moss", "fern", "apple green", "raspberry", "cranberry"
 ];
 export const animals = [
   "fox", "bear", "cat", "dog", "lion", "tiger", "wolf", "deer", "zebra", "panda", "koala",
