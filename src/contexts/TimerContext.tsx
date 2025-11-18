@@ -22,7 +22,7 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user, session } = useAuth(); // MODIFIED: Destructure session from useAuth
-  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode } = useProfile(); // RENAMED: hostCode to joinCode
+  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode, loading: profileLoading } = useProfile(); // RENAMED: hostCode to joinCode, NEW: Get profileLoading
 
   // Define getDefaultSeshTitle early so it can be used in useState initializers
   const getDefaultSeshTitle = useCallback(() => {
@@ -53,7 +53,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
-  const [_seshTitle, _setSeshTitle] = useState(getDefaultSeshTitle()); // MODIFIED: Use getDefaultSeshTitle
+  const [_seshTitle, _setSeshTitle] = useState("Coworker's DeepSesh"); // MODIFIED: Initialize with placeholder
   const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false);
   const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('all');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,7 +62,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
   const [isSchedulingMode, setIsSchedulingMode] = useState(false);
   const [isScheduleActive, setIsScheduleActive] = useState(false);
-  const [scheduleTitle, setScheduleTitle] = useState(getDefaultSeshTitle()); // MODIFIED: Use getDefaultSeshTitle
+  const [scheduleTitle, setScheduleTitle] = useState("Coworker's DeepSesh"); // MODIFIED: Initialize with placeholder
   const [commenceTime, setCommenceTime] = useState("");
   const [commenceDay, setCommenceDay] = useState<number | null>(null);
   
@@ -110,7 +110,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const [activeSchedule, setActiveSchedule] = useState<ScheduledTimer[]>([]);
   const [activeTimerColors, setActiveTimerColors] = useState<Record<string, string>>({});
-  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitleInternal] = useState(getDefaultSeshTitle()); // MODIFIED: Use getDefaultSeshTitle
+  const [activeScheduleDisplayTitle, setActiveScheduleDisplayTitleInternal] = useState("Coworker's DeepSesh"); // MODIFIED: Initialize with placeholder
 
   const [savedSchedules, setSavedSchedules] = useState<ScheduledTimerTemplate[]>([]);
 
@@ -1460,18 +1460,38 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, timeLeft, setCurrentPhaseDurationSeconds]);
 
+  // Effect to update _seshTitle when profile or customization changes
   useEffect(() => {
-    if (!isSeshTitleCustomized && activeScheduleDisplayTitle.trim() !== "") {
-      _setSeshTitle(activeScheduleDisplayTitle);
+    if (!profileLoading) { // Only update once profile is done loading
+      const defaultTitle = getDefaultSeshTitle();
+      if (!isSeshTitleCustomized && _seshTitle !== defaultTitle) {
+        _setSeshTitle(defaultTitle);
+      }
     }
-  }, [activeScheduleDisplayTitle, isSeshTitleCustomized]);
+  }, [profileLoading, getDefaultSeshTitle, isSeshTitleCustomized, _seshTitle]);
 
-  // NEW: Separate useEffect for updating _seshTitle based on getDefaultSeshTitle
+  // Effect to update scheduleTitle when profile changes
   useEffect(() => {
-    if (!isSeshTitleCustomized) {
-      _setSeshTitle(getDefaultSeshTitle());
+    if (!profileLoading) { // Only update once profile is done loading
+      const defaultTitle = getDefaultSeshTitle();
+      // Only update if the current scheduleTitle is still the generic default,
+      // or if it's the old default derived from an empty profile.
+      // This prevents overwriting a user-set schedule title (e.g., from a loaded template).
+      if (scheduleTitle === "Coworker's DeepSesh") { // Check against initial placeholder
+        setScheduleTitle(defaultTitle);
+      }
     }
-  }, [isSeshTitleCustomized, getDefaultSeshTitle, _setSeshTitle]);
+  }, [profileLoading, getDefaultSeshTitle, scheduleTitle]);
+
+  // Effect to update activeScheduleDisplayTitle when profile changes
+  useEffect(() => {
+    if (!profileLoading) { // Only update once profile is done loading
+      const defaultTitle = getDefaultSeshTitle();
+      if (activeScheduleDisplayTitle === "Coworker's DeepSesh") { // Only update if it's still the initial placeholder
+        setActiveScheduleDisplayTitleInternal(defaultTitle);
+      }
+    }
+  }, [profileLoading, getDefaultSeshTitle, activeScheduleDisplayTitle]);
 
 
   const addAsk = useCallback(async (ask: ActiveAskItem) => {
@@ -1700,7 +1720,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     let loadedLastActivityTime: number | null = null;
     let loadedIsHomepageFocusCustomized: boolean = false;
     let loadedIsHomepageBreakCustomized: boolean = false;
-    let loadedSeshTitle: string = getDefaultSeshTitle();
+    let loadedSeshTitle: string = "Coworker's DeepSesh"; // MODIFIED: Initial placeholder
     let loadedIsSeshTitleCustomized: boolean = false;
     let loadedTimerType: 'focus' | 'break' = 'focus';
     let loadedIsRunning: boolean = false;
@@ -1752,7 +1772,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         _setBreakMinutes(loadedDefaultBreakMinutesFromData);
       }
 
-      loadedSeshTitle = data._seshTitle ?? getDefaultSeshTitle();
+      loadedSeshTitle = data._seshTitle ?? "Coworker's DeepSesh"; // MODIFIED: Use placeholder as fallback
       loadedIsSeshTitleCustomized = data.isSeshTitleCustomized ?? false;
 
       if (loadedSeshTitle === "Notes" || loadedSeshTitle.trim() === "" || loadedSeshTitle === getDefaultSeshTitle()) {
@@ -1805,7 +1825,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setCurrentScheduleIndex(data.currentScheduleIndex ?? 0);
       setIsSchedulingMode(data.isSchedulingMode ?? false);
       setIsScheduleActive(loadedIsScheduleActive);
-      setScheduleTitle(data.scheduleTitle ?? getDefaultSeshTitle());
+      setScheduleTitle(data.scheduleTitle ?? "Coworker's DeepSesh"); // MODIFIED: Use placeholder as fallback
       setCommenceTime(data.commenceTime ?? "");
       setCommenceDay(data.commenceDay ?? null);
       setIsRecurring(data.isRecurring ?? false);
@@ -1845,7 +1865,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setTimerColors(data.timerColors ?? {});
       setActiveSchedule(loadedActiveSchedule);
       setActiveTimerColors(data.activeTimerColors ?? {});
-      setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? getDefaultSeshTitle());
+      setActiveScheduleDisplayTitleInternal(data.activeScheduleDisplayTitle ?? "Coworker's DeepSesh"); // MODIFIED: Use placeholder as fallback
       setIs24HourFormat(data.is24HourFormat ?? true);
       setAreToastsEnabled(data.areToastsEnabled ?? false);
       setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false });
@@ -1870,7 +1890,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     const mergedSchedulesMap = new Map<string, ScheduledTimerTemplate>();
 
-    DEFAULT_SCHEDULE_TEMPLATES.forEach(template => mergedSchedulesMap.set(template.id, template));
+    DEFAULT_SCHEDULE_TEMPLATES.forEach(template => mergedSmergedSchedulesMap.set(template.id, template));
 
     initialSavedSchedules.forEach(localSchedule => {
       mergedSchedulesMap.set(localSchedule.id, localSchedule);
