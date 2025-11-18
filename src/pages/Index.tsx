@@ -48,6 +48,7 @@ import { Slider } from '@/components/ui/slider';
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
 import { calculateDistance } from '@/utils/location-utils';
 import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // NEW: Added Popover imports
 
 interface ExtendSuggestion {
   id: string;
