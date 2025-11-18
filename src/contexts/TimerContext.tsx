@@ -887,7 +887,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     setActiveSchedule(initialSchedule);
     setActiveTimerColors(initialTimerColors);
-    setActiveScheduleDisplayTitleInternal(initialScheduleTitle);
+    setActiveScheduleDisplayTitleInternal(_seshTitle); // MODIFIED: Use _seshTitle
 
     setCurrentScheduleIndex(0);
     setTimerType(initialSchedule[0].type);
@@ -907,7 +907,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsSchedulePending(isPendingStart);
     setIsRunning(true);
     setIsPaused(false);
-    updateSeshTitleWithSchedule(initialScheduleTitle);
+    // REMOVED: updateSeshTitleWithSchedule(initialScheduleTitle); // MODIFIED: Removed this call
     if (areToastsEnabled) {
         toast("Session Started!", {
             description: `"${initialScheduleTitle}" has begun.`,
@@ -949,7 +949,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .insert({
             user_id: hostParticipant.userId,
             host_name: hostParticipant.userName,
-            session_title: initialScheduleTitle,
+            session_title: _seshTitle, // MODIFIED: Use _seshTitle
             visibility: sessionVisibility, // MODIFIED: Use sessionVisibility
             focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
             break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
@@ -987,7 +987,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
-    updateSeshTitleWithSchedule, areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
+    /* REMOVED: updateSeshTitleWithSchedule, */ areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized,
     setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode, sessionVisibility, profile?.organization // MODIFIED: sessionVisibility, NEW: profile?.organization
   ]);
