@@ -116,14 +116,7 @@ const config: Config = {
             const colorDefinition: any = {
               DEFAULT: `hsl(var(--${colorName}-h) var(--${colorName}-s)% var(--${colorName}-l)%)`,
             };
-            // Add foreground for colors that have it defined in the original config
-            if (colorName.endsWith('-foreground') || colorName.endsWith('-fg') || colorName.endsWith('-text') || colorName.endsWith('-solid')) {
-              // These are foreground/text colors, not backgrounds that need hover lightness adjustment
-              // Their DEFAULT is already defined above.
-            } else {
-              // For background colors, also define a hover state using the calculated lightness
-              colorDefinition.hover = `hsl(var(--${colorName}-h) var(--${colorName}-s)% var(--${colorName}-l-hover)%)`;
-            }
+            // No nested 'hover' property here, it will be handled by direct CSS variables
             return [colorName, colorDefinition];
           })
         ),
@@ -131,74 +124,60 @@ const config: Config = {
         primary: {
           DEFAULT: 'hsl(var(--primary-h) var(--primary-s)% var(--primary-l)%)',
           foreground: 'hsl(var(--primary-foreground-h) var(--primary-foreground-s)% var(--primary-foreground-l)%)',
-          hover: 'hsl(var(--primary-h) var(--primary-s)% var(--primary-l-hover)%)',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary-h) var(--secondary-s)% var(--secondary-l)%)',
           foreground: 'hsl(var(--secondary-foreground-h) var(--secondary-foreground-s)% var(--secondary-foreground-l)%)',
-          hover: 'hsl(var(--secondary-h) var(--secondary-s)% var(--secondary-l-hover)%)',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive-h) var(--destructive-s)% var(--destructive-l)%)',
           foreground: 'hsl(var(--destructive-foreground-h) var(--destructive-foreground-s)% var(--destructive-foreground-l)%)',
-          hover: 'hsl(var(--destructive-h) var(--destructive-s)% var(--destructive-l-hover)%)',
         },
         muted: {
           DEFAULT: 'hsl(var(--muted-h) var(--muted-s)% var(--muted-l)%)',
           foreground: 'hsl(var(--muted-foreground-h) var(--muted-foreground-s)% var(--muted-foreground-l)%)',
-          hover: 'hsl(var(--muted-h) var(--muted-s)% var(--muted-l-hover)%)',
         },
         accent: {
           DEFAULT: 'hsl(var(--accent-h) var(--accent-s)% var(--accent-l)%)',
           foreground: 'hsl(var(--accent-foreground-h) var(--accent-foreground-s)% var(--accent-foreground-l)%)',
-          hover: 'hsl(var(--accent-h) var(--accent-s)% var(--accent-l-hover)%)',
         },
         popover: {
           DEFAULT: 'hsl(var(--popover-h) var(--popover-s)% var(--popover-l)%)',
           foreground: 'hsl(var(--popover-foreground-h) var(--popover-foreground-s)% var(--popover-foreground-l)%)',
-          hover: 'hsl(var(--popover-h) var(--popover-s)% var(--popover-l-hover)%)',
         },
         card: {
           DEFAULT: 'hsl(var(--card-h) var(--card-s)% var(--card-l)%)',
           foreground: 'hsl(var(--card-foreground-h) var(--card-foreground-s)% var(--card-foreground-l)%)',
-          hover: 'hsl(var(--card-h) var(--card-s)% var(--card-l-hover)%)',
         },
         cancel: {
           DEFAULT: 'hsl(var(--cancel-h) var(--cancel-s)% var(--cancel-l)%)',
           foreground: 'hsl(var(--cancel-foreground-h) var(--cancel-foreground-s)% var(--cancel-foreground-l)%)',
-          hover: 'hsl(var(--cancel-h) var(--cancel-s)% var(--cancel-l-hover)%)',
         },
         'public-bg': {
           DEFAULT: 'hsl(var(--public-bg-h) var(--public-bg-s)% var(--public-bg-l)%)',
           foreground: 'hsl(var(--public-foreground-solid-h) var(--public-foreground-solid-s)% var(--public-foreground-solid-l)%)',
-          hover: 'hsl(var(--public-bg-h) var(--public-bg-s)% var(--public-bg-l-hover)%)',
         },
         'private-bg': {
           DEFAULT: 'hsl(var(--private-bg-h) var(--private-bg-s)% var(--private-bg-l)%)',
           foreground: 'hsl(var(--private-foreground-solid-h) var(--private-foreground-solid-s)% var(--private-foreground-solid-l)%)',
-          hover: 'hsl(var(--private-bg-h) var(--private-bg-s)% var(--private-bg-l-hover)%)',
         },
         'organisation-bg': {
           DEFAULT: 'hsl(var(--organisation-bg-h) var(--organisation-bg-s)% var(--organisation-bg-l)%)',
           foreground: 'hsl(var(--organisation-foreground-solid-h) var(--organisation-foreground-solid-s)% var(--organisation-foreground-solid-l)%)',
-          hover: 'hsl(var(--organisation-bg-h) var(--organisation-bg-s)% var(--organisation-bg-l-hover)%)',
         },
         success: {
           DEFAULT: 'hsl(var(--success-h) var(--success-s)% var(--success-l)%)',
           foreground: 'hsl(var(--success-fg-h) var(--success-fg-s)% var(--success-fg-l)%)',
           border: 'hsl(var(--success-border-h) var(--success-border-s)% var(--success-border-l)%)',
-          hover: 'hsl(var(--success-h) var(--success-s)% var(--success-l-hover)%)',
         },
         error: {
           DEFAULT: 'hsl(var(--error-h) var(--error-s)% var(--error-l)%)',
           foreground: 'hsl(var(--error-fg-h) var(--error-fg-s)% var(--error-fg-l)%)',
           border: 'hsl(var(--error-border-h) var(--error-border-s)% var(--error-border-l)%)',
-          hover: 'hsl(var(--error-h) var(--error-s)% var(--error-l-hover)%)',
         },
         olive: {
           DEFAULT: 'hsl(var(--olive-h) var(--olive-s)% var(--olive-l)%)',
           foreground: 'hsl(var(--olive-foreground-h) var(--olive-foreground-s)% var(--olive-foreground-l)%)',
-          hover: 'hsl(var(--olive-h) var(--olive-s)% var(--olive-l-hover)%)',
         },
       },
       borderRadius: {
@@ -240,6 +219,8 @@ const config: Config = {
           // Calculate hover lightness
           const hoverL = l < 50 ? Math.min(100, l + 10) : Math.max(0, l - 10);
           targetVars[`--${colorName}-l-hover`] = `${hoverL}%`;
+          // Directly define a CSS variable for the hover background color
+          targetVars[`--${colorName}-bg-hover`] = `hsl(var(--${colorName}-h) var(--${colorName}-s)% var(--${colorName}-l-hover)%)`;
         }
       };
 
