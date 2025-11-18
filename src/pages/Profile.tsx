@@ -15,7 +15,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Linkedin, Clipboard, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, MessageSquare, Lightbulb } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -681,7 +681,7 @@ const Profile = () => {
                         <span>Brief Bio</span>
                       </Label>
                     </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="start" sideOffset={8}>
+                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
                       {getDisplayVisibilityStatus(bioVisibilityInput)}
                     </TooltipContent>
                   </Tooltip>
@@ -714,7 +714,7 @@ const Profile = () => {
                         <span>Intention</span>
                       </Label>
                     </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="start" sideOffset={8}>
+                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
                       {getDisplayVisibilityStatus(intentionVisibilityInput)}
                     </TooltipContent>
                   </Tooltip>
@@ -747,7 +747,7 @@ const Profile = () => {
                         <span>I can help with</span>
                       </Label>
                     </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="start" sideOffset={8}>
+                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
                       {getDisplayVisibilityStatus(canHelpWithVisibilityInput)}
                     </TooltipContent>
                   </Tooltip>
@@ -780,7 +780,7 @@ const Profile = () => {
                         <span>I need help with</span>
                       </Label>
                     </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="start" sideOffset={8}>
+                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
                       {getDisplayVisibilityStatus(needHelpWithVisibilityInput)}
                     </TooltipContent>
                   </Tooltip>
@@ -813,7 +813,7 @@ const Profile = () => {
                         <span>LinkedIn Handle</span>
                       </Label>
                     </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="start" sideOffset={8}>
+                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
                       {getDisplayVisibilityStatus(linkedinVisibilityInput)}
                     </TooltipContent>
                   </Tooltip>
