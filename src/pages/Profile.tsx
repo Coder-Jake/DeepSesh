@@ -759,7 +759,7 @@ const Profile = () => {
                     <Label
                       htmlFor="need-help-with"
                       onClick={() => handleLabelClick(needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput, 'need_help_with', setIsNeedHelpWithClickTooltipOpen)}
-                      className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
+                      className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
                     >
                       {React.createElement(getPrivacyIcon(getIndexFromVisibility(needHelpWithVisibilityInput)), { size: 16 })}
                       <span>I need help with</span>
