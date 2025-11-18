@@ -86,7 +86,6 @@ export default {
 					DEFAULT: 'hsl(var(--success-bg))',
 					foreground: 'hsl(var(--success-fg))',
 					border: 'hsl(var(--success-border))',
-					// Removed: hover: 'hsl(var(--success-hover))',
 				},
 				error: { // NEW: Error color for denied states
 					DEFAULT: 'hsl(var(--error-bg))',
