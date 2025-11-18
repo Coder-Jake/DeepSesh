@@ -77,7 +77,6 @@ export default {
 				'private-bg': { // NEW: Private background color
 					DEFAULT: 'hsl(var(--private-background-solid))',
 					foreground: 'hsl(var(--private-foreground-solid))',
-					// Removed: hover: 'hsl(var(--private-background-solid-hover))',
 				},
 				'organisation-bg': { // NEW: Organisation background color
 					DEFAULT: 'hsl(var(--organisation-background-solid))',
