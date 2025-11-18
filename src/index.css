@@ -189,10 +189,6 @@
     --cancel: 0 60% 20%; /* Darker light red for dark mode */
     --cancel-foreground: 0 80% 80%; /* Lighter red for text in dark mode */
 
-    /* Opacity for outline/ghost button hover effects */
-    --outline-hover-opacity-dark: 0;
-    --ghost-hover-opacity-dark: 0;
-
     /* Success colors for dark mode */
     --success-bg-dark: 120 40% 40%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
