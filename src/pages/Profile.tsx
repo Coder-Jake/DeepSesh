@@ -675,7 +675,7 @@ const Profile = () => {
                       className={cn("cursor-pointer select-none flex items-center gap-2", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
                     >
                       {React.createElement(getPrivacyIcon(getIndexFromVisibility(bioVisibilityInput)), { size: 16 })}
-                      <span>Brief Bio</span>
+                      Brief Bio
                     </Label>
                   </TooltipTrigger>
                   <TooltipContent className="select-none" side="right" align="start" sideOffset={8}>
