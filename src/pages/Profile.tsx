@@ -678,7 +678,7 @@ const Profile = () => {
                       Brief Bio
                     </Label>
                   </TooltipTrigger>
-                  <TooltipContent className="select-none" side="top" align="start">
+                  <TooltipContent className="select-none" side="top" align="start" sideOffset={8}>
                     {getDisplayVisibilityStatus(bioVisibilityInput)}
                   </TooltipContent>
                 </Tooltip>
@@ -707,7 +707,7 @@ const Profile = () => {
                       Intention
                     </Label>
                   </TooltipTrigger>
-                  <TooltipContent className="select-none" side="top" align="start">
+                  <TooltipContent className="select-none" side="top" align="start" sideOffset={8}>
                     {getDisplayVisibilityStatus(intentionVisibilityInput)}
                   </TooltipContent>
                 </Tooltip>
@@ -736,7 +736,7 @@ const Profile = () => {
                       I can help with
                     </Label>
                   </TooltipTrigger>
-                  <TooltipContent className="select-none" side="top" align="start">
+                  <TooltipContent className="select-none" side="top" align="start" sideOffset={8}>
                     {getDisplayVisibilityStatus(canHelpWithVisibilityInput)}
                   </TooltipContent>
                 </Tooltip>
@@ -765,7 +765,7 @@ const Profile = () => {
                       I need help with
                     </Label>
                   </TooltipTrigger>
-                  <TooltipContent className="select-none" side="top" align="start">
+                  <TooltipContent className="select-none" side="top" align="start" sideOffset={8}>
                     {getDisplayVisibilityStatus(needHelpWithVisibilityInput)}
                   </TooltipContent>
                 </Tooltip>
@@ -794,7 +794,7 @@ const Profile = () => {
                       LinkedIn Handle
                     </Label>
                   </TooltipTrigger>
-                  <TooltipContent className="select-none" side="top" align="start">
+                  <TooltipContent className="select-none" side="top" align="start" sideOffset={8}>
                     {getDisplayVisibilityStatus(linkedinVisibilityInput)}
                   </TooltipContent>
                 </Tooltip>
@@ -831,7 +831,7 @@ const Profile = () => {
                       <TooltipTrigger asChild>
                         <span className="cursor-help">Join Code</span>
                       </TooltipTrigger>
-                      <TooltipContent className="select-none">
+                      <TooltipContent className="select-none" sideOffset={8}>
                         <p>Others can use this code to join your sessions.</p>
                       </TooltipContent>
                     </Tooltip>
