@@ -46,6 +46,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { calculateDistance } from '@/utils/location-utils';
 import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data'; // NEW: Import local mock data
 
@@ -975,7 +976,9 @@ const Index = () => {
           description: `An error occurred: ${err.message || String(err)}.`,
         });
       }
-      resetSessionStates();
+    } finally {
+      setJoinSessionCode("");
+      setShowJoinInput(false);
     }
   };
 
@@ -1453,7 +1456,7 @@ const Index = () => {
                 navigate('/settings', { state: { openAccordion: 'location' } });
               })}
               onTouchEnd={handlePressEnd}
-              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
                 <Tooltip>
@@ -1461,7 +1464,7 @@ const Index = () => {
                       <MapPin
                         size={16}
                         className={cn(
-                          "cursor-pointer",
+                          "cursor-pointer hover:text-primary",
                           geolocationPermissionStatus === 'granted' && "text-success-foreground",
                           geolocationPermissionStatus === 'denied' && "text-error-foreground"
                         )}
@@ -1526,7 +1529,7 @@ const Index = () => {
           <div data-name="Friends Sessions Section">
             <button
               onClick={() => setIsFriendsSessionsOpen(prev => !prev)}
-              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
                 <Users size={16} className="text-blue-500" />
@@ -1563,7 +1566,7 @@ const Index = () => {
           <div data-name="Organization Sessions Section">
             <button
               onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
-              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-2">
                 <Building2 size={16} className="text-olive-foreground" />
@@ -1614,7 +1617,7 @@ const Index = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsSchedulingMode(true)}
-                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors"
+                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors"
                       data-name="Schedule Button"
                     >
                       <CalendarPlus size={16} />
@@ -1650,9 +1653,9 @@ const Index = () => {
                         onClick={handleSessionVisibilityToggle}
                         className={cn(
                           "flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors select-none",
-                          sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground",
-                          sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground",
-                          sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground"
+                          sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover",
+                          sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover",
+                          sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover"
                         )}
                         data-name="Session Visibility Toggle Button"
                       >
@@ -1682,7 +1685,7 @@ const Index = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors"
+                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors"
                               data-name="Share Options Button"
                             >
                               <Share2 size={16} />
@@ -1699,7 +1702,7 @@ const Index = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => setShowJoinInput(true)}
-                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors"
+                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border hover:bg-secondary-hover transition-colors"
                           data-name="Join Sesh Button"
                         >
                           <Users size={16} />
@@ -1810,7 +1813,7 @@ const Index = () => {
                           onTouchStart={() => handlePressStart(handleLongPressStop)}
                           onTouchEnd={handlePressEnd}
                           className={cn(
-                            "w-full h-full rounded-none bg-transparent",
+                            "w-full h-full rounded-none bg-transparent hover:bg-primary/5 dark:hover:bg-primary/10",
                             isPaused ? "text-error-foreground" : "text-secondary-foreground"
                           )}
                           data-name="Stop Timer Button"
@@ -1922,7 +1925,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <p
-                    className="text-sm text-muted-foreground cursor-pointer transition-colors select-none"
+                    className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
                     onMouseDown={() => handlePressStart(handleIntentionLongPress)}
                     onMouseUp={handlePressEnd}
                     onMouseLeave={handlePressEnd}
@@ -2002,7 +2005,7 @@ const Index = () => {
                         "flex items-center justify-between p-2 rounded-md select-none",
                         person.role === 'self' ? (isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]") :
                         person.role === 'host' ? "bg-muted text-blue-700 font-medium" :
-                        "cursor-pointer"
+                        "hover:bg-muted cursor-pointer"
                       )}
                       data-name={`Coworker: ${person.userName}`}
                       onClick={(e) => handleNameClick(person.userId, person.userName, e)}
@@ -2228,9 +2231,9 @@ const Index = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success",
-                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error",
-                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground" // NEW: Added specific styles for 'prompt'
+                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover",
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover",
+                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-secondary-hover" // NEW: Added specific styles for 'prompt'
                   )}
                   onClick={getLocation}
                 >
@@ -2243,7 +2246,7 @@ const Index = () => {
             </div>
             <DialogFooter>
               <p className="text-xs text-muted-foreground mr-auto">
-                Add more details on your <Link to="/profile" className="text-blue-500 underline">profile page</Link>
+                Add more details on your <Link to="/profile" className="text-blue-500 hover:underline">profile page</Link>
               </p>
               <Button onClick={handleActivateDiscovery}>Continue</Button>
             </DialogFooter>

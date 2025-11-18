@@ -445,7 +445,7 @@ const ScheduleForm: React.FC = () => {
                 >
                   <div className="flex items-center gap-1 flex-grow-0">
                     <span 
-                      className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer transition-colors"
+                      className="font-semibold text-sm text-gray-500 flex-shrink-0 cursor-pointer hover:text-foreground transition-colors"
                       onClick={(e) => { e.stopPropagation(); handleOpenColorPicker(e, timer.id); }}
                     >
                       {index + 1}.
@@ -524,8 +524,8 @@ const ScheduleForm: React.FC = () => {
                 size="icon"
                 onClick={() => setIsRecurring(prev => !prev)} 
                 className={cn(
-                  "h-8 w-8 rounded-full focus:bg-transparent active:bg-transparent", 
-                  isRecurring ? "text-[hsl(120_30%_45%)]" : "text-muted-foreground" 
+                  "h-8 w-8 rounded-full hover:bg-transparent focus:bg-transparent active:bg-transparent", 
+                  isRecurring ? "text-[hsl(120_30%_45%)] hover:text-[hsl(120_30%_40%)]" : "text-muted-foreground" 
                 )}
                 aria-label="Toggle schedule loop"
               >
@@ -537,7 +537,7 @@ const ScheduleForm: React.FC = () => {
                 )}
                 {scheduleEndTime && (
                   <span
-                    className="cursor-pointer transition-colors"
+                    className="cursor-pointer hover:text-foreground transition-colors"
                     onClick={() => setShowTotalDuration(prev => !prev)}
                   >
                     {isRecurring ? "Loops: " : "End: "} {scheduleEndTime}
@@ -550,7 +550,7 @@ const ScheduleForm: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   onClick={handleTrashAllTimers}
-                  className="h-8 w-8 text-destructive"
+                  className="h-8 w-8 text-destructive hover:text-destructive/80"
                   aria-label="Trash all schedule lines"
                 >
                   <Trash2 className="h-4 w-4" />

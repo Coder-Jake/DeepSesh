@@ -93,9 +93,9 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-6 h-6"
+                className="w-6 h-6 hover:bg-muted"
               >
-                <Share2 className="h-4 w-4 text-foreground" />
+                <Share2 className="h-4 w-4 text-foreground hover:text-blue-700" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -121,7 +121,7 @@ const ScheduleTemplateCard: React.FC<ScheduleTemplateCardProps> = ({ template, s
         onClick={handleDelete}
         className="absolute top-0 right-0"
       >
-        <Trash2 className="h-3 w-3 text-foreground" />
+        <Trash2 className="h-3 w-3 text-foreground hover:text-red-700" />
       </Button>
     </Card>
   );
