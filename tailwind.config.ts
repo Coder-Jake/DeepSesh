@@ -27,17 +27,17 @@ export default {
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))',
-					hover: 'hsl(var(--primary-hover))' // NEW: Primary hover color
+					// Removed: hover: 'hsl(var(--primary-hover))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))',
-					hover: 'hsl(var(--secondary-hover))' // NEW: Secondary hover color
+					// Removed: hover: 'hsl(var(--secondary-hover))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))',
-					hover: 'hsl(var(--destructive-hover))' // NEW: Destructive hover color
+					// Removed: hover: 'hsl(var(--destructive-hover))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
@@ -76,29 +76,29 @@ export default {
 				'public-bg': { // NEW: Public background color
 					DEFAULT: 'hsl(var(--public-background-solid))',
 					foreground: 'hsl(var(--public-foreground-solid))',
-					hover: 'hsl(var(--public-background-solid-hover))', // NEW
+					// Removed: hover: 'hsl(var(--public-background-solid-hover))',
 				},
 				'private-bg': { // NEW: Private background color
 					DEFAULT: 'hsl(var(--private-background-solid))',
 					foreground: 'hsl(var(--private-foreground-solid))',
-					hover: 'hsl(var(--private-background-solid-hover))', // NEW
+					// Removed: hover: 'hsl(var(--private-background-solid-hover))',
 				},
 				'organisation-bg': { // NEW: Organisation background color
 					DEFAULT: 'hsl(var(--organisation-background-solid))',
 					foreground: 'hsl(var(--organisation-foreground-solid))',
-					hover: 'hsl(var(--organisation-background-solid-hover))', // NEW
+					// Removed: hover: 'hsl(var(--organisation-background-solid-hover))',
 				},
 				success: { // NEW: Success color for granted states
 					DEFAULT: 'hsl(var(--success-bg))',
 					foreground: 'hsl(var(--success-fg))',
 					border: 'hsl(var(--success-border))',
-					hover: 'hsl(var(--success-hover))',
+					// Removed: hover: 'hsl(var(--success-hover))',
 				},
 				error: { // NEW: Error color for denied states
 					DEFAULT: 'hsl(var(--error-bg))',
 					foreground: 'hsl(var(--error-fg))',
 					border: 'hsl(var(--error-border))',
-					hover: 'hsl(var(--error-hover))',
+					// Removed: hover: 'hsl(var(--error-hover))',
 				},
 				'public-text': { // NEW: Public text color
 					DEFAULT: 'hsl(var(--public-text))',
