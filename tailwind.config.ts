@@ -91,7 +91,6 @@ export default {
 					DEFAULT: 'hsl(var(--error-bg))',
 					foreground: 'hsl(var(--error-fg))',
 					border: 'hsl(var(--error-border))',
-					// Removed: hover: 'hsl(var(--error-hover))',
 				},
 				'public-text': { // NEW: Public text color
 					DEFAULT: 'hsl(var(--public-text))',
