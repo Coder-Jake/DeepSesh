@@ -20,18 +20,18 @@
 
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-    --primary-hover: 222.2 47.4% 21.2%; /* 10% lighter */
+    /* --primary-hover: 222.2 47.4% 21.2%; */
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --secondary-hover: 210 50% 50%; /* 10% lighter, capped at 100% */
+    /* --secondary-hover: 210 50% 50%; */
 
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --destructive-hover: 0 84.2% 70.2%; /* 10% lighter */
+    /* --destructive-hover: 0 84.2% 70.2%; */
 
     --ring: 215 20.2% 65.1%;
 
@@ -54,9 +54,9 @@
     --private-foreground-solid: var(--foreground);
 
     /* NEW: Solid public/private/organisation hover backgrounds for light mode (10% lighter) */
-    --public-background-solid-hover: 200 90% 92.5%; /* Corrected variable name */
-    --private-background-solid-hover: 270 100% 97.5%; /* Corrected variable name */
-    --organisation-background-solid-hover: 80 60% 92.5%; /* Corrected variable name */
+    /* --public-background-solid-hover: 200 90% 92.5%; */
+    /* --private-background-solid-hover: 270 100% 97.5%; */
+    /* --organisation-background-solid-hover: 80 60% 92.5%; */
 
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 10%; /* Darker olive for text */
@@ -79,31 +79,31 @@
     --cancel-foreground: 0 80% 30%; /* Darker red for text */
 
     /* Opacity for outline/ghost button hover effects */
-    --outline-hover-opacity-light: 0.05;
-    --ghost-hover-opacity-light: 0.05;
+    /* --outline-hover-opacity-light: 0.05; */
+    /* --ghost-hover-opacity-light: 0.05; */
 
     /* Success colors */
     --success-bg: var(--success-bg-light);
     --success-fg: var(--success-fg-light);
     --success-border: var(--success-border-light);
-    --success-hover: var(--success-hover-light);
+    /* --success-hover: var(--success-hover-light); */
 
     /* Error colors */
     --error-bg: var(--error-bg-light);
     --error-fg: var(--error-fg-light);
     --error-border: var(--error-border-light);
-    --error-hover: var(--error-hover-light);
+    /* --error-hover: var(--error-hover-light); */
 
     /* Light Mode specific definitions */
     --success-bg-light: 120 60% 90%; /* Light green */
     --success-fg-light: 120 60% 30%; /* Darker green text */
     --success-border-light: 120 60% 80%; /* Border color */
-    --success-hover-light: 120 60% 80%; /* MODIFIED: 10% darker than base */
+    /* --success-hover-light: 120 60% 80%; */
 
     --error-bg-light: 0 80% 90%; /* Light red */
     --error-fg-light: 0 80% 40%; /* Darker red text */
     --error-border-light: 0 80% 80%; /* Border color */
-    --error-hover-light: 0 80% 100%; /* 10% lighter, capped at 100% */
+    /* --error-hover-light: 0 80% 100%; */
 
     /* NEW: Text colors for session visibility (light mode) */
     --public-text: 200 90% 30%; /* Darker blue */
@@ -130,18 +130,18 @@
 
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --primary-hover: 210 40% 100%; /* 10% lighter, capped at 100% */
+    /* --primary-hover: 210 40% 100%; */
 
     --secondary: 250 30% 17.5%; /* Changed hue to purple */
     --secondary-foreground: 210 40% 98%;
-    --secondary-hover: 250 30% 27.5%; /* Changed hue to purple, 10% lighter */
+    /* --secondary-hover: 250 30% 27.5%; */
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --destructive-hover: 0 62.8% 40.6%; /* 10% lighter */
+    /* --destructive-hover: 0 62.8% 40.6%; */
 
     --ring: 217.2 32.6% 17.5%;
 
@@ -165,9 +165,9 @@
     --organisation-foreground-solid: var(--foreground);
 
     /* NEW: Solid public/private/organisation hover backgrounds for dark mode (10% lighter) */
-    --public-background-solid-hover: 220 50% 52.5%; /* Corrected variable name */
-    --private-background-solid-hover: 270 30% 52.5%; /* Corrected variable name */
-    --organisation-background-solid-hover: 80 40% 52.5%; /* Corrected variable name */
+    /* --public-background-solid-hover: 220 50% 52.5%; */
+    /* --private-background-solid-hover: 270 30% 52.5%; */
+    /* --organisation-background-solid-hover: 80 40% 52.5%; */
 
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */
@@ -193,13 +193,13 @@
     --success-bg-dark: 120 40% 40%; /* Dark green */
     --success-fg-dark: 120 40% 80%; /* Lighter green text */
     --success-border-dark: 120 40% 30%; /* Border color */
-    --success-hover-dark: 120 50% 30%; /* MODIFIED: Increased saturation and lightness for a richer, darker green */
+    /* --success-hover-dark: 120 50% 30%; */
 
     /* Error colors for dark mode */
     --error-bg-dark: 0 60% 20%; /* Dark red */
     --error-fg-dark: 0 60% 80%; /* Lighter red text */
     --error-border-dark: 0 60% 30%; /* Border color */
-    --error-hover-dark: 0 60% 30%; /* 10% lighter */
+    /* --error-hover-dark: 0 60% 30%; */
 
     /* NEW: Text colors for session visibility (dark mode) */
     --public-text: 200 90% 70%; /* Lighter blue */
