@@ -950,9 +950,9 @@ const Settings = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover", // NEW: Added hover effect
-                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover", // NEW: Added hover effect
-                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover" // NEW: Added hover effect
+                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success", // REMOVED: hover:bg-success-hover
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover",
+                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover"
                   )}
                   onClick={handleLocationButtonClick}
                 >
