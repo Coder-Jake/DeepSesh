@@ -114,18 +114,15 @@
 
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    /* --primary-hover: 210 40% 100%; */
 
     --secondary: 250 30% 17.5%; /* Changed hue to purple */
     --secondary-foreground: 210 40% 98%;
-    /* --secondary-hover: 250 30% 27.5%; */
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    /* --destructive-hover: 0 62.8% 40.6%; */
 
     --ring: 217.2 32.6% 17.5%;
 
@@ -147,11 +144,6 @@
     /* NEW: Solid organisation background for dark mode */
     --organisation-background-solid: 80 40% 42.5%;
     --organisation-foreground-solid: var(--foreground);
-
-    /* NEW: Solid public/private/organisation hover backgrounds for dark mode (10% lighter) */
-    /* --public-background-solid-hover: 220 50% 52.5%; */
-    /* --private-background-solid-hover: 270 30% 52.5%; */
-    /* --organisation-background-solid-hover: 80 40% 52.5%; */
 
     --olive: 80 40% 50%; /* Olive green */
     --olive-foreground: 80 40% 90%; /* Lighter olive for text */
