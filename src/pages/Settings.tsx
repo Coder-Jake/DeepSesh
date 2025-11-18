@@ -55,7 +55,7 @@ const Settings = () => {
     manualTransition,
     setManualTransition,
     maxDistance,
-    setMaxDistance,
+    setMaxDistance, // Keep this one
     askNotifications,
     setAskNotifications,
     joinNotifications, 
@@ -88,7 +88,7 @@ const Settings = () => {
     showDemoSessions,
     setShowDemoSessions,
     limitDiscoveryRadius,
-    setMaxDistance,
+    // Removed duplicate setMaxDistance here
     setLimitDiscoveryRadius,
   } = useTimer();
 
