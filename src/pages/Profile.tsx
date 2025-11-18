@@ -15,7 +15,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/Auth/AuthContext";
+import { useAuth } from "@/contexts/AuthContext"; // Corrected import path
 import { useNavigate } from "react-router-dom";
 import { Linkedin, Clipboard, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, MessageSquare, Lightbulb } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
