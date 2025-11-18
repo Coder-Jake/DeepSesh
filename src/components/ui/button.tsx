@@ -9,15 +9,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-[var(--primary-bg-hover)]", // Use custom hover color variable
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-[var(--destructive-bg-hover)]", // Use custom hover color variable
-        outline:
-          "border border-input bg-background hover:bg-[var(--accent-bg-hover)] hover:text-accent-foreground", // Use custom hover color variable for accent
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[var(--secondary-bg-hover)]", // Use custom hover color variable
-        ghost: "hover:bg-[var(--accent-bg-hover)] hover:text-accent-foreground", // Use custom hover color variable for accent
-        link: "text-primary underline-offset-4 hover:underline",
+        default: "bg-primary text-primary-foreground",
+        destructive: "bg-destructive text-destructive-foreground",
+        outline: "border border-input bg-background",
+        secondary: "bg-secondary text-secondary-foreground",
+        ghost: "",
+        link: "text-primary underline-offset-4",
       },
       size: {
         default: "h-10 px-4 py-2",
