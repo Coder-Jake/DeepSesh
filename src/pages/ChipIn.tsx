@@ -222,7 +222,7 @@ const ChipIn = () => {
                 <li>• Sharing DeepSesh with friends</li>
                 <li>• Providing <Link to="/feedback" className="text-blue-500 underline">feedback and suggestions</Link></li>
                 <li>• Reporting bugs you encounter</li>
-                <li>• Contributing to our community</li>
+                <li>• Contributing to our <a href="https://discord.gg/dtYakXSukh" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">community</a></li>
               </ul>
             </CardContent>
           </Card>
