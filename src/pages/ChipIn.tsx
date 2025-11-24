@@ -87,9 +87,8 @@ const ChipIn = () => {
             href="https://discord.gg/dtYakXSukh" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="w-full"
           >
-            <Button className="w-full"> Join Discord
+            <Button> Join Discord
             </Button>
           </a>
         </CardContent>
