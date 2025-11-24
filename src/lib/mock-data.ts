@@ -215,6 +215,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
     workspaceDescription: "Collaborative space for ideas.",
     participants: [
       createMockParticipant(MOCK_PROFILES[2], 'host'),
+      createMockParticipant(MOCK_PROFILES[6], 'coworker'), // ADDED: Jake as a coworker
     ],
     location_lat: -33.8688 + (Math.random() - 0.5) * 0.02,
     location_long: 151.2093 + (Math.random() - 0.5) * 0.02,

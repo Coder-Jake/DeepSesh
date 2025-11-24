@@ -169,7 +169,7 @@ const fetchSupabaseSessions = async (
       userName: p.userName,
       joinTime: p.joinTime,
       role: p.role,
-      focusPreference: p.focusPreference || 50,
+      focusPreference: p.focus_preference || 50, // Corrected to focus_preference
       intention: p.intention || undefined,
       bio: p.bio || undefined,
     }));
@@ -354,7 +354,7 @@ const Index = () => {
     maxDistance,
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses } = useProfile(); // ADDED: friendStatuses
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleProfilePopUp } = useProfilePopUp();
@@ -474,19 +474,19 @@ const Index = () => {
     console.log("Filtering mock friends sessions...");
     console.log("filteredLocalMockSessions:", filteredLocalMockSessions);
     console.log("profile?.id:", profile?.id);
+    console.log("friendStatuses:", friendStatuses); // Log friendStatuses
 
     if (!filteredLocalMockSessions || !profile?.id) {
       console.log("Skipping friends filter: filteredLocalMockSessions or profile ID missing.");
       return [];
     }
-    // For mock data, we'll just use a simple heuristic or hardcoded list for "friends"
-    // For now, let's assume sessions with 'mock-user-id-freud' as host are "friends" sessions
+    // MODIFIED: Check if any participant in the session is a friend of the current user
     return filteredLocalMockSessions.filter(session => {
-      const isFriendSession = session.user_id === 'c3d4e5f6-a7b8-4901-8234-567890abcdef01'; // Freud's ID
-      console.log(`Session ${session.id} (${session.title}): user_id=${session.user_id}, isFriendSession=${isFriendSession}`);
+      const isFriendSession = session.participants.some(p => friendStatuses[p.userId] === 'friends');
+      console.log(`Session ${session.id} (${session.title}): isFriendSession=${isFriendSession}`);
       return isFriendSession;
     });
-  }, [filteredLocalMockSessions, profile?.id]);
+  }, [filteredLocalMockSessions, profile?.id, friendStatuses]); // ADDED: friendStatuses to dependencies
 
   // NEW: Use local MOCK_SESSIONS for organization sessions
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
