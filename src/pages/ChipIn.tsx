@@ -73,26 +73,25 @@ const ChipIn = () => {
       </div>
 
       {/* NEW: Join Discord Section */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Join Our Community
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Connect with other DeepSesh users, share ideas, and get support on our Discord server!
-          </p>
-          <a 
-            href="https://discord.gg/dtYakXSukh" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-          >
-            <Button> Join Discord
-            </Button>
-          </a>
-        </CardContent>
-      </Card>
+      <a 
+        href="https://discord.gg/dtYakXSukh" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="block mt-8 transition-colors hover:bg-card-hover rounded-lg" // Make the whole card clickable
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Join DeepSesh on Discord
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Connect with other DeepSesh users, share ideas, and get support on our Discord server!
+            </p>
+          </CardContent>
+        </Card>
+      </a>
 
       {/* Existing Feedback and Collaborate Section */}
       <FeedbackAndCollaborateSection />
