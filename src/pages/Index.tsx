@@ -108,12 +108,13 @@ interface SupabaseSessionData {
 const filterLocalMockSessions = (
   mockSessions: DemoSession[],
   mockProfiles: ProfileType[],
-  userId: string | undefined,
+  currentUserId: string | undefined, // Renamed userId to currentUserId for clarity
   userLatitude: number | null,
   userLongitude: number | null,
   profileOrganization: string | null,
   limitDiscoveryRadius: boolean,
-  maxDistance: number
+  maxDistance: number,
+  friendStatuses: Record<string, 'friends' | 'pending' | 'none'> // NEW: Pass friendStatuses
 ): DemoSession[] => {
   return mockSessions.map(session => {
     let distance: number | null = null;
@@ -124,15 +125,36 @@ const filterLocalMockSessions = (
   }).filter(session => {
     // Apply visibility filters
     const isPublic = session.visibility === 'public';
-    const isFriends = session.visibility === 'friends';
-    const isOrganization = session.visibility === 'organisation';
+    const isPrivate = session.visibility === 'private';
+    const isFriendsOnly = session.visibility === 'friends';
+    const isOrganizationOnly = session.visibility === 'organisation';
 
-    // For mock data, we'll simplify "friends" and "organization" logic
-    // A real implementation would check actual friend lists and organization memberships.
-    const isHostFriend = isFriends && session.participants.some(p => p.userId === userId && p.role === 'host'); // Simplified friend check
-    const isHostOrgMember = isOrganization && session.organization && profileOrganization && session.organization === profileOrganization;
+    // Check if the current user is a participant in this session
+    const isUserInSession = currentUserId ? session.participants.some(p => p.userId === currentUserId) : false;
 
-    return isPublic || isHostFriend || isHostOrgMember;
+    // Check if any participant in the session is a friend of the current user
+    const hasFriendParticipant = currentUserId ? session.participants.some(p => friendStatuses[p.userId] === 'friends') : false;
+
+    // Check if any participant in the session is in the same organization as the current user
+    const hasOrganizationParticipant = currentUserId && profileOrganization && session.participants.some(p => {
+      const participantProfile = mockProfiles.find(mp => mp.id === p.userId);
+      return participantProfile?.organization === profileOrganization;
+    });
+
+    if (isPublic) {
+      return true;
+    }
+    if (isPrivate) {
+      return isUserInSession; // Only visible if the user is a participant
+    }
+    if (isFriendsOnly) {
+      return isUserInSession || hasFriendParticipant; // Visible if user is in session or a friend is a participant
+    }
+    if (isOrganizationOnly) {
+      return isUserInSession || hasOrganizationParticipant; // Visible if user is in session or an org member is a participant
+    }
+
+    return false; // Default to not visible
   });
 };
 
@@ -442,9 +464,10 @@ const Index = () => {
       userLocation.longitude,
       profile?.organization || null,
       limitDiscoveryRadius,
-      maxDistance
+      maxDistance,
+      friendStatuses // NEW: Pass friendStatuses
     );
-  }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, limitDiscoveryRadius, maxDistance]);
+  }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, limitDiscoveryRadius, maxDistance, friendStatuses]);
 
 
   // NEW: Filter mock sessions into nearby, friends, and organization
