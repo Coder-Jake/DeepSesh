@@ -142,6 +142,26 @@ export const MOCK_PROFILES: Profile[] = [
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
     }
   },
+  // NEW: Jake's profile
+  {
+    id: "a0b1c2d3-e4f5-4678-9012-34567890abcd", // Unique ID for Jake
+    first_name: "Jake",
+    last_name: null,
+    avatar_url: null,
+    focus_preference: 50, // Default focus preference
+    updated_at: new Date().toISOString(),
+    organization: "DeepSesh",
+    join_code: "DeepSeshJake", // A unique join code for Jake
+    visibility: ['public'],
+    profile_data: {
+      bio: getDefaultProfileDataField("Founder of DeepSesh", ['public']),
+      intention: getDefaultProfileDataField("put WeWork out of business", ['public']),
+      linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/jacobvxyz", ['public']),
+      can_help_with: getDefaultProfileDataField("facilitating community building with attention-respecting algorithms.", ['public']),
+      need_help_with: getDefaultProfileDataField("creating a win-win culture among all coworkers", ['public']),
+      pronouns: getDefaultProfileDataField("He/Him", ['public']),
+    }
+  },
 ];
 
 // Helper to create a mock participant

@@ -227,9 +227,21 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     const loadProfile = async () => {
       setLoading(true);
       const storedProfile = localStorage.getItem(LOCAL_STORAGE_PROFILE_KEY);
-      const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
-      const storedBlockedUsers = localStorage.getItem(LOCAL_STORAGE_BLOCKED_USERS_KEY);
-      const storedRecentCoworkers = localStorage.getItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY);
+      let currentFriendStatuses: Record<string, 'friends' | 'pending' | 'none'> = storedFriendStatuses ? JSON.parse(storedFriendStatuses) : {};
+      let currentBlockedUsers: string[] = storedBlockedUsers ? JSON.parse(storedBlockedUsers) : [];
+      let currentRecentCoworkers: string[] = storedRecentCoworkers ? JSON.parse(storedRecentCoworkers) : [];
+
+      // NEW: Add Jake as a default demo friend
+      const jakeProfile = MOCK_PROFILES.find(p => p.first_name === 'Jake');
+      if (jakeProfile) {
+        if (!currentFriendStatuses[jakeProfile.id]) {
+          currentFriendStatuses[jakeProfile.id] = 'friends';
+        }
+        if (!currentRecentCoworkers.includes(jakeProfile.first_name || '')) {
+          currentRecentCoworkers.unshift(jakeProfile.first_name || ''); // Add to front
+          currentRecentCoworkers = currentRecentCoworkers.slice(0, 10); // Keep max 10
+        }
+      }
 
       if (storedProfile) {
         const parsedProfile: Profile = JSON.parse(storedProfile);
@@ -264,17 +276,19 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         }
       }
 
-      if (storedFriendStatuses) {
-        setFriendStatuses(JSON.parse(storedFriendStatuses));
-      }
-      if (storedBlockedUsers) {
-        setBlockedUsers(JSON.parse(storedBlockedUsers));
-      }
-      if (storedRecentCoworkers) {
-        setRecentCoworkers(JSON.parse(storedRecentCoworkers));
-      }
+      setFriendStatuses(currentFriendStatuses);
+      setBlockedUsers(currentBlockedUsers);
+      setRecentCoworkers(currentRecentCoworkers);
+
+      localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(currentFriendStatuses));
+      localStorage.setItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY, JSON.stringify(currentRecentCoworkers));
+
       setLoading(false);
     };
+
+    const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
+    const storedBlockedUsers = localStorage.getItem(LOCAL_STORAGE_BLOCKED_USERS_KEY);
+    const storedRecentCoworkers = localStorage.getItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY);
 
     loadProfile();
 
