@@ -148,7 +148,7 @@ export const MOCK_PROFILES: Profile[] = [
     first_name: "Jake",
     last_name: null,
     avatar_url: null,
-    focus_preference: 50, // Default focus preference
+    focus_preference: 85, // Default focus preference
     updated_at: new Date().toISOString(),
     organization: "DeepSesh",
     join_code: "DeepSeshJake", // A unique join code for Jake
