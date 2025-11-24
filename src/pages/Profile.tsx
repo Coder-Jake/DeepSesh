@@ -22,7 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
-import { ProfileUpdate, ProfileDataJsonb } from "@/contexts/ProfileContext";
+import { ProfileUpdate, ProfileDataJsonb, Profile as ProfileType } from "@/contexts/ProfileContext"; // Renamed Profile to ProfileType to avoid conflict
 
 const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"];
 
@@ -125,6 +125,9 @@ const Profile = () => {
   // NEW: Slider drag state and refs
   const sliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingSlider, setIsDraggingSlider] = useState(false);
+
+  // NEW: State to store fetched friend profiles
+  const [friendProfiles, setFriendProfiles] = useState<Record<string, ProfileType | null>>({});
 
   const getDisplayVisibilityStatus = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[] | null): string => {
     if (!visibility || visibility.length === 0) return 'Public';
@@ -324,6 +327,33 @@ const Profile = () => {
       setHasChanges(false);
     }
   }, [loading, profile]);
+
+  // NEW: Effect to fetch friend profiles when the 'friends' list changes
+  useEffect(() => {
+    const fetchFriendsData = async () => {
+      const newFriendProfiles: Record<string, ProfileType | null> = {};
+      const friendsList = Object.entries(friendStatuses)
+        .filter(([, status]) => status === 'friends')
+        .map(([userId]) => userId);
+
+      for (const friendId of friendsList) {
+        // Only fetch if not already in state or if it's null
+        if (!friendProfiles[friendId]) {
+          const friendProfile = await getPublicProfile(friendId, friendId); // Use friendId as fallback name
+          newFriendProfiles[friendId] = friendProfile;
+        } else {
+          newFriendProfiles[friendId] = friendProfiles[friendId]; // Keep existing if already fetched
+        }
+      }
+      setFriendProfiles(newFriendProfiles);
+    };
+
+    if (Object.keys(friendStatuses).length > 0) {
+      fetchFriendsData();
+    } else {
+      setFriendProfiles({}); // Clear if no friends
+    }
+  }, [friendStatuses, getPublicProfile]); // Re-run when friendStatuses changes
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -917,7 +947,6 @@ const Profile = () => {
                     {focusPreferenceInput > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
-              </div>
             </CardContent>
           </Card>
 
@@ -950,34 +979,38 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               {friends.length > 0 ? (
-                friends.map((friendId) => (
-                  <div
-                    key={friendId}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80 relative"
-                    onClick={(e) => handleFriendClick(friendId, friendId, e)}
-                    onMouseDown={() => handleFriendLongPressStart(friendId)}
-                    onMouseUp={handleFriendLongPressEnd}
-                    onMouseLeave={handleFriendLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(() => handleFriendLongPressStart(friendId))}
-                    onTouchEnd={handleFriendLongPressEnd}
-                  >
-                    <p className="font-medium">{friendId}</p>
-                    {longPressedFriendId === friendId && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:bg-red-100"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnfriend(friendId);
-                        }}
-                        aria-label={`Unfriend ${friendId}`}
-                      >
-                        <UserMinus size={20} />
-                      </Button>
-                    )}
-                  </div>
-                ))
+                friends.map((friendId) => {
+                  const friendProfile = friendProfiles[friendId];
+                  const displayName = friendProfile?.first_name || friendId; // Display name or fallback to ID
+                  return (
+                    <div
+                      key={friendId}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80 relative"
+                      onClick={(e) => handleFriendClick(friendId, displayName, e)} // Pass displayName
+                      onMouseDown={() => handleFriendLongPressStart(friendId)}
+                      onMouseUp={handleFriendLongPressEnd}
+                      onMouseLeave={handleFriendLongPressEnd}
+                      onTouchStart={() => handleLongPressStart(() => handleFriendLongPressStart(friendId))}
+                      onTouchEnd={handleFriendLongPressEnd}
+                    >
+                      <p className="font-medium">{displayName}</p> {/* Display name here */}
+                      {longPressedFriendId === friendId && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:bg-red-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUnfriend(friendId);
+                          }}
+                          aria-label={`Unfriend ${displayName}`}
+                        >
+                          <UserMinus size={20} />
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })
               ) : (
                 <p className="text-sm text-muted-foreground">No friends yet. Send some requests!</p>
               )}
