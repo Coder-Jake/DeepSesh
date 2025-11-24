@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb, Linkedin } from "lucide-react";
+import { Heart, Coffee, Users, Code, DollarSign, TrendingUp, Lightbulb, Linkedin, Discord } from "lucide-react"; // NEW: Import Discord icon
 import { toast } from 'sonner';
 import { Link } from "react-router-dom";
 import FeedbackAndCollaborateSection from "@/components/FeedbackAndCollaborateSection";
@@ -72,7 +72,32 @@ const ChipIn = () => {
         </p>
       </div>
 
-      {/* New Feedback and Collaborate Section */}
+      {/* NEW: Join Discord Section */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Discord className="h-5 w-5" />
+            Join Our Community
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Connect with other DeepSesh users, share ideas, and get support on our Discord server!
+          </p>
+          <a 
+            href="https://discord.gg/dtYakXSukh" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="w-full"
+          >
+            <Button className="w-full">
+              <Discord className="mr-2 h-4 w-4" /> Join Discord
+            </Button>
+          </a>
+        </CardContent>
+      </Card>
+
+      {/* Existing Feedback and Collaborate Section */}
       <FeedbackAndCollaborateSection />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
