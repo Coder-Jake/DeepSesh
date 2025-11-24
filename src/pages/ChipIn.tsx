@@ -76,7 +76,6 @@ const ChipIn = () => {
       <Card className="mt-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Discord className="h-5 w-5" />
             Join Our Community
           </CardTitle>
         </CardHeader>
@@ -90,8 +89,7 @@ const ChipIn = () => {
             rel="noopener noreferrer" 
             className="w-full"
           >
-            <Button className="w-full">
-              <Discord className="mr-2 h-4 w-4" /> Join Discord
+            <Button className="w-full"> Join Discord
             </Button>
           </a>
         </CardContent>
