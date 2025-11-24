@@ -162,6 +162,66 @@ export const MOCK_PROFILES: Profile[] = [
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
     }
   },
+  // NEW: Rogers' profile
+  {
+    id: "g7h8i9j0-k1l2-4345-8678-90abcdef012345",
+    first_name: "Rogers",
+    last_name: null,
+    avatar_url: null,
+    focus_preference: 30,
+    updated_at: new Date().toISOString(),
+    organization: "Humanistic Psychology",
+    join_code: generateRandomJoinCode(),
+    visibility: ['public'],
+    profile_data: {
+      bio: getDefaultProfileDataField("Exploring client-centered therapy.", ['public']),
+      intention: getDefaultProfileDataField("Promoting self-actualization.", ['public']),
+      linkedin_url: getDefaultProfileDataField(null, ['public']),
+      can_help_with: getDefaultProfileDataField("Empathy, unconditional positive regard", ['public']),
+      need_help_with: getDefaultProfileDataField("Existential philosophy", ['public']),
+      pronouns: getDefaultProfileDataField("He/Him", ['public']),
+    }
+  },
+  // NEW: Maslow's profile
+  {
+    id: "h8i9j0k1-l2m3-4456-8789-0abcdef0123456",
+    first_name: "Maslow",
+    last_name: null,
+    avatar_url: null,
+    focus_preference: 45,
+    updated_at: new Date().toISOString(),
+    organization: "Humanistic Psychology",
+    join_code: generateRandomJoinCode(),
+    visibility: ['public'],
+    profile_data: {
+      bio: getDefaultProfileDataField("Developing hierarchy of needs.", ['public']),
+      intention: getDefaultProfileDataField("Understanding human motivation.", ['public']),
+      linkedin_url: getDefaultProfileDataField(null, ['public']),
+      can_help_with: getDefaultProfileDataField("Motivation theory, peak experiences", ['public']),
+      need_help_with: getDefaultProfileDataField("Transpersonal psychology", ['public']),
+      pronouns: getDefaultProfileDataField("He/Him", ['public']),
+    }
+  },
+  // NEW: Esther Perel's profile
+  {
+    id: "i9j0k1l2-m3n4-4567-8890-abcdef01234567",
+    first_name: "Esther Perel",
+    last_name: null,
+    avatar_url: null,
+    focus_preference: 25,
+    updated_at: new Date().toISOString(),
+    organization: "Relationship Therapy",
+    join_code: generateRandomJoinCode(),
+    visibility: ['public'],
+    profile_data: {
+      bio: getDefaultProfileDataField("Exploring modern relationships.", ['public']),
+      intention: getDefaultProfileDataField("Fostering erotic intelligence.", ['public']),
+      linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/estherperel", ['public']),
+      can_help_with: getDefaultProfileDataField("Relationship dynamics, infidelity", ['public']),
+      need_help_with: getDefaultProfileDataField("Cultural anthropology", ['public']),
+      pronouns: getDefaultProfileDataField("She/Her", ['public']),
+    }
+  },
 ];
 
 // Helper to create a mock participant
@@ -208,14 +268,17 @@ export const MOCK_SESSIONS: DemoSession[] = [
   },
   {
     id: "2b3c4d5e-6f7a-4890-8123-4567890abcdef0",
-    title: "Afternoon Brainstorm",
+    title: "Psychotherapy 101 revision", // MODIFIED: Renamed session
     startTime: Date.now() - 30 * 60 * 1000, // Started 30 minutes ago
     location: "Library Study Room",
     workspaceImage: "/api/placeholder/200/120",
     workspaceDescription: "Collaborative space for ideas.",
     participants: [
       createMockParticipant(MOCK_PROFILES[2], 'host'),
-      createMockParticipant(MOCK_PROFILES[6], 'coworker'), // ADDED: Jake as a coworker
+      createMockParticipant(MOCK_PROFILES[6], 'coworker'),
+      createMockParticipant(MOCK_PROFILES[7], 'coworker'), // NEW: Rogers
+      createMockParticipant(MOCK_PROFILES[8], 'coworker'), // NEW: Maslow
+      createMockParticipant(MOCK_PROFILES[9], 'coworker'), // NEW: Esther Perel
     ],
     location_lat: -33.8688 + (Math.random() - 0.5) * 0.02,
     location_long: 151.2093 + (Math.random() - 0.5) * 0.02,
