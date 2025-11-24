@@ -157,7 +157,7 @@ export const MOCK_PROFILES: Profile[] = [
       bio: getDefaultProfileDataField("Founder of DeepSesh", ['public']),
       intention: getDefaultProfileDataField("put WeWork out of business", ['public']),
       linkedin_url: getDefaultProfileDataField("https://www.linkedin.com/in/jacobvxyz", ['public']),
-      can_help_with: getDefaultProfileDataField("facilitating community building with attention-respecting algorithms.", ['public']),
+      can_help_with: getDefaultProfileDataField("building community with attention-respecting algorithms.", ['public']),
       need_help_with: getDefaultProfileDataField("creating a win-win culture among all coworkers", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
     }
