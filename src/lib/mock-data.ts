@@ -168,7 +168,7 @@ export const MOCK_PROFILES: Profile[] = [
     first_name: "Rogers",
     last_name: null,
     avatar_url: null,
-    focus_preference: 30,
+    focus_preference: 75, // MODIFIED
     updated_at: new Date().toISOString(),
     organization: "Humanistic Psychology",
     join_code: generateRandomJoinCode(),
@@ -188,7 +188,7 @@ export const MOCK_PROFILES: Profile[] = [
     first_name: "Maslow",
     last_name: null,
     avatar_url: null,
-    focus_preference: 45,
+    focus_preference: 80, // MODIFIED
     updated_at: new Date().toISOString(),
     organization: "Humanistic Psychology",
     join_code: generateRandomJoinCode(),
@@ -208,7 +208,7 @@ export const MOCK_PROFILES: Profile[] = [
     first_name: "Esther Perel",
     last_name: null,
     avatar_url: null,
-    focus_preference: 25,
+    focus_preference: 90, // MODIFIED
     updated_at: new Date().toISOString(),
     organization: "Relationship Therapy",
     join_code: generateRandomJoinCode(),
