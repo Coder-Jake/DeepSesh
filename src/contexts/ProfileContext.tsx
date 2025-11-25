@@ -19,6 +19,7 @@ export type ProfileDataJsonb = {
   can_help_with: ProfileDataField;
   need_help_with: ProfileDataField;
   pronouns: ProfileDataField;
+  onboarding_complete?: boolean; // NEW: Add onboarding_complete to profile_data
 };
 
 // Define the main Profile type reflecting the database schema
@@ -33,10 +34,11 @@ export type Profile = {
   join_code: string | null;
   profile_data: ProfileDataJsonb;
   visibility: ("public" | "friends" | "organisation" | "private")[];
+  onboarding_complete: boolean; // NEW: Add onboarding_complete directly to Profile
 };
 
 // ProfileUpdate type: allows updating direct columns OR specific fields within profile_data
-export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at' | 'profile_data'>> & {
+export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at' | 'profile_data' | 'onboarding_complete'>> & {
   // Allow updating individual fields within profile_data
   bio?: ProfileDataField;
   intention?: ProfileDataField;
@@ -44,6 +46,7 @@ export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at' | 'profile
   can_help_with?: ProfileDataField;
   need_help_with?: ProfileDataField;
   pronouns?: ProfileDataField;
+  onboarding_complete?: boolean; // NEW: Allow updating onboarding_complete
 };
 
 // ProfileInsert type: for creating a new profile (used internally for default creation)
@@ -57,6 +60,7 @@ export type ProfileInsert = {
   organization?: string | null;
   avatar_url?: string | null;
   visibility: ("public" | "friends" | "organisation" | "private")[];
+  onboarding_complete: boolean; // NEW: Add onboarding_complete
 };
 
 // Helper to generate a random host code (now handled by Supabase function)
@@ -66,6 +70,23 @@ export const generateRandomJoinCode = () => {
   const toTitleCase = (str: string) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
   return `${toTitleCase(randomColor)}${toTitleCase(randomAnimal)}`;
 };
+
+// Helper to generate a default ProfileDataField
+const getDefaultProfileDataField = useCallback((value: string | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
+  value,
+  visibility,
+}), []);
+
+// Helper to generate a default ProfileDataJsonb
+const getDefaultProfileDataJsonb = useCallback((): ProfileDataJsonb => ({
+  bio: getDefaultProfileDataField(null, ['public']),
+  intention: getDefaultProfileDataField(null, ['public']),
+  linkedin_url: getDefaultProfileDataField(null, ['public']),
+  can_help_with: getDefaultProfileDataField(null, ['public']),
+  need_help_with: getDefaultProfileDataField(null, ['public']),
+  pronouns: getDefaultProfileDataField(null, ['public']),
+  onboarding_complete: false, // NEW: Default to false
+}), [getDefaultProfileDataField]);
 
 interface ProfileContextType {
   profile: Profile | null;
@@ -157,20 +178,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   const mockProfilesRef = useRef<Profile[]>([]);
 
-  const getDefaultProfileDataField = useCallback((value: string | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
-    value,
-    visibility,
-  }), []);
-
-  const getDefaultProfileDataJsonb = useCallback((): ProfileDataJsonb => ({
-    bio: getDefaultProfileDataField(null, ['public']),
-    intention: getDefaultProfileDataField(null, ['public']),
-    linkedin_url: getDefaultProfileDataField(null, ['public']),
-    can_help_with: getDefaultProfileDataField(null, ['public']),
-    need_help_with: getDefaultProfileDataField(null, ['public']),
-    pronouns: getDefaultProfileDataField(null, ['public']),
-  }), [getDefaultProfileDataField]);
-
   useEffect(() => {
     mockProfilesRef.current = MOCK_PROFILES;
   }, []);
@@ -185,6 +192,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       ...profile,
       profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
       visibility: profile.visibility || ['public'],
+      onboarding_complete: profile.onboarding_complete || false, // Ensure onboarding_complete is sent
     };
 
     if ('host_code' in profileDataToSend) {
@@ -253,6 +261,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...parsedProfile,
           profile_data: parsedProfile.profile_data || getDefaultProfileDataJsonb(),
           visibility: parsedProfile.visibility || ['public'],
+          onboarding_complete: parsedProfile.onboarding_complete ?? false, // NEW: Default to false if not present
         };
         if (isMounted) {
           setProfile(defaultedProfile);
@@ -268,6 +277,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
             join_code: generateRandomJoinCode(),
             profile_data: defaultProfileData,
             visibility: ['public'],
+            onboarding_complete: false, // NEW: Default to false for new users
           };
           if (isMounted) {
             setProfile(defaultProfile);
@@ -371,7 +381,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       return;
     }
 
-    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'] } as Profile;
+    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'], onboarding_complete: false } as Profile;
 
     const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
 
@@ -381,6 +391,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     if (updates.can_help_with !== undefined) updatedProfileData.can_help_with = updates.can_help_with;
     if (updates.need_help_with !== undefined) updatedProfileData.need_help_with = updates.need_help_with;
     if (updates.pronouns !== undefined) updatedProfileData.pronouns = updates.pronouns;
+    if (updates.onboarding_complete !== undefined) updatedProfileData.onboarding_complete = updates.onboarding_complete; // NEW: Update onboarding_complete
 
     const newProfile: Profile = {
       ...currentProfile,
@@ -389,6 +400,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       updated_at: new Date().toISOString(),
       id: user.id,
       visibility: updates.visibility || currentProfile.visibility || ['public'],
+      onboarding_complete: updates.onboarding_complete ?? currentProfile.onboarding_complete ?? false, // NEW: Ensure onboarding_complete is set
     };
 
     setProfile(newProfile);
@@ -429,6 +441,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...data,
           profile_data: data.profile_data || getDefaultProfileDataJsonb(),
           visibility: data.visibility || ['public'],
+          onboarding_complete: data.onboarding_complete ?? false, // NEW: Default to false
         };
         return fetchedProfile;
       }
@@ -448,6 +461,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       join_code: null,
       profile_data: defaultProfileData,
       visibility: ['private'],
+      onboarding_complete: false, // NEW: Default to false
     };
   }, [user?.id, profile, getDefaultProfileDataJsonb]);
 
