@@ -180,7 +180,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{organizationInput ? "Edit Organisation Name" : "Organisation Name"}</DialogTitle>
+            <DialogTitle>{organizationInput ? "Edit Organisation Name(s)" : "Add Organisation(s)"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
