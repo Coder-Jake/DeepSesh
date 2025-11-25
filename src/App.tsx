@@ -18,18 +18,17 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TimerProvider } from './contexts/TimerContext';
-import { ProfileProvider, useProfile } from './contexts/ProfileContext'; // Import useProfile
-import OnboardingLayout from './components/onboarding/OnboardingLayout'; // NEW
-import WelcomePage from './components/onboarding/WelcomePage'; // NEW
-import VisibilityPage from './components/onboarding/VisibilityPage'; // NEW
+import { TimerProvider, useTimer } from './contexts/TimerContext'; // Import useTimer
+import { ProfileProvider, useProfile } from './contexts/ProfileContext';
+import OnboardingLayout from './components/onboarding/OnboardingLayout';
+import WelcomePage from './components/onboarding/WelcomePage';
+import VisibilityPage from './components/onboarding/VisibilityPage';
 
 const queryClient = new QueryClient();
 
-// NEW: OnboardingWrapper component to handle conditional rendering
 const OnboardingWrapper: React.FC = () => {
   const { profile, loading: profileLoading, updateProfile } = useProfile();
-  const { areToastsEnabled } = useTimer(); // MODIFIED: Get areToastsEnabled from TimerContext
+  const { areToastsEnabled } = useTimer();
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
 
   useEffect(() => {
@@ -56,8 +55,8 @@ const OnboardingWrapper: React.FC = () => {
   if (!isOnboardingComplete) {
     return (
       <OnboardingLayout onComplete={handleOnboardingComplete} totalSteps={2}>
-        <WelcomePage areToastsEnabled={areToastsEnabled} /> {/* MODIFIED: Pass areToastsEnabled */}
-        <VisibilityPage areToastsEnabled={areToastsEnabled} /> {/* MODIFIED: Pass areToastsEnabled */}
+        <WelcomePage areToastsEnabled={areToastsEnabled} />
+        <VisibilityPage areToastsEnabled={areToastsEnabled} />
       </OnboardingLayout>
     );
   }
@@ -92,7 +91,7 @@ function App() {
               <ProfileProvider areToastsEnabled={areToastsEnabled}>
                 <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
                   <ProfilePopUpProvider>
-                    <OnboardingWrapper /> {/* NEW: Render OnboardingWrapper */}
+                    <OnboardingWrapper />
                   </ProfilePopUpProvider>
                 </TimerProvider>
               </ProfileProvider>

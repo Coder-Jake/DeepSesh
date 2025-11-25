@@ -13,12 +13,10 @@ import { Users, Building2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface WelcomePageProps {
-  nextStep: () => void;
-  prevStep: () => void;
-  areToastsEnabled: boolean; // NEW: Add areToastsEnabled prop
+  areToastsEnabled: boolean;
 }
 
-const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled }) => { // MODIFIED: Destructure areToastsEnabled
+const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled }) => {
   const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organization, setFocusPreference, setOrganization } = useProfile();
 
   const [firstNameInput, setFirstNameInput] = useState("");
