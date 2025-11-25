@@ -72,13 +72,13 @@ export const generateRandomJoinCode = () => {
 };
 
 // Helper to generate a default ProfileDataField
-const getDefaultProfileDataField = useCallback((value: string | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
+const getDefaultProfileDataField = (value: string | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
   value,
   visibility,
-}), []);
+});
 
 // Helper to generate a default ProfileDataJsonb
-const getDefaultProfileDataJsonb = useCallback((): ProfileDataJsonb => ({
+const getDefaultProfileDataJsonb = (): ProfileDataJsonb => ({
   bio: getDefaultProfileDataField(null, ['public']),
   intention: getDefaultProfileDataField(null, ['public']),
   linkedin_url: getDefaultProfileDataField(null, ['public']),
@@ -86,7 +86,7 @@ const getDefaultProfileDataJsonb = useCallback((): ProfileDataJsonb => ({
   need_help_with: getDefaultProfileDataField(null, ['public']),
   pronouns: getDefaultProfileDataField(null, ['public']),
   onboarding_complete: false, // NEW: Default to false
-}), [getDefaultProfileDataField]);
+});
 
 interface ProfileContextType {
   profile: Profile | null;
@@ -227,7 +227,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         });
       }
     }
-  }, [user, profile, areToastsEnabled, getDefaultProfileDataJsonb]);
+  }, [user, profile, areToastsEnabled]); // Removed getDefaultProfileDataJsonb from dependencies as it's not a hook
 
   // --- Initial Load Effect (Local-First) ---
   useEffect(() => {
@@ -305,7 +305,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     return () => {
       isMounted = false;
     };
-  }, [authLoading, user, getDefaultProfileDataJsonb, getDefaultProfileDataField]);
+  }, [authLoading, user]); // Removed getDefaultProfileDataJsonb, getDefaultProfileDataField from dependencies
 
   // --- Effect to sync individual states from the main 'profile' object ---
   useEffect(() => {
@@ -347,7 +347,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setNeedHelpWithVisibility(['public']);
       setPronouns(null);
     }
-  }, [profile, getDefaultProfileDataJsonb]);
+  }, [profile]); // Removed getDefaultProfileDataJsonb from dependencies
 
   // Effect to save the entire profile object to local storage whenever it changes
   useEffect(() => {
@@ -413,7 +413,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
     await syncProfileToSupabase();
 
-  }, [user, areToastsEnabled, profile, getDefaultProfileDataJsonb, syncProfileToSupabase]);
+  }, [user, areToastsEnabled, profile, syncProfileToSupabase]); // Removed getDefaultProfileDataJsonb from dependencies
 
   const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
     const foundMockProfile = mockProfilesRef.current.find(p => p.id === userId);
@@ -463,7 +463,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       visibility: ['private'],
       onboarding_complete: false, // NEW: Default to false
     };
-  }, [user?.id, profile, getDefaultProfileDataJsonb]);
+  }, [user?.id, profile]); // Removed getDefaultProfileDataJsonb from dependencies
 
   const blockUser = useCallback((userName: string) => {
     setBlockedUsers(prev => {
