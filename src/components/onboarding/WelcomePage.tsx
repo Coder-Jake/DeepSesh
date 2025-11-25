@@ -109,11 +109,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             />
             <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-[#1a8cff] to-[#8c25f4] text-transparent bg-clip-text">
               DeepSesh
-              <span className={cn(
-                "ml-0.5 text-[0.6rem] text-gray-400 font-normal transition-opacity duration-200"
-              )}>
-                (demo)
-              </span>
             </h1>
             {showSecretTextDiv && (
               <>
