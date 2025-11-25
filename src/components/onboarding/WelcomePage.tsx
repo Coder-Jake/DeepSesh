@@ -101,9 +101,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
   return (
     <div className="space-y-6 flex flex-col flex-grow">
       <CardTitle className="text-2xl font-bold text-center">Welcome to DeepSesh!</CardTitle>
-      <p className="text-muted-foreground text-center mb-4">
-        Let's set up your basic profile. You can always change these later.
-      </p>
 
       <div className="space-y-4 flex-grow">
         <div className="space-y-2">
