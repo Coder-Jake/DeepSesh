@@ -191,7 +191,7 @@ const fetchSupabaseSessions = async (
       userName: p.userName,
       joinTime: p.joinTime,
       role: p.role,
-      focusPreference: p.focus_preference || 50, // Corrected to focus_preference
+      focusPreference: p.focusPreference || 50, // Corrected to focusPreference
       intention: p.intention || undefined,
       bio: p.bio || undefined,
     }));
