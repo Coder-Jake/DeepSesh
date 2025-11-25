@@ -13,7 +13,7 @@ import { Users, Building2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface WelcomePageProps {
-  nextStep: () => void; // Added nextStep
+  nextStep?: () => void; // Made optional
   areToastsEnabled: boolean;
 }
 
@@ -52,7 +52,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
         focus_preference: focusPreferenceInput,
         organization: trimmedOrganization,
       }, "Profile details saved!");
-      nextStep();
+      nextStep?.(); // Call optionally
     } catch (error: any) {
       console.error("Error saving welcome page data:", error);
       if (areToastsEnabled) toast.error("Failed to save details.", { description: error.message || "Please try again." });
