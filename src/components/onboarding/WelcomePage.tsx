@@ -161,19 +161,15 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
 
         <div className="space-y-2">
           <Label htmlFor="organization-name-input">Organisation (Optional)</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="organization-name-input"
-              placeholder="e.g., StartSpace"
-              value={organizationInput || ""}
-              onChange={(e) => setOrganizationInput(e.target.value)}
-              readOnly
-              className="flex-grow"
-            />
-            <Button variant="outline" onClick={() => setIsOrganizationDialogOpen(true)}>
-              <Building2 className="h-4 w-4 mr-2" /> {organizationInput ? "Edit" : "Add"}
-            </Button>
-          </div>
+          <Input
+            id="organization-name-input"
+            placeholder="e.g., StartSpace"
+            value={organizationInput || ""}
+            onChange={(e) => setOrganizationInput(e.target.value)}
+            readOnly
+            onClick={() => setIsOrganizationDialogOpen(true)} // Open dialog on input click
+            className="flex-grow cursor-pointer" // Add cursor-pointer for better UX
+          />
         </div>
       </div>
 
