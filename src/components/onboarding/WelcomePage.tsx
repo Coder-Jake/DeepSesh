@@ -160,7 +160,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="organization-name-input">Organisation (Optional)</Label>
+          <Label htmlFor="organization-name-input">Organisation</Label>
           <Input
             id="organization-name-input"
             placeholder="e.g. Unimelb; StartSpace"
@@ -184,7 +184,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="organization-dialog-input">Organisation Name</Label>
               <Input
                 id="organization-dialog-input"
                 value={organizationInput || ""}
