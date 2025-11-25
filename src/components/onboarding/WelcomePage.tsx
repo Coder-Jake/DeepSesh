@@ -148,7 +148,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             onChange={(e) => setFirstNameInput(e.target.value)}
             onFocus={(e) => e.target.select()}
           />
-        </div>
+    </div>
 
         <div className="space-y-4">
           <Label>Focus Preference</Label>
