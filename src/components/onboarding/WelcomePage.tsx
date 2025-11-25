@@ -111,7 +111,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             DeepSesh
           </h1>
         </div>
-        <p className="text-lg text-muted-foreground mt-2">Welcome to DeepSesh!</p>
+        {/* Removed: <p className="text-lg text-muted-foreground mt-2">Welcome to DeepSesh!</p> */}
       </div>
 
       <div className="space-y-4 flex-grow">
@@ -189,7 +189,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
-          </DialogHeader>
+          </DialogDescription>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="organization-dialog-input">Organisation Name</Label>
