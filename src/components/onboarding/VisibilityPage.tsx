@@ -117,36 +117,35 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
           </div>
         </div>
 
-        {selectedVisibility === 'public' && (
-          <div className="space-y-2 mt-6">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Label className="flex items-center gap-2">
-                  <MapPin size={16} /> Location Sharing
-                  <Info size={16} className="text-muted-foreground" />
-                </Label>
-              </TooltipTrigger>
-              <TooltipContent className="select-none">
-                Public sessions require location to be discoverable by others.
-              </TooltipContent>
-            </Tooltip>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full flex items-center gap-2",
-                geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover hover:text-success-foreground",
-                geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover",
-                geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover"
-              )}
-              onClick={handleLocationButtonClick}
-            >
-              <MapPin size={16} />
-              {geolocationPermissionStatus === 'granted' && "Enabled"}
-              {geolocationPermissionStatus === 'denied' && "Enable Location"}
-              {geolocationPermissionStatus === 'prompt' && "Enable Location"}
-            </Button>
-          </div>
-        )}
+        {/* Location Sharing section is now always visible */}
+        <div className="space-y-2 mt-6">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Label className="flex items-center gap-2">
+                <MapPin size={16} /> Location Sharing
+                <Info size={16} className="text-muted-foreground" />
+              </Label>
+            </TooltipTrigger>
+            <TooltipContent className="select-none">
+              Public sessions require location to be discoverable by others.
+            </TooltipContent>
+          </Tooltip>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full flex items-center gap-2",
+              geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover hover:text-success-foreground",
+              geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover",
+              geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover"
+            )}
+            onClick={handleLocationButtonClick}
+          >
+            <MapPin size={16} />
+            {geolocationPermissionStatus === 'granted' && "Enabled"}
+            {geolocationPermissionStatus === 'denied' && "Enable Location"}
+            {geolocationPermissionStatus === 'prompt' && "Enable Location"}
+          </Button>
+        </div>
       </div>
 
       <div className="flex justify-between mt-auto">
