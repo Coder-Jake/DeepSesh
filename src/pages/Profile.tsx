@@ -665,29 +665,25 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative">
               <div className="space-y-4">
-                <span
-                  onClick={() => handleLabelClick(bioVisibilityInput, setBioVisibilityInput, 'bio', setIsBioClickTooltipOpen)}
-                  className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
+                <Tooltip
+                  open={isBioClickTooltipOpen || isBioIconHoverTooltipOpen}
+                  onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsBioIconHoverTooltipOpen, bioIconHoverTooltipRef)}
+                  delayDuration={0}
                 >
-                  <Tooltip
-                    open={isBioClickTooltipOpen || isBioIconHoverTooltipOpen}
-                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsBioIconHoverTooltipOpen, bioIconHoverTooltipRef)}
-                    delayDuration={0}
-                  >
-                    <TooltipTrigger asChild>
-                      <Label
-                        htmlFor="bio"
-                        className="flex items-center gap-2"
-                      >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(bioVisibilityInput)), { size: 16 })}
-                        <span>Brief Bio</span>
-                      </Label>
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
-                      {getDisplayVisibilityStatus(bioVisibilityInput)}
-                    </TooltipContent>
-                  </Tooltip>
-                </span>
+                  <TooltipTrigger asChild>
+                    <Label
+                      htmlFor="bio"
+                      onClick={() => handleLabelClick(bioVisibilityInput, setBioVisibilityInput, 'bio', setIsBioClickTooltipOpen)}
+                      className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(bioVisibilityInput)))}
+                    >
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(bioVisibilityInput)), { size: 16 })}
+                      <span>Brief Bio</span>
+                    </Label>
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
+                    {getDisplayVisibilityStatus(bioVisibilityInput)}
+                  </TooltipContent>
+                </Tooltip>
                 <Textarea
                   id="bio"
                   placeholder="Share a bit about yourself..."
@@ -698,29 +694,25 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <span
-                  onClick={() => handleLabelClick(intentionVisibilityInput, setIntentionVisibilityInput, 'intention', setIsIntentionClickTooltipOpen)}
-                  className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
+                <Tooltip
+                  open={isIntentionClickTooltipOpen || isIntentionIconHoverTooltipOpen}
+                  onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsIntentionIconHoverTooltipOpen, intentionIconHoverTooltipRef)}
+                  delayDuration={0}
                 >
-                  <Tooltip
-                    open={isIntentionClickTooltipOpen || isIntentionIconHoverTooltipOpen}
-                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsIntentionIconHoverTooltipOpen, intentionIconHoverTooltipRef)}
-                    delayDuration={0}
-                  >
-                    <TooltipTrigger asChild>
-                      <Label
-                        htmlFor="intention"
-                        className="flex items-center gap-2"
-                      >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(intentionVisibilityInput)), { size: 16 })}
-                        <span>Intention</span>
-                      </Label>
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
-                      {getDisplayVisibilityStatus(intentionVisibilityInput)}
-                    </TooltipContent>
-                  </Tooltip>
-                </span>
+                  <TooltipTrigger asChild>
+                    <Label
+                      htmlFor="intention"
+                      onClick={() => handleLabelClick(intentionVisibilityInput, setIntentionVisibilityInput, 'intention', setIsIntentionClickTooltipOpen)}
+                      className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(intentionVisibilityInput)))}
+                    >
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(intentionVisibilityInput)), { size: 16 })}
+                      <span>Intention</span>
+                    </Label>
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
+                    {getDisplayVisibilityStatus(intentionVisibilityInput)}
+                  </TooltipContent>
+                </Tooltip>
                 <Textarea
                   id="intention"
                   placeholder="What are you working on? Goals for upcoming sessions?"
@@ -731,29 +723,25 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <span
-                  onClick={() => handleLabelClick(canHelpWithVisibilityInput, setCanHelpWithVisibilityInput, 'can_help_with', setIsCanHelpWithClickTooltipOpen)}
-                  className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibilityInput)))}
+                <Tooltip
+                  open={isCanHelpWithClickTooltipOpen || isCanHelpWithIconHoverTooltipOpen}
+                  onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsCanHelpWithIconHoverTooltipOpen, canHelpWithIconHoverTooltipRef)}
+                  delayDuration={0}
                 >
-                  <Tooltip
-                    open={isCanHelpWithClickTooltipOpen || isCanHelpWithIconHoverTooltipOpen}
-                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsCanHelpWithIconHoverTooltipOpen, canHelpWithIconHoverTooltipRef)}
-                    delayDuration={0}
-                  >
-                    <TooltipTrigger asChild>
-                      <Label
-                        htmlFor="can-help-with"
-                        className="flex items-center gap-2"
-                      >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(canHelpWithVisibilityInput)), { size: 16 })}
-                        <span>I can help with</span>
-                      </Label>
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
-                      {getDisplayVisibilityStatus(canHelpWithVisibilityInput)}
-                    </TooltipContent>
-                  </Tooltip>
-                </span>
+                  <TooltipTrigger asChild>
+                    <Label
+                      htmlFor="can-help-with"
+                      onClick={() => handleLabelClick(canHelpWithVisibilityInput, setCanHelpWithVisibilityInput, 'can_help_with', setIsCanHelpWithClickTooltipOpen)}
+                      className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(canHelpWithVisibilityInput)))}
+                    >
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(canHelpWithVisibilityInput)), { size: 16 })}
+                      <span>I can help with</span>
+                    </Label>
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
+                    {getDisplayVisibilityStatus(canHelpWithVisibilityInput)}
+                  </TooltipContent>
+                </Tooltip>
                 <Textarea
                   id="can-help-with"
                   placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
@@ -764,29 +752,25 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <span
-                  onClick={() => handleLabelClick(needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput, 'need_help_with', setIsNeedHelpWithClickTooltipOpen)}
-                  className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
+                <Tooltip
+                  open={isNeedHelpWithClickTooltipOpen || isNeedHelpWithIconHoverTooltipOpen}
+                  onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsNeedHelpWithIconHoverTooltipOpen, needHelpWithIconHoverTooltipRef)}
+                  delayDuration={0}
                 >
-                  <Tooltip
-                    open={isNeedHelpWithClickTooltipOpen || isNeedHelpWithIconHoverTooltipOpen}
-                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsNeedHelpWithIconHoverTooltipOpen, needHelpWithIconHoverTooltipRef)}
-                    delayDuration={0}
-                  >
-                    <TooltipTrigger asChild>
-                      <Label
-                        htmlFor="need-help-with"
-                        className="flex items-center gap-2"
-                      >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(needHelpWithVisibilityInput)), { size: 16 })}
-                        <span>I need help with</span>
-                      </Label>
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
-                      {getDisplayVisibilityStatus(needHelpWithVisibilityInput)}
-                    </TooltipContent>
-                  </Tooltip>
-                </span>
+                  <TooltipTrigger asChild>
+                    <Label
+                      htmlFor="need-help-with"
+                      onClick={() => handleLabelClick(needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput, 'need_help_with', setIsNeedHelpWithClickTooltipOpen)}
+                      className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(needHelpWithVisibilityInput)))}
+                    >
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(needHelpWithVisibilityInput)), { size: 16 })}
+                      <span>I need help with</span>
+                    </Label>
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
+                    {getDisplayVisibilityStatus(needHelpWithVisibilityInput)}
+                  </TooltipContent>
+                </Tooltip>
                 <Textarea
                   id="need-help-with"
                   placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
@@ -797,29 +781,25 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <span
-                  onClick={() => handleLabelClick(linkedinVisibilityInput, setLinkedinVisibilityInput, 'linkedin_url', setIsLinkedinClickTooltipOpen)}
-                  className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibilityInput)))}
+                <Tooltip
+                  open={isLinkedinClickTooltipOpen || isLinkedinIconHoverTooltipOpen}
+                  onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsLinkedinIconHoverTooltipOpen, linkedinIconHoverTooltipRef)}
+                  delayDuration={0}
                 >
-                  <Tooltip
-                    open={isLinkedinClickTooltipOpen || isLinkedinIconHoverTooltipOpen}
-                    onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsLinkedinIconHoverTooltipOpen, linkedinIconHoverTooltipRef)}
-                    delayDuration={0}
-                  >
-                    <TooltipTrigger asChild>
-                      <Label
-                        htmlFor="linkedin-username"
-                        className="flex items-center gap-2"
-                      >
-                        {React.createElement(getPrivacyIcon(getIndexFromVisibility(linkedinVisibilityInput)), { size: 16 })}
-                        <span>LinkedIn Handle</span>
-                      </Label>
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
-                      {getDisplayVisibilityStatus(linkedinVisibilityInput)}
-                    </TooltipContent>
-                  </Tooltip>
-                </span>
+                  <TooltipTrigger asChild>
+                    <Label
+                      htmlFor="linkedin-username"
+                      onClick={() => handleLabelClick(linkedinVisibilityInput, setLinkedinVisibilityInput, 'linkedin_url', setIsLinkedinClickTooltipOpen)}
+                      className={cn("cursor-pointer select-none flex items-center gap-2 w-full", getPrivacyColorClassFromIndex(getIndexFromVisibility(linkedinVisibilityInput)))}
+                    >
+                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(linkedinVisibilityInput)), { size: 16 })}
+                      <span>LinkedIn Handle</span>
+                    </Label>
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none" side="right" align="center" sideOffset={8}>
+                    {getDisplayVisibilityStatus(linkedinVisibilityInput)}
+                  </TooltipContent>
+                </Tooltip>
                 <div className="flex items-center gap-0 mt-2 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <span className="pl-3 pr-1 text-muted-foreground bg-input rounded-l-md py-2 text-sm">
                     linkedin.com/in/
@@ -946,7 +926,8 @@ const Profile = () => {
                     {focusPreferenceInput > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
-              </CardContent>
+              </div>
+            </CardContent>
           </Card>
 
           <Card>
