@@ -98,7 +98,7 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
               >
                 <Building2 size={20} />
                 Organisation
-                <span className="ml-auto text-sm text-muted-foreground">Members of {profile.organization}</span>
+                <span className="ml-auto text-sm text-muted-foreground">Members Only</span>
               </Button>
             )}
 
