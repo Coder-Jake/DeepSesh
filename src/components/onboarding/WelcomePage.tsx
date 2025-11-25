@@ -15,10 +15,11 @@ import { toast } from 'sonner';
 interface WelcomePageProps {
   nextStep: () => void;
   prevStep: () => void;
+  areToastsEnabled: boolean; // NEW: Add areToastsEnabled prop
 }
 
-const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep }) => {
-  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organization, setFocusPreference, setOrganization, areToastsEnabled } = useProfile();
+const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled }) => { // MODIFIED: Destructure areToastsEnabled
+  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organization, setFocusPreference, setOrganization } = useProfile();
 
   const [firstNameInput, setFirstNameInput] = useState("");
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);

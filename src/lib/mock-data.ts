@@ -45,7 +45,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("AI strategy", ['public']),
       need_help_with: getDefaultProfileDataField("AI safety", ['private']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   {
     id: "b2c3d4e5-f6a7-4890-8123-4567890abcdef0",
@@ -64,7 +65,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Rocket engineering", ['public']),
       need_help_with: getDefaultProfileDataField("Mars colonization", ['private']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   {
     id: "c3d4e5f6-a7b8-4901-8234-567890abcdef01",
@@ -83,7 +85,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Psychoanalysis", ['friends']),
       need_help_with: getDefaultProfileDataField("Modern neuroscience", ['friends']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   {
     id: "d4e5f6a7-b8c9-4012-8345-67890abcdef012",
@@ -102,7 +105,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Logic", ['organisation']),
       need_help_with: getDefaultProfileDataField("Modern science", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   {
     id: "e5f6a7b8-c9d0-4123-8456-7890abcdef0123",
@@ -121,7 +125,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Metaphysics", ['organisation']),
       need_help_with: getDefaultProfileDataField("Political theory", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   {
     id: "f6a7b8c9-d0e1-4234-8567-890abcdef01234",
@@ -140,7 +145,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Critical thinking", ['organisation']),
       need_help_with: getDefaultProfileDataField("Self-knowledge", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   // NEW: Jake's profile
   {
@@ -160,7 +166,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("building community with attention-respecting algorithms.", ['public']),
       need_help_with: getDefaultProfileDataField("creating a win-win culture among all coworkers", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   // NEW: Rogers' profile
   {
@@ -180,7 +187,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Empathy, unconditional positive regard", ['public']),
       need_help_with: getDefaultProfileDataField("Existential philosophy", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   // NEW: Maslow's profile
   {
@@ -200,7 +208,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Motivation theory, peak experiences", ['public']),
       need_help_with: getDefaultProfileDataField("Transpersonal psychology", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
   // NEW: Esther Perel's profile
   {
@@ -220,7 +229,8 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Relationship dynamics, infidelity", ['public']),
       need_help_with: getDefaultProfileDataField("Cultural anthropology", ['public']),
       pronouns: getDefaultProfileDataField("She/Her", ['public']),
-    }
+    },
+    onboarding_complete: false,
   },
 ];
 

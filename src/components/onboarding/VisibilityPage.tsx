@@ -7,16 +7,18 @@ import { CardTitle } from '@/components/ui/card';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useTimer } from '@/contexts/TimerContext';
 import { cn } from '@/lib/utils';
-import { Globe, Lock, ChevronLeft, ChevronRight, MapPin, Info, Tooltip, TooltipContent, TooltipTrigger, Building2 } from 'lucide-react';
+import { Globe, Lock, ChevronLeft, ChevronRight, MapPin, Info, Building2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'; // MODIFIED: Corrected Tooltip imports
 import { toast } from 'sonner';
 
 interface VisibilityPageProps {
   nextStep: () => void;
   prevStep: () => void;
+  areToastsEnabled: boolean; // NEW: Add areToastsEnabled prop
 }
 
-const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep }) => {
-  const { profile, loading: profileLoading, areToastsEnabled } = useProfile();
+const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, areToastsEnabled }) => { // MODIFIED: Destructure areToastsEnabled
+  const { profile, loading: profileLoading } = useProfile();
   const {
     sessionVisibility, setSessionVisibility,
     getLocation, geolocationPermissionStatus,

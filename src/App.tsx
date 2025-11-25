@@ -29,6 +29,7 @@ const queryClient = new QueryClient();
 // NEW: OnboardingWrapper component to handle conditional rendering
 const OnboardingWrapper: React.FC = () => {
   const { profile, loading: profileLoading, updateProfile } = useProfile();
+  const { areToastsEnabled } = useTimer(); // MODIFIED: Get areToastsEnabled from TimerContext
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
 
   useEffect(() => {
@@ -55,8 +56,8 @@ const OnboardingWrapper: React.FC = () => {
   if (!isOnboardingComplete) {
     return (
       <OnboardingLayout onComplete={handleOnboardingComplete} totalSteps={2}>
-        <WelcomePage />
-        <VisibilityPage />
+        <WelcomePage areToastsEnabled={areToastsEnabled} /> {/* MODIFIED: Pass areToastsEnabled */}
+        <VisibilityPage areToastsEnabled={areToastsEnabled} /> {/* MODIFIED: Pass areToastsEnabled */}
       </OnboardingLayout>
     );
   }

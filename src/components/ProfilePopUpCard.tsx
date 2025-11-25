@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus, Handshake, HelpCircle } from 'lucide-react';
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
-import { Profile, ProfileDataJsonb } from '@/contexts/ProfileContext'; // NEW: Import ProfileDataJsonb
+import { Profile, ProfileDataJsonb, ProfileDataField } from '@/contexts/ProfileContext'; // NEW: Import ProfileDataField
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
@@ -184,7 +184,7 @@ const ProfilePopUpCard: React.FC = () => {
     const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
     const currentFriendStatus = currentUserProfile?.id && friendStatuses[targetProfile.id] ? friendStatuses[targetProfile.id] : 'none';
 
-    const isFieldVisible = (field: ProfileDataJsonb[keyof ProfileDataJsonb] | null | undefined) => {
+    const isFieldVisible = (field: ProfileDataField | null | undefined) => { // MODIFIED: Explicitly type as ProfileDataField
       if (isCurrentUserProfile) return true;
       if (!field || !field.value || field.visibility.includes('private')) return false;
 
