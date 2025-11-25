@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -94,6 +94,12 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
+  // NEW: Memoized list of organizations
+  const organizationsList = useMemo(() => {
+    if (!organizationInput) return [];
+    return organizationInput.split(';').map(org => org.trim()).filter(org => org.length > 0);
+  }, [organizationInput]);
+
   if (profileLoading) {
     return <div className="text-center text-muted-foreground">Loading profile...</div>;
   }
@@ -160,7 +166,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="organization-name-input">Organisation</Label>
+          <Label htmlFor="organization-name-input">Organisation (Optional)</Label>
           <Input
             id="organization-name-input"
             placeholder="e.g. Unimelb; StartSpace"
@@ -170,6 +176,16 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             onClick={() => setIsOrganizationDialogOpen(true)} // Open dialog on input click
             className="flex-grow cursor-pointer" // Add cursor-pointer for better UX
           />
+          {/* NEW: Display organizations below the input */}
+          {organizationsList.length > 0 && (
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm mt-2">
+              {organizationsList.map((org, index) => (
+                <span key={index} className="font-bold text-foreground">
+                  {org}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -180,10 +196,11 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{"Add Organisation(s)"}</DialogTitle>
+            <DialogTitle>{organizationInput ? "Edit Organisation Name" : "Add Organisation Name"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
+              <Label htmlFor="organization-dialog-input">Organisation Name</Label>
               <Input
                 id="organization-dialog-input"
                 value={organizationInput || ""}
