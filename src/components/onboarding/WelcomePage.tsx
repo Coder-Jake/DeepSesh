@@ -99,6 +99,8 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
   }
 
   return (
+    <div className="space-y-6 flex flex-col flex-grow">
+      <div>
       <img 
               src="/ds-logo.png" 
               alt="DeepSesh Logo" 
