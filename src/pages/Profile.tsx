@@ -925,7 +925,6 @@ const Profile = () => {
                       min={0}
                       step={1}
                       className="w-full"
-                      rangeColor={getSociabilityGradientColor(focusPreferenceInput)}
                     />
                   </div>
                   <div
@@ -947,8 +946,7 @@ const Profile = () => {
                     {focusPreferenceInput > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
-              </div>
-            </CardContent>
+              </CardContent>
           </Card>
 
           <Card>

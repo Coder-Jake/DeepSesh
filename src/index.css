@@ -111,6 +111,10 @@
     --private-text: 270 100% 30%; /* Darker purple */
     --organisation-text: 80 60% 20%; /* Darker olive */
 
+    /* NEW: Slider gradient colors */
+    --slider-gradient-start-light: 220 90% 85%; /* Blueish for Banter */
+    --slider-gradient-end-light: 260 100% 90%;   /* Purpleish for Deep Focus */
+
     --radius: 0.5rem; /* Explicitly defining default border radius */
   }
 
@@ -211,6 +215,10 @@
     --public-text: 200 90% 70%; /* Lighter blue */
     --private-text: 270 100% 70%; /* Lighter purple */
     --organisation-text: 80 60% 80%; /* Lighter olive */
+
+    /* NEW: Slider gradient colors */
+    --slider-gradient-start-dark: 220 50% 45%;  /* Darker blueish */
+    --slider-gradient-end-dark: 270 30% 45%;    /* Darker purpleish */
   }
 }
 

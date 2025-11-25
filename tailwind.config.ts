@@ -117,6 +117,14 @@ export default {
 				},
 				'organisation-text': { // NEW: Organisation text color
 					DEFAULT: 'hsl(var(--organisation-text))',
+				},
+				'slider-gradient-start': { // NEW: Slider gradient start color
+					DEFAULT: 'hsl(var(--slider-gradient-start-light))',
+					dark: 'hsl(var(--slider-gradient-start-dark))',
+				},
+				'slider-gradient-end': { // NEW: Slider gradient end color
+					DEFAULT: 'hsl(var(--slider-gradient-end-light))',
+					dark: 'hsl(var(--slider-gradient-end-dark))',
 				}
 			},
 			borderRadius: {

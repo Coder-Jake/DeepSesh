@@ -139,7 +139,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
                 min={0}
                 step={1}
                 className="w-full"
-                rangeColor={getSociabilityGradientColor(focusPreferenceInput)}
               />
             </div>
             <div className="text-center mt-3 text-sm text-muted-foreground select-none">
@@ -181,7 +180,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
-          </DialogHeader>
+          </DialogDescription>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="organization-dialog-input">Organisation Name</Label>
