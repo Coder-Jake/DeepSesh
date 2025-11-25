@@ -163,7 +163,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
           <Label htmlFor="organization-name-input">Organisation (Optional)</Label>
           <Input
             id="organization-name-input"
-            placeholder="e.g., StartSpace"
+            placeholder="e.g. Unimelb; StartSpace"
             value={organizationInput || ""}
             onChange={(e) => setOrganizationInput(e.target.value)}
             readOnly
@@ -192,7 +192,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
                 id="organization-dialog-input"
                 value={organizationInput || ""}
                 onChange={(e) => setOrganizationInput(e.target.value)}
-                placeholder="e.g., StartSpace"
+                placeholder="e.g. Unimelb; StartSpace"
               />
             </div>
           </div>
