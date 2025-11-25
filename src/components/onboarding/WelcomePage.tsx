@@ -100,6 +100,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
 
   return (
     <div className="space-y-6 flex flex-col flex-grow">
+      <CardTitle className="text-2xl font-bold text-center">Welcome to DeepSesh!</CardTitle> 
       <div>
       <img 
               src="/ds-logo.png" 
