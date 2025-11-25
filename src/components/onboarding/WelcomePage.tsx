@@ -13,6 +13,7 @@ import { Users, Building2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface WelcomePageProps {
+  nextStep: () => void; // Added nextStep
   areToastsEnabled: boolean;
 }
 

@@ -12,6 +12,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { toast } from 'sonner';
 
 interface VisibilityPageProps {
+  nextStep: () => void; // Added nextStep
+  prevStep: () => void; // Added prevStep
   areToastsEnabled: boolean;
 }
 
@@ -93,7 +95,7 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
                   selectedVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground border-organisation-bg-hover hover:bg-organisation-bg-hover"
                 )}
                 onClick={() => setSelectedVisibility('organisation')}
-              >
+            >
                 <Building2 size={20} />
                 Organisation
                 <span className="ml-auto text-sm text-muted-foreground">Members of {profile.organization}</span>
