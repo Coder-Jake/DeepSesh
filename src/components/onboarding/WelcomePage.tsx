@@ -100,37 +100,19 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
 
   return (
     <div className="space-y-6 flex flex-col flex-grow">
-      <CardTitle className="text-2xl font-bold text-center">Welcome to DeepSesh!</CardTitle> 
-      <div>
-      <img 
-              src="/ds-logo.png" 
-              alt="DeepSesh Logo" 
-              className="h-8 w-8 mr-0 mt-[-6px] rotate-45"
-            />
-            <h1 className="text-3xl font-bold select-none bg-gradient-to-r from-[#1a8cff] to-[#8c25f4] text-transparent bg-clip-text">
-              DeepSesh
-            </h1>
-            {showSecretTextDiv && (
-              <>
-                <div
-                  className={`absolute text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
-                    secretTextVisible ? "opacity-100" : "opacity-0"
-                  } select-none`}
-                  style={{ left: '32px', top: '31px' }}
-                >
-                  Deep Work
-                </div>
-                <div
-                  className={`absolute text-xs font-medium text-muted-foreground transition-opacity duration-1000 ${
-                    secretTextVisible ? "opacity-100" : "opacity-0"
-                  } select-none`}
-                  style={{ left: '107px', top: '31px' }}
-                >
-                  Study Sesh
-                </div>
-              </>
-            )}
-          </div>
+      <div className="flex flex-col items-center justify-center mb-8">
+        <div className="flex items-center">
+          <img
+            src="/ds-logo.png"
+            alt="DeepSesh Logo"
+            className="h-12 w-12 mr-2 rotate-45"
+          />
+          <h1 className="text-4xl font-bold select-none bg-gradient-to-r from-[#1a8cff] to-[#8c25f4] text-transparent bg-clip-text">
+            DeepSesh
+          </h1>
+        </div>
+        <p className="text-lg text-muted-foreground mt-2">Welcome to DeepSesh!</p>
+      </div>
 
       <div className="space-y-4 flex-grow">
         <div className="space-y-2">
