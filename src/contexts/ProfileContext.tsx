@@ -131,6 +131,7 @@ interface ProfileContextType {
   resetProfile: () => void;
   profileVisibility: ("public" | "friends" | "organisation" | "private")[];
   setProfileVisibility: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>;
+  unfriendUser: (userId: string) => void; // NEW: Add unfriendUser to context type
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -227,7 +228,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         });
       }
     }
-  }, [user, profile, areToastsEnabled]); // Removed getDefaultProfileDataJsonb from dependencies as it's not a hook
+  }, [user, profile, areToastsEnabled]); // Removed getDefaultProfileDataJsonb from dependencies
 
   // --- Initial Load Effect (Local-First) ---
   useEffect(() => {
@@ -497,6 +498,23 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     });
   }, [areToastsEnabled]);
 
+  // NEW: unfriendUser function
+  const unfriendUser = useCallback((userId: string) => {
+    setFriendStatuses(prev => {
+      if (prev[userId] === 'friends') {
+        if (areToastsEnabled) {
+          toast.info("Friend Removed", {
+            description: `You are no longer friends with this user.`,
+          });
+        }
+        const newFriendStatuses = { ...prev, [userId]: 'none' as 'none' };
+        localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(newFriendStatuses));
+        return newFriendStatuses;
+      }
+      return prev;
+    });
+  }, [areToastsEnabled]);
+
   const resetProfile = useCallback(() => {
     localStorage.removeItem(LOCAL_STORAGE_PROFILE_KEY);
     localStorage.removeItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
@@ -550,6 +568,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     resetProfile,
     profileVisibility,
     setProfileVisibility,
+    unfriendUser, // NEW: Provide unfriendUser
   }), [
     profile, loading, authLoading, updateProfile, localFirstName, setLocalFirstName, joinCode, setJoinCode,
     bio, setBio, intention, setIntention, canHelpWith, setCanHelpWith, needHelpWith, setNeedHelpWith,
@@ -557,7 +576,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
     canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility,
     pronouns, setPronouns, friendStatuses, blockedUsers, recentCoworkers, getPublicProfile, blockUser, unblockUser,
-    resetProfile, profileVisibility, setProfileVisibility
+    resetProfile, profileVisibility, setProfileVisibility, unfriendUser
   ]);
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

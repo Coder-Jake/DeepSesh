@@ -34,6 +34,7 @@ const ProfilePopUpCard: React.FC = () => {
     needHelpWithVisibility,
     friendStatuses,
     profileVisibility: currentUserProfileVisibility, // NEW: Get currentUserProfileVisibility
+    unfriendUser, // NEW: Import unfriendUser
   } = useProfile();
   const { areToastsEnabled } = useTimer();
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
@@ -43,6 +44,10 @@ const ProfilePopUpCard: React.FC = () => {
   const isMobile = useIsMobile();
 
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // NEW: Long press state for unfriend button
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressDetected = useRef(false);
 
   const getDisplayVisibilityStatus = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[]): string => {
     if (visibility.includes('private')) return 'private';
@@ -158,6 +163,24 @@ const ProfilePopUpCard: React.FC = () => {
     };
   }, [isPopUpOpen, closeProfilePopUp, setIsBlockingClicks]);
 
+  // NEW: Long press handlers for the unfriend button
+  const handleLongPressStart = useCallback(() => {
+    isLongPressDetected.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressDetected.current = true;
+      if (targetProfile && !isCurrentUserProfile) {
+        unfriendUser(targetProfile.id);
+        closeProfilePopUp();
+      }
+    }, 500); // 500ms for long press
+  }, [targetProfile, isCurrentUserProfile, unfriendUser, closeProfilePopUp]);
+
+  const handleLongPressEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+  }, []);
+
   if (!isPopUpOpen || !popUpPosition) {
     return null;
   }
@@ -264,8 +287,13 @@ const ProfilePopUpCard: React.FC = () => {
                 "hover:bg-accent-hover" // NEW: Added hover effect
               )}
               onClick={() => {
-                if (areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
+                if (!isLongPressDetected.current && areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
               }}
+              onMouseDown={handleLongPressStart}
+              onMouseUp={handleLongPressEnd}
+              onMouseLeave={handleLongPressEnd}
+              onTouchStart={handleLongPressStart}
+              onTouchEnd={handleLongPressEnd}
               disabled={currentFriendStatus === 'pending'}
             >
               {currentFriendStatus === 'none' && (
