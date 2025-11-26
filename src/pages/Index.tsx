@@ -387,7 +387,6 @@ const Index = () => {
   const isLongPressDetected = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   const [isHoveringTimer, setIsHoveringTimer] = useState(false);
-  const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false); // NEW: Define state for title animation
 
   const currentUserId = profile?.id || "mock-user-id-123";
   const currentUserName = profile?.first_name || localFirstName || "You";
@@ -402,9 +401,6 @@ const Index = () => {
   const [joinSessionCode, setJoinSessionCode] = useState("");
 
   // Initial states for accordion sections, default to open
-  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(true);
-  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(true);
-  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(true);
   const [openUpcomingScheduleAccordions, setOpenUpcomingScheduleAccordions] = useState<string[]>([]);
 
   const [sectionOrder, setSectionOrder] = useState<('nearby' | 'friends' | 'organization')[]>(
@@ -1257,7 +1253,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    });
+    );
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -1444,35 +1440,53 @@ const Index = () => {
     isLongPressDetected.current = true;
   };
 
-  // Effect to set initial open/closed state for session sections
-  useEffect(() => {
-    // Nearby Sessions:
-    // Relevant if: isDiscoveryActivated AND (sessionVisibility is 'public') AND (has sessions)
-    const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
-    const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
-    const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
-    const isNearbyRelevant = isDiscoveryActivated && sessionVisibility === 'public' && allNearbySessions.length > 0;
-    setIsNearbySessionsOpen(isNearbyRelevant);
+  // Helper to determine relevance for initial state
+  const getSectionRelevance = useCallback((sectionType: 'nearby' | 'friends' | 'organization') => {
+    if (!isDiscoveryActivated) return false;
 
-    // Friends Sessions:
-    // Relevant if: isDiscoveryActivated AND (has friends sessions)
-    const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
-    const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
-    const isFriendsRelevant = isDiscoveryActivated && allFriendsSessions.length > 0;
-    setIsFriendsSessionsOpen(isFriendsRelevant);
-
-    // Organization Sessions:
-    // Relevant if: isDiscoveryActivated AND (user has organization) AND (has organization sessions)
-    const orgMockSessions = mockOrganizationSessions;
-    const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
-    const isOrganizationRelevant = isDiscoveryActivated && !!profile?.organization && allOrganizationSessions.length > 0;
-    setIsOrganizationSessionsOpen(isOrganizationRelevant);
-
+    switch (sectionType) {
+      case 'nearby':
+        const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
+        const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
+        const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+        return sessionVisibility === 'public' && allNearbySessions.length > 0;
+      case 'friends':
+        const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
+        const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
+        return allFriendsSessions.length > 0;
+      case 'organization':
+        const orgMockSessions = mockOrganizationSessions;
+        const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
+        return !!profile?.organization && allOrganizationSessions.length > 0;
+      default:
+        return false;
+    }
   }, [
     isDiscoveryActivated, sessionVisibility, showDemoSessions, filteredMockNearbySessions,
     supabaseActiveSessions, currentUserId, filteredMockFriendsSessions, mockOrganizationSessions,
-    profile?.organization, shouldShowNearbySessions, shouldShowFriendsSessions, shouldShowOrganizationSessions
+    profile?.organization
   ]);
+
+  // Initialize states using the helper function, runs only once on mount
+  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(() => getSectionRelevance('nearby'));
+  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(() => getSectionRelevance('friends'));
+  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(() => getSectionRelevance('organization'));
+
+  // New useEffect to handle discovery activation/deactivation
+  useEffect(() => {
+    if (isDiscoveryActivated) {
+      // When discovery is activated, re-evaluate and open relevant sections
+      setIsNearbySessionsOpen(getSectionRelevance('nearby'));
+      setIsFriendsSessionsOpen(getSectionRelevance('friends'));
+      setIsOrganizationSessionsOpen(getSectionRelevance('organization'));
+    } else {
+      // When discovery is deactivated, close all sections
+      setIsNearbySessionsOpen(false);
+      setIsFriendsSessionsOpen(false);
+      setIsOrganizationSessionsOpen(false);
+    }
+  }, [isDiscoveryActivated, getSectionRelevance]); // Only re-run when isDiscoveryActivated changes
+
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
