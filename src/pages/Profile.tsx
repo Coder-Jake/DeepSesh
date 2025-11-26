@@ -1024,7 +1024,7 @@ const Profile = () => {
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{organizationInput ? "Edit Organisation Name" : "Add Organisation Name"}</DialogTitle>
+            <DialogTitle>{organizationInput ? "Edit Organisations" : "Add Organisations"}</DialogTitle>
             <DialogDescription>
               Enter the name of your organization. This will be visible to others.
             </DialogDescription>
@@ -1036,7 +1036,7 @@ const Profile = () => {
                 id="organization-name"
                 value={organizationInput || ""}
                 onChange={(e) => setOrganizationInput(e.target.value)}
-                placeholder="e.g., StartSpace"
+                placeholder="e.g., StartSpace; Unimelb"
               />
             </div>
           </div>
