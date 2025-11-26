@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus, Handshake, HelpCircle } from 'lucide-react';
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
-import { Profile, ProfileDataJsonb, ProfileDataField } from '@/contexts/ProfileContext'; // NEW: Import ProfileDataField
+import { Profile, ProfileDataJsonb, ProfileDataField } from '@/contexts/ProfileContext';
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
@@ -33,8 +33,8 @@ const ProfilePopUpCard: React.FC = () => {
     canHelpWithVisibility,
     needHelpWithVisibility,
     friendStatuses,
-    profileVisibility: currentUserProfileVisibility, // NEW: Get currentUserProfileVisibility
-    unfriendUser, // NEW: Import unfriendUser
+    profileVisibility: currentUserProfileVisibility,
+    unfriendUser,
   } = useProfile();
   const { areToastsEnabled } = useTimer();
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
@@ -44,6 +44,11 @@ const ProfilePopUpCard: React.FC = () => {
   const isMobile = useIsMobile();
 
   const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // Define isCurrentUserProfile here
+  const isCurrentUserProfile = useMemo(() => {
+    return currentUserProfile && targetProfile && targetProfile.id === currentUserProfile.id;
+  }, [currentUserProfile, targetProfile]);
 
   // NEW: Long press state for unfriend button
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -70,20 +75,14 @@ const ProfilePopUpCard: React.FC = () => {
     }
   }, []);
 
-  // REMOVED: handleLabelClick function as it's for editing, not viewing.
-  // The ProfilePopUpCard should only display, not allow editing of the current user's profile.
-
   useEffect(() => {
-    const fetchTargetProfile = async () => { // Make this async
+    const fetchTargetProfile = async () => {
       if (targetUserId) {
         setLoading(true);
         setError(null);
 
-        // Removed the direct check for currentUserProfile.id === targetUserId here
-        // as getPublicProfile will handle it internally now.
-
         try {
-          const fetchedProfile = await getPublicProfile(targetUserId, targetUserName || "Unknown User"); // Await the call
+          const fetchedProfile = await getPublicProfile(targetUserId, targetUserName || "Unknown User");
           setTargetProfile(fetchedProfile);
         } catch (err: any) {
           setError(err.message || "Failed to load profile.");
@@ -98,14 +97,14 @@ const ProfilePopUpCard: React.FC = () => {
       fetchTargetProfile();
     } else {
       setTargetProfile(null);
-      setLoading(true); // Reset loading state when closing
+      setLoading(true);
       setError(null);
     }
   }, [
     isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile,
     bio, intention, linkedinUrl, canHelpWith, needHelpWith, currentUserPronouns,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    currentUserFocusPreference, currentUserOrganization, currentUserProfileVisibility // NEW: Add currentUserProfileVisibility
+    currentUserFocusPreference, currentUserOrganization, currentUserProfileVisibility
   ]);
 
   useLayoutEffect(() => {
@@ -204,10 +203,10 @@ const ProfilePopUpCard: React.FC = () => {
     }
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
-    const isCurrentUserProfile = currentUserProfile && targetProfile.id === currentUserProfile.id;
+    // isCurrentUserProfile is now defined at the component level
     const currentFriendStatus = currentUserProfile?.id && friendStatuses[targetProfile.id] ? friendStatuses[targetProfile.id] : 'none';
 
-    const isFieldVisible = (field: ProfileDataField | null | undefined) => { // MODIFIED: Explicitly type as ProfileDataField
+    const isFieldVisible = (field: ProfileDataField | null | undefined) => {
       if (isCurrentUserProfile) return true;
       if (!field || !field.value || field.visibility.includes('private')) return false;
 
@@ -242,12 +241,12 @@ const ProfilePopUpCard: React.FC = () => {
       );
     }
 
-    const targetBio = targetProfile.profile_data?.bio; // Use optional chaining
-    const targetIntention = targetProfile.profile_data?.intention; // Use optional chaining
-    const targetCanHelpWith = targetProfile.profile_data?.can_help_with; // Use optional chaining
-    const targetNeedHelpWith = targetProfile.profile_data?.need_help_with; // Use optional chaining
-    const targetLinkedinUrl = targetProfile.profile_data?.linkedin_url; // Use optional chaining
-    const targetPronouns = targetProfile.profile_data?.pronouns; // Use optional chaining
+    const targetBio = targetProfile.profile_data?.bio;
+    const targetIntention = targetProfile.profile_data?.intention;
+    const targetCanHelpWith = targetProfile.profile_data?.can_help_with;
+    const targetNeedHelpWith = targetProfile.profile_data?.need_help_with;
+    const targetLinkedinUrl = targetProfile.profile_data?.linkedin_url;
+    const targetPronouns = targetProfile.profile_data?.pronouns;
 
     const allFieldsPrivate =
       (!targetBio?.value || !isFieldVisible(targetBio)) &&
@@ -284,7 +283,7 @@ const ProfilePopUpCard: React.FC = () => {
                 currentFriendStatus === 'none' && "text-foreground",
                 currentFriendStatus === 'pending' && "text-gray-500 cursor-default",
                 currentFriendStatus === 'friends' && "text-green-500",
-                "hover:bg-accent-hover" // NEW: Added hover effect
+                "hover:bg-accent-hover"
               )}
               onClick={() => {
                 if (!isLongPressDetected.current && areToastsEnabled) toast.info("Friend request functionality not implemented in demo.");
@@ -427,7 +426,7 @@ const ProfilePopUpCard: React.FC = () => {
         variant="ghost"
         size="icon"
         onClick={closeProfilePopUp}
-        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:bg-accent-hover" // NEW: Added hover effect
+        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:bg-accent-hover"
         aria-label="Close profile pop-up"
       >
         <X className="h-4 w-4" />
