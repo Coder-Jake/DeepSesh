@@ -1026,7 +1026,7 @@ const Profile = () => {
           <DialogHeader>
             <DialogTitle>{organizationInput ? "Edit Organisations" : "Add Organisations"}</DialogTitle>
             <DialogDescription>
-              Enter the name of your organization. This will be visible to others.
+              Enter the name of your organizations (seperated by ;).
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
