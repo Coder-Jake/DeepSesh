@@ -1572,7 +1572,7 @@ const Index = () => {
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm text-center py-4">
-                  {isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Enable public discovery and location to see nearby sessions."}
+                  {isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Switch to Public to see nearby sessions."}
                 </p>
               )
             )}
@@ -1609,7 +1609,7 @@ const Index = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm text-center py-4">No friend sessions found.</p>
+                <p className="text-muted-foreground text-sm text-center py-4">Invite Friends to see their active sessions.</p>
               )
             )}
           </div>
@@ -1646,7 +1646,7 @@ const Index = () => {
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm text-center py-4">
-                  {isDiscoveryActivated && profile?.organization ? "No organization sessions found." : "Join an organization to see organization sessions."}
+                  {isDiscoveryActivated && profile?.organization ? "No organization sessions found." : "Join an organization to see Organization sessions."}
                 </p>
               )
             )}
