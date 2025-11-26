@@ -129,7 +129,7 @@ const filterLocalMockSessions = (
     const isFriendsOnly = session.visibility === 'friends';
     const isOrganizationOnly = session.visibility === 'organisation';
 
-    // Check if the current user is a participant in this session
+    // Check if the current user is a participant in this specific session
     const isUserInSession = currentUserId ? session.participants.some(p => p.userId === currentUserId) : false;
 
     // Check if any participant in the session is a friend of the current user
@@ -191,7 +191,7 @@ const fetchSupabaseSessions = async (
       userName: p.userName,
       joinTime: p.joinTime,
       role: p.role,
-      focusPreference: p.focusPreference || 50, // Corrected to focusPreference
+      focusPreference: p.focus_duration || 50, // Corrected to focusPreference
       intention: p.intention || undefined,
       bio: p.bio || undefined,
     }));
@@ -395,12 +395,12 @@ const Index = () => {
   const titleInputRef = useRef<HTMLInputElement>(null);
   const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
   
-  const [hiddenNearbyCount, setHiddenNearbyCount] = useState(0);
-  const [hiddenFriendsCount, setHiddenFriendsCount] = useState(0);
+  // REMOVED: hiddenNearbyCount and hiddenFriendsCount states
 
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [joinSessionCode, setJoinSessionCode] = useState("");
 
+  // Initial states for accordion sections, default to open
   const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(true);
   const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(true);
   const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(true);
@@ -412,8 +412,6 @@ const Index = () => {
 
   const [openFocusPreferenceTooltipId, setOpenFocusPreferenceTooltipId] = useState<string | null>(null);
   const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -627,6 +625,7 @@ const Index = () => {
     if (longPressRef.current) {
       clearTimeout(longPressRef.current);
     }
+    isLongPressDetected.current = false; // Reset long press detection
   };
 
   const handleIntentionLongPress = () => {
@@ -1444,16 +1443,44 @@ const Index = () => {
     isLongPressDetected.current = true;
   };
 
+  // Effect to set initial open/closed state for session sections
+  useEffect(() => {
+    // Nearby Sessions:
+    // Relevant if: isDiscoveryActivated AND (sessionVisibility is 'public') AND (has sessions)
+    const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
+    const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
+    const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+    const isNearbyRelevant = isDiscoveryActivated && sessionVisibility === 'public' && allNearbySessions.length > 0;
+    setIsNearbySessionsOpen(isNearbyRelevant);
+
+    // Friends Sessions:
+    // Relevant if: isDiscoveryActivated AND (has friends sessions)
+    const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
+    const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
+    const isFriendsRelevant = isDiscoveryActivated && allFriendsSessions.length > 0;
+    setIsFriendsSessionsOpen(isFriendsRelevant);
+
+    // Organization Sessions:
+    // Relevant if: isDiscoveryActivated AND (user has organization) AND (has organization sessions)
+    const orgMockSessions = mockOrganizationSessions;
+    const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
+    const isOrganizationRelevant = isDiscoveryActivated && !!profile?.organization && allOrganizationSessions.length > 0;
+    setIsOrganizationSessionsOpen(isOrganizationRelevant);
+
+  }, [
+    isDiscoveryActivated, sessionVisibility, showDemoSessions, filteredMockNearbySessions,
+    supabaseActiveSessions, currentUserId, filteredMockFriendsSessions, mockOrganizationSessions,
+    profile?.organization, shouldShowNearbySessions, shouldShowFriendsSessions, shouldShowOrganizationSessions
+  ]);
+
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
     switch (sectionId) {
       case 'nearby':
         const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
         const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
         const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+        const hasNearbySessions = allNearbySessions.length > 0;
 
-        if (!shouldShowNearbySessions || allNearbySessions.length === 0) {
-          return null;
-        }
         return (
           <div className="mb-6" data-name="Nearby Sessions Section">
             <button
@@ -1512,34 +1539,35 @@ const Index = () => {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {hiddenNearbyCount > 0 && (
-                  <span className="text-sm text-muted-foreground">({hiddenNearbyCount})</span>
-                )}
                 {isNearbySessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
             </button>
             {isNearbySessionsOpen && (
-              <div className="space-y-3">
-                {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
-                {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
-                {allNearbySessions.map(session => (
-                  <SessionCard
-                    key={session.id}
-                    session={session}
-                    onJoinSession={handleJoinSession}
-                  />
-                ))}
-              </div>
+              hasNearbySessions ? (
+                <div className="space-y-3">
+                  {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
+                  {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
+                  {allNearbySessions.map(session => (
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      onJoinSession={handleJoinSession}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-4">
+                  {isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Enable public discovery and location to see nearby sessions."}
+                </p>
+              )
             )}
           </div>
         );
       case 'friends':
         const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
         const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
+        const hasFriendsSessions = allFriendsSessions.length > 0;
 
-        if (!shouldShowFriendsSessions || allFriendsSessions.length === 0) {
-          return null;
-        }
         return (
           <div data-name="Friends Sessions Section">
             <button
@@ -1551,32 +1579,31 @@ const Index = () => {
                 <h3>Friends</h3>
               </div>
               <div className="flex items-center gap-2">
-                {hiddenFriendsCount > 0 && (
-                  <span className="text-sm text-muted-foreground">({hiddenFriendsCount})</span>
-                )}
                 {isFriendsSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
             </button>
             {isFriendsSessionsOpen && (
-              <div className="space-y-3">
-                {allFriendsSessions.map(session => (
-                  <SessionCard
-                    key={session.id}
-                    session={session}
-                    onJoinSession={handleJoinSession}
-                  />
-                ))}
-              </div>
+              hasFriendsSessions ? (
+                <div className="space-y-3">
+                  {allFriendsSessions.map(session => (
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      onJoinSession={handleJoinSession}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-4">No friend sessions found.</p>
+              )
             )}
           </div>
         );
       case 'organization':
         const orgMockSessions = mockOrganizationSessions;
         const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
+        const hasOrganizationSessions = allOrganizationSessions.length > 0;
 
-        if (!shouldShowOrganizationSessions || allOrganizationSessions.length === 0) {
-          return null;
-        }
         return (
           <div data-name="Organization Sessions Section">
             <button
@@ -1592,15 +1619,21 @@ const Index = () => {
               </div>
             </button>
             {isOrganizationSessionsOpen && (
-              <div className="space-y-3">
-                {allOrganizationSessions.map(session => (
-                  <SessionCard
-                    key={session.id}
-                    session={session}
-                    onJoinSession={handleJoinSession}
-                  />
-                ))}
-              </div>
+              hasOrganizationSessions ? (
+                <div className="space-y-3">
+                  {allOrganizationSessions.map(session => (
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      onJoinSession={handleJoinSession}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-4">
+                  {isDiscoveryActivated && profile?.organization ? "No organization sessions found." : "Join an organization to see organization sessions."}
+                </p>
+              )
             )}
           </div>
         );
