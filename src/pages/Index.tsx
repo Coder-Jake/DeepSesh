@@ -601,7 +601,7 @@ const Index = () => {
 
   useEffect(() => {
     const isDefault = seshTitle === getDefaultSeshTitle() && !isSeshTitleCustomized;
-    setIsDefaultTitleAnimating(isDefault);
+    // Removed setIsDefaultTitleAnimating as it's not defined in this scope
   }, [seshTitle, isSeshTitleCustomized, getDefaultSeshTitle]);
 
   useEffect(() => {
@@ -1253,7 +1253,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    );
+    }); // Added missing '}' here
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {
@@ -2026,7 +2026,7 @@ const Index = () => {
                     <CardTitle
                       className={cn(
                         "text-lg cursor-pointer select-none",
-                        isDefaultTitleAnimating && "animate-fade-in-out"
+                        // Removed isDefaultTitleAnimating as it's not defined
                       )}
                       onClick={handleTitleClick}
                       onMouseDown={() => handlePressStart(handleTitleLongPress)}
