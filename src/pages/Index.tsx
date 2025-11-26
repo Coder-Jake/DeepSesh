@@ -387,6 +387,7 @@ const Index = () => {
   const isLongPressDetected = useRef(false);
   const [activeJoinedSession, setActiveJoinedSession] = useState<DemoSession | null>(null);
   const [isHoveringTimer, setIsHoveringTimer] = useState(false);
+  const [isDefaultTitleAnimating, setIsDefaultTitleAnimating] = useState(false); // NEW: Define state for title animation
 
   const currentUserId = profile?.id || "mock-user-id-123";
   const currentUserName = profile?.first_name || localFirstName || "You";
