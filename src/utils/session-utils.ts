@@ -7,6 +7,7 @@ export const saveSessionToDatabase = async (
   userId: string | undefined, // userId is now optional as we might not have a logged-in user
   seshTitle: string,
   notes: string,
+  hostNotes: string, // NEW: Add hostNotes parameter
   finalAccumulatedFocusSeconds: number,
   finalAccumulatedBreakSeconds: number,
   totalSessionSeconds: number,
@@ -36,6 +37,7 @@ export const saveSessionToDatabase = async (
     session_end_time: sessionEndTime.toISOString(),
     active_asks: currentActiveAsks,
     notes: notes,
+    host_notes: hostNotes, // NEW: Save hostNotes
   };
 
   try {

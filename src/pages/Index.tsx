@@ -48,7 +48,9 @@ import { Slider } from '@/components/ui/slider';
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
 import { calculateDistance } from '@/utils/location-utils';
 import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // NEW: Added Popover imports
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // NEW: Import Tabs components
+import MarkdownEditor from "@/components/MarkdownEditor"; // NEW: Import MarkdownEditor
 
 interface ExtendSuggestion {
   id: string;
@@ -102,6 +104,7 @@ interface SupabaseSessionData {
   join_code: string | null;
   active_asks: ActiveAskItem[];
   organization: string | null;
+  host_notes: string | null; // NEW: Add host_notes
 }
 
 // NEW: Helper function to filter local mock sessions
@@ -238,6 +241,7 @@ const fetchSupabaseSessions = async (
       visibility: session.visibility,
       user_id: session.user_id,
       join_code: session.join_code,
+      host_notes: session.host_notes, // NEW: Add host_notes
     };
   }).filter(session => {
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -290,6 +294,8 @@ const Index = () => {
     setIsFlashing,
     notes,
     setNotes,
+    hostNotes, // NEW: Get hostNotes
+    setHostNotes, // NEW: Get setHostNotes
     seshTitle,
     setSeshTitle,
     isSeshTitleCustomized,
@@ -393,7 +399,7 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  // REMOVED: notesTextareaRef as it's now handled by MarkdownEditor
   
   // REMOVED: hiddenNearbyCount and hiddenFriendsCount states
 
@@ -588,12 +594,7 @@ const Index = () => {
     }
   }, [isEditingSeshTitle]);
 
-  useEffect(() => {
-    if (notesTextareaRef.current) {
-      notesTextareaRef.current.style.height = 'auto';
-      notesTextareaRef.current.style.height = notesTextareaRef.current.scrollHeight + 'px';
-    }
-  }, [notes]);
+  // REMOVED: useEffect for notesTextareaRef auto-resize
 
   useEffect(() => {
     console.log("Index: Current activeAsks on homepage:", activeAsks);
@@ -673,6 +674,8 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setSeshTitle(getDefaultSeshTitle());
       setActiveAsks([]);
+      setNotes(""); // NEW: Clear notes
+      setHostNotes(""); // NEW: Clear hostNotes
     }
 
     const currentFocusDuration = focusMinutes;
@@ -732,6 +735,7 @@ const Index = () => {
             participants_data: [hostParticipant],
             join_code: joinCode,
             organization: profile?.organization || null,
+            host_notes: hostNotes, // NEW: Add hostNotes
           })
           .select('id')
           .single();
@@ -749,7 +753,7 @@ const Index = () => {
       }
     }
   }, [
-    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, profile?.organization
+    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, profile?.organization, notes, hostNotes // NEW: Add notes and hostNotes
   ]);
 
   const resumeTimer = () => {
@@ -973,6 +977,7 @@ const Index = () => {
           visibility: joinedSession.visibility,
           user_id: joinedSession.user_id,
           join_code: joinedSession.join_code,
+          host_notes: joinedSession.host_notes, // NEW: Add host_notes
         };
         await handleJoinSession(demoSession);
       } else {
@@ -2013,52 +2018,37 @@ const Index = () => {
             )}
 
             <Card>
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  {isEditingSeshTitle ? (
-                    <Input
-                      ref={titleInputRef}
-                      value={seshTitle}
-                      onChange={(e) => setSeshTitle(e.target.value)}
-                      onKeyDown={handleTitleInputKeyDown}
-                      onBlur={handleTitleInputBlur}
-                      placeholder={getDefaultSeshTitle()}
-                      className="text-lg font-semibold h-auto py-1 px-2"
-                      onFocus={(e) => e.target.select()}
-                      data-name="Sesh Title Input"
+              <Tabs defaultValue="my-notes" className="w-full">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="my-notes">My Notes</TabsTrigger>
+                      <TabsTrigger value="host-notes" disabled={currentSessionRole !== 'host' && currentSessionRole !== 'coworker'}>Host Notes</TabsTrigger>
+                    </TabsList>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <TabsContent value="my-notes">
+                    <MarkdownEditor
+                      value={notes}
+                      onChange={setNotes}
+                      placeholder="Jot down your thoughts, to-do items, or reflections..."
+                      rows={5}
+                      readOnly={false}
                     />
-                  ) : (
-                    <CardTitle
-                      className={cn(
-                        "text-lg cursor-pointer select-none",
-                        // Removed isDefaultTitleAnimating as it's not defined
-                      )}
-                      onClick={handleTitleClick}
-                      onMouseDown={() => handlePressStart(handleTitleLongPress)}
-                      onMouseUp={handlePressEnd}
-                      onMouseLeave={handlePressEnd}
-                      onTouchStart={() => handlePressStart(handleTitleLongPress)}
-                      onTouchEnd={handlePressEnd}
-                      data-name="Sesh Title Display"
-                    >
-                      {seshTitle}
-                    </CardTitle>
-                  )}
-                  <span className="text-lg font-semibold text-black">Notes</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  ref={notesTextareaRef}
-                  placeholder="Jot down your thoughts, to-do items, or reflections..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  className="resize-none overflow-hidden"
-                  onFocus={(e) => e.target.select()}
-                  data-name="Notes Textarea"
-                />
-              </CardContent>
+                  </TabsContent>
+                  <TabsContent value="host-notes">
+                    <MarkdownEditor
+                      value={hostNotes}
+                      onChange={setHostNotes}
+                      placeholder="Host notes visible to all coworkers..."
+                      rows={5}
+                      readOnly={currentSessionRole !== 'host'} // Only host can edit
+                      isCoworkerView={currentSessionRole === 'coworker'} // Coworkers view as read-only preview
+                    />
+                  </TabsContent>
+                </CardContent>
+              </Tabs>
             </Card>
 
             {isActiveTimer && allParticipantsToDisplayInCard.length > 1 && (

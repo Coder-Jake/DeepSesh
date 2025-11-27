@@ -112,6 +112,7 @@ export interface DemoSession {
   user_id?: string | null; // ADDED: user_id
   join_code?: string | null; // NEW: Add join_code
   organization?: string | null; // NEW: Add organization
+  host_notes?: string | null; // NEW: Add host_notes
 }
 
 // NEW: Define a type for Supabase fetched sessions
@@ -138,6 +139,7 @@ export interface SupabaseSessionData {
   join_code: string | null; // NEW: Add join_code
   active_asks: ActiveAskItem[]; // ADDED: active_asks property
   organization: string | null; // NEW: Add organization to SupabaseSessionData
+  host_notes: string | null; // NEW: Add host_notes
 }
 
 // Define the structure for the TimerContext value
@@ -162,6 +164,8 @@ export type TimerContextType = {
   setIsFlashing: React.Dispatch<React.SetStateAction<boolean>>;
   notes: string;
   setNotes: React.Dispatch<React.SetStateAction<string>>;
+  hostNotes: string; // NEW: Add hostNotes
+  setHostNotes: React.Dispatch<React.SetStateAction<string>>; // NEW: Add setHostNotes
   seshTitle: string;
   setSeshTitle: React.Dispatch<React.SetStateAction<string>>;
   isSeshTitleCustomized: boolean;
@@ -328,6 +332,7 @@ export interface SavedSession {
   id: string;
   title: string;
   notes: string;
+  hostNotes: string; // NEW: Add hostNotes
   focusDurationSeconds: number;
   breakDurationSeconds: number;
   totalDurationSeconds: number;
