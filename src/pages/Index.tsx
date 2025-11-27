@@ -411,7 +411,7 @@ const Index = () => {
   const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const linkCopiedTimeoutRef = useRef<NodeS.Timeout | null>(null);
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState("");
@@ -554,7 +554,7 @@ const Index = () => {
     if (isDiscoveryActivated && geolocationPermissionStatus === 'granted') {
       getUserLocation();
     }
-  }, [isDiscoveryActivated, geolocationPermissionPermissionStatus, getLocation]);
+  }, [isDiscoveryActivated, geolocationPermissionStatus, getLocation]);
 
   const allParticipantsToDisplayInCard = useMemo(() => {
     if (!currentSessionParticipantsData || currentSessionParticipantsData.length === 0) {
