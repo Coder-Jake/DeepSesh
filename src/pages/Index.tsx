@@ -597,10 +597,6 @@ const Index = () => {
   // REMOVED: useEffect for notesTextareaRef auto-resize
 
   useEffect(() => {
-    console.log("Index: Current activeAsks on homepage:", activeAsks);
-  }, [activeAsks]);
-
-  useEffect(() => {
     const isDefault = seshTitle === getDefaultSeshTitle() && !isSeshTitleCustomized;
     // Removed setIsDefaultTitleAnimating as it's not defined in this scope
   }, [seshTitle, isSeshTitleCustomized, getDefaultSeshTitle]);
@@ -2118,43 +2114,33 @@ const Index = () => {
               </Card>
             )}
 
-            {!isDiscoveryActivated ? (
-              <Card className="p-6 text-center">
-                <CardContent className="flex flex-col items-center justify-center p-0">
-                  <p className="text-muted-foreground mb-4">Discover nearby sessions and connect with friends!</p>
-                  <Button onClick={() => setIsDiscoverySetupOpen(true)} variant="default">
-                    <Users className="mr-2 h-4 w-4" /> Activate
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="sessions-list">
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="space-y-6"
-                    >
-                      {sectionOrder.map((sectionId, index) => (
-                        <Draggable key={sectionId} draggableId={sectionId} index={index}>
-                          {(provided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.dragHandleProps}
-                              {...provided.draggableProps}
-                            >
-                              {renderSection(sectionId)}
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            )}
+            {/* Removed the conditional rendering for !isDiscoveryActivated */}
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="sessions-list">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="space-y-6"
+                  >
+                    {sectionOrder.map((sectionId, index) => (
+                      <Draggable key={sectionId} draggableId={sectionId} index={index}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.dragHandleProps}
+                            {...provided.draggableProps}
+                          >
+                            {renderSection(sectionId)}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           </div>
         </div>
         {isScheduleActive && (
