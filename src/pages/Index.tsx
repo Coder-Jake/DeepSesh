@@ -194,7 +194,7 @@ const fetchSupabaseSessions = async (
       userName: p.userName,
       joinTime: p.joinTime,
       role: p.role,
-      focusPreference: p.focus_duration || 50, // Corrected to focusPreference
+      focusPreference: p.focusPreference || 50, // Corrected to focusPreference
       intention: p.intention || undefined,
       bio: p.bio || undefined,
     }));
@@ -417,7 +417,7 @@ const Index = () => {
   const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeS.Timeout | null>(null);
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIX: Changed NodeS.Timeout to NodeJS.Timeout
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState("");
@@ -2266,7 +2266,7 @@ const Index = () => {
                       min={0}
                       step={1}
                       className="w-full"
-                      rangeColor={getSociabilityGradientColor(focusPreference)}
+                      // FIX: Removed rangeColor prop as it's not supported by shadcn/ui Slider
                     />
                   </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground select-none">
