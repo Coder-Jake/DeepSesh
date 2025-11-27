@@ -554,7 +554,7 @@ const Index = () => {
     if (isDiscoveryActivated && geolocationPermissionStatus === 'granted') {
       getUserLocation();
     }
-  }, [isDiscoveryActivated, geolocationPermissionStatus, getLocation]);
+  }, [isDiscoveryActivated, geolocationPermissionPermissionStatus, getLocation]);
 
   const allParticipantsToDisplayInCard = useMemo(() => {
     if (!currentSessionParticipantsData || currentSessionParticipantsData.length === 0) {
@@ -792,7 +792,7 @@ const Index = () => {
   };
 
   const resetTimer = async () => {
-    stopTimer(false, false);
+    stopTimer(true, false);
   };
 
   const switchToBreak = () => {
@@ -1558,23 +1558,28 @@ const Index = () => {
               </div>
             </button>
             {isNearbySessionsOpen && (
-              hasNearbySessions ? (
-                <div className="space-y-3">
-                  {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
-                  {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
-                  {allNearbySessions.map(session => (
-                    <SessionCard
-                      key={session.id}
-                      session={session}
-                      onJoinSession={handleJoinSession}
-                    />
-                  ))}
-                </div>
-              ) : (
+              <>
+                {hasNearbySessions ? (
+                  <div className="space-y-3">
+                    {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
+                    {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
+                    {allNearbySessions.map(session => (
+                      <SessionCard
+                        key={session.id}
+                        session={session}
+                        onJoinSession={handleJoinSession}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm text-center py-4">
+                    {isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Switch to Public to see nearby sessions."}
+                  </p>
+                )}
                 <p className="text-muted-foreground text-sm text-center py-4">
-                  {isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Switch to Public to see nearby sessions."}
+                  Invite people from real life to build the DeepSesh community
                 </p>
-              )
+              </>
             )}
           </div>
         );
