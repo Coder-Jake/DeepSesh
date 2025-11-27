@@ -27,7 +27,8 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   className,
   isCoworkerView = false,
 }) => {
-  const [isEditing, setIsEditing] = useState(true);
+  // Start in edit mode if not readOnly and not a coworker view, otherwise start in preview
+  const [isEditing, setIsEditing] = useState(!readOnly && !isCoworkerView);
 
   // If it's a coworker view, always show preview and disable editing
   useEffect(() => {
@@ -36,31 +37,11 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     }
   }, [isCoworkerView]);
 
-  const handleToggleEdit = useCallback(() => {
-    if (!readOnly && !isCoworkerView) {
-      setIsEditing(prev => !prev);
-    }
-  }, [readOnly, isCoworkerView]);
-
   const markdownContent = value || '';
 
   return (
     <div className={cn("relative flex flex-col", className)}>
-      {!readOnly && !isCoworkerView && (
-        <div className="flex justify-end mb-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleToggleEdit}
-            className="flex items-center gap-1 text-muted-foreground hover:bg-accent-hover"
-          >
-            {isEditing ? <Eye size={16} /> : <Edit size={16} />}
-            <span className="text-xs">{isEditing ? 'Preview' : 'Edit'}</span>
-          </Button>
-        </div>
-      )}
-
-      {isEditing && !isCoworkerView ? (
+      {isEditing && !readOnly && !isCoworkerView ? (
         <Textarea
           value={markdownContent}
           onChange={(e) => onChange(e.target.value)}
@@ -68,14 +49,22 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           rows={rows}
           readOnly={readOnly}
           className="resize-none overflow-hidden min-h-[100px]"
+          onFocus={() => setIsEditing(true)}
+          onBlur={() => setIsEditing(false)}
         />
       ) : (
         <div
           className={cn(
             "prose dark:prose-invert max-w-none p-3 border rounded-md min-h-[100px] overflow-auto",
             "prose-sm sm:prose lg:prose-lg xl:prose-xl", // Tailwind Typography classes for styling markdown
-            markdownContent.trim() === '' && "text-muted-foreground italic"
+            markdownContent.trim() === '' && "text-muted-foreground italic",
+            !readOnly && !isCoworkerView && "cursor-text" // Indicate it's clickable to edit
           )}
+          onClick={() => {
+            if (!readOnly && !isCoworkerView) {
+              setIsEditing(true);
+            }
+          }}
         >
           {markdownContent.trim() === '' ? (
             <p>{placeholder}</p>

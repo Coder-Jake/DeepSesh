@@ -2038,14 +2038,16 @@ const Index = () => {
                     />
                   </TabsContent>
                   <TabsContent value="host-notes">
-                    <MarkdownEditor
-                      value={hostNotes}
-                      onChange={setHostNotes}
-                      placeholder="Host notes visible to all coworkers..."
-                      rows={5}
-                      readOnly={currentSessionRole !== 'host'} // Only host can edit
-                      isCoworkerView={currentSessionRole === 'coworker'} // Coworkers view as read-only preview
-                    />
+                    {!(currentSessionRole === 'coworker' && !hostNotes.trim()) && (
+                      <MarkdownEditor
+                        value={hostNotes}
+                        onChange={setHostNotes}
+                        placeholder="" // Removed placeholder
+                        rows={5}
+                        readOnly={currentSessionRole !== 'host'} // Only host can edit
+                        isCoworkerView={currentSessionRole === 'coworker'} // Coworkers view as read-only preview
+                      />
+                    )}
                   </TabsContent>
                 </CardContent>
               </Tabs>
