@@ -290,7 +290,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
       createMockParticipant(MOCK_PROFILES[9], 'coworker'), // NEW: Esther Perel
     ],
     location_lat: -37.79861643511442,
-    location_long: 144.96354864276117 
+    location_long: 144.96354864276117, 
     distance: null,
     active_asks: [],
     visibility: 'friends',
