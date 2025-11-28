@@ -51,6 +51,7 @@ import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // NEW: Import Tabs components
 import MarkdownEditor from "@/components/MarkdownEditor"; // NEW: Import MarkdownEditor
+import { getEdgeFunctionErrorMessage } from '@/utils/error-utils'; // NEW: Import the error utility
 
 interface ExtendSuggestion {
   id: string;
@@ -911,7 +912,7 @@ const Index = () => {
       console.error("Error in handleJoinSession:", error);
       if (areToastsEnabled) {
         toast.error("Failed to Join Session", {
-          description: `An unexpected error occurred: ${error.message || String(error)}.`,
+          description: `An unexpected error occurred: ${await getEdgeFunctionErrorMessage(error)}.`, // MODIFIED: Use getEdgeFunctionErrorMessage
         });
       }
       resetSessionStates();
@@ -987,7 +988,7 @@ const Index = () => {
       console.error("Error joining session by code:", err);
       if (areToastsEnabled) {
         toast.error("Join Failed", {
-          description: `An error occurred: ${err.message || String(err)}.`,
+          description: `An error occurred: ${await getEdgeFunctionErrorMessage(err)}.`, // MODIFIED: Use getEdgeFunctionErrorMessage
         });
       }
       resetSessionStates();

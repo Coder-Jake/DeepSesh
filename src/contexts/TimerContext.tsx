@@ -9,6 +9,7 @@ import { useProfile } from '../contexts/ProfileContext';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js'; // Import RealtimeChannel
 import { isValidUUID } from '@/lib/utils'; // NEW: Import isValidUUID
+import { getEdgeFunctionErrorMessage } from '@/utils/error-utils'; // NEW: Import the error utility
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
@@ -26,7 +27,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   // Define getDefaultSeshTitle early so it can be used in useState initializers
   const getDefaultSeshTitle = useCallback(() => {
-    // Prioritize profile's first_name if it's explicitly set and not the default "You"
+    // Prioritize profile's first_name if it's explicitly set, otherwise use join_code
     const profileFirstName = profile?.first_name;
     const code = profile?.join_code;
 
@@ -715,7 +716,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         console.error("Error transferring host role via Edge Function:", error);
         if (areToastsEnabled) {
           toast.error("Host Transfer Failed", {
-            description: `Failed to transfer host role: ${error.message}`,
+            description: `Failed to transfer host role: ${await getEdgeFunctionErrorMessage(error)}`, // MODIFIED: Use getEdgeFunctionErrorMessage
           });
         }
       }
@@ -769,7 +770,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       console.error("Error leaving session via Edge Function:", error);
       if (areToastsEnabled) {
         toast.error("Leave Session Failed", {
-          description: `An unexpected error occurred: ${error.message}`,
+          description: `An unexpected error occurred: ${await getEdgeFunctionErrorMessage(error)}`, // MODIFIED: Use getEdgeFunctionErrorMessage
         });
       }
     } finally {
@@ -1203,7 +1204,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     
     // The sessionStartTime should reflect when the *entire session* started, not just the current phase.
     // For a coworker joining, we don't have the exact session start time from the host directly in these props.
-    // For now, we'll approximate it based on the current phase's elapsed time.
     // A more robust solution would be to pass session.startTime from the fetched SupabaseSessionData.
     setSessionStartTime(Date.now() - (currentPhaseDurationMinutes * 60 - remainingSecondsInPhase) * 1000); 
     
@@ -1288,7 +1288,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       console.error("Unexpected error during joinSessionAsCoworker:", error);
       if (areToastsEnabled) {
         toast.error("Join Session Failed", {
-          description: `An unexpected error occurred: ${error.message || String(error)}.`,
+          description: `An unexpected error occurred: ${await getEdgeFunctionErrorMessage(error)}.`, // MODIFIED: Use getEdgeFunctionErrorMessage
         });
       }
       resetSessionStates();
@@ -1538,7 +1538,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       console.error("Error adding ask via Edge Function:", error);
       if (areToastsEnabled) {
         toast.error("Failed to Create Ask", {
-          description: `Could not add your ask: ${error.message}`,
+          description: `Could not add your ask: ${await getEdgeFunctionErrorMessage(error)}`, // MODIFIED: Use getEdgeFunctionErrorMessage
         });
       }
     }
@@ -1580,7 +1580,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       console.error("Error updating ask via Edge Function:", error);
       if (areToastsEnabled) {
         toast.error("Failed to Update Ask", {
-          description: `Could not update ask: ${error.message}`,
+          description: `Could not update ask: ${await getEdgeFunctionErrorMessage(error)}`, // MODIFIED: Use getEdgeFunctionErrorMessage
         });
       }
     }
