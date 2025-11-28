@@ -784,15 +784,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     // REMOVED: finally block with resetSessionStates()
   }, [user?.id, activeSessionRecordId, areToastsEnabled, session?.access_token]); // NEW: Add session.access_token to dependencies
 
-  const stopTimer = useCallback(async (confirmPrompt: boolean, isLongPress: boolean) => { // MODIFIED: Added isLongPress argument
-    // For solo timers, only show confirmation if confirmPrompt is true AND it's not a long press
-    if (confirmPrompt && !isLongPress) { // MODIFIED: Added !isLongPress
-      if (!confirm('Are you sure you want to stop the timer?')) {
-        return;
-      }
-    }
-
-    let sessionActionSuccessful = false;
+  const stopTimer = useCallback(async (confirmPrompt: boolean, isLongPress: boolean) => {
+    // Always stop the local timer immediately for the user
     let finalAccumulatedFocus = accumulatedFocusSeconds;
     let finalAccumulatedBreak = accumulatedBreakSeconds;
 
@@ -807,12 +800,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
     const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
 
+    // Attempt to update remote session state if applicable
     if (currentSessionRole === 'host') {
       // Host is stopping. Transfer role or delete session from Supabase.
-      sessionActionSuccessful = await transferHostRole();
+      await transferHostRole(); // This function handles its own toasts/errors
     } else if (currentSessionRole === 'coworker') {
       // Coworker is stopping. Leave session from Supabase.
-      sessionActionSuccessful = await leaveSession();
+      await leaveSession(); // This function handles its own toasts/errors
     } else {
       // Solo timer. No remote session to update.
       // Save local session data.
@@ -821,7 +815,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         user?.id,
         _seshTitle,
         notes,
-        hostNotes, // NEW: Pass hostNotes
+        hostNotes,
         finalAccumulatedFocus,
         finalAccumulatedBreak,
         totalSessionSeconds,
@@ -831,12 +825,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         allParticipantsToDisplay,
         areToastsEnabled
       );
-      sessionActionSuccessful = true; // Local save is considered successful for this context
     }
 
-    // Always reset local timer states for the current user after any session action (or solo save).
-    // The user's request is "It should always end the timer for the user".
-    // So, even if the remote operation fails, the local timer should stop.
+    // Always reset local timer states for the current user.
     resetSessionStates();
     playSound();
     triggerVibration();
