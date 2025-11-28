@@ -657,21 +657,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     resetSessionStates();
   }, [activeSessionRecordId, user?.id, currentSessionRole, areToastsEnabled, resetSessionStates]);
 
-  const transferHostRole = useCallback(async () => {
-    if (currentSessionRole === 'host' && !activeSessionRecordId) {
-      console.log("transferHostRole: Host session was not published to Supabase. Resetting local state.");
-      await resetSchedule();
-      return;
-    }
-
+  const transferHostRole = useCallback(async (): Promise<boolean> => { // MODIFIED: Added return type
     if (!user?.id || !activeSessionRecordId || currentSessionRole !== 'host') {
       console.warn("Attempted to transfer host role without being the host or having an active session.");
-      return;
+      return false; // MODIFIED: Return false if conditions not met
     }
 
     const currentHostId = user.id;
-    const currentHostName = localFirstName;
-
     const otherCoworkers = currentSessionParticipantsData
       .filter(p => p.role === 'coworker')
       .sort((a, b) => a.joinTime - b.joinTime);
@@ -698,19 +690,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         if (response.error) throw response.error;
         if (response.data.error) throw new Error(response.data.error);
 
-        const updatedSession = response.data.session;
-        const updatedParticipants = (updatedSession.participants_data || []) as ParticipantSessionData[];
-
         if (areToastsEnabled) {
           toast.success("Host Role Transferred", {
-            description: `Host role transferred to ${newHost.userName}. You are now a coworker.`,
+            description: `Host role transferred to ${newHost.userName}.`,
           });
         }
-        setCurrentSessionRole('coworker');
-        setCurrentSessionHostName(newHost.userName);
-        setCurrentSessionOtherParticipants(updatedParticipants.filter(p => p.userId !== user.id && p.userId !== newHost.userId));
-        setCurrentSessionParticipantsData(updatedParticipants);
-        setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
+        // REMOVED: Local state updates (setCurrentSessionRole, etc.)
+        return true; // MODIFIED: Return true on success
 
       } catch (error: any) {
         console.error("Error transferring host role via Edge Function:", error);
@@ -719,29 +705,48 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             description: `Failed to transfer host role: ${await getEdgeFunctionErrorMessage(error)}`, // MODIFIED: Use getEdgeFunctionErrorMessage
           });
         }
+        return false; // MODIFIED: Return false on error
       }
 
     } else {
-      console.log("transferHostRole: No other coworkers to transfer to. Ending session.");
-      if (areToastsEnabled) {
-        toast.info("Session Ended", {
-          description: "No other participants to transfer host role to. Session ended.",
-        });
+      console.log("transferHostRole: No other coworkers to transfer to. Deleting session from Supabase.");
+      try {
+        const { error: deleteError } = await supabase
+          .from('active_sessions')
+          .delete()
+          .eq('id', activeSessionRecordId)
+          .eq('user_id', user.id);
+
+        if (deleteError) throw deleteError;
+
+        if (areToastsEnabled) {
+          toast.info("Session Ended", {
+            description: "No other participants to transfer host role to. Session ended.",
+          });
+        }
+        // REMOVED: Local state updates (resetSchedule())
+        return true; // MODIFIED: Return true on success
+
+      } catch (deleteError: any) {
+        console.error("Error deleting session when no other participants:", deleteError);
+        if (areToastsEnabled) {
+          toast.error("Session Deletion Failed", {
+            description: `Failed to end session: ${deleteError.message}`,
+          });
+        }
+        return false; // MODIFIED: Return false on error
       }
-      await resetSchedule();
     }
-  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, resetSchedule, userJoinCode, session?.access_token]); // RENAMED: userHostCode to userJoinCode, NEW: Add session.access_token to dependencies
+  }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, session?.access_token]); // RENAMED: userHostCode to userJoinCode, NEW: Add session.access_token to dependencies
 
-  const leaveSession = useCallback(async () => {
-    if (!user?.id || !activeSessionRecordId || currentSessionRole === null) {
+  const leaveSession = useCallback(async (): Promise<boolean> => { // MODIFIED: Added return type
+    if (!user?.id || !activeSessionRecordId) {
       console.warn("Attempted to leave session without active session or user ID.");
-      return;
+      return false; // MODIFIED: Return false if conditions not met
     }
 
-    if (currentSessionRole === 'host') {
-      await transferHostRole();
-      return;
-    }
+    // REMOVED: if (currentSessionRole === 'host') { await transferHostRole(); return; }
+    // This logic is now handled by stopTimer.
 
     try {
       const response = await supabase.functions.invoke('update-session-data', {
@@ -766,27 +771,20 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: "You have left the session.",
         });
       }
+      return true; // MODIFIED: Return true on success
     } catch (error: any) {
       console.error("Error leaving session via Edge Function:", error);
       if (areToastsEnabled) {
         toast.error("Leave Session Failed", {
-          description: `An unexpected error occurred: ${await getEdgeFunctionErrorMessage(error)}`, // MODIFIED: Use getEdgeFunctionErrorMessage
+          description: `An unexpected error occurred: ${await getEdgeFunctionErrorMessage(error)}.`, // MODIFIED: Use getEdgeFunctionErrorMessage
         });
       }
-    } finally {
-      resetSessionStates();
+      return false; // MODIFIED: Return false on error
     }
-  }, [user?.id, activeSessionRecordId, currentSessionRole, areToastsEnabled, resetSessionStates, transferHostRole, session?.access_token]); // NEW: Add session.access_token to dependencies
+    // REMOVED: finally block with resetSessionStates()
+  }, [user?.id, activeSessionRecordId, areToastsEnabled, session?.access_token]); // NEW: Add session.access_token to dependencies
 
   const stopTimer = useCallback(async (confirmPrompt: boolean, isLongPress: boolean) => { // MODIFIED: Added isLongPress argument
-    if (currentSessionRole === 'host') {
-      await transferHostRole();
-      return;
-    } else if (currentSessionRole === 'coworker') {
-      await leaveSession();
-      return;
-    }
-
     // For solo timers, only show confirmation if confirmPrompt is true AND it's not a long press
     if (confirmPrompt && !isLongPress) { // MODIFIED: Added !isLongPress
       if (!confirm('Are you sure you want to stop the timer?')) {
@@ -794,9 +792,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
     }
 
+    let sessionActionSuccessful = false;
     let finalAccumulatedFocus = accumulatedFocusSeconds;
     let finalAccumulatedBreak = accumulatedBreakSeconds;
 
+    // Calculate final accumulated times before stopping
     if (isRunning && currentPhaseStartTime !== null) {
       const elapsed = (Date.now() - currentPhaseStartTime) / 1000;
       if (timerType === 'focus') {
@@ -807,29 +807,45 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
     const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
 
-    console.log("TimerContext: Calling saveSessionToDatabase with activeAsks:", activeAsks);
-    await saveSessionToDatabase(
-      user?.id,
-      _seshTitle,
-      notes,
-      hostNotes, // NEW: Pass hostNotes
-      finalAccumulatedFocus,
-      finalAccumulatedBreak,
-      totalSessionSeconds,
-      activeJoinedSessionCoworkerCount,
-      sessionStartTime || Date.now(),
-      activeAsks,
-      allParticipantsToDisplay,
-      areToastsEnabled
-    );
+    if (currentSessionRole === 'host') {
+      // Host is stopping. Transfer role or delete session from Supabase.
+      sessionActionSuccessful = await transferHostRole();
+    } else if (currentSessionRole === 'coworker') {
+      // Coworker is stopping. Leave session from Supabase.
+      sessionActionSuccessful = await leaveSession();
+    } else {
+      // Solo timer. No remote session to update.
+      // Save local session data.
+      console.log("TimerContext: Calling saveSessionToDatabase with activeAsks:", activeAsks);
+      await saveSessionToDatabase(
+        user?.id,
+        _seshTitle,
+        notes,
+        hostNotes, // NEW: Pass hostNotes
+        finalAccumulatedFocus,
+        finalAccumulatedBreak,
+        totalSessionSeconds,
+        activeJoinedSessionCoworkerCount,
+        sessionStartTime || Date.now(),
+        activeAsks,
+        allParticipantsToDisplay,
+        areToastsEnabled
+      );
+      sessionActionSuccessful = true; // Local save is considered successful for this context
+    }
 
+    // Always reset local timer states for the current user after any session action (or solo save).
+    // The user's request is "It should always end the timer for the user".
+    // So, even if the remote operation fails, the local timer should stop.
     resetSessionStates();
     playSound();
     triggerVibration();
+
   }, [
-    currentSessionRole, transferHostRole, leaveSession, accumulatedFocusSeconds, accumulatedBreakSeconds,
-    isRunning, currentPhaseStartTime, timerType, user?.id, _seshTitle, notes, hostNotes, activeJoinedSessionCoworkerCount, // NEW: Add hostNotes
-    sessionStartTime, activeAsks, allParticipantsToDisplay, areToastsEnabled, resetSessionStates, playSound, triggerVibration
+    currentSessionRole, accumulatedFocusSeconds, accumulatedBreakSeconds,
+    isRunning, currentPhaseStartTime, timerType, user?.id, _seshTitle, notes, hostNotes,
+    activeJoinedSessionCoworkerCount, sessionStartTime, activeAsks, allParticipantsToDisplay,
+    areToastsEnabled, resetSessionStates, playSound, triggerVibration, transferHostRole, leaveSession
   ]);
 
 
@@ -1258,7 +1274,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const response = await supabase.functions.invoke('join-session', {
         body: JSON.stringify({
           sessionCode: sessionToJoin.join_code, // MODIFIED: Use sessionToJoin.join_code
-          participantData: newCowower,
+          participantData: newCoworker,
         }),
         headers: {
           'Content-Type': 'application/json',
