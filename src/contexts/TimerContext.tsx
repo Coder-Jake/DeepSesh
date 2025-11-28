@@ -854,7 +854,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     simulatedStartTime: number | null = null, // The actual historical start time of the session
     simulatedCurrentPhaseIndex: number = 0,
     simulatedTimeLeftInPhase: number | null = null
-  ) => {
+  ): Promise<boolean> => { // MODIFIED: Added return type
     let needsOverrideConfirmation = false;
     let confirmationMessageParts: string[] = [];
     let shouldResetManualTimer = false;
@@ -998,6 +998,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             description: `Failed to publish session: ${error.message}`,
           });
         }
+        return false; // MODIFIED: Return false on error
       }
     }
     return true;
@@ -1062,9 +1063,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     simulatedStartTime: number | null = null,
     simulatedCurrentPhaseIndex: number = 0,
     simulatedTimeLeftInPhase: number | null = null
-  ) => {
+  ): Promise<boolean> => { // MODIFIED: Added return type
     const templateToCommence = preparedSchedules.find(template => template.id === templateId);
-    if (!templateToCommence) return;
+    if (!templateToCommence) return false; // MODIFIED: Return false
 
     const started = await startSessionCommonLogic(
       'schedule',
@@ -1085,6 +1086,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     if (started) {
       setPreparedSchedules(prev => prev.filter(template => template.id !== templateId));
     }
+    return started; // MODIFIED: Return the result of startSessionCommonLogic
   }, [preparedSchedules, startSessionCommonLogic]);
 
   const discardPreparedSchedule = useCallback((templateId: string) => {
@@ -1185,14 +1187,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentPhaseType: 'focus' | 'break',
     currentPhaseDurationMinutes: number,
     remainingSecondsInPhase: number
-  ) => {
+  ): Promise<boolean> => { // MODIFIED: Added return type
     if (!user?.id) {
       if (areToastsEnabled) {
         toast.error("Join Session Failed", {
           description: "You must be logged in to join a session.",
         });
       }
-      return;
+      return false; // MODIFIED: Return false
     }
 
     if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
@@ -1275,7 +1277,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       playSound();
       triggerVibration();
-      return; // Exit early for mock sessions
+      return true; // MODIFIED: Return true for mock sessions
     }
 
     // For real sessions, invoke the Edge Function
@@ -1312,6 +1314,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
       playSound();
       triggerVibration();
+      return true; // MODIFIED: Return true on success
     } catch (error: any) {
       console.error("Unexpected error during joinSessionAsCoworker:", error);
       if (areToastsEnabled) {
@@ -1320,6 +1323,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         });
       }
       resetSessionStates();
+      return false; // MODIFIED: Return false on error
     }
   }, [
     user?.id, areToastsEnabled, isRunning, isPaused, isScheduleActive, isSchedulePrepared,
