@@ -265,8 +265,8 @@ export const MOCK_SESSIONS: DemoSession[] = [
       createMockParticipant(MOCK_PROFILES[0], 'host'),
       createMockParticipant(MOCK_PROFILES[1], 'coworker'),
     ],
-    location_lat: -33.8688 + (Math.random() - 0.5) * 0.01, // Sydney CBD area
-    location_long: 151.2093 + (Math.random() - 0.5) * 0.01,
+    location_lat: -37.80957132768839, // Start Space
+    location_long: 144.96540194213162,
     distance: null,
     active_asks: [],
     visibility: 'public',
