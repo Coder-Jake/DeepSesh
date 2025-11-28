@@ -89,4 +89,67 @@ export const DEFAULT_SCHEDULE_TEMPLATES: ScheduledTimerTemplate[] = [
     recurrenceFrequency: 'daily',
     timerColors: {},
   },
+  {
+    id: "e5f6a7b8-c9d0-4123-8456-7890abcdef0123",
+    title: "Needle In The Hashtag (Day 1)",
+    schedule: [
+      { id: generateId(), title: "Registration opens", type: "focus", durationMinutes: 30, isCustom: true },
+      { id: generateId(), title: "Opening Ceremony", type: "focus", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Hacking begins", type: "focus", durationMinutes: 30, isCustom: true },
+      { id: generateId(), title: "Macken Murphy: “The Manosphere & Incel Ideology”", type: "focus", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Lunch", type: "break", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "David Gilmore: “Incel Radicalisation (Lived Experiences)”", type: "focus", durationMinutes: 120, isCustom: true },
+      { id: generateId(), title: "Campbell Wilson: “Countering online child exploitation”", type: "focus", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Afternoon snack", type: "break", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Sarah Davis-Gilmore: 'Lived experience of online harms'", type: "focus", durationMinutes: 90, isCustom: true },
+      { id: generateId(), title: "Dinner", type: "break", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Wrap-up / announcements", type: "focus", durationMinutes: 30, isCustom: true },
+    ],
+    commenceTime: "10:00",
+    commenceDay: DAYS_OF_WEEK.indexOf("Saturday"), // Saturday, 29 Nov
+    scheduleStartOption: 'custom_time',
+    isRecurring: false,
+    recurrenceFrequency: 'daily',
+    timerColors: {},
+  },
+  {
+    id: "f6a7b8c9-d0e1-4234-8567-890abcdef01234",
+    title: "Needle In The Hashtag (Day 2)",
+    schedule: [
+      { id: generateId(), title: "Morning tea", type: "break", durationMinutes: 120, isCustom: true }, // Includes doors open
+      { id: generateId(), title: "Maria & Ellen (eSafety): “All About eSafety”", type: "focus", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Lunch", type: "break", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Alan Agon (PaxMod): “Gaming Lounge Moderation”", type: "focus", durationMinutes: 120, isCustom: true },
+      { id: generateId(), title: "Scotty (The Product Bus): 'How to choose a hackathon-winning idea'", type: "focus", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Afternoon snacks", type: "break", durationMinutes: 150, isCustom: true },
+      { id: generateId(), title: "Dinner", type: "break", durationMinutes: 60, isCustom: true },
+      { id: generateId(), title: "Wrap-up", type: "focus", durationMinutes: 30, isCustom: true },
+    ],
+    commenceTime: "10:00",
+    commenceDay: DAYS_OF_WEEK.indexOf("Sunday"), // Sunday, 30 Nov
+    scheduleStartOption: 'custom_time',
+    isRecurring: false,
+    recurrenceFrequency: 'daily',
+    timerColors: {},
+  },
+  {
+    id: "g7h8i9j0-k1l2-4345-8678-90abcdef012345",
+    title: "Needle In The Hashtag (Pitch Day)",
+    schedule: [
+      { id: generateId(), title: "Doors open", type: "focus", durationMinutes: 10, isCustom: true },
+      { id: generateId(), title: "Event opening", type: "focus", durationMinutes: 20, isCustom: true },
+      { id: generateId(), title: "Pitches begin", type: "focus", durationMinutes: 45, isCustom: true },
+      { id: generateId(), title: "Break & refreshments", type: "break", durationMinutes: 15, isCustom: true },
+      { id: generateId(), title: "Pitches continue", type: "focus", durationMinutes: 45, isCustom: true },
+      { id: generateId(), title: "Startup Programs Presentation / judges deliberate", type: "focus", durationMinutes: 5, isCustom: true },
+      { id: generateId(), title: "Feedback", type: "focus", durationMinutes: 10, isCustom: true },
+      { id: generateId(), title: "Networking & drinks", type: "break", durationMinutes: 60, isCustom: true }, // Includes winners announced
+    ],
+    commenceTime: "15:00",
+    commenceDay: DAYS_OF_WEEK.indexOf("Thursday"), // Thursday, 11 Dec
+    scheduleStartOption: 'custom_time',
+    isRecurring: false,
+    recurrenceFrequency: 'weekly', // Changed to weekly as it's a specific day of the week
+    timerColors: {},
+  },
 ];
