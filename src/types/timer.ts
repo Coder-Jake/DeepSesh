@@ -185,7 +185,7 @@ export type TimerContextType = {
   isSchedulePrepared: boolean;
   setIsSchedulePrepared: React.Dispatch<React.SetStateAction<boolean>>;
   startSchedule: () => void;
-  commenceSpecificPreparedSchedule: (templateId: string) => void;
+  commenceSpecificPreparedSchedule: (templateId: string, simulatedStartTime?: number | null, simulatedCurrentPhaseIndex?: number, simulatedTimeLeftInPhase?: number | null) => Promise<boolean>; // MODIFIED: Added return type
   discardPreparedSchedule: (templateId: string) => void;
   resetSchedule: () => void;
   scheduleTitle: string;
@@ -312,9 +312,9 @@ export type TimerContextType = {
   setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>;
   activeSessionRecordId: string | null;
   setActiveSessionRecordId: React.Dispatch<React.SetStateAction<string | null>>;
-  joinSessionAsCoworker: (sessionToJoin: DemoSession, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<void>;
-  leaveSession: () => Promise<void>;
-  transferHostRole: () => Promise<void>;
+  joinSessionAsCoworker: (sessionToJoin: DemoSession, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<boolean>; // MODIFIED: Added return type
+  leaveSession: () => Promise<boolean>; // MODIFIED: Added return type
+  transferHostRole: () => Promise<boolean>; // MODIFIED: Added return type
   stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>;
   resetSessionStates: () => void;
   showDemoSessions: boolean; // NEW: Add showDemoSessions

@@ -135,7 +135,7 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
           commenceDay={template.commenceDay}
           scheduleStartOption={template.scheduleStartOption}
           activeTimerColors={template.timerColors}
-          commencePreparedSchedule={() => commenceSpecificPreparedSchedule(template.id)}
+          commencePreparedSchedule={() => commencePreparedSchedule(template.id)}
           resetSchedule={() => discardPreparedSchedule(template.id)}
         />
       </AccordionContent>
