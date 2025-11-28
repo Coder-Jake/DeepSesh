@@ -1222,24 +1222,40 @@ const Index = () => {
     let daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
 
-    if (targetDate.getTime() < now.getTime() && !template.isRecurring) {
-      return Number.POSITIVE_INFINITY;
-    }
+    // Calculate total duration of the schedule
+    let totalScheduleDurationSeconds = 0;
+    template.schedule.forEach(item => {
+      totalScheduleDurationSeconds += item.durationMinutes * 60;
+    });
 
-    if (targetDate.getTime() < now.getTime() && template.isRecurring) {
-      let nextCommenceDate = new Date(targetDate);
-      while (nextCommenceDate.getTime() < now.getTime()) {
-        if (template.recurrenceFrequency === 'daily') {
-          nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
-        } else if (template.recurrenceFrequency === 'weekly') {
-          nextCommenceDate.setDate(nextCommenceDate.getDate() + 7);
-        } else if (template.recurrenceFrequency === 'monthly') {
-          nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
-        } else {
+    // If the target time is in the past
+    if (targetDate.getTime() < now.getTime()) {
+      if (!template.isRecurring) {
+        // For non-recurring schedules, check if the entire schedule duration has passed
+        const elapsedSecondsSinceScheduledStart = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
+        if (elapsedSecondsSinceScheduledStart >= totalScheduleDurationSeconds) {
+          // Schedule is fully in the past and completed, so it's not "upcoming"
           return Number.POSITIVE_INFINITY;
+        } else {
+          // Schedule is in the past but still "in progress", treat its effective start as now
+          return now.getTime();
         }
+      } else {
+        // For recurring schedules, advance to the next occurrence
+        let nextCommenceDate = new Date(targetDate);
+        while (nextCommenceDate.getTime() < now.getTime()) {
+          if (template.recurrenceFrequency === 'daily') {
+            nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
+          } else if (template.recurrenceFrequency === 'weekly') {
+            nextCommenceDate.setDate(nextCommenceDate.getDate() + 7);
+          } else if (template.recurrenceFrequency === 'monthly') {
+            nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
+          } else {
+            return Number.POSITIVE_INFINITY;
+          }
+        }
+        return nextCommenceDate.getTime();
       }
-      return nextCommenceDate.getTime();
     }
 
     return targetDate.getTime();
@@ -1255,7 +1271,7 @@ const Index = () => {
         return a.title.localeCompare(b.title);
       }
       return timeA - timeB;
-    }); // Added missing '}' here
+    });
   }, [preparedSchedules, getEffectiveStartTime]);
 
   const handleNameClick = useCallback(async (userId: string, userName: string, event: React.MouseEvent) => {

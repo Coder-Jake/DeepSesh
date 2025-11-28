@@ -850,7 +850,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     initialScheduleStartOption: 'now' | 'manual' | 'custom_time',
     initialIsRecurring: boolean,
     initialRecurrenceFrequency: 'daily' | 'weekly' | 'monthly',
-    isPendingStart: boolean = false
+    // NEW: Parameters for simulating a past start
+    simulatedStartTime: number | null = null, // The actual historical start time of the session
+    simulatedCurrentPhaseIndex: number = 0,
+    simulatedTimeLeftInPhase: number | null = null
   ) => {
     let needsOverrideConfirmation = false;
     let confirmationMessageParts: string[] = [];
@@ -894,29 +897,35 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     setActiveSchedule(initialSchedule);
     setActiveTimerColors(initialTimerColors);
-    _setSeshTitle(initialScheduleTitle); // NEW: Set the main timer title
-    setIsSeshTitleCustomized(false); // NEW: It's coming from a schedule, so not "customized" by direct user input
-    setActiveScheduleDisplayTitleInternal(initialScheduleTitle); // MODIFIED: Use initialScheduleTitle
+    _setSeshTitle(initialScheduleTitle);
+    setIsSeshTitleCustomized(false);
+    setActiveScheduleDisplayTitleInternal(initialScheduleTitle);
 
-    setCurrentScheduleIndex(0);
-    setTimerType(initialSchedule[0].type);
+    // Use simulated values if provided, otherwise default to starting from the beginning
+    const actualCurrentScheduleIndex = simulatedCurrentPhaseIndex;
+    const actualTimerType = initialSchedule[actualCurrentScheduleIndex].type;
+    const actualCurrentPhaseDurationSeconds = initialSchedule[actualCurrentScheduleIndex].durationMinutes * 60;
+    const actualTimeLeft = simulatedTimeLeftInPhase !== null ? simulatedTimeLeftInPhase : actualCurrentPhaseDurationSeconds;
+    const actualSessionStartTime = simulatedStartTime !== null ? simulatedStartTime : Date.now();
+    const actualCurrentPhaseStartTime = Date.now() - (actualCurrentPhaseDurationSeconds - actualTimeLeft) * 1000; // Calculate based on current time and remaining time
+
+    setCurrentScheduleIndex(actualCurrentScheduleIndex);
+    setTimerType(actualTimerType);
     setIsTimeLeftManagedBySession(true);
-    
-    // NEW: Set currentPhaseDurationSeconds for the first item
-    const initialDurationSeconds = initialSchedule[0].durationMinutes * 60;
-    setCurrentPhaseDurationSeconds(initialDurationSeconds);
-    setTimeLeft(initialDurationSeconds); // Initialize timeLeft to full duration
+    setCurrentPhaseDurationSeconds(actualCurrentPhaseDurationSeconds);
+    setTimeLeft(actualTimeLeft);
+    setSessionStartTime(actualSessionStartTime);
+    setCurrentPhaseStartTime(actualCurrentPhaseStartTime);
 
     setIsFlashing(false);
-    setSessionStartTime(Date.now());
-    setCurrentPhaseStartTime(Date.now()); // NEW: Set current phase start time
     setIsSchedulingMode(false);
 
     setIsScheduleActive(true);
-    setIsSchedulePending(isPendingStart);
+    // Only pending if not a simulated past start AND it's a custom_time option
+    setIsSchedulePending(simulatedStartTime === null && initialScheduleStartOption === 'custom_time');
     setIsRunning(true);
     setIsPaused(false);
-    // REMOVED: updateSeshTitleWithSchedule(initialScheduleTitle); // MODIFIED: Removed this call
+
     if (areToastsEnabled) {
         toast("Session Started!", {
             description: `"${initialScheduleTitle}" has begun.`,
@@ -931,8 +940,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       joinTime: Date.now(),
       role: 'host',
       focusPreference: userFocusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || null, // Changed undefined to null
-      bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
+      intention: profile?.profile_data?.intention?.value || null,
+      bio: profile?.profile_data?.bio?.value || null,
     };
     setCurrentSessionParticipantsData([hostParticipant]);
     setCurrentSessionRole('host');
@@ -950,8 +959,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     if (sessionVisibility !== 'private') { // MODIFIED: Check sessionVisibility
       const { latitude, longitude } = await getLocation();
-      const currentScheduleItem = initialSchedule[0];
-      const currentPhaseEndTime = new Date(Date.now() + currentScheduleItem.durationMinutes * 60 * 1000).toISOString();
       try {
         const { data, error } = await supabase
           .from('active_sessions')
@@ -962,21 +969,21 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             visibility: sessionVisibility, // MODIFIED: Use sessionVisibility
             focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
             break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
-            current_phase_type: currentScheduleItem.type,
-            current_phase_end_time: currentPhaseEndTime,
+            current_phase_type: actualTimerType, // Use actualTimerType
+            current_phase_end_time: new Date(Date.now() + actualTimeLeft * 1000).toISOString(), // Use actualTimeLeft
             total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
             schedule_id: initialSchedule[0]?.id && isValidUUID(initialSchedule[0].id) ? initialSchedule[0].id : null, // MODIFIED: Added isValidUUID check
             is_active: true,
             is_paused: false,
-            current_schedule_index: 0,
+            current_schedule_index: actualCurrentScheduleIndex, // Use actualCurrentScheduleIndex
             schedule_data: initialSchedule,
             location_lat: latitude,
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: userJoinCode, // RENAMED: host_code to join_code
             organization: profile?.organization || null, // NEW: Add organization
-            last_heartbeat: new Date().toISOString(), // ADDED: last_heartbeat
-            host_notes: hostNotes, // NEW: Add hostNotes
+            last_heartbeat: new Date().toISOString(),
+            host_notes: hostNotes,
           })
           .select('id')
           .single();
@@ -997,10 +1004,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
-    /* REMOVED: updateSeshTitleWithSchedule, */ areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
-    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle, scheduleTitle, isSeshTitleCustomized,
-    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode, sessionVisibility, profile?.organization, hostNotes,
-    _setSeshTitle, setActiveScheduleDisplayTitleInternal // NEW: Added setters to dependencies
+    areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
+    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
+    sessionVisibility, profile?.organization, hostNotes,
+    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1040,14 +1047,22 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       scheduleStartOption,
       isRecurring,
       recurrenceFrequency,
-      false
+      null, // simulatedStartTime
+      0,    // simulatedCurrentPhaseIndex
+      null  // simulatedTimeLeftInPhase
     );
 }, [
     schedule, scheduleTitle, commenceTime, commenceDay, scheduleStartOption, isRecurring, recurrenceFrequency,
     timerColors, areToastsEnabled, startSessionCommonLogic
 ]);
 
-  const commenceSpecificPreparedSchedule = useCallback(async (templateId: string) => {
+  const commenceSpecificPreparedSchedule = useCallback(async (
+    templateId: string,
+    // NEW: Optional parameters for simulated past start
+    simulatedStartTime: number | null = null,
+    simulatedCurrentPhaseIndex: number = 0,
+    simulatedTimeLeftInPhase: number | null = null
+  ) => {
     const templateToCommence = preparedSchedules.find(template => template.id === templateId);
     if (!templateToCommence) return;
 
@@ -1061,7 +1076,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       templateToCommence.scheduleStartOption,
       templateToCommence.isRecurring,
       templateToCommence.recurrenceFrequency,
-      templateToCommence.scheduleStartOption === 'custom_time'
+      // Pass simulated values to startSessionCommonLogic
+      simulatedStartTime,
+      simulatedCurrentPhaseIndex,
+      simulatedTimeLeftInPhase
     );
 
     if (started) {
@@ -1610,14 +1628,53 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
           const currentDay = now.getDay();
           const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
-          const daysToAdd = (templateDay - currentDay + 7) % 7;
+          let daysToAdd = (templateDay - currentDay + 7) % 7;
           targetDate.setDate(now.getDate() + daysToAdd);
 
+          // If the target date is in the past
           if (targetDate.getTime() < now.getTime()) {
             if (!template.isRecurring) {
-              discardPreparedSchedule(template.id);
-              continue;
+              // For non-recurring schedules, if the entire schedule duration has passed, it's no longer "upcoming".
+              let totalScheduleDurationSeconds = 0;
+              template.schedule.forEach(item => {
+                totalScheduleDurationSeconds += item.durationMinutes * 60;
+              });
+              const elapsedSecondsSinceScheduledStart = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
+
+              if (elapsedSecondsSinceScheduledStart >= totalScheduleDurationSeconds) {
+                // Schedule is fully in the past, discard it.
+                discardPreparedSchedule(template.id);
+                continue; // Move to next template
+              }
+
+              // Otherwise, it's a past schedule that should be commenced now,
+              // calculating its current state.
+              console.log(`Commencing past non-recurring schedule: ${template.title}`);
+              
+              let currentPhaseIndex = 0;
+              let timeLeftInPhase = 0;
+              let accumulatedDuration = 0;
+
+              for (let i = 0; i < template.schedule.length; i++) {
+                const phaseDurationSeconds = template.schedule[i].durationMinutes * 60;
+                if (elapsedSecondsSinceScheduledStart < accumulatedDuration + phaseDurationSeconds) {
+                  currentPhaseIndex = i;
+                  timeLeftInPhase = (accumulatedDuration + phaseDurationSeconds) - elapsedSecondsSinceScheduledStart;
+                  break;
+                }
+                accumulatedDuration += phaseDurationSeconds;
+              }
+
+              // Commence the schedule with calculated past state
+              commenceSpecificPreparedSchedule(
+                template.id,
+                targetDate.getTime(), // The actual historical start time
+                currentPhaseIndex,
+                timeLeftInPhase
+              );
+              return; // Only commence one schedule per interval check
             } else {
+              // For recurring schedules, advance to the next occurrence
               let nextCommenceDate = new Date(targetDate);
               while (nextCommenceDate.getTime() < now.getTime()) {
                 if (template.recurrenceFrequency === 'daily') {
@@ -1632,13 +1689,23 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
                 }
               }
               targetDate = nextCommenceDate;
+              // Update the template in preparedSchedules with the new next commence time
+              setPreparedSchedules(prev => prev.map(p =>
+                p.id === template.id ? {
+                  ...p,
+                  commenceTime: nextCommenceDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+                  commenceDay: nextCommenceDate.getDay()
+                } : p
+              ));
             }
           }
 
           const timeDifference = targetDate.getTime() - now.getTime();
+          // If within a small window around the target time (e.g., 1 minute before to 1 second after)
           if (timeDifference <= 60 * 1000 && timeDifference >= -1000) {
             if (!isScheduleActive && !isSchedulePending) {
               commenceSpecificPreparedSchedule(template.id);
+              // If recurring, update its next scheduled time immediately after commencing
               if (template.isRecurring) {
                 const nextCommenceDate = new Date(targetDate);
                 if (template.recurrenceFrequency === 'daily') {
@@ -1656,7 +1723,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
                   } : p
                 ));
               }
-              return;
+              return; // Only commence one schedule per interval check
             }
           }
         }
@@ -1671,7 +1738,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(intervalId);
       }
     };
-  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, activeAsks, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]); // NEW: Added currentPhaseDurationSeconds to dependencies
+  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, activeAsks, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]);
 
   useEffect(() => {
     if (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) {

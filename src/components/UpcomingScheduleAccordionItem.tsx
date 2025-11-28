@@ -48,7 +48,7 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
         hourCycle: is24HourFormat ? 'h23' : 'h12'
       });
       const now = new Date();
-      const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+      let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
       
       // Defensive check for Invalid Date object after initial creation
       if (isNaN(targetDate.getTime())) {
@@ -61,9 +61,40 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
       const daysToAdd = (templateDay - currentDay + 7) % 7;
       targetDate.setDate(now.getDate() + daysToAdd);
 
-      // If the target time is in the past for today, set it for next week
-      if (targetDate.getTime() < now.getTime() && daysToAdd === 0) {
-        targetDate.setDate(targetDate.getDate() + 7);
+      // Calculate total duration of the schedule
+      let totalScheduleDurationSeconds = 0;
+      template.schedule.forEach(item => {
+        totalScheduleDurationSeconds += item.durationMinutes * 60;
+      });
+
+      // If the target time is in the past
+      if (targetDate.getTime() < now.getTime()) {
+        if (!template.isRecurring) {
+          // For non-recurring schedules, check if the entire schedule duration has passed
+          const elapsedSecondsSinceScheduledStart = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
+          if (elapsedSecondsSinceScheduledStart >= totalScheduleDurationSeconds) {
+            // Schedule is fully in the past and completed, so it's not "upcoming"
+            return "Completed"; // Or some other indicator
+          } else {
+            // Schedule is in the past but still "in progress", display as "Started"
+            return "Started";
+          }
+        } else {
+          // For recurring schedules, advance to the next occurrence
+          let nextCommenceDate = new Date(targetDate);
+          while (nextCommenceDate.getTime() < now.getTime()) {
+            if (template.recurrenceFrequency === 'daily') {
+              nextCommenceDate.setDate(nextCommenceDate.getDate() + 1);
+            } else if (template.recurrenceFrequency === 'weekly') {
+              nextCommenceDate.setDate(nextCommenceDate.getDate() + 7);
+            } else if (template.recurrenceFrequency === 'monthly') {
+              nextCommenceDate.setMonth(nextCommenceDate.getMonth() + 1);
+            } else {
+              return "Invalid Recurrence";
+            }
+          }
+          targetDate = nextCommenceDate; // Use the next occurrence for display
+        }
       }
 
       const isToday = targetDate.toDateString() === now.toDateString();
@@ -73,7 +104,7 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
       return `${formattedTime} ${dayDisplay}`;
     }
     return ""; // Should not happen for 'now' option in prepared schedules
-  }, [template.commenceTime, template.commenceDay, template.scheduleStartOption, is24HourFormat]);
+  }, [template.commenceTime, template.commenceDay, template.scheduleStartOption, is24HourFormat, template.isRecurring, template.recurrenceFrequency, template.schedule]);
 
   return (
     <AccordionItem value={template.id} className="border rounded-lg px-4">
@@ -104,7 +135,7 @@ const UpcomingScheduleAccordionItem: React.FC<UpcomingScheduleAccordionItemProps
           commenceDay={template.commenceDay}
           scheduleStartOption={template.scheduleStartOption}
           activeTimerColors={template.timerColors}
-          commencePreparedSchedule={() => commencePreparedSchedule(template.id)}
+          commencePreparedSchedule={() => commenceSpecificPreparedSchedule(template.id)}
           resetSchedule={() => discardPreparedSchedule(template.id)}
         />
       </AccordionContent>
