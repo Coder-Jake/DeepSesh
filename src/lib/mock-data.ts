@@ -26,7 +26,6 @@ const getDefaultProfileDataJsonb = (): ProfileDataJsonb => ({
   pronouns: getDefaultProfileDataField(null, ['public']),
 });
 
-// --- MOCK PROFILES ---
 export const MOCK_PROFILES: Profile[] = [
   {
     id: "a1b2c3d4-e5f6-4789-8012-34567890abcd",
