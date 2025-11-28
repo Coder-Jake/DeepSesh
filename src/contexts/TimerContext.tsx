@@ -887,7 +887,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     setActiveSchedule(initialSchedule);
     setActiveTimerColors(initialTimerColors);
-    setActiveScheduleDisplayTitleInternal(_seshTitle); // MODIFIED: Use _seshTitle
+    _setSeshTitle(initialScheduleTitle); // NEW: Set the main timer title
+    setIsSeshTitleCustomized(false); // NEW: It's coming from a schedule, so not "customized" by direct user input
+    setActiveScheduleDisplayTitleInternal(initialScheduleTitle); // MODIFIED: Use initialScheduleTitle
 
     setCurrentScheduleIndex(0);
     setTimerType(initialSchedule[0].type);
@@ -949,7 +951,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .insert({
             user_id: hostParticipant.userId,
             host_name: hostParticipant.userName,
-            session_title: _seshTitle, // MODIFIED: Use _seshTitle
+            session_title: initialScheduleTitle, // MODIFIED: Use initialScheduleTitle
             visibility: sessionVisibility, // MODIFIED: Use sessionVisibility
             focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
             break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
@@ -989,8 +991,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     /* REMOVED: updateSeshTitleWithSchedule, */ areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
-    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle, scheduleTitle, _seshTitle, isSeshTitleCustomized,
-    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode, sessionVisibility, profile?.organization, hostNotes // NEW: Add hostNotes
+    userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle, scheduleTitle, isSeshTitleCustomized,
+    setCurrentPhaseDurationSeconds, setTimeLeft, setCurrentPhaseStartTime, userJoinCode, sessionVisibility, profile?.organization, hostNotes,
+    _setSeshTitle, setActiveScheduleDisplayTitleInternal // NEW: Added setters to dependencies
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1132,8 +1135,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         // REMOVED: setTimeLeft(_defaultFocusMinutes * 60);
         // REMOVED: setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
       }
-      _setSeshTitle(getDefaultSeshTitle()); // Reset seshTitle to default
-      setIsSeshTitleCustomized(false); // Reset seshTitle customization
+      _setSeshTitle(getDefaultSeshTitle()); 
+      setIsSeshTitleCustomized(false); 
       setNotes(""); // NEW: Clear notes
       setHostNotes(""); // NEW: Clear hostNotes
     }
@@ -1255,7 +1258,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const response = await supabase.functions.invoke('join-session', {
         body: JSON.stringify({
           sessionCode: sessionToJoin.join_code, // MODIFIED: Use sessionToJoin.join_code
-          participantData: newCoworker,
+          participantData: newCowower,
         }),
         headers: {
           'Content-Type': 'application/json',
