@@ -256,7 +256,7 @@ const createMockSchedule = (): ScheduledTimer[] => [
 export const MOCK_SESSIONS: DemoSession[] = [
   {
     id: "1a2b3c4d-5e6f-4789-8012-34567890abcd",
-    title: "Morning Deep Work",
+    title: "Deep Work @ StartSpace",
     startTime: Date.now() - 10 * 60 * 1000, // Started 10 minutes ago
     location: "Cafe Corner",
     workspaceImage: "/api/placeholder/200/120",
