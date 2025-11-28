@@ -8,6 +8,9 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // NEW: Diagnostic log to confirm function execution
+  console.log('JOIN_SESSION_EDGE_FUNCTION: Function invoked.');
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
