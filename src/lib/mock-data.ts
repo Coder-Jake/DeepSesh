@@ -289,8 +289,8 @@ export const MOCK_SESSIONS: DemoSession[] = [
       createMockParticipant(MOCK_PROFILES[8], 'coworker'), // NEW: Maslow
       createMockParticipant(MOCK_PROFILES[9], 'coworker'), // NEW: Esther Perel
     ],
-    location_lat: -33.8688 + (Math.random() - 0.5) * 0.02,
-    location_long: 151.2093 + (Math.random() - 0.5) * 0.02,
+    location_lat: -37.79861643511442,
+    location_long: 144.96354864276117 
     distance: null,
     active_asks: [],
     visibility: 'friends',
