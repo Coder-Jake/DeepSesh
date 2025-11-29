@@ -1479,45 +1479,35 @@ const Index = () => {
     isLongPressDetected.current = true;
   };
 
-  // NEW: Helper to determine if a section should be rendered at all (has content)
-  const hasContentForSection = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+  // NEW: Helper to determine if a section header should be rendered at all (based on general conditions)
+  const shouldRenderSectionHeader = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
     if (!isDiscoveryActivated) return false;
 
     switch (sectionId) {
       case 'nearby':
-        const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
-        const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
-        const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
-        return allNearbySessions.length > 0;
+        return shouldShowNearbySessions;
       case 'friends':
-        const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
-        const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
-        return allFriendsSessions.length > 0;
+        return shouldShowFriendsSessions;
       case 'organization':
-        const orgMockSessions = mockOrganizationSessions;
-        const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
-        return !!profile?.organization && allOrganizationSessions.length > 0;
+        return shouldShowOrganizationSessions;
       default:
         return false;
     }
-  }, [
-    isDiscoveryActivated, showDemoSessions, filteredMockNearbySessions, supabaseActiveSessions,
-    currentUserId, filteredMockFriendsSessions, mockOrganizationSessions, profile?.organization
-  ]);
+  }, [isDiscoveryActivated, shouldShowNearbySessions, shouldShowFriendsSessions, shouldShowOrganizationSessions]);
 
   // Calculate the actual open state for rendering
   const getSectionOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
-    return hasContentForSection(sectionId) && !userCollapsedSections.has(sectionId);
-  }, [hasContentForSection, userCollapsedSections]);
+    return shouldRenderSectionHeader(sectionId) && !userCollapsedSections.has(sectionId);
+  }, [shouldRenderSectionHeader, userCollapsedSections]);
 
   // Filter sections into expanded and minimized based on current open states
   const expandedSections = useMemo(() => {
-    return sectionOrder.filter(sectionId => getSectionOpenState(sectionId));
-  }, [sectionOrder, getSectionOpenState]);
+    return sectionOrder.filter(sectionId => shouldRenderSectionHeader(sectionId) && getSectionOpenState(sectionId));
+  }, [sectionOrder, shouldRenderSectionHeader, getSectionOpenState]);
 
   const minimizedSections = useMemo(() => {
-    return sectionOrder.filter(sectionId => hasContentForSection(sectionId) && !getSectionOpenState(sectionId));
-  }, [sectionOrder, hasContentForSection, getSectionOpenState]);
+    return sectionOrder.filter(sectionId => shouldRenderSectionHeader(sectionId) && !getSectionOpenState(sectionId));
+  }, [sectionOrder, shouldRenderSectionHeader, getSectionOpenState]);
 
   const renderMinimizedSectionButton = (sectionId: 'nearby' | 'friends' | 'organization') => {
     const commonClasses = "flex items-center justify-center gap-1 px-3 py-1 rounded-full border border-border text-sm font-medium transition-colors hover:bg-accent-hover";
@@ -1585,182 +1575,144 @@ const Index = () => {
         setUserCollapsedSections(prev => {
           const newSet = new Set(prev);
           if (newSet.has(sectionId)) {
-            newSet.delete(sectionId); // It was collapsed, so open it
-          } else {
             newSet.add(sectionId); // It was open, so collapse it
+          } else {
+            newSet.delete(sectionId); // It was collapsed, so open it
           }
           return newSet;
         });
       }
     };
 
+    let sessionsToDisplay: DemoSession[] = [];
+    let loadingState: boolean = false;
+    let errorMessage: string | null = null;
+
     switch (sectionId) {
       case 'nearby':
         const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
         const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
-        const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
-        const hasNearbySessions = allNearbySessions.length > 0;
-
-        return (
-          <div className="mb-6" data-name="Nearby Sessions Section">
-            <button
-              onClick={handleToggleClick}
-              onMouseDown={() => handlePressStart(() => {
-                navigate('/settings', { state: { openAccordion: 'location' } });
-              })}
-              onMouseUp={handlePressEnd}
-              onMouseLeave={handlePressEnd}
-              onTouchStart={() => handlePressStart(() => {
-                navigate('/settings', { state: { openAccordion: 'location' } });
-              })}
-              onTouchEnd={handlePressEnd}
-              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
-            >
-              <div className="flex items-center gap-2">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                      <MapPin
-                        size={16}
-                        className={cn(
-                          "cursor-pointer",
-                          geolocationPermissionStatus === 'granted' && "text-success-foreground",
-                          geolocationPermissionStatus === 'denied' && "text-error-foreground"
-                        )}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          getLocation();
-                        }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none">
-                      {geolocationPermissionStatus === 'granted' && "Location access granted."}
-                      {geolocationPermissionStatus === 'denied' && "Location access denied. Click to re-enable in browser settings."}
-                      {geolocationPermissionStatus === 'prompt' && "Click to enable location for nearby sessions."}
-                    </TooltipContent>
-                  </Tooltip>
-                <h3>Nearby</h3>
-                {limitDiscoveryRadius ? (
-                  <span className="text-sm text-muted-foreground ml-1">
-                    ({formatDistance(maxDistance)})
-                  </span>
-                ) : (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <InfinityIcon size={16} className="text-muted-foreground ml-1" />
-                    </TooltipTrigger>
-                    <TooltipContent className="select-none">
-                      Discovery Radius: Unlimited
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </button>
-            {isOpen && (
-              <>
-                {hasNearbySessions ? (
-                  <div className="space-y-3">
-                    {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
-                    {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
-                    {allNearbySessions.map(session => (
-                      <SessionCard
-                        key={session.id}
-                        session={session}
-                        onJoinSession={handleJoinSession}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-sm text-center py-4">
-                    {isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Switch to Public to see nearby sessions."}
-                  </p>
-                )}
-                <p className="text-muted-foreground text-sm text-center py-4">
-                  Invite people from real life to build the DeepSesh community
-                </p>
-              </>
-            )}
-          </div>
-        );
+        sessionsToDisplay = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+        loadingState = isLoadingSupabaseSessions;
+        errorMessage = supabaseError?.message || null;
+        break;
       case 'friends':
         const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
-        const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
-        const hasFriendsSessions = allFriendsSessions.length > 0;
-
-        return (
-          <div data-name="Friends Sessions Section">
-            <button
-              onClick={handleToggleClick}
-              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
-            >
-              <div className="flex items-center gap-2">
-                <Users size={16} className="text-blue-500" />
-                <h3>Friends</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </button>
-            {isOpen && (
-              hasFriendsSessions ? (
-                <div className="space-y-3">
-                  {allFriendsSessions.map(session => (
-                    <SessionCard
-                      key={session.id}
-                      session={session}
-                      onJoinSession={handleJoinSession}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm text-center py-4">Invite Friends to see their active sessions.</p>
-              )
-            )}
-          </div>
-        );
+        sessionsToDisplay = sortSessions(friendsMockSessions, currentUserId);
+        // No specific loading/error for mock friends sessions
+        break;
       case 'organization':
         const orgMockSessions = mockOrganizationSessions;
-        const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
-        const hasOrganizationSessions = allOrganizationSessions.length > 0;
-
-        return (
-          <div data-name="Organization Sessions Section">
-            <button
-              onClick={handleToggleClick}
-              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
-            >
-              <div className="flex items-center gap-2">
-                <Building2 size={16} className="text-olive-foreground" />
-                <h3>Organisations</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </button>
-            {isOpen && (
-              hasOrganizationSessions ? (
-                <div className="space-y-3">
-                  {allOrganizationSessions.map(session => (
-                    <SessionCard
-                      key={session.id}
-                      session={session}
-                      onJoinSession={handleJoinSession}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm text-center py-4">
-                  {isDiscoveryActivated && profile?.organization ? "No organization sessions found." : "Join an organization to see Organization sessions."}
-                </p>
-              )
-            )}
-          </div>
-        );
+        sessionsToDisplay = sortSessions(orgMockSessions, currentUserId);
+        // No specific loading/error for mock organization sessions
+        break;
       default:
         return null;
     }
+
+    const hasSessions = sessionsToDisplay.length > 0;
+
+    return (
+      <div className="mb-6" data-name={`${sectionId} Sessions Section`}>
+        <button
+          onClick={handleToggleClick}
+          onMouseDown={() => handlePressStart(() => {
+            if (sectionId === 'nearby') {
+              navigate('/settings', { state: { openAccordion: 'location' } });
+            }
+          })}
+          onMouseUp={handlePressEnd}
+          onMouseLeave={handlePressEnd}
+          onTouchStart={() => handlePressStart(() => {
+            if (sectionId === 'nearby') {
+              navigate('/settings', { state: { openAccordion: 'location' } });
+            }
+          })}
+          onTouchEnd={handlePressEnd}
+          className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
+        >
+          <div className="flex items-center gap-2">
+            {sectionId === 'nearby' && (
+              <Tooltip>
+                  <TooltipTrigger asChild>
+                    <MapPin
+                      size={16}
+                      className={cn(
+                        "cursor-pointer",
+                        geolocationPermissionStatus === 'granted' && "text-success-foreground",
+                        geolocationPermissionStatus === 'denied' && "text-error-foreground"
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        getLocation();
+                      }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none">
+                    {geolocationPermissionStatus === 'granted' && "Location access granted."}
+                    {geolocationPermissionStatus === 'denied' && "Location access denied. Click to re-enable in browser settings."}
+                    {geolocationPermissionStatus === 'prompt' && "Click to enable location for nearby sessions."}
+                  </TooltipContent>
+                </Tooltip>
+            )}
+            {sectionId === 'friends' && <Users size={16} className="text-blue-500" />}
+            {sectionId === 'organization' && <Building2 size={16} className="text-olive-foreground" />}
+            <h3>
+              {sectionId === 'nearby' && 'Nearby'}
+              {sectionId === 'friends' && 'Friends'}
+              {sectionId === 'organization' && 'Organisations'}
+            </h3>
+            {sectionId === 'nearby' && limitDiscoveryRadius ? (
+              <span className="text-sm text-muted-foreground ml-1">
+                ({formatDistance(maxDistance)})
+              </span>
+            ) : (
+              sectionId === 'nearby' && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InfinityIcon size={16} className="text-muted-foreground ml-1" />
+                  </TooltipTrigger>
+                  <TooltipContent className="select-none">
+                    Discovery Radius: Unlimited
+                  </TooltipContent>
+                </Tooltip>
+              )
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </div>
+        </button>
+        {isOpen && (
+          <>
+            {loadingState && <p className="text-muted-foreground">Loading sessions...</p>}
+            {errorMessage && <p className="text-destructive">Error: {errorMessage}</p>}
+            {hasSessions ? (
+              <div className="space-y-3">
+                {sessionsToDisplay.map(session => (
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    onJoinSession={handleJoinSession}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm text-center py-4">
+                {sectionId === 'nearby' && (isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Switch to Public to see nearby sessions.")}
+                {sectionId === 'friends' && "Invite Friends to see their active sessions."}
+                {sectionId === 'organization' && (isDiscoveryActivated && profile?.organization ? "No organization sessions found." : "Join an organization to see Organization sessions.")}
+              </p>
+            )}
+            {sectionId === 'nearby' && (
+              <p className="text-muted-foreground text-sm text-center py-4">
+                Invite people from real life to build the DeepSesh community
+              </p>
+            )}
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -2081,7 +2033,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend}
+              onVoteExtend={handleExtendSubmit}
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
@@ -2226,7 +2178,8 @@ const Index = () => {
                     ref={provided.innerRef}
                     className="space-y-6"
                   >
-                    {expandedSections.map((sectionId, index) => (
+                    {/* Render sections that should have a header */}
+                    {sectionOrder.filter(shouldRenderSectionHeader).map((sectionId, index) => (
                       <Draggable key={sectionId} draggableId={sectionId} index={index}>
                         {(provided) => (
                           <div
