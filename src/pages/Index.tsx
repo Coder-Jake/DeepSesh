@@ -49,9 +49,9 @@ import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext
 import { calculateDistance } from '@/utils/location-utils';
 import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // NEW: Import Tabs components
-import MarkdownEditor from "@/components/MarkdownEditor"; // NEW: Import MarkdownEditor
-import { getEdgeFunctionErrorMessage } from '@/utils/error-utils'; // NEW: Import the error utility
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MarkdownEditor from "@/components/MarkdownEditor";
+import { getEdgeFunctionErrorMessage } from '@/utils/error-utils';
 
 interface ExtendSuggestion {
   id: string;
@@ -105,20 +105,20 @@ interface SupabaseSessionData {
   join_code: string | null;
   active_asks: ActiveAskItem[];
   organization: string | null;
-  host_notes: string | null; // NEW: Add host_notes
+  host_notes: string | null;
 }
 
-// NEW: Helper function to filter local mock sessions
+// Helper function to filter local mock sessions
 const filterLocalMockSessions = (
   mockSessions: DemoSession[],
   mockProfiles: ProfileType[],
-  currentUserId: string | undefined, // Renamed userId to currentUserId for clarity
+  currentUserId: string | undefined,
   userLatitude: number | null,
   userLongitude: number | null,
   profileOrganization: string | null,
   limitDiscoveryRadius: boolean,
   maxDistance: number,
-  friendStatuses: Record<string, 'friends' | 'pending' | 'none'> // NEW: Pass friendStatuses
+  friendStatuses: Record<string, 'friends' | 'pending' | 'none'>
 ): DemoSession[] => {
   return mockSessions.map(session => {
     let distance: number | null = null;
@@ -149,21 +149,21 @@ const filterLocalMockSessions = (
       return true;
     }
     if (isPrivate) {
-      return isUserInSession; // Only visible if the user is a participant
+      return isUserInSession;
     }
     if (isFriendsOnly) {
-      return isUserInSession || hasFriendParticipant; // Visible if user is in session or a friend is a participant
+      return isUserInSession || hasFriendParticipant;
     }
     if (isOrganizationOnly) {
-      return isUserInSession || hasOrganizationParticipant; // Visible if user is in session or an org member is a participant
+      return isUserInSession || hasOrganizationParticipant;
     }
 
-    return false; // Default to not visible
+    return false;
   });
 };
 
 
-// NEW: Function to fetch live sessions from Supabase
+// Function to fetch live sessions from Supabase
 const fetchSupabaseSessions = async (
   userId: string | undefined,
   userLatitude: number | null,
@@ -195,7 +195,7 @@ const fetchSupabaseSessions = async (
       userName: p.userName,
       joinTime: p.joinTime,
       role: p.role,
-      focusPreference: p.focusPreference || 50, // Corrected to focusPreference
+      focusPreference: p.focusPreference || 50,
       intention: p.intention || undefined,
       bio: p.bio || undefined,
     }));
@@ -242,7 +242,7 @@ const fetchSupabaseSessions = async (
       visibility: session.visibility,
       user_id: session.user_id,
       join_code: session.join_code,
-      host_notes: session.host_notes, // NEW: Add host_notes
+      host_notes: session.host_notes,
     };
   }).filter(session => {
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -252,7 +252,7 @@ const fetchSupabaseSessions = async (
   });
 };
 
-// NEW: Helper function to sort sessions
+// Helper function to sort sessions
 const sortSessions = (sessions: DemoSession[], currentUserId: string | undefined) => {
   return [...sessions].sort((a, b) => {
     const isUserInA = currentUserId ? a.participants.some(p => p.userId === currentUserId) : false;
@@ -295,8 +295,8 @@ const Index = () => {
     setIsFlashing,
     notes,
     setNotes,
-    hostNotes, // NEW: Get hostNotes
-    setHostNotes, // NEW: Get setHostNotes
+    hostNotes,
+    setHostNotes,
     seshTitle,
     setSeshTitle,
     isSeshTitleCustomized,
@@ -383,7 +383,7 @@ const Index = () => {
     maxDistance,
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses } = useProfile(); // ADDED: friendStatuses
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleProfilePopUp } = useProfilePopUp();
@@ -400,25 +400,22 @@ const Index = () => {
 
   const [isEditingSeshTitle, setIsEditingSeshTitle] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  // REMOVED: notesTextareaRef as it's now handled by MarkdownEditor
   
-  // REMOVED: hiddenNearbyCount and hiddenFriendsCount states
-
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [joinSessionCode, setJoinSessionCode] = useState("");
 
   // Initial states for accordion sections, default to open
   const [openUpcomingScheduleAccordions, setOpenUpcomingScheduleAccordions] = useState<string[]>([]);
 
-  const [sectionOrder, setSectionOrder] = useState<('nearby' | 'friends' | 'organization')[]>(
-    ['nearby', 'friends', 'organization']
-  );
+  // Define all possible section IDs and their initial order
+  const allSectionIds: ('nearby' | 'friends' | 'organization')[] = ['nearby', 'friends', 'organization'];
+  const [sectionOrder, setSectionOrder] = useState<('nearby' | 'friends' | 'organization')[]>(allSectionIds);
 
   const [openFocusPreferenceTooltipId, setOpenFocusPreferenceTooltipId] = useState<string | null>(null);
   const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIX: Changed NodeS.Timeout to NodeJS.Timeout
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState("");
@@ -450,12 +447,12 @@ const Index = () => {
     }
   }, [setSessionVisibility, sessionVisibility, areToastsEnabled, profile?.organization]);
 
-  // NEW: Use local MOCK_PROFILES directly
+  // Use local MOCK_PROFILES directly
   const mockProfiles = MOCK_PROFILES;
   const isLoadingMockProfiles = false;
   const mockProfilesError = null;
 
-  // NEW: Filter local MOCK_SESSIONS
+  // Filter local MOCK_SESSIONS
   const filteredLocalMockSessions = useMemo(() => {
     if (!MOCK_SESSIONS || !mockProfiles) return [];
     return filterLocalMockSessions(
@@ -467,12 +464,12 @@ const Index = () => {
       profile?.organization || null,
       limitDiscoveryRadius,
       maxDistance,
-      friendStatuses // NEW: Pass friendStatuses
+      friendStatuses
     );
   }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, profile?.organization, limitDiscoveryRadius, maxDistance, friendStatuses]);
 
 
-  // NEW: Filter mock sessions into nearby, friends, and organization
+  // Filter mock sessions into nearby, friends, and organization
   const filteredMockNearbySessions = useMemo(() => {
     console.log("Filtering mock nearby sessions...");
     console.log("filteredLocalMockSessions:", filteredLocalMockSessions);
@@ -499,21 +496,21 @@ const Index = () => {
     console.log("Filtering mock friends sessions...");
     console.log("filteredLocalMockSessions:", filteredLocalMockSessions);
     console.log("profile?.id:", profile?.id);
-    console.log("friendStatuses:", friendStatuses); // Log friendStatuses
+    console.log("friendStatuses:", friendStatuses);
 
     if (!filteredLocalMockSessions || !profile?.id) {
       console.log("Skipping friends filter: filteredLocalMockSessions or profile ID missing.");
       return [];
     }
-    // MODIFIED: Check if any participant in the session is a friend of the current user
+    // Check if any participant in the session is a friend of the current user
     return filteredLocalMockSessions.filter(session => {
       const isFriendSession = session.participants.some(p => friendStatuses[p.userId] === 'friends');
       console.log(`Session ${session.id} (${session.title}): isFriendSession=${isFriendSession}`);
       return isFriendSession;
     });
-  }, [filteredLocalMockSessions, profile?.id, friendStatuses]); // ADDED: friendStatuses to dependencies
+  }, [filteredLocalMockSessions, profile?.id, friendStatuses]);
 
-  // NEW: Use local MOCK_SESSIONS for organization sessions
+  // Use local MOCK_SESSIONS for organization sessions
   const mockOrganizationSessions: DemoSession[] = useMemo(() => {
     if (!profile?.organization || !showDemoSessions || !filteredLocalMockSessions) return [];
 
@@ -534,8 +531,6 @@ const Index = () => {
     queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance],
     queryFn: async () => {
       try {
-        // The original fetchSupabaseSessions function is designed to fetch from 'active_sessions'
-        // and applies RLS logic. This is for *real* active sessions.
         return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance);
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message);
@@ -595,11 +590,8 @@ const Index = () => {
     }
   }, [isEditingSeshTitle]);
 
-  // REMOVED: useEffect for notesTextareaRef auto-resize
-
   useEffect(() => {
     const isDefault = seshTitle === getDefaultSeshTitle() && !isSeshTitleCustomized;
-    // Removed setIsDefaultTitleAnimating as it's not defined in this scope
   }, [seshTitle, isSeshTitleCustomized, getDefaultSeshTitle]);
 
   useEffect(() => {
@@ -620,7 +612,7 @@ const Index = () => {
     if (longPressRef.current) {
       clearTimeout(longPressRef.current);
     }
-    isLongPressDetected.current = false; // Reset long press detection
+    isLongPressDetected.current = false;
   };
 
   const handleIntentionLongPress = () => {
@@ -671,8 +663,8 @@ const Index = () => {
       setAccumulatedBreakSeconds(0);
       setSeshTitle(getDefaultSeshTitle());
       setActiveAsks([]);
-      setNotes(""); // NEW: Clear notes
-      setHostNotes(""); // NEW: Clear hostNotes
+      setNotes("");
+      setHostNotes("");
     }
 
     const currentFocusDuration = focusMinutes;
@@ -732,7 +724,7 @@ const Index = () => {
             participants_data: [hostParticipant],
             join_code: joinCode,
             organization: profile?.organization || null,
-            host_notes: hostNotes, // NEW: Add hostNotes
+            host_notes: hostNotes,
           })
           .select('id')
           .single();
@@ -750,7 +742,7 @@ const Index = () => {
       }
     }
   }, [
-    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, profile?.organization, notes, hostNotes // NEW: Add notes and hostNotes
+    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, profile?.organization, notes, hostNotes
   ]);
 
   const resumeTimer = () => {
@@ -912,7 +904,7 @@ const Index = () => {
       console.error("Error in handleJoinSession:", error);
       if (areToastsEnabled) {
         toast.error("Failed to Join Session", {
-          description: `An unexpected error occurred: ${await getEdgeFunctionErrorMessage(error)}.`, // MODIFIED: Use getEdgeFunctionErrorMessage
+          description: `An unexpected error occurred: ${await getEdgeFunctionErrorMessage(error)}.`,
         });
       }
       resetSessionStates();
@@ -974,7 +966,7 @@ const Index = () => {
           visibility: joinedSession.visibility,
           user_id: joinedSession.user_id,
           join_code: joinedSession.join_code,
-          host_notes: joinedSession.host_notes, // NEW: Add host_notes
+          host_notes: joinedSession.host_notes,
         };
         await handleJoinSession(demoSession);
       } else {
@@ -988,7 +980,7 @@ const Index = () => {
       console.error("Error joining session by code:", err);
       if (areToastsEnabled) {
         toast.error("Join Failed", {
-          description: `An error occurred: ${await getEdgeFunctionErrorMessage(err)}.`, // MODIFIED: Use getEdgeFunctionErrorMessage
+          description: `An error occurred: ${await getEdgeFunctionErrorMessage(err)}.`,
         });
       }
       resetSessionStates();
@@ -1141,9 +1133,6 @@ const Index = () => {
     let currentPoll = currentAsk as Poll;
     let finalOptionIdsToVote: string[] = [...optionIds];
 
-    const trimmedCustomText = customOptionText?.trim();
-    let userCustomOptionId: string | null = null;
-
     const existingUserCustomOption = currentPoll.options.find(
       opt => opt.id.startsWith('custom-') && opt.votes.some(vote => vote.userId === user.id)
     );
@@ -1291,11 +1280,22 @@ const Index = () => {
       return;
     }
 
-    const items = Array.from(sectionOrder);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    const sourceIndexInExpanded = result.source.index;
+    const destinationIndexInExpanded = result.destination.index;
 
-    setSectionOrder(items as ('nearby' | 'friends' | 'organization')[]);
+    // Get the actual section IDs from the expanded list
+    const draggedSectionId = expandedSections[sourceIndexInExpanded];
+    const targetSectionId = expandedSections[destinationIndexInExpanded];
+
+    // Find their original indices in the full sectionOrder
+    const sourceIndexInFull = sectionOrder.indexOf(draggedSectionId);
+    const destinationIndexInFull = sectionOrder.indexOf(targetSectionId);
+
+    const newSectionOrder = Array.from(sectionOrder);
+    const [reorderedItem] = newSectionOrder.splice(sourceIndexInFull, 1);
+    newSectionOrder.splice(destinationIndexInFull, 0, reorderedItem);
+
+    setSectionOrder(newSectionOrder);
   };
 
   const handleShareLink = useCallback(async () => {
@@ -1406,7 +1406,7 @@ const Index = () => {
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
-  // NEW: Diagnostic logs
+  // Diagnostic logs
   useEffect(() => {
     console.group("Index.tsx Debugging Session Visibility");
     console.log("showDemoSessions:", showDemoSessions);
@@ -1421,7 +1421,7 @@ const Index = () => {
     console.log("filteredLocalMockSessions (local data):", filteredLocalMockSessions);
     console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
     console.log("filteredMockNearbySessions.length:", filteredMockNearbySessions.length);
-    console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions);
+    console.log("shouldShowFriendsSessions (memo):", shouldMockFriendsSessions.length);
     console.log("filteredMockFriendsSessions.length:", filteredMockFriendsSessions.length);
     console.log("shouldShowOrganizationSessions (memo):", shouldShowOrganizationSessions);
     console.log("mockOrganizationSessions.length:", mockOrganizationSessions.length);
@@ -1460,6 +1460,22 @@ const Index = () => {
     isLongPressDetected.current = true;
   };
 
+  // Helper to get the current open state for a section
+  const getIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+    if (sectionId === 'nearby') return isNearbySessionsOpen;
+    if (sectionId === 'friends') return isFriendsSessionsOpen;
+    if (sectionId === 'organization') return isOrganizationSessionsOpen;
+    return false;
+  }, [isNearbySessionsOpen, isFriendsSessionsOpen, isOrganizationSessionsOpen]);
+
+  // Helper to get the setter for a section's open state
+  const getSetIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+    if (sectionId === 'nearby') return setIsNearbySessionsOpen;
+    if (sectionId === 'friends') return setIsFriendsSessionsOpen;
+    if (sectionId === 'organization') return setIsOrganizationSessionsOpen;
+    return () => {}; // Fallback
+  }, [setIsNearbySessionsOpen, setIsFriendsSessionsOpen, setIsOrganizationSessionsOpen]);
+
   // Helper to determine relevance for initial state
   const getSectionRelevance = useCallback((sectionType: 'nearby' | 'friends' | 'organization') => {
     if (!isDiscoveryActivated) return false;
@@ -1496,19 +1512,78 @@ const Index = () => {
   useEffect(() => {
     if (isDiscoveryActivated) {
       // When discovery is activated, re-evaluate and open relevant sections
-      setIsNearbySessionsOpen(getSectionRelevance('nearby'));
-      setIsFriendsSessionsOpen(getSectionRelevance('friends'));
-      setIsOrganizationSessionsOpen(getSectionRelevance('organization'));
+      getSetIsOpenState('nearby')(getSectionRelevance('nearby'));
+      getSetIsOpenState('friends')(getSectionRelevance('friends'));
+      getSetIsOpenState('organization')(getSectionRelevance('organization'));
     } else {
       // When discovery is deactivated, close all sections
-      setIsNearbySessionsOpen(false);
-      setIsFriendsSessionsOpen(false);
-      setIsOrganizationSessionsOpen(false);
+      getSetIsOpenState('nearby')(false);
+      getSetIsOpenState('friends')(false);
+      getSetIsOpenState('organization')(false);
     }
-  }, [isDiscoveryActivated, getSectionRelevance]); // Only re-run when isDiscoveryActivated changes
+  }, [isDiscoveryActivated, getSectionRelevance, getSetIsOpenState]);
 
+  // Filter sections into expanded and minimized based on current open states
+  const expandedSections = useMemo(() => {
+    return sectionOrder.filter(sectionId => getIsOpenState(sectionId));
+  }, [sectionOrder, getIsOpenState]);
+
+  const minimizedSections = useMemo(() => {
+    return sectionOrder.filter(sectionId => !getIsOpenState(sectionId));
+  }, [sectionOrder, getIsOpenState]);
+
+  const renderMinimizedSectionButton = (sectionId: 'nearby' | 'friends' | 'organization') => {
+    const commonClasses = "flex items-center justify-center gap-1 px-3 py-1 rounded-full border border-border text-sm font-medium transition-colors hover:bg-accent-hover";
+    const iconSize = 16;
+    const setIsOpen = getSetIsOpenState(sectionId);
+
+    const handleClick = () => {
+      setIsOpen(true); // Expand the section
+    };
+
+    let icon;
+    let text;
+    let tooltipContent;
+
+    switch (sectionId) {
+      case 'nearby':
+        icon = <MapPin size={iconSize} />;
+        text = 'Nearby';
+        tooltipContent = "Show Nearby Sessions";
+        break;
+      case 'friends':
+        icon = <Users size={iconSize} />;
+        text = 'Friends';
+        tooltipContent = "Show Friends' Sessions";
+        break;
+      case 'organization':
+        icon = <Building2 size={iconSize} />;
+        text = 'Org';
+        tooltipContent = "Show Organization Sessions";
+        break;
+      default:
+        return null;
+    }
+
+    return (
+      <Tooltip key={`minimized-${sectionId}`}>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="sm" className={commonClasses} onClick={handleClick}>
+            {icon}
+            <span>{text}</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="select-none">
+          {tooltipContent}
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
+    const setIsOpen = getSetIsOpenState(sectionId);
+    const isOpen = getIsOpenState(sectionId); // This will always be true for sections passed to renderSection
+
     switch (sectionId) {
       case 'nearby':
         const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
@@ -1521,7 +1596,7 @@ const Index = () => {
             <button
               onClick={(e) => {
                 if (!isLongPressDetected.current) {
-                  setIsNearbySessionsOpen(prev => !prev);
+                  setIsOpen(prev => !prev); // Toggle the open state
                 }
               }}
               onMouseDown={() => handlePressStart(() => {
@@ -1574,10 +1649,10 @@ const Index = () => {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {isNearbySessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
             </button>
-            {isNearbySessionsOpen && (
+            {isOpen && (
               <>
                 {hasNearbySessions ? (
                   <div className="space-y-3">
@@ -1611,7 +1686,7 @@ const Index = () => {
         return (
           <div data-name="Friends Sessions Section">
             <button
-              onClick={() => setIsFriendsSessionsOpen(prev => !prev)}
+              onClick={() => setIsOpen(prev => !prev)} // Toggle the open state
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
             >
               <div className="flex items-center gap-2">
@@ -1619,10 +1694,10 @@ const Index = () => {
                 <h3>Friends</h3>
               </div>
               <div className="flex items-center gap-2">
-                {isFriendsSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
             </button>
-            {isFriendsSessionsOpen && (
+            {isOpen && (
               hasFriendsSessions ? (
                 <div className="space-y-3">
                   {allFriendsSessions.map(session => (
@@ -1647,7 +1722,7 @@ const Index = () => {
         return (
           <div data-name="Organization Sessions Section">
             <button
-              onClick={() => setIsOrganizationSessionsOpen(prev => !prev)}
+              onClick={() => setIsOpen(prev => !prev)} // Toggle the open state
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
             >
               <div className="flex items-center gap-2">
@@ -1655,10 +1730,10 @@ const Index = () => {
                 <h3>Organisations</h3>
               </div>
               <div className="flex items-center gap-2">
-                {isOrganizationSessionsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
             </button>
-            {isOrganizationSessionsOpen && (
+            {isOpen && (
               hasOrganizationSessions ? (
                 <div className="space-y-3">
                   {allOrganizationSessions.map(session => (
@@ -1705,7 +1780,7 @@ const Index = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsSchedulingMode(true)}
-                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover" // NEW: Added hover effect
+                      className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover"
                       data-name="Schedule Button"
                     >
                       <CalendarPlus size={16} />
@@ -1741,9 +1816,9 @@ const Index = () => {
                         onClick={handleSessionVisibilityToggle}
                         className={cn(
                           "flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors select-none",
-                          sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover", // NEW: Added hover effect
-                          sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover", // NEW: Added hover effect
-                          sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover" // NEW: Added hover effect
+                          sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover",
+                          sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover",
+                          sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover"
                         )}
                         data-name="Session Visibility Toggle Button"
                       >
@@ -1773,7 +1848,7 @@ const Index = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover" // NEW: Added hover effect
+                              className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover"
                               data-name="Share Options Button"
                             >
                               <Share2 size={16} />
@@ -1790,7 +1865,7 @@ const Index = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => setShowJoinInput(true)}
-                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover" // NEW: Added hover effect
+                          className="flex items-center gap-2 px-3 py-1 rounded-full border border-border transition-colors hover:bg-accent-hover"
                           data-name="Join Sesh Button"
                         >
                           <Users size={16} />
@@ -1903,7 +1978,7 @@ const Index = () => {
                           className={cn(
                             "w-full h-full rounded-none bg-transparent",
                             isPaused ? "text-error-foreground" : "text-secondary-foreground",
-                            "hover:bg-accent-hover" // NEW: Added hover effect
+                            "hover:bg-accent-hover"
                           )}
                           data-name="Stop Timer Button"
                         >
@@ -2137,7 +2212,6 @@ const Index = () => {
               </Card>
             )}
 
-            {/* Removed the conditional rendering for !isDiscoveryActivated */}
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="sessions-list">
                 {(provided) => (
@@ -2146,7 +2220,7 @@ const Index = () => {
                     ref={provided.innerRef}
                     className="space-y-6"
                   >
-                    {sectionOrder.map((sectionId, index) => (
+                    {expandedSections.map((sectionId, index) => (
                       <Draggable key={sectionId} draggableId={sectionId} index={index}>
                         {(provided) => (
                           <div
@@ -2164,6 +2238,12 @@ const Index = () => {
                 )}
               </Droppable>
             </DragDropContext>
+
+            {minimizedSections.length > 0 && (
+              <div className="flex justify-center gap-2 mt-6">
+                {minimizedSections.map(sectionId => renderMinimizedSectionButton(sectionId))}
+              </div>
+            )}
           </div>
         </div>
         {isScheduleActive && (
@@ -2275,7 +2355,6 @@ const Index = () => {
                       min={0}
                       step={1}
                       className="w-full"
-                      // FIX: Removed rangeColor prop as it's not supported by shadcn/ui Slider
                     />
                   </div>
                   <div className="text-center mt-3 text-sm text-muted-foreground select-none">
