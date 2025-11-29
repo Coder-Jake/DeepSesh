@@ -14,7 +14,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskSection";
+import ActiveAskSection from "@/components/ActiveAskAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
@@ -1484,50 +1484,20 @@ const Index = () => {
     return () => {}; // Fallback
   }, [setIsNearbySessionsOpen, setIsFriendsSessionsOpen, setIsOrganizationSessionsOpen]);
 
-  // Helper to determine relevance for initial state
-  const getSectionRelevance = useCallback((sectionType: 'nearby' | 'friends' | 'organization') => {
-    if (!isDiscoveryActivated) return false;
-
-    switch (sectionType) {
-      case 'nearby':
-        const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
-        const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
-        const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
-        return sessionVisibility === 'public' && allNearbySessions.length > 0;
-      case 'friends':
-        const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
-        const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
-        return allFriendsSessions.length > 0;
-      case 'organization':
-        const orgMockSessions = mockOrganizationSessions;
-        const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
-        return !!profile?.organization && allOrganizationSessions.length > 0;
-      default:
-        return false;
-    }
-  }, [
-    isDiscoveryActivated, sessionVisibility, showDemoSessions, filteredMockNearbySessions,
-    supabaseActiveSessions, currentUserId, filteredMockFriendsSessions, mockOrganizationSessions,
-    profile?.organization
-  ]);
-
-  // New useEffect to handle discovery activation/deactivation and initial state
+  // NEW: Effect to handle discovery activation/deactivation and initial state
   useEffect(() => {
-    const setInitialOpenStates = () => {
-      getSetIsOpenState('nearby')(getSectionRelevance('nearby'));
-      getSetIsOpenState('friends')(getSectionRelevance('friends'));
-      getSetIsOpenState('organization')(getSectionRelevance('organization'));
-    };
-
     if (isDiscoveryActivated) {
-      setInitialOpenStates();
+      // When discovery is activated, set all sections to open by default
+      setIsNearbySessionsOpen(true);
+      setIsFriendsSessionsOpen(true);
+      setIsOrganizationSessionsOpen(true);
     } else {
       // When discovery is deactivated, close all sections
-      getSetIsOpenState('nearby')(false);
-      getSetIsOpenState('friends')(false);
-      getSetIsOpenState('organization')(false);
+      setIsNearbySessionsOpen(false);
+      setIsFriendsSessionsOpen(false);
+      setIsOrganizationSessionsOpen(false);
     }
-  }, [isDiscoveryActivated, getSectionRelevance, getSetIsOpenState]); // Dependencies for the effect
+  }, [isDiscoveryActivated]); // Dependencies for the effect
 
   // Filter sections into expanded and minimized based on current open states
   const expandedSections = useMemo(() => {
