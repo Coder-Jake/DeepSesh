@@ -604,8 +604,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setPreparedSchedules([]);
     setActiveAsks([]);
     console.log("TimerContext: resetSessionStates called. activeAsks cleared.");
-    setNotes(""); // NEW: Clear notes
-    setHostNotes(""); // NEW: Clear hostNotes
+    // REMOVED: setNotes(""); // NEW: Clear notes
+    // REMOVED: setHostNotes(""); // NEW: Clear hostNotes
 
     setCurrentSessionRole(null);
     setCurrentSessionHostName(null);
@@ -1982,7 +1982,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
     sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, /* sessionStartTime removed */
     /* currentPhaseStartTime removed */ /* accumulatedFocusSeconds removed */ /* accumulatedBreakSeconds removed */
-    activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
+    activeJoinedSessionCoworkerCount, activeAsks, isSeshTitleCustomized, scheduleStartOption,
     isTimeLeftManagedBySession,
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,

@@ -1093,7 +1093,9 @@ const Index = () => {
     const currentAsk = activeAsks.find(ask => ask.id === id);
     if (!currentAsk || !('minutes' in currentAsk)) return;
 
-    let updatedVotes = currentAsk.votes.filter(v => v.userId !== user.id);
+    let updatedVotes = currentAsk.votes.filter(v => v.userId === user.id && v.vote === newVote)
+      ? currentAsk.votes.filter(v => v.userId !== user.id)
+      : currentAsk.votes;
 
     if (newVote !== null) {
       updatedVotes.push({ userId: user.id, vote: newVote });
@@ -2036,7 +2038,7 @@ const Index = () => {
                   <div className="flex items-center justify-between">
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="my-notes">My Notes</TabsTrigger>
-                      <TabsTrigger value="host-notes" disabled={currentSessionRole !== 'host' && currentSessionRole !== 'coworker'}>Host Notes</TabsTrigger>
+                      <TabsTrigger value="host-notes" disabled={currentSessionRole !== 'host' && currentSessionRole !== 'coworker' && isActiveTimer}>Host Notes</TabsTrigger>
                     </TabsList>
                   </div>
                 </CardHeader>
@@ -2055,10 +2057,14 @@ const Index = () => {
                       <MarkdownEditor
                         value={hostNotes}
                         onChange={setHostNotes}
-                        placeholder="" // Removed placeholder
+                        placeholder={
+                          (currentSessionRole === 'host' || !isActiveTimer)
+                            ? "Add notes for your session's participants..."
+                            : "No host notes available."
+                        }
                         rows={5}
-                        readOnly={currentSessionRole !== 'host'} // Only host can edit
-                        isCoworkerView={currentSessionRole === 'coworker'} // Coworkers view as read-only preview
+                        readOnly={isActiveTimer && currentSessionRole !== 'host'}
+                        isCoworkerView={currentSessionRole === 'coworker'}
                       />
                     )}
                   </TabsContent>
