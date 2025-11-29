@@ -425,10 +425,21 @@ const Index = () => {
   const discoverySliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingDiscoverySlider, setIsDraggingDiscoverySlider] = useState(false);
 
-  // Initialize states to false, then set them in useEffect
-  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(false);
-  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(false);
-  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(false);
+  // NEW: State to store user's collapsed sections, persisted in local storage
+  const [userCollapsedSections, setUserCollapsedSections] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      const storedCollapsed = localStorage.getItem('deepsesh_collapsed_sections');
+      return storedCollapsed ? new Set(JSON.parse(storedCollapsed)) : new Set();
+    }
+    return new Set();
+  });
+
+  // NEW: Effect to persist userCollapsedSections to local storage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('deepsesh_collapsed_sections', JSON.stringify(Array.from(userCollapsedSections)));
+    }
+  }, [userCollapsedSections]);
 
   useEffect(() => {
     if (isDiscoverySetupOpen) {
@@ -1468,32 +1479,16 @@ const Index = () => {
     isLongPressDetected.current = true;
   };
 
-  // Helper to get the current open state for a section
-  const getIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
-    if (sectionId === 'nearby') return isNearbySessionsOpen;
-    if (sectionId === 'friends') return isFriendsSessionsOpen;
-    if (sectionId === 'organization') return isOrganizationSessionsOpen;
-    return false;
-  }, [isNearbySessionsOpen, isFriendsSessionsOpen, isOrganizationSessionsOpen]);
-
-  // Helper to get the setter for a section's open state
-  const getSetIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
-    if (sectionId === 'nearby') return setIsNearbySessionsOpen;
-    if (sectionId === 'friends') return setIsFriendsSessionsOpen;
-    if (sectionId === 'organization') return setIsOrganizationSessionsOpen;
-    return () => {}; // Fallback
-  }, [setIsNearbySessionsOpen, setIsFriendsSessionsOpen, setIsOrganizationSessionsOpen]);
-
-  // Helper to determine relevance for initial state
-  const getSectionRelevance = useCallback((sectionType: 'nearby' | 'friends' | 'organization') => {
+  // NEW: Helper to determine if a section should be rendered at all (has content)
+  const hasContentForSection = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
     if (!isDiscoveryActivated) return false;
 
-    switch (sectionType) {
+    switch (sectionId) {
       case 'nearby':
         const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
         const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
         const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
-        return sessionVisibility === 'public' && allNearbySessions.length > 0;
+        return allNearbySessions.length > 0;
       case 'friends':
         const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
         const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
@@ -1506,45 +1501,34 @@ const Index = () => {
         return false;
     }
   }, [
-    isDiscoveryActivated, sessionVisibility, showDemoSessions, filteredMockNearbySessions,
-    supabaseActiveSessions, currentUserId, filteredMockFriendsSessions, mockOrganizationSessions,
-    profile?.organization
+    isDiscoveryActivated, showDemoSessions, filteredMockNearbySessions, supabaseActiveSessions,
+    currentUserId, filteredMockFriendsSessions, mockOrganizationSessions, profile?.organization
   ]);
 
-  // New useEffect to handle discovery activation/deactivation and initial state
-  useEffect(() => {
-    const setInitialOpenStates = () => {
-      getSetIsOpenState('nearby')(getSectionRelevance('nearby'));
-      getSetIsOpenState('friends')(getSectionRelevance('friends'));
-      getSetIsOpenState('organization')(getSectionRelevance('organization'));
-    };
-
-    if (isDiscoveryActivated) {
-      setInitialOpenStates();
-    } else {
-      // When discovery is deactivated, close all sections
-      getSetIsOpenState('nearby')(false);
-      getSetIsOpenState('friends')(false);
-      getSetIsOpenState('organization')(false);
-    }
-  }, [isDiscoveryActivated, getSectionRelevance, getSetIsOpenState]); // Dependencies for the effect
+  // Calculate the actual open state for rendering
+  const getSectionOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+    return hasContentForSection(sectionId) && !userCollapsedSections.has(sectionId);
+  }, [hasContentForSection, userCollapsedSections]);
 
   // Filter sections into expanded and minimized based on current open states
   const expandedSections = useMemo(() => {
-    return sectionOrder.filter(sectionId => getIsOpenState(sectionId));
-  }, [sectionOrder, getIsOpenState]);
+    return sectionOrder.filter(sectionId => getSectionOpenState(sectionId));
+  }, [sectionOrder, getSectionOpenState]);
 
   const minimizedSections = useMemo(() => {
-    return sectionOrder.filter(sectionId => !getIsOpenState(sectionId));
-  }, [sectionOrder, getIsOpenState]);
+    return sectionOrder.filter(sectionId => hasContentForSection(sectionId) && !getSectionOpenState(sectionId));
+  }, [sectionOrder, hasContentForSection, getSectionOpenState]);
 
   const renderMinimizedSectionButton = (sectionId: 'nearby' | 'friends' | 'organization') => {
     const commonClasses = "flex items-center justify-center gap-1 px-3 py-1 rounded-full border border-border text-sm font-medium transition-colors hover:bg-accent-hover";
     const iconSize = 16;
-    const setIsOpen = getSetIsOpenState(sectionId);
 
     const handleClick = () => {
-      setIsOpen(true); // Expand the section
+      setUserCollapsedSections(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(sectionId); // Remove from collapsed to open it
+        return newSet;
+      });
     };
 
     let icon;
@@ -1594,8 +1578,21 @@ const Index = () => {
   };
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
-    const setIsOpen = getSetIsOpenState(sectionId);
-    const isOpen = getIsOpenState(sectionId); // This will always be true for sections passed to renderSection
+    const isOpen = getSectionOpenState(sectionId); // Use the new combined open state
+
+    const handleToggleClick = (e: React.MouseEvent) => {
+      if (!isLongPressDetected.current) {
+        setUserCollapsedSections(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(sectionId)) {
+            newSet.delete(sectionId); // It was collapsed, so open it
+          } else {
+            newSet.add(sectionId); // It was open, so collapse it
+          }
+          return newSet;
+        });
+      }
+    };
 
     switch (sectionId) {
       case 'nearby':
@@ -1607,11 +1604,7 @@ const Index = () => {
         return (
           <div className="mb-6" data-name="Nearby Sessions Section">
             <button
-              onClick={(e) => {
-                if (!isLongPressDetected.current) {
-                  setIsOpen(prev => !prev); // Toggle the open state
-                }
-              }}
+              onClick={handleToggleClick}
               onMouseDown={() => handlePressStart(() => {
                 navigate('/settings', { state: { openAccordion: 'location' } });
               })}
@@ -1699,7 +1692,7 @@ const Index = () => {
         return (
           <div data-name="Friends Sessions Section">
             <button
-              onClick={() => setIsOpen(prev => !prev)} // Toggle the open state
+              onClick={handleToggleClick}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
             >
               <div className="flex items-center gap-2">
@@ -1735,7 +1728,7 @@ const Index = () => {
         return (
           <div data-name="Organization Sessions Section">
             <button
-              onClick={() => setIsOpen(prev => !prev)} // Toggle the open state
+              onClick={handleToggleClick}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
             >
               <div className="flex items-center gap-2">
