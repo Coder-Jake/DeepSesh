@@ -338,7 +338,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           });
         }
         setGeolocationPermissionStatus('denied');
-        setSessionVisibility('private'); // MODIFIED: Force private if geolocation not supported
         resolve({ latitude: null, longitude: null });
         return;
       }
@@ -355,10 +354,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       } else if (permissionStatus.state === 'denied') {
         if (areToastsEnabled) {
           toast.error("Location Access Denied", {
-            description: "Location access denied. Your session has been set to private. Please enable in browser settings.",
+            description: "Location access denied. Please enable in browser settings if you wish to use location-based features.",
           });
         }
-        setSessionVisibility('private'); // MODIFIED: Force private if location denied
         setGeolocationPermissionStatus('denied');
         resolve({ latitude: null, longitude: null });
         return;
@@ -378,8 +376,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           if (areToastsEnabled) {
             let errorMessage = "Failed to get your location.";
             if (error.code === error.PERMISSION_DENIED) {
-              errorMessage = "Location access denied. Your session has been set to private. Please enable in browser settings.";
-              setSessionVisibility('private'); // MODIFIED: Force private if location denied
+              errorMessage = "Location access denied. Please enable in browser settings if you wish to use location-based features.";
               setGeolocationPermissionStatus('denied');
             } else if (error.code === error.POSITION_UNAVAILABLE) {
               errorMessage = "Location information is unavailable.";
@@ -399,7 +396,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
       );
     });
-  }, [areToastsEnabled, setSessionVisibility, setGeolocationPermissionStatus]); // MODIFIED: setSessionVisibility to dependencies
+  }, [areToastsEnabled, setGeolocationPermissionStatus]);
 
   useEffect(() => {
     if (navigator.permissions) {
@@ -414,14 +411,15 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   useEffect(() => {
     if (isDiscoveryActivated && geolocationPermissionStatus === 'denied' && sessionVisibility !== 'private') {
-      setSessionVisibility('private'); // MODIFIED: Force private if discovery active but location denied
+      // Removed the automatic setting of sessionVisibility to 'private'
+      // setSessionVisibility('private');
       if (areToastsEnabled) {
-        toast.info("Discovery Privacy Adjusted", {
-          description: "Location access is denied, so your sessions are now private.",
+        toast.info("Discovery Privacy Note", {
+          description: "Location access is denied. Public sessions may not be discoverable by others.",
         });
       }
     }
-  }, [isDiscoveryActivated, geolocationPermissionStatus, sessionVisibility, areToastsEnabled, setSessionVisibility]); // MODIFIED: sessionVisibility to dependencies
+  }, [isDiscoveryActivated, geolocationPermissionStatus, sessionVisibility, areToastsEnabled]);
 
   const syncSessionToSupabase = useCallback(async () => {
     if (!user?.id || !activeSessionRecordId) {
