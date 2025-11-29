@@ -1570,7 +1570,7 @@ const Index = () => {
         break;
       case 'organization':
         icon = <Building2 size={iconSize} />;
-        text = 'Org';
+        text = 'Organisations';
         tooltipContent = "Show Organization Sessions";
         iconColorClass = "text-olive-foreground";
         break;
