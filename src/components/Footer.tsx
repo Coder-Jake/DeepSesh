@@ -11,15 +11,6 @@ const Footer = () => {
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <div className="flex items-center gap-4">
           <a 
-            href="https://discord.gg/dtYakXSukh" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="Join DeepSesh Discord"
-          >
-            <MessageSquare className="h-5 w-5" />
-          </a>
-          <a 
             href="https://www.linkedin.com/company/deepsesh/" 
             target="_blank" 
             rel="noopener noreferrer" 
@@ -29,9 +20,15 @@ const Footer = () => {
             <Linkedin className="h-5 w-5" />
           </a>
         </div>
-        <Link to="/credits" className="text-sm text-muted-foreground underline hover:text-foreground">
-          Credits
-        </Link>
+        <a 
+            href="https://discord.gg/dtYakXSukh" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Join DeepSesh Discord"
+          >
+            <MessageSquare className="h-5 w-5" />
+          </a>
       </div>
     </footer>
   );
