@@ -425,6 +425,11 @@ const Index = () => {
   const discoverySliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingDiscoverySlider, setIsDraggingDiscoverySlider] = useState(false);
 
+  // Initialize states to false, then set them in useEffect
+  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(false);
+  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(false);
+  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(false);
+
   useEffect(() => {
     if (isDiscoverySetupOpen) {
       setDiscoveryDisplayName(localFirstName === "You" ? (joinCode || "") : (localFirstName || joinCode || ""));
@@ -1505,11 +1510,6 @@ const Index = () => {
     supabaseActiveSessions, currentUserId, filteredMockFriendsSessions, mockOrganizationSessions,
     profile?.organization
   ]);
-
-  // Initialize states to false, then set them in useEffect
-  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(false);
-  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(false);
-  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(false);
 
   // New useEffect to handle discovery activation/deactivation and initial state
   useEffect(() => {
