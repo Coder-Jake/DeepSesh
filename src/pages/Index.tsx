@@ -1550,22 +1550,29 @@ const Index = () => {
     let icon;
     let text;
     let tooltipContent;
+    let iconColorClass = "text-muted-foreground"; // Default color
 
     switch (sectionId) {
       case 'nearby':
         icon = <MapPin size={iconSize} />;
         text = 'Nearby';
         tooltipContent = "Show Nearby Sessions";
+        iconColorClass = cn(
+          geolocationPermissionStatus === 'granted' && "text-success-foreground",
+          geolocationPermissionStatus === 'denied' && "text-error-foreground"
+        );
         break;
       case 'friends':
         icon = <Users size={iconSize} />;
         text = 'Friends';
         tooltipContent = "Show Friends' Sessions";
+        iconColorClass = "text-blue-500";
         break;
       case 'organization':
         icon = <Building2 size={iconSize} />;
         text = 'Org';
         tooltipContent = "Show Organization Sessions";
+        iconColorClass = "text-olive-foreground";
         break;
       default:
         return null;
@@ -1575,7 +1582,7 @@ const Index = () => {
       <Tooltip key={`minimized-${sectionId}`}>
         <TooltipTrigger asChild>
           <Button variant="ghost" size="sm" className={commonClasses} onClick={handleClick}>
-            {icon}
+            {React.cloneElement(icon, { className: iconColorClass })}
             <span>{text}</span>
           </Button>
         </TooltipTrigger>
