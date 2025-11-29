@@ -14,7 +14,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
 import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskAskSection";
+import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
