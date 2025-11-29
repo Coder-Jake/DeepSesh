@@ -1655,7 +1655,7 @@ const Index = () => {
                   </p>
                 )}
                 <p className="text-muted-foreground text-sm text-center py-4">
-                  Invite people from real life to build the DeepSesh community
+                  Invite cool people from real life to build the DeepSesh community
                 </p>
               </>
             )}
