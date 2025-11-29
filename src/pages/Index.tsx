@@ -425,21 +425,10 @@ const Index = () => {
   const discoverySliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingDiscoverySlider, setIsDraggingDiscoverySlider] = useState(false);
 
-  // NEW: State to store user's collapsed sections, persisted in local storage
-  const [userCollapsedSections, setUserCollapsedSections] = useState<Set<string>>(() => {
-    if (typeof window !== 'undefined') {
-      const storedCollapsed = localStorage.getItem('deepsesh_collapsed_sections');
-      return storedCollapsed ? new Set(JSON.parse(storedCollapsed)) : new Set();
-    }
-    return new Set();
-  });
-
-  // NEW: Effect to persist userCollapsedSections to local storage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('deepsesh_collapsed_sections', JSON.stringify(Array.from(userCollapsedSections)));
-    }
-  }, [userCollapsedSections]);
+  // Initialize states to false, then set them in useEffect
+  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(false);
+  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(false);
+  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(false);
 
   useEffect(() => {
     if (isDiscoverySetupOpen) {
@@ -1479,46 +1468,83 @@ const Index = () => {
     isLongPressDetected.current = true;
   };
 
-  // NEW: Helper to determine if a section header should be rendered at all (based on general conditions)
-  const shouldRenderSectionHeader = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+  // Helper to get the current open state for a section
+  const getIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+    if (sectionId === 'nearby') return isNearbySessionsOpen;
+    if (sectionId === 'friends') return isFriendsSessionsOpen;
+    if (sectionId === 'organization') return isOrganizationSessionsOpen;
+    return false;
+  }, [isNearbySessionsOpen, isFriendsSessionsOpen, isOrganizationSessionsOpen]);
+
+  // Helper to get the setter for a section's open state
+  const getSetIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+    if (sectionId === 'nearby') return setIsNearbySessionsOpen;
+    if (sectionId === 'friends') return setIsFriendsSessionsOpen;
+    if (sectionId === 'organization') return setIsOrganizationSessionsOpen;
+    return () => {}; // Fallback
+  }, [setIsNearbySessionsOpen, setIsFriendsSessionsOpen, setIsOrganizationSessionsOpen]);
+
+  // Helper to determine relevance for initial state
+  const getSectionRelevance = useCallback((sectionType: 'nearby' | 'friends' | 'organization') => {
     if (!isDiscoveryActivated) return false;
 
-    switch (sectionId) {
+    switch (sectionType) {
       case 'nearby':
-        return shouldShowNearbySessions;
+        const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
+        const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
+        const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+        return sessionVisibility === 'public' && allNearbySessions.length > 0;
       case 'friends':
-        return shouldShowFriendsSessions;
+        const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
+        const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
+        return allFriendsSessions.length > 0;
       case 'organization':
-        return shouldShowOrganizationSessions;
+        const orgMockSessions = mockOrganizationSessions;
+        const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
+        return !!profile?.organization && allOrganizationSessions.length > 0;
       default:
         return false;
     }
-  }, [isDiscoveryActivated, shouldShowNearbySessions, shouldShowFriendsSessions, shouldShowOrganizationSessions]);
+  }, [
+    isDiscoveryActivated, sessionVisibility, showDemoSessions, filteredMockNearbySessions,
+    supabaseActiveSessions, currentUserId, filteredMockFriendsSessions, mockOrganizationSessions,
+    profile?.organization
+  ]);
 
-  // Calculate the actual open state for rendering
-  const getSectionOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
-    return shouldRenderSectionHeader(sectionId) && !userCollapsedSections.has(sectionId);
-  }, [shouldRenderSectionHeader, userCollapsedSections]);
+  // New useEffect to handle discovery activation/deactivation and initial state
+  useEffect(() => {
+    const setInitialOpenStates = () => {
+      getSetIsOpenState('nearby')(getSectionRelevance('nearby'));
+      getSetIsOpenState('friends')(getSectionRelevance('friends'));
+      getSetIsOpenState('organization')(getSectionRelevance('organization'));
+    };
+
+    if (isDiscoveryActivated) {
+      setInitialOpenStates();
+    } else {
+      // When discovery is deactivated, close all sections
+      getSetIsOpenState('nearby')(false);
+      getSetIsOpenState('friends')(false);
+      getSetIsOpenState('organization')(false);
+    }
+  }, [isDiscoveryActivated, getSectionRelevance, getSetIsOpenState]); // Dependencies for the effect
 
   // Filter sections into expanded and minimized based on current open states
   const expandedSections = useMemo(() => {
-    return sectionOrder.filter(sectionId => shouldRenderSectionHeader(sectionId) && getSectionOpenState(sectionId));
-  }, [sectionOrder, shouldRenderSectionHeader, getSectionOpenState]);
+    return sectionOrder.filter(sectionId => getIsOpenState(sectionId));
+  }, [sectionOrder, getIsOpenState]);
 
   const minimizedSections = useMemo(() => {
-    return sectionOrder.filter(sectionId => shouldRenderSectionHeader(sectionId) && !getSectionOpenState(sectionId));
-  }, [sectionOrder, shouldRenderSectionHeader, getSectionOpenState]);
+    return sectionOrder.filter(sectionId => !getIsOpenState(sectionId));
+  }, [sectionOrder, getIsOpenState]);
 
   const renderMinimizedSectionButton = (sectionId: 'nearby' | 'friends' | 'organization') => {
     const commonClasses = "flex items-center justify-center gap-1 px-3 py-1 rounded-full border border-border text-sm font-medium transition-colors hover:bg-accent-hover";
     const iconSize = 16;
+    const setIsOpen = getSetIsOpenState(sectionId);
 
     const handleClick = () => {
-      setUserCollapsedSections(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(sectionId); // Remove from collapsed to open it
-        return newSet;
-      });
+      setIsOpen(true); // Expand the section
     };
 
     let icon;
@@ -1568,151 +1594,180 @@ const Index = () => {
   };
 
   const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
-    const isOpen = getSectionOpenState(sectionId); // Use the new combined open state
-
-    const handleToggleClick = (e: React.MouseEvent) => {
-      if (!isLongPressDetected.current) {
-        setUserCollapsedSections(prev => {
-          const newSet = new Set(prev);
-          if (newSet.has(sectionId)) {
-            newSet.add(sectionId); // It was open, so collapse it
-          } else {
-            newSet.delete(sectionId); // It was collapsed, so open it
-          }
-          return newSet;
-        });
-      }
-    };
-
-    let sessionsToDisplay: DemoSession[] = [];
-    let loadingState: boolean = false;
-    let errorMessage: string | null = null;
+    const setIsOpen = getSetIsOpenState(sectionId);
+    const isOpen = getIsOpenState(sectionId); // This will always be true for sections passed to renderSection
 
     switch (sectionId) {
       case 'nearby':
         const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
         const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
-        sessionsToDisplay = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
-        loadingState = isLoadingSupabaseSessions;
-        errorMessage = supabaseError?.message || null;
-        break;
+        const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+        const hasNearbySessions = allNearbySessions.length > 0;
+
+        return (
+          <div className="mb-6" data-name="Nearby Sessions Section">
+            <button
+              onClick={(e) => {
+                if (!isLongPressDetected.current) {
+                  setIsOpen(prev => !prev); // Toggle the open state
+                }
+              }}
+              onMouseDown={() => handlePressStart(() => {
+                navigate('/settings', { state: { openAccordion: 'location' } });
+              })}
+              onMouseUp={handlePressEnd}
+              onMouseLeave={handlePressEnd}
+              onTouchStart={() => handlePressStart(() => {
+                navigate('/settings', { state: { openAccordion: 'location' } });
+              })}
+              onTouchEnd={handlePressEnd}
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
+            >
+              <div className="flex items-center gap-2">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                      <MapPin
+                        size={16}
+                        className={cn(
+                          "cursor-pointer",
+                          geolocationPermissionStatus === 'granted' && "text-success-foreground",
+                          geolocationPermissionStatus === 'denied' && "text-error-foreground"
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          getLocation();
+                        }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                      {geolocationPermissionStatus === 'granted' && "Location access granted."}
+                      {geolocationPermissionStatus === 'denied' && "Location access denied. Click to re-enable in browser settings."}
+                      {geolocationPermissionStatus === 'prompt' && "Click to enable location for nearby sessions."}
+                    </TooltipContent>
+                  </Tooltip>
+                <h3>Nearby</h3>
+                {limitDiscoveryRadius ? (
+                  <span className="text-sm text-muted-foreground ml-1">
+                    ({formatDistance(maxDistance)})
+                  </span>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InfinityIcon size={16} className="text-muted-foreground ml-1" />
+                    </TooltipTrigger>
+                    <TooltipContent className="select-none">
+                      Discovery Radius: Unlimited
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+            {isOpen && (
+              <>
+                {hasNearbySessions ? (
+                  <div className="space-y-3">
+                    {isLoadingSupabaseSessions && <p className="text-muted-foreground">Loading nearby sessions...</p>}
+                    {supabaseError && <p className="text-destructive">Error: {supabaseError.message}</p>}
+                    {allNearbySessions.map(session => (
+                      <SessionCard
+                        key={session.id}
+                        session={session}
+                        onJoinSession={handleJoinSession}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm text-center py-4">
+                    {isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Switch to Public to see nearby sessions."}
+                  </p>
+                )}
+                <p className="text-muted-foreground text-sm text-center py-4">
+                  Invite people from real life to build the DeepSesh community
+                </p>
+              </>
+            )}
+          </div>
+        );
       case 'friends':
         const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
-        sessionsToDisplay = sortSessions(friendsMockSessions, currentUserId);
-        // No specific loading/error for mock friends sessions
-        break;
-      case 'organization':
-        const orgMockSessions = mockOrganizationSessions;
-        sessionsToDisplay = sortSessions(orgMockSessions, currentUserId);
-        // No specific loading/error for mock organization sessions
-        break;
-      default:
-        return null;
-    }
+        const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
+        const hasFriendsSessions = allFriendsSessions.length > 0;
 
-    const hasSessions = sessionsToDisplay.length > 0;
-
-    return (
-      <div className="mb-6" data-name={`${sectionId} Sessions Section`}>
-        <button
-          onClick={handleToggleClick}
-          onMouseDown={() => handlePressStart(() => {
-            if (sectionId === 'nearby') {
-              navigate('/settings', { state: { openAccordion: 'location' } });
-            }
-          })}
-          onMouseUp={handlePressEnd}
-          onMouseLeave={handlePressEnd}
-          onTouchStart={() => handlePressStart(() => {
-            if (sectionId === 'nearby') {
-              navigate('/settings', { state: { openAccordion: 'location' } });
-            }
-          })}
-          onTouchEnd={handlePressEnd}
-          className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
-        >
-          <div className="flex items-center gap-2">
-            {sectionId === 'nearby' && (
-              <Tooltip>
-                  <TooltipTrigger asChild>
-                    <MapPin
-                      size={16}
-                      className={cn(
-                        "cursor-pointer",
-                        geolocationPermissionStatus === 'granted' && "text-success-foreground",
-                        geolocationPermissionStatus === 'denied' && "text-error-foreground"
-                      )}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        getLocation();
-                      }}
+        return (
+          <div data-name="Friends Sessions Section">
+            <button
+              onClick={() => setIsOpen(prev => !prev)} // Toggle the open state
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
+            >
+              <div className="flex items-center gap-2">
+                <Users size={16} className="text-blue-500" />
+                <h3>Friends</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+            {isOpen && (
+              hasFriendsSessions ? (
+                <div className="space-y-3">
+                  {allFriendsSessions.map(session => (
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      onJoinSession={handleJoinSession}
                     />
-                  </TooltipTrigger>
-                  <TooltipContent className="select-none">
-                    {geolocationPermissionStatus === 'granted' && "Location access granted."}
-                    {geolocationPermissionStatus === 'denied' && "Location access denied. Click to re-enable in browser settings."}
-                    {geolocationPermissionStatus === 'prompt' && "Click to enable location for nearby sessions."}
-                  </TooltipContent>
-                </Tooltip>
-            )}
-            {sectionId === 'friends' && <Users size={16} className="text-blue-500" />}
-            {sectionId === 'organization' && <Building2 size={16} className="text-olive-foreground" />}
-            <h3>
-              {sectionId === 'nearby' && 'Nearby'}
-              {sectionId === 'friends' && 'Friends'}
-              {sectionId === 'organization' && 'Organisations'}
-            </h3>
-            {sectionId === 'nearby' && limitDiscoveryRadius ? (
-              <span className="text-sm text-muted-foreground ml-1">
-                ({formatDistance(maxDistance)})
-              </span>
-            ) : (
-              sectionId === 'nearby' && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <InfinityIcon size={16} className="text-muted-foreground ml-1" />
-                  </TooltipTrigger>
-                  <TooltipContent className="select-none">
-                    Discovery Radius: Unlimited
-                  </TooltipContent>
-                </Tooltip>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-4">Invite Friends to see their active sessions.</p>
               )
             )}
           </div>
-          <div className="flex items-center gap-2">
-            {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </div>
-        </button>
-        {isOpen && (
-          <>
-            {loadingState && <p className="text-muted-foreground">Loading sessions...</p>}
-            {errorMessage && <p className="text-destructive">Error: {errorMessage}</p>}
-            {hasSessions ? (
-              <div className="space-y-3">
-                {sessionsToDisplay.map(session => (
-                  <SessionCard
-                    key={session.id}
-                    session={session}
-                    onJoinSession={handleJoinSession}
-                  />
-                ))}
+        );
+      case 'organization':
+        const orgMockSessions = mockOrganizationSessions;
+        const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
+        const hasOrganizationSessions = allOrganizationSessions.length > 0;
+
+        return (
+          <div data-name="Organization Sessions Section">
+            <button
+              onClick={() => setIsOpen(prev => !prev)} // Toggle the open state
+              className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
+            >
+              <div className="flex items-center gap-2">
+                <Building2 size={16} className="text-olive-foreground" />
+                <h3>Organisations</h3>
               </div>
-            ) : (
-              <p className="text-muted-foreground text-sm text-center py-4">
-                {sectionId === 'nearby' && (isDiscoveryActivated && sessionVisibility === 'public' && geolocationPermissionStatus === 'granted' ? "No nearby sessions found." : "Switch to Public to see nearby sessions.")}
-                {sectionId === 'friends' && "Invite Friends to see their active sessions."}
-                {sectionId === 'organization' && (isDiscoveryActivated && profile?.organization ? "No organization sessions found." : "Join an organization to see Organization sessions.")}
-              </p>
+              <div className="flex items-center gap-2">
+                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+            {isOpen && (
+              hasOrganizationSessions ? (
+                <div className="space-y-3">
+                  {allOrganizationSessions.map(session => (
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      onJoinSession={handleJoinSession}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-4">
+                  {isDiscoveryActivated && profile?.organization ? "No organization sessions found." : "Join an organization to see Organization sessions."}
+                </p>
+              )
             )}
-            {sectionId === 'nearby' && (
-              <p className="text-muted-foreground text-sm text-center py-4">
-                Invite people from real life to build the DeepSesh community
-              </p>
-            )}
-          </>
-        )}
-      </div>
-    );
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -2033,7 +2088,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleExtendSubmit}
+              onVoteExtend={handleVoteExtend}
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
@@ -2178,8 +2233,7 @@ const Index = () => {
                     ref={provided.innerRef}
                     className="space-y-6"
                   >
-                    {/* Render sections that should have a header */}
-                    {sectionOrder.filter(shouldRenderSectionHeader).map((sectionId, index) => (
+                    {expandedSections.map((sectionId, index) => (
                       <Draggable key={sectionId} draggableId={sectionId} index={index}>
                         {(provided) => (
                           <div
