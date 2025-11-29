@@ -14,20 +14,18 @@ const Footer = () => {
             href="https://www.linkedin.com/company/deepsesh/" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="text-muted-foreground transition-colors hover:text-foreground"
             aria-label="DeepSesh LinkedIn Profile"
           >
-            <Linkedin className="h-5 w-5" />
+            <Linkedin className="h-5 w-5" color="#0A66C2" />
           </a>
         </div>
         <a 
             href="https://discord.gg/dtYakXSukh" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="text-muted-foreground transition-colors hover:text-foreground"
             aria-label="Join DeepSesh Discord"
           >
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="h-5 w-5" color="#5865F2" />
           </a>
       </div>
     </footer>
