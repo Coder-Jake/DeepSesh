@@ -661,6 +661,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return false; // MODIFIED: Return false if conditions not met
     }
 
+    // REMOVED: if (currentSessionRole === 'host') { await transferHostRole(); return; }
+    // This logic is now handled by stopTimer.
+
     const currentHostId = user.id;
     const otherCoworkers = currentSessionParticipantsData
       .filter(p => p.role === 'coworker')
@@ -1261,6 +1264,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       bio: profile?.profile_data?.bio?.value || null, // Changed undefined to null
     };
 
+    // NEW: Add this line
+    setIsScheduleActive(true);
+
     // NEW: Check if it's a mock session (no user_id means it's a mock session)
     if (!sessionToJoin.user_id) {
       console.log("Joining mock session locally:", sessionToJoin.id);
@@ -1789,7 +1795,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, isSchedulingMode, // NEW: Add hostNotes
     isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
     savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
-    activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
+    activeJoinedSessionCoworkerCount, activeAsks, isSeshTitleCustomized, scheduleStartOption, isTimeLeftManagedBySession,
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
     askNotifications, joinNotifications, sessionInvites, friendActivity, breakNotificationsVibrate, verificationStandard,
