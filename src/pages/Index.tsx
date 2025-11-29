@@ -1137,6 +1137,9 @@ const Index = () => {
       opt => opt.id.startsWith('custom-') && opt.votes.some(vote => vote.userId === user.id)
     );
 
+    const trimmedCustomText = customOptionText?.trim(); // Define trimmedCustomText here
+    let userCustomOptionId: string | null = null; // Define userCustomOptionId here
+
     if (trimmedCustomText && isCustomOptionSelected) {
       if (existingUserCustomOption) {
         if (existingUserCustomOption.text !== trimmedCustomText) {
@@ -1421,7 +1424,7 @@ const Index = () => {
     console.log("filteredLocalMockSessions (local data):", filteredLocalMockSessions);
     console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
     console.log("filteredMockNearbySessions.length:", filteredMockNearbySessions.length);
-    console.log("shouldShowFriendsSessions (memo):", shouldMockFriendsSessions.length);
+    console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions); // Corrected to use the memoized value
     console.log("filteredMockFriendsSessions.length:", filteredMockFriendsSessions.length);
     console.log("shouldShowOrganizationSessions (memo):", shouldShowOrganizationSessions);
     console.log("mockOrganizationSessions.length:", mockOrganizationSessions.length);
@@ -1433,7 +1436,7 @@ const Index = () => {
     sessionVisibility, showSessionsWhileActive, profile?.id, profile?.organization,
     filteredLocalMockSessions,
     shouldShowNearbySessions, filteredMockNearbySessions.length,
-    shouldShowFriendsSessions, filteredMockFriendsSessions.length,
+    shouldShowFriendsSessions, filteredMockFriendsSessions.length, // Corrected to use the memoized value
     shouldShowOrganizationSessions, mockOrganizationSessions.length,
     limitDiscoveryRadius, maxDistance
   ]);
@@ -1503,25 +1506,28 @@ const Index = () => {
     profile?.organization
   ]);
 
-  // Initialize states using the helper function, runs only once on mount
-  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(() => getSectionRelevance('nearby'));
-  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(() => getSectionRelevance('friends'));
-  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(() => getSectionRelevance('organization'));
+  // Initialize states to false, then set them in useEffect
+  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(false);
+  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(false);
+  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(false);
 
-  // New useEffect to handle discovery activation/deactivation
+  // New useEffect to handle discovery activation/deactivation and initial state
   useEffect(() => {
-    if (isDiscoveryActivated) {
-      // When discovery is activated, re-evaluate and open relevant sections
+    const setInitialOpenStates = () => {
       getSetIsOpenState('nearby')(getSectionRelevance('nearby'));
       getSetIsOpenState('friends')(getSectionRelevance('friends'));
       getSetIsOpenState('organization')(getSectionRelevance('organization'));
+    };
+
+    if (isDiscoveryActivated) {
+      setInitialOpenStates();
     } else {
       // When discovery is deactivated, close all sections
       getSetIsOpenState('nearby')(false);
       getSetIsOpenState('friends')(false);
       getSetIsOpenState('organization')(false);
     }
-  }, [isDiscoveryActivated, getSectionRelevance, getSetIsOpenState]);
+  }, [isDiscoveryActivated, getSectionRelevance, getSetIsOpenState]); // Dependencies for the effect
 
   // Filter sections into expanded and minimized based on current open states
   const expandedSections = useMemo(() => {
