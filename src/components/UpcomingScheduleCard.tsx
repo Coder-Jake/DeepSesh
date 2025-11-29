@@ -71,7 +71,9 @@ const UpcomingScheduleCardContent: React.FC<UpcomingScheduleCardContentProps> = 
             className={cn(
               "flex items-center justify-between p-2 rounded-md text-sm",
               // NEW: Use the solid focus background color based on theme
-              item.type === 'focus' ? (isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]") : "bg-[hsl(var(--break-background-solid-dark))]" // NEW: Use solid break background
+              item.type === 'focus' 
+                ? (isDarkMode ? "bg-[hsl(var(--focus-background-solid-dark))]" : "bg-[hsl(var(--focus-background-solid-light))]") 
+                : (isDarkMode ? "bg-[hsl(var(--break-background-solid-dark))]" : "bg-[hsl(var(--break-background-solid-light))]") // MODIFIED: Use solid break background based on theme
             )}
             style={{ backgroundColor: activeTimerColors[item.id] || undefined }}
           >
