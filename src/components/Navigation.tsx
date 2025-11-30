@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { Menu, Home, User, Settings, Heart, Sparkles } from "lucide-react"; // Changed X to Home icon
-import { Link, useLocation, useNavigate } from "react-router-dom"; // Added useNavigate
+import { Menu, X, User, Settings, Heart, Sparkles } from "lucide-react"; // Added Sparkles icon
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/contexts/ProfileContext"; // Import useProfile
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate(); // Initialize useNavigate
   const { localFirstName } = useProfile(); // Get localFirstName from ProfileContext
 
   const navigationItems = [
@@ -17,31 +16,26 @@ const Navigation = () => {
     { name: "Chip In", href: "/chip-in", icon: Heart },
   ];
 
-  const handleMenuButtonClick = () => {
-    if (isOpen) {
-      navigate("/"); // Navigate to home page
-      setIsOpen(false); // Close the menu
-    } else {
-      setIsOpen(true); // Open the menu
-    }
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
   };
 
   return (
     <div className="relative">
-      {/* Hamburger/Home Button */}
+      {/* Hamburger Button */}
       <Button
         variant="ghost"
         size="sm"
-        onClick={handleMenuButtonClick} // Updated onClick handler
-        className="p-2 hover:bg-accent-hover"
+        onClick={toggleMenu}
+        className="p-2 hover:bg-accent-hover" // NEW: Added hover effect
       >
-        {isOpen ? <Home size={20} /> : <Menu size={20} />} {/* Changed X to Home */}
+        {isOpen ? <X size={20} /> : <Menu size={20} />}
       </Button>
 
       {/* Dropdown Menu */}
       {isOpen && (
         <>
-          {/* Backdrop - Closes menu when clicked outside */}
+          {/* Backdrop */}
           <div 
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
@@ -62,7 +56,7 @@ const Navigation = () => {
                     className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
                       isActive 
                         ? "bg-muted text-primary font-medium" 
-                        : "text-foreground hover:bg-accent-hover"
+                        : "text-foreground hover:bg-accent-hover" // NEW: Added hover effect
                     }`}
                   >
                     <Icon size={20} />
