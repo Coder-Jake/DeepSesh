@@ -664,7 +664,7 @@ const Profile = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative">
-              <div className="space-y-2">
+              <div className="space-y-0">
                 <Tooltip
                   open={isBioClickTooltipOpen || isBioIconHoverTooltipOpen}
                   onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsBioIconHoverTooltipOpen, bioIconHoverTooltipRef)}
