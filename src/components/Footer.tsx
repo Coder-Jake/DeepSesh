@@ -25,7 +25,7 @@ const Footer = () => {
             rel="noopener noreferrer" 
             aria-label="Join DeepSesh Discord"
           >
-            <img src="/Discord-Symbol-Blurple.png" alt="Discord Icon" className="h-5 w-5" />
+            <img src="/Discord-Symbol-Blurple.png" alt="Discord Icon" className="h-5 w-auto object-contain" />
           </a>
       </div>
     </footer>
