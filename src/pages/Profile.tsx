@@ -780,7 +780,7 @@ const Profile = () => {
                 />
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-0">
                 <Tooltip
                   open={isLinkedinClickTooltipOpen || isLinkedinIconHoverTooltipOpen}
                   onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsLinkedinIconHoverTooltipOpen, linkedinIconHoverTooltipRef)}
