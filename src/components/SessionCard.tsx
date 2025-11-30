@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useTimer } from "@/contexts/TimerContext";
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { getSociabilityGradientColor } from '@/lib/utils';
@@ -255,9 +256,18 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
                 </div>
               </PopoverContent>
             </Popover>
-            <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow px-1 max-w-[150px]">
-              <div className="h-full rounded-full" style={{width: `${averageFocusPreference}%`, backgroundColor: getSociabilityGradientColor(averageFocusPreference)}}></div>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden flex-grow px-1 max-w-[150px]">
+                    <div className="h-full rounded-full" style={{width: `${averageFocusPreference}%`, backgroundColor: getSociabilityGradientColor(averageFocusPreference)}}></div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Focus preference</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {!isAnySessionActive && ( // Hide join button if any session is active
