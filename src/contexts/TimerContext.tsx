@@ -1814,7 +1814,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     const mergedSchedulesMap = new Map<string, ScheduledTimerTemplate>(); 
-
+    
     DEFAULT_SCHEDULE_TEMPLATES.forEach(template => mergedSchedulesMap.set(template.id, template)); 
     
     initialSavedSchedules.forEach(localSchedule => {
