@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Linkedin, MessageSquare } from 'lucide-react'; // MessageSquare for Discord
+import { Linkedin } from 'lucide-react'; 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -25,7 +25,7 @@ const Footer = () => {
             rel="noopener noreferrer" 
             aria-label="Join DeepSesh Discord"
           >
-            <MessageSquare className="h-5 w-5" color="#5865F2" />
+            <img src="/Discord-Symbol-Blurple.png" alt="Discord Icon" className="h-5 w-5" />
           </a>
       </div>
     </footer>
