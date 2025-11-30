@@ -42,7 +42,7 @@ const Navigation = () => {
           />
           
           {/* Menu */}
-          <div className="absolute right-0 top-full mt-2 w-48 bg-popover border border-border rounded-md shadow-lg z-50">
+          <div className="absolute right-0 top-full mt-2 w-56 bg-popover border border-border rounded-md shadow-lg z-50">
             <div className="py-2">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
@@ -59,7 +59,7 @@ const Navigation = () => {
                         : "text-foreground hover:bg-accent-hover" // NEW: Added hover effect
                     }`}
                   >
-                    <Icon size={16} />
+                    <Icon size={20} />
                     {item.name}
                   </Link>
                 );
