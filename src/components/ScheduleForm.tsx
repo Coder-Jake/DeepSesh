@@ -48,6 +48,7 @@ const ScheduleForm: React.FC = () => {
     formatTime, 
     is24HourFormat, 
     getDefaultSeshTitle,
+    sessionVisibility, // ADDED: sessionVisibility
     selectedHostingOrganization, // NEW: Get selectedHostingOrganization
     setSelectedHostingOrganization, // NEW: Get setSelectedHostingOrganization
   } = useTimer();
