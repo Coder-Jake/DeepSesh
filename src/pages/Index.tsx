@@ -1843,13 +1843,12 @@ const Index = () => {
                       {/* NEW: Host as selector */}
                       {shouldShowOrgSelector && (
                         <div className="flex items-center gap-2">
-                          <Label htmlFor="select-hosting-org" className="text-sm text-muted-foreground">Host as:</Label>
                           {useToggleButton ? (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={handleCycleOrganization}
-                              className="h-8 px-3 text-sm"
+                              className="h-8 px-3 text-sm ml-auto"
                             >
                               {selectedHostingOrganization || (userOrganizations.length > 0 ? userOrganizations[0] : "None")}
                             </Button>
@@ -1858,7 +1857,7 @@ const Index = () => {
                               value={selectedHostingOrganization || ""}
                               onValueChange={setSelectedHostingOrganization}
                             >
-                              <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm">
+                              <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm ml-auto">
                                 <SelectValue placeholder="Select Organization" />
                               </SelectTrigger>
                               <SelectContent>

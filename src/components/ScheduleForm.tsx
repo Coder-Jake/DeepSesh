@@ -471,13 +471,12 @@ const ScheduleForm: React.FC = () => {
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
           {shouldShowOrgSelector && ( // NEW: Organization selection
             <div className="flex items-center gap-2">
-              <Label htmlFor="select-hosting-org" className="text-sm text-muted-foreground">Host as:</Label>
               {useToggleButton ? (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleCycleOrganization}
-                  className="h-8 px-3 text-sm"
+                  className="h-8 px-3 text-sm ml-auto"
                 >
                   {selectedHostingOrganization || (userOrganizations.length > 0 ? userOrganizations[0] : "None")}
                 </Button>
@@ -486,7 +485,7 @@ const ScheduleForm: React.FC = () => {
                   value={selectedHostingOrganization || ""}
                   onValueChange={setSelectedHostingOrganization}
                 >
-                  <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm">
+                  <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm ml-auto">
                     <SelectValue placeholder="Select Organization" />
                   </SelectTrigger>
                   <SelectContent>
