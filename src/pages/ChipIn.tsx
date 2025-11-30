@@ -82,6 +82,7 @@ const ChipIn = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
+              <img src="/Discord-Symbol-Blurple.png" alt="Discord Icon" className="h-5 w-5" />
               Join DeepSesh on Discord
             </CardTitle>
           </CardHeader>
