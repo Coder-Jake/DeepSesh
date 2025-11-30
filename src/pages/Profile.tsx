@@ -664,7 +664,7 @@ const Profile = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative">
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <Tooltip
                   open={isBioClickTooltipOpen || isBioIconHoverTooltipOpen}
                   onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsBioIconHoverTooltipOpen, bioIconHoverTooltipRef)}
@@ -693,7 +693,7 @@ const Profile = () => {
                 />
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <Tooltip
                   open={isIntentionClickTooltipOpen || isIntentionIconHoverTooltipOpen}
                   onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsIntentionIconHoverTooltipOpen, intentionIconHoverTooltipRef)}
@@ -722,7 +722,7 @@ const Profile = () => {
                 />
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <Tooltip
                   open={isCanHelpWithClickTooltipOpen || isCanHelpWithIconHoverTooltipOpen}
                   onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsCanHelpWithIconHoverTooltipOpen, canHelpWithIconHoverTooltipRef)}
@@ -751,7 +751,7 @@ const Profile = () => {
                 />
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <Tooltip
                   open={isNeedHelpWithClickTooltipOpen || isNeedHelpWithIconHoverTooltipOpen}
                   onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsNeedHelpWithIconHoverTooltipOpen, needHelpWithIconHoverTooltipRef)}
