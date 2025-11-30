@@ -826,7 +826,7 @@ const Profile = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-0">
                 <h3 className="text-lg font-semibold mb-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
