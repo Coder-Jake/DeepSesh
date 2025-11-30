@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, Home, User, Settings, Heart, Sparkles } from "lucide-react"; // Changed X to Home icon
 import { Link, useLocation, useNavigate } from "react-router-dom"; // Added useNavigate
 import { Button } from "@/components/ui/button";
@@ -17,12 +17,19 @@ const Navigation = () => {
     { name: "Chip In", href: "/chip-in", icon: Heart },
   ];
 
-  const handleMenuButtonClick = () => {
+  // Effect to close the menu when the route changes
+  useEffect(() => {
     if (isOpen) {
-      navigate("/"); // Navigate to home page
-      setIsOpen(false); // Close the menu
-    } else {
-      setIsOpen(true); // Open the menu
+      setIsOpen(false);
+    }
+  }, [location.pathname]); // Dependency on location.pathname
+
+  const handleMenuButtonClick = () => {
+    if (isOpen) { // If menu is open (showing Home icon)
+      navigate("/"); // Navigate to home
+      // setIsOpen(false) is removed here, as the useEffect will handle it
+    } else { // If menu is closed (showing Menu icon)
+      setIsOpen(true); // Open menu
     }
   };
 
@@ -58,7 +65,7 @@ const Navigation = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    onClick={() => setIsOpen(false)}
+                    // onClick={() => setIsOpen(false)} is removed here, as the useEffect will handle it
                     className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
                       isActive 
                         ? "bg-muted text-primary font-medium" 
