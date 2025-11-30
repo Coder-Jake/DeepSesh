@@ -1,5 +1,5 @@
 import { DAYS_OF_WEEK } from "@/lib/constants";
-import { Profile } from "@/contexts/ProfileContext"; // NEW: Import Profile from ProfileContext
+import { Profile } from "@/contexts/ProfileContext";
 
 // Define the structure for a single timer item within a schedule
 export type ScheduledTimer = {
@@ -47,7 +47,7 @@ export interface ExtendSuggestion {
   id: string;
   minutes: number;
   creator: string;
-  creatorId: string; // NEW: Add creatorId
+  creatorId: string;
   votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
   status: 'pending' | 'accepted' | 'rejected';
 }
@@ -64,7 +64,7 @@ export interface Poll {
   question: string;
   type: 'closed' | 'choice' | 'selection';
   creator: string;
-  creatorId: string; // NEW: Add creatorId
+  creatorId: string;
   options: PollOption[];
   status: 'active' | 'closed';
   allowCustomResponses: boolean;
@@ -90,8 +90,8 @@ export interface ParticipantSessionData {
   joinTime: number; // Unix timestamp
   role: 'host' | 'coworker';
   focusPreference?: number;
-  intention?: string;
-  bio?: string;
+  intention?: string | null; // MODIFIED: Allow null
+  bio?: string | null; // MODIFIED: Allow null
 }
 
 // NEW: Canonical DemoSession interface
@@ -102,17 +102,17 @@ export interface DemoSession {
   location: string;
   workspaceImage: string;
   workspaceDescription: string;
-  participants: ParticipantSessionData[]; // Use ParticipantSessionData
-  location_lat?: number | null; // NEW: Add location_lat
-  location_long?: number | null; // NEW: Add location_long
-  distance?: number | null; // NEW: Add distance
-  active_asks: ActiveAskItem[]; // NEW: Add active_asks
-  visibility: 'public' | 'friends' | 'organisation' | 'private'; // NEW: Add visibility
-  fullSchedule: ScheduledTimer[]; // ADDED: fullSchedule
-  user_id?: string | null; // ADDED: user_id
-  join_code?: string | null; // NEW: Add join_code
-  organization?: string | null; // NEW: Add organization
-  host_notes?: string | null; // NEW: Add host_notes
+  participants: ParticipantSessionData[];
+  location_lat?: number | null;
+  location_long?: number | null;
+  distance?: number | null;
+  active_asks: ActiveAskItem[];
+  visibility: 'public' | 'friends' | 'organisation' | 'private';
+  fullSchedule: ScheduledTimer[];
+  user_id?: string | null;
+  join_code?: string | null;
+  organization?: string | null; // REMAINS string | null for the hosted organization
+  host_notes?: string | null;
 }
 
 // NEW: Define a type for Supabase fetched sessions
@@ -136,10 +136,10 @@ export interface SupabaseSessionData {
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
-  join_code: string | null; // NEW: Add join_code
-  active_asks: ActiveAskItem[]; // ADDED: active_asks property
-  organization: string | null; // NEW: Add organization to SupabaseSessionData
-  host_notes: string | null; // NEW: Add host_notes
+  join_code: string | null;
+  active_asks: ActiveAskItem[];
+  organization: string | null; // REMAINS string | null for the hosted organization
+  host_notes: string | null;
 }
 
 // Define the structure for the TimerContext value
@@ -164,15 +164,15 @@ export type TimerContextType = {
   setIsFlashing: React.Dispatch<React.SetStateAction<boolean>>;
   notes: string;
   setNotes: React.Dispatch<React.SetStateAction<string>>;
-  hostNotes: string; // NEW: Add hostNotes
-  setHostNotes: React.Dispatch<React.SetStateAction<string>>; // NEW: Add setHostNotes
+  hostNotes: string;
+  setHostNotes: React.Dispatch<React.SetStateAction<string>>;
   seshTitle: string;
   setSeshTitle: React.Dispatch<React.SetStateAction<string>>;
   isSeshTitleCustomized: boolean;
   formatTime: (seconds: number) => string;
   timerIncrement: number;
   setTimerIncrement: React.Dispatch<React.SetStateAction<number>>;
-  getDefaultSeshTitle: () => string; // NEW: Add this
+  getDefaultSeshTitle: () => string;
 
   schedule: ScheduledTimer[];
   setSchedule: React.Dispatch<React.SetStateAction<ScheduledTimer[]>>;
@@ -185,7 +185,7 @@ export type TimerContextType = {
   isSchedulePrepared: boolean;
   setIsSchedulePrepared: React.Dispatch<React.SetStateAction<boolean>>;
   startSchedule: () => void;
-  commenceSpecificPreparedSchedule: (templateId: string, simulatedStartTime?: number | null, simulatedCurrentPhaseIndex?: number, simulatedTimeLeftInPhase?: number | null) => Promise<boolean>; // MODIFIED: Added return type
+  commenceSpecificPreparedSchedule: (templateId: string, simulatedStartTime?: number | null, simulatedCurrentPhaseIndex?: number, simulatedTimeLeftInPhase?: number | null) => Promise<boolean>;
   discardPreparedSchedule: (templateId: string) => void;
   resetSchedule: () => void;
   scheduleTitle: string;
@@ -194,8 +194,8 @@ export type TimerContextType = {
   setCommenceTime: React.Dispatch<React.SetStateAction<string>>;
   commenceDay: number | null;
   setCommenceDay: React.Dispatch<React.SetStateAction<number | null>>;
-  sessionVisibility: 'public' | 'private' | 'organisation'; // MODIFIED: Changed from isGlobalPrivate
-  setSessionVisibility: React.Dispatch<React.SetStateAction<'public' | 'private' | 'organisation'>>; // MODIFIED: Changed from setIsGlobalPrivate
+  sessionVisibility: 'public' | 'private' | 'organisation';
+  setSessionVisibility: React.Dispatch<React.SetStateAction<'public' | 'private' | 'organisation'>>;
   isRecurring: boolean;
   setIsRecurring: React.Dispatch<React.SetStateAction<boolean>>;
   recurrenceFrequency: 'daily' | 'weekly' | 'monthly';
@@ -312,19 +312,21 @@ export type TimerContextType = {
   setIsDiscoveryActivated: React.Dispatch<React.SetStateAction<boolean>>;
   activeSessionRecordId: string | null;
   setActiveSessionRecordId: React.Dispatch<React.SetStateAction<string | null>>;
-  joinSessionAsCoworker: (sessionToJoin: DemoSession, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<boolean>; // MODIFIED: Added return type
-  leaveSession: () => Promise<boolean>; // MODIFIED: Added return type
-  transferHostRole: () => Promise<boolean>; // MODIFIED: Added return type
+  joinSessionAsCoworker: (sessionToJoin: DemoSession, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<boolean>;
+  leaveSession: () => Promise<boolean>;
+  transferHostRole: () => Promise<boolean>;
   stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>;
   resetSessionStates: () => void;
-  showDemoSessions: boolean; // NEW: Add showDemoSessions
-  setShowDemoSessions: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Add setShowDemoSessions
-  currentPhaseDurationSeconds: number; // NEW: Add currentPhaseDurationSeconds
-  setCurrentPhaseDurationSeconds: React.Dispatch<React.SetStateAction<number>>; // NEW: Add currentPhaseDurationSeconds
-  remainingTimeAtPause: number; // NEW: Add remainingTimeAtPause
-  setRemainingTimeAtPause: React.Dispatch<React.SetStateAction<number>>; // NEW: Add setRemainingTimeAtPause
-  limitDiscoveryRadius: boolean; // NEW: Add limitDiscoveryRadius
-  setLimitDiscoveryRadius: React.Dispatch<React.SetStateAction<boolean>>; // NEW: Add setLimitDiscoveryRadius
+  showDemoSessions: boolean;
+  setShowDemoSessions: React.Dispatch<React.SetStateAction<boolean>>;
+  currentPhaseDurationSeconds: number;
+  setCurrentPhaseDurationSeconds: React.Dispatch<React.SetStateAction<number>>;
+  remainingTimeAtPause: number;
+  setRemainingTimeAtPause: React.Dispatch<React.SetStateAction<number>>;
+  limitDiscoveryRadius: boolean;
+  setLimitDiscoveryRadius: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedHostingOrganization: string | null; // NEW: Add selectedHostingOrganization
+  setSelectedHostingOrganization: React.Dispatch<React.SetStateAction<string | null>>; // NEW: Add setter
 };
 
 // Define the structure for a saved session
@@ -332,13 +334,13 @@ export interface SavedSession {
   id: string;
   title: string;
   notes: string;
-  hostNotes: string; // NEW: Add hostNotes
+  hostNotes: string;
   focusDurationSeconds: number;
   breakDurationSeconds: number;
   totalDurationSeconds: number;
   coworkerCount: number;
   startTime: number; // Timestamp of when the session started
   endTime: number; // Timestamp of when the session ended
-  asks: ActiveAskItem[]; // Store the state of asks at the end of the session
-  participants: Array<{ id: string; name: string; focusPreference: number; role: 'host' | 'coworker'; intention?: string; bio?: string }>;
+  asks: ActiveAskItem[];
+  participants: Array<{ id: string; name: string; focusPreference: number; role: 'host' | 'coworker'; intention?: string | null; bio?: string | null }>; // MODIFIED: Allow null
 }

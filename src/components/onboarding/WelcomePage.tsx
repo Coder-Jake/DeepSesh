@@ -13,7 +13,7 @@ import { Users, Building2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface WelcomePageProps {
-  nextStep?: () => void; // Made optional
+  nextStep?: () => void;
   areToastsEnabled: boolean;
 }
 
@@ -22,7 +22,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
 
   const [firstNameInput, setFirstNameInput] = useState("");
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
-  const [organizationInput, setOrganizationInput] = useState<string | null>(null);
+  const [organizationInput, setOrganizationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
   const [isOrganizationDialogOpen, setIsOrganizationDialogOpen] = useState(false);
 
   const sliderContainerRef = useRef<HTMLDivElement>(null);
@@ -32,7 +32,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     if (!profileLoading && profile) {
       setFirstNameInput(profile.first_name || profile.join_code || "Coworker");
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganizationInput(profile.organization);
+      setOrganizationInput(profile.organization?.join('; ') || null); // MODIFIED: Join array for input display
     }
   }, [profileLoading, profile]);
 
@@ -44,15 +44,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
 
     const trimmedFirstName = firstNameInput.trim();
     const nameToSave = (trimmedFirstName === (profile.join_code || "Coworker")) ? null : trimmedFirstName;
-    const trimmedOrganization = organizationInput?.trim() || null;
+    
+    // MODIFIED: Convert organization input string to array
+    const trimmedOrganizationString = organizationInput?.trim() || "";
+    const organizationArray = trimmedOrganizationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
 
     try {
       await updateProfile({
         first_name: nameToSave,
         focus_preference: focusPreferenceInput,
-        organization: trimmedOrganization,
+        organization: organizationArray.length > 0 ? organizationArray : null, // MODIFIED: Pass array
       }, "Profile details saved!");
-      nextStep?.(); // Call optionally
+      nextStep?.();
     } catch (error: any) {
       console.error("Error saving welcome page data:", error);
       if (areToastsEnabled) toast.error("Failed to save details.", { description: error.message || "Please try again." });
@@ -60,6 +63,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
   };
 
   const handleSaveOrganization = () => {
+    // This function is now only for closing the dialog, actual saving happens in handleSaveAndNext
     setIsOrganizationDialogOpen(false);
   };
 
@@ -109,7 +113,8 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
       <div className="flex flex-col items-center justify-center mb-8">
         <div className="flex items-center">
           <img
-            src="/ds-logo.png"
+            src="/ds-logo.
+png"
             alt="DeepSesh Logo"
             className="h-12 w-12 mr-2 rotate-45"
           />
@@ -173,10 +178,9 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             value={organizationInput || ""}
             onChange={(e) => setOrganizationInput(e.target.value)}
             readOnly
-            onClick={() => setIsOrganizationDialogOpen(true)} // Open dialog on input click
-            className="flex-grow cursor-pointer" // Add cursor-pointer for better UX
+            onClick={() => setIsOrganizationDialogOpen(true)}
+            className="flex-grow cursor-pointer"
           />
-          {/* NEW: Display organizations below the input */}
           {organizationsList.length > 0 && (
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm mt-2">
               {organizationsList.map((org, index) => (
@@ -196,11 +200,11 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{organizationInput ? "Edit Organisation Name" : "Add Organisation Name"}</DialogTitle>
+            <DialogTitle>{organizationInput ? "Edit Organisation Name(s)" : "Add Organisation Name(s)"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="organization-dialog-input">Organisation Name</Label>
+              <Label htmlFor="organization-dialog-input">Organisation Name(s)</Label>
               <Input
                 id="organization-dialog-input"
                 value={organizationInput || ""}

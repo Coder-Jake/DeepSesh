@@ -14,7 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleTemplates from './ScheduleTemplates';
 import ColorPicker from './ColorPicker';
 import { DAYS_OF_WEEK } from "@/lib/constants";
-import { useTheme } from '@/contexts/ThemeContext'; // NEW: Import useTheme
+import { useTheme } from '@/contexts/ThemeContext';
+import { useProfile } from '@/contexts/ProfileContext'; // NEW: Import useProfile
 
 const ScheduleForm: React.FC = () => {
   const { 
@@ -22,8 +23,8 @@ const ScheduleForm: React.FC = () => {
     setSchedule, 
     setIsSchedulingMode, 
     startSchedule, 
-    scheduleTitle: contextScheduleTitle, // Renamed to avoid conflict with local state
-    setScheduleTitle: setContextScheduleTitle, // Renamed to avoid conflict with local state
+    scheduleTitle: contextScheduleTitle,
+    setScheduleTitle: setContextScheduleTitle,
     commenceTime, 
     setCommenceTime, 
     commenceDay, 
@@ -46,10 +47,13 @@ const ScheduleForm: React.FC = () => {
     areToastsEnabled,
     formatTime, 
     is24HourFormat, 
-    getDefaultSeshTitle, 
+    getDefaultSeshTitle,
+    selectedHostingOrganization, // NEW: Get selectedHostingOrganization
+    setSelectedHostingOrganization, // NEW: Get setSelectedHostingOrganization
   } = useTimer();
 
-  const { isDarkMode } = useTheme(); // NEW: Get isDarkMode
+  const { isDarkMode } = useTheme();
+  const { profile } = useProfile(); // NEW: Get profile from useProfile
 
   // Local state for scheduleTitle, initialized from context or default
   const [scheduleTitle, setScheduleTitle] = useState(contextScheduleTitle || getDefaultSeshTitle());
@@ -58,6 +62,15 @@ const ScheduleForm: React.FC = () => {
   useEffect(() => {
     setScheduleTitle(contextScheduleTitle || getDefaultSeshTitle());
   }, [contextScheduleTitle, getDefaultSeshTitle]);
+
+  // NEW: Sync selectedHostingOrganization with the first organization from profile if available
+  useEffect(() => {
+    if (profile?.organization && profile.organization.length > 0 && !selectedHostingOrganization) {
+      setSelectedHostingOrganization(profile.organization[0]);
+    } else if (!profile?.organization || profile.organization.length === 0) {
+      setSelectedHostingOrganization(null);
+    }
+  }, [profile?.organization, selectedHostingOrganization, setSelectedHostingOrganization]);
 
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
@@ -87,11 +100,9 @@ const ScheduleForm: React.FC = () => {
   const [visibleTrashId, setVisibleTrashId] = useState<string | null>(null);
   const trashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // NEW: State to control visibility of the "Trash All" button
   const [showTrashAllButton, setShowTrashAllButton] = useState(false);
   const trashAllTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // NEW: State to control visibility of total duration
   const [showTotalDuration, setShowTotalDuration] = useState(false);
 
   const daysOfWeekDisplayOrder = [
@@ -156,7 +167,7 @@ const ScheduleForm: React.FC = () => {
       if (scheduleTitle.trim() === "") {
         setScheduleTitle(getDefaultSeshTitle());
       }
-      setContextScheduleTitle(scheduleTitle.trim() === "" ? getDefaultSeshTitle() : scheduleTitle); // Update context
+      setContextScheduleTitle(scheduleTitle.trim() === "" ? getDefaultSeshTitle() : scheduleTitle);
       handleEnterKeyNavigation(e);
     }
   };
@@ -166,7 +177,7 @@ const ScheduleForm: React.FC = () => {
     if (scheduleTitle.trim() === "") {
       setScheduleTitle(getDefaultSeshTitle());
     }
-    setContextScheduleTitle(scheduleTitle.trim() === "" ? getDefaultSeshTitle() : scheduleTitle); // Update context
+    setContextScheduleTitle(scheduleTitle.trim() === "" ? getDefaultSeshTitle() : scheduleTitle);
   };
 
   const handleAddTimer = () => {
@@ -206,17 +217,15 @@ const ScheduleForm: React.FC = () => {
       clearTimeout(trashTimeoutRef.current);
     }
     
-    // Logic for "Trash All" button visibility
     if (trashAllTimeoutRef.current) {
       clearTimeout(trashAllTimeoutRef.current);
     }
     setShowTrashAllButton(true);
     trashAllTimeoutRef.current = setTimeout(() => {
       setShowTrashAllButton(false);
-    }, 3000); // Show for 3 seconds
+    }, 3000);
   };
 
-  // NEW: Function to trash all timers
   const handleTrashAllTimers = () => {
     setSchedule([]);
     setVisibleTrashId(null);
@@ -228,7 +237,6 @@ const ScheduleForm: React.FC = () => {
         description: "All timers have been removed from the schedule.",
       });
     }
-    // Hide "Trash All" button immediately
     if (trashAllTimeoutRef.current) {
       clearTimeout(trashAllTimeoutRef.current);
     }
@@ -260,13 +268,21 @@ const ScheduleForm: React.FC = () => {
       }
       return;
     }
+    if (sessionVisibility === 'organisation' && !selectedHostingOrganization) { // NEW: Check if organization is selected
+      if (areToastsEnabled) {
+        toast.error("Organization Not Selected", {
+          description: "Please select an organization to host this session.",
+        });
+      }
+      return;
+    }
 
-    setContextScheduleTitle(scheduleTitle); // Ensure context is updated before starting
+    setContextScheduleTitle(scheduleTitle);
     startSchedule();
   };
 
   const handleSaveSchedule = () => {
-    setContextScheduleTitle(scheduleTitle); // Ensure context is updated before saving
+    setContextScheduleTitle(scheduleTitle);
     saveCurrentScheduleAsTemplate();
     setIsSaveButtonBlue(true);
     setTimeout(() => setIsSaveButtonBlue(false), 1000);
@@ -315,7 +331,7 @@ const ScheduleForm: React.FC = () => {
     const [hours, minutes] = commenceTime.split(':').map(Number);
     let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
-    const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, etc.
+    const currentDay = now.getDay();
     const templateDay = commenceDay === null ? currentDay : commenceDay;
     
     let daysToAdd = (templateDay - currentDay + 7) % 7;
@@ -375,7 +391,7 @@ const ScheduleForm: React.FC = () => {
   }, [scheduleStartOption, totalDurationMinutes, getScheduleBaseStartTime, is24HourFormat]);
 
   const formatDuration = (minutes: number): string => {
-    if (minutes === 0) return ""; // If total minutes are 0, return empty string
+    if (minutes === 0) return "";
 
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
@@ -430,10 +446,29 @@ const ScheduleForm: React.FC = () => {
           </Button>
         </CardHeader>
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
+          {sessionVisibility === 'organisation' && profile?.organization && profile.organization.length > 0 && ( // NEW: Organization selection
+            <div className="flex items-center gap-2">
+              <Label htmlFor="select-hosting-org" className="text-sm text-muted-foreground">Host as:</Label>
+              <Select
+                value={selectedHostingOrganization || ""}
+                onValueChange={setSelectedHostingOrganization}
+              >
+                <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm">
+                  <SelectValue placeholder="Select Organization" />
+                </SelectTrigger>
+                <SelectContent>
+                  {profile.organization.map(org => (
+                    <SelectItem key={org} value={org}>{org}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-1 pr-2">
             {schedule.map((timer, index) => {
               const defaultFocusBg = isDarkMode ? 'hsl(var(--focus-background-solid-dark))' : 'hsl(var(--focus-background-solid-light))';
-              const defaultBreakBg = isDarkMode ? 'hsl(var(--break-background-solid-dark))' : 'hsl(var(--break-background-solid-light))'; // NEW: Use solid break background
+              const defaultBreakBg = isDarkMode ? 'hsl(var(--break-background-solid-dark))' : 'hsl(var(--break-background-solid-light))';
               const itemBackgroundColor = timerColors[timer.id] || (timer.type === 'focus' ? defaultFocusBg : defaultBreakBg);
 
               return (
@@ -526,7 +561,7 @@ const ScheduleForm: React.FC = () => {
                 className={cn(
                   "h-8 w-8 rounded-full focus:bg-transparent active:bg-transparent", 
                   isRecurring ? "text-[hsl(120_30%_45%)]" : "text-muted-foreground",
-                  "hover:bg-accent-hover" // NEW: Added hover effect
+                  "hover:bg-accent-hover"
                 )}
                 aria-label="Toggle schedule loop"
               >
@@ -545,20 +580,19 @@ const ScheduleForm: React.FC = () => {
                   </span>
                 )}
               </span>
-              {/* NEW: Trash All button, visible for 3 seconds after an item is trashed and there are still items */}
               {showTrashAllButton && schedule.length > 0 && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleTrashAllTimers}
-                  className="h-8 w-8 text-destructive hover:bg-destructive-hover" // NEW: Added hover effect
+                  className="h-8 w-8 text-destructive hover:bg-destructive-hover"
                   aria-label="Trash all schedule lines"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
               {(!showTrashAllButton || schedule.length === 0) && (
-                <div className="w-8 h-8">{/* Spacer if trash all is not visible */}</div>
+                <div className="w-8 h-8"></div>
               )}
             </div>
           )}
@@ -603,7 +637,7 @@ const ScheduleForm: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={handleSaveSchedule}
-                className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500", "hover:bg-accent-hover")} // NEW: Added hover effect
+                className={cn("ml-auto", isSaveButtonBlue ? "text-blue-500" : "text-gray-500", "hover:bg-accent-hover")}
                 onKeyDown={handleEnterKeyNavigation}
                 data-input-type="save-schedule-button"
               >

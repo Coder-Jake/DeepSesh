@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-// import { verify } from 'https://deno.land/x/djwt@v2.8/mod.ts'; // Removed JWT verification
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // NEW: Diagnostic log to confirm function execution
   console.log('JOIN_SESSION_EDGE_FUNCTION: Function invoked.');
 
   if (req.method === 'OPTIONS') {
@@ -16,10 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    // --- SECURITY WARNING: JWT authentication has been removed as per user request. ---
-    // --- This function now trusts the userId provided in the request body.           ---
-    // --- Re-enable JWT verification for production environments.                     ---
-
     const { sessionCode, participantData } = await req.json();
 
     if (!sessionCode || !participantData || !participantData.userId || !participantData.userName) {
@@ -30,7 +24,6 @@ serve(async (req) => {
       });
     }
 
-    // Directly use participantData.userId as the authenticated user ID (reduced security)
     const authenticatedUserId = participantData.userId;
     console.log('JOIN_SESSION_EDGE_FUNCTION: Authenticated User ID (bypassed JWT):', authenticatedUserId);
 
@@ -53,15 +46,15 @@ serve(async (req) => {
       .single();
 
     if (userProfileError && userProfileError.code !== 'PGRST116') {
-      console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching joining user profile:', userProfileError); // Log full error object
+      console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching joining user profile:', userProfileError);
       return new Response(JSON.stringify({ error: 'Failed to verify user organization.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       });
     }
 
-    const joiningUserOrganization = userProfile?.organization;
-    console.log('JOIN_SESSION_EDGE_FUNCTION: Joining User Organization:', joiningUserOrganization);
+    const joiningUserOrganizations: string[] = userProfile?.organization || []; // MODIFIED: Get organization as array
+    console.log('JOIN_SESSION_EDGE_FUNCTION: Joining User Organizations:', joiningUserOrganizations);
 
     const { data: sessions, error: fetchError } = await supabaseServiceRoleClient
       .from('active_sessions')
@@ -71,7 +64,7 @@ serve(async (req) => {
       .limit(1);
 
     if (fetchError) {
-      console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching session:', fetchError); // Log full error object
+      console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching session:', fetchError);
       return new Response(JSON.stringify({ error: fetchError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -100,8 +93,9 @@ serve(async (req) => {
         status: 403,
       });
     } else if (session.visibility === 'organisation') {
-      if (!session.organization || session.organization !== joiningUserOrganization) {
-        console.warn('JOIN_SESSION_EDGE_FUNCTION: Forbidden: Organization session access denied. Session Org:', session.organization, 'Joining User Org:', joiningUserOrganization);
+      // MODIFIED: Check if the session's organization is included in the joining user's organizations array
+      if (!session.organization || !joiningUserOrganizations.includes(session.organization)) {
+        console.warn('JOIN_SESSION_EDGE_FUNCTION: Forbidden: Organization session access denied. Session Org:', session.organization, 'Joining User Orgs:', joiningUserOrganizations);
         return new Response(JSON.stringify({ error: 'Forbidden: This is an organization-only session.' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 403,
@@ -132,7 +126,7 @@ serve(async (req) => {
       .single();
 
     if (updateError) {
-      console.error('JOIN_SESSION_EDGE_FUNCTION: Error updating participants:', updateError); // Log full error object
+      console.error('JOIN_SESSION_EDGE_FUNCTION: Error updating participants:', updateError);
       return new Response(JSON.stringify({ error: updateError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -146,7 +140,7 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    console.error('JOIN_SESSION_EDGE_FUNCTION: Unexpected error in join-session Edge Function:', error); // Log full error object
+    console.error('JOIN_SESSION_EDGE_FUNCTION: Unexpected error in join-session Edge Function:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,

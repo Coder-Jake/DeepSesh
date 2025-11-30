@@ -34,7 +34,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 20,
     updated_at: new Date().toISOString(),
-    organization: "OpenAI",
+    organization: ["OpenAI"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -54,7 +54,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 10,
     updated_at: new Date().toISOString(),
-    organization: "SpaceX",
+    organization: ["SpaceX"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -74,7 +74,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 60,
     updated_at: new Date().toISOString(),
-    organization: "Psychology Dept.",
+    organization: ["Psychology Dept."], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -94,7 +94,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 50,
     updated_at: new Date().toISOString(),
-    organization: "Ancient Philosophy Guild",
+    organization: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -114,7 +114,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 40,
     updated_at: new Date().toISOString(),
-    organization: "Ancient Philosophy Guild",
+    organization: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -134,7 +134,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 70,
     updated_at: new Date().toISOString(),
-    organization: "Ancient Philosophy Guild",
+    organization: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -147,16 +147,15 @@ export const MOCK_PROFILES: Profile[] = [
     },
     onboarding_complete: false,
   },
-  // NEW: Jake's profile
   {
-    id: "a0b1c2d3-e4f5-4678-9012-34567890abcd", // Unique ID for Jake
+    id: "a0b1c2d3-e4f5-4678-9012-34567890abcd",
     first_name: "Jake",
     last_name: null,
     avatar_url: null,
-    focus_preference: 85, // Default focus preference
+    focus_preference: 85,
     updated_at: new Date().toISOString(),
-    organization: "DeepSesh",
-    join_code: "DeepSeshJake", // A unique join code for Jake
+    organization: ["DeepSesh", "StartSpace"], // MODIFIED: Changed to array with multiple organizations
+    join_code: "DeepSeshJake",
     visibility: ['public'],
     profile_data: {
       bio: getDefaultProfileDataField("Founder of DeepSesh", ['public']),
@@ -168,15 +167,14 @@ export const MOCK_PROFILES: Profile[] = [
     },
     onboarding_complete: false,
   },
-  // NEW: Rogers' profile
   {
     id: "g7h8i9j0-k1l2-4345-8678-90abcdef012345",
     first_name: "Rogers",
     last_name: null,
     avatar_url: null,
-    focus_preference: 75, // MODIFIED
+    focus_preference: 75,
     updated_at: new Date().toISOString(),
-    organization: "Humanistic Psychology",
+    organization: ["Humanistic Psychology"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -189,15 +187,14 @@ export const MOCK_PROFILES: Profile[] = [
     },
     onboarding_complete: false,
   },
-  // NEW: Maslow's profile
   {
     id: "h8i9j0k1-l2m3-4456-8789-0abcdef0123456",
     first_name: "Maslow",
     last_name: null,
     avatar_url: null,
-    focus_preference: 80, // MODIFIED
+    focus_preference: 80,
     updated_at: new Date().toISOString(),
-    organization: "Humanistic Psychology",
+    organization: ["Humanistic Psychology"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -210,15 +207,14 @@ export const MOCK_PROFILES: Profile[] = [
     },
     onboarding_complete: false,
   },
-  // NEW: Esther Perel's profile
   {
     id: "i9j0k1l2-m3n4-4567-8890-abcdef01234567",
     first_name: "Esther Perel",
     last_name: null,
     avatar_url: null,
-    focus_preference: 90, // MODIFIED
+    focus_preference: 90,
     updated_at: new Date().toISOString(),
-    organization: "Relationship Therapy",
+    organization: ["Relationship Therapy"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -240,8 +236,8 @@ const createMockParticipant = (profile: Profile, role: 'host' | 'coworker'): Par
   joinTime: Date.now() - Math.floor(Math.random() * 3600000), // Up to 1 hour ago
   role: role,
   focusPreference: profile.focus_preference || 50,
-  intention: profile.profile_data?.intention?.value || undefined,
-  bio: profile.profile_data?.bio?.value || undefined,
+  intention: profile.profile_data?.intention?.value || null, // MODIFIED: Allow null
+  bio: profile.profile_data?.bio?.value || null, // MODIFIED: Allow null
 });
 
 // Helper to create a mock schedule
@@ -273,7 +269,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[0].id,
     join_code: generateRandomJoinCode(),
-    organization: MOCK_PROFILES[0].organization,
+    organization: MOCK_PROFILES[0].organization?.[0] || null, // MODIFIED: Get first organization
   },
   {
     id: "2b3c4d5e-6f7a-4890-8123-4567890abcdef0",
@@ -285,9 +281,9 @@ export const MOCK_SESSIONS: DemoSession[] = [
     participants: [
       createMockParticipant(MOCK_PROFILES[2], 'host'),
       createMockParticipant(MOCK_PROFILES[6], 'coworker'),
-      createMockParticipant(MOCK_PROFILES[7], 'coworker'), // NEW: Rogers
-      createMockParticipant(MOCK_PROFILES[8], 'coworker'), // NEW: Maslow
-      createMockParticipant(MOCK_PROFILES[9], 'coworker'), // NEW: Esther Perel
+      createMockParticipant(MOCK_PROFILES[7], 'coworker'),
+      createMockParticipant(MOCK_PROFILES[8], 'coworker'),
+      createMockParticipant(MOCK_PROFILES[9], 'coworker'),
     ],
     location_lat: -37.79861643511442,
     location_long: 144.96354864276117, 
@@ -297,7 +293,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[2].id,
     join_code: generateRandomJoinCode(),
-    organization: MOCK_PROFILES[2].organization,
+    organization: MOCK_PROFILES[2].organization?.[0] || null, // MODIFIED: Get first organization
   },
   {
     id: "3c4d5e6f-7a8b-4901-8234-567890abcdef01",
@@ -319,6 +315,6 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[3].id,
     join_code: generateRandomJoinCode(),
-    organization: MOCK_PROFILES[3].organization,
+    organization: MOCK_PROFILES[3].organization?.[0] || null, // MODIFIED: Get first organization
   },
 ];

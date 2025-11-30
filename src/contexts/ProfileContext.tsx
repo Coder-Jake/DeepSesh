@@ -19,22 +19,22 @@ export type ProfileDataJsonb = {
   can_help_with: ProfileDataField;
   need_help_with: ProfileDataField;
   pronouns: ProfileDataField;
-  onboarding_complete?: boolean; // NEW: Add onboarding_complete to profile_data
+  onboarding_complete?: boolean;
 };
 
 // Define the main Profile type reflecting the database schema
 export type Profile = {
   avatar_url: string | null;
-  first_name: string | null; // Can be null if user hasn't set a custom name
+  first_name: string | null;
   id: string;
   last_name: string | null;
-  organization: string | null;
+  organization: string[] | null; // MODIFIED: Changed to string[] | null
   focus_preference: number | null;
   updated_at: string | null;
   join_code: string | null;
   profile_data: ProfileDataJsonb;
   visibility: ("public" | "friends" | "organisation" | "private")[];
-  onboarding_complete: boolean; // NEW: Add onboarding_complete directly to Profile
+  onboarding_complete: boolean;
 };
 
 // ProfileUpdate type: allows updating direct columns OR specific fields within profile_data
@@ -46,7 +46,7 @@ export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at' | 'profile
   can_help_with?: ProfileDataField;
   need_help_with?: ProfileDataField;
   pronouns?: ProfileDataField;
-  onboarding_complete?: boolean; // NEW: Allow updating onboarding_complete
+  onboarding_complete?: boolean;
 };
 
 // ProfileInsert type: for creating a new profile (used internally for default creation)
@@ -57,10 +57,10 @@ export type ProfileInsert = {
   focus_preference: number | null;
   join_code: string | null;
   profile_data: ProfileDataJsonb;
-  organization?: string | null;
+  organization?: string[] | null; // MODIFIED: Changed to string[] | null
   avatar_url?: string | null;
   visibility: ("public" | "friends" | "organisation" | "private")[];
-  onboarding_complete: boolean; // NEW: Add onboarding_complete
+  onboarding_complete: boolean;
 };
 
 // Helper to generate a random host code (now handled by Supabase function)
@@ -85,7 +85,7 @@ const getDefaultProfileDataJsonb = (): ProfileDataJsonb => ({
   can_help_with: getDefaultProfileDataField(null, ['public']),
   need_help_with: getDefaultProfileDataField(null, ['public']),
   pronouns: getDefaultProfileDataField(null, ['public']),
-  onboarding_complete: false, // NEW: Default to false
+  onboarding_complete: false,
 });
 
 interface ProfileContextType {
@@ -106,8 +106,8 @@ interface ProfileContextType {
   setNeedHelpWith: React.Dispatch<React.SetStateAction<string | null>>;
   focusPreference: number;
   setFocusPreference: React.Dispatch<React.SetStateAction<number>>;
-  organization: string | null;
-  setOrganization: React.Dispatch<React.SetStateAction<string | null>>;
+  organization: string[] | null; // MODIFIED: Changed to string[] | null
+  setOrganization: React.Dispatch<React.SetStateAction<string[] | null>>; // MODIFIED: Changed to string[] | null
   linkedinUrl: string | null;
   setLinkedinUrl: React.Dispatch<React.SetStateAction<string | null>>;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -131,7 +131,7 @@ interface ProfileContextType {
   resetProfile: () => void;
   profileVisibility: ("public" | "friends" | "organisation" | "private")[];
   setProfileVisibility: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>;
-  unfriendUser: (userId: string) => void; // NEW: Add unfriendUser to context type
+  unfriendUser: (userId: string) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -159,7 +159,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [canHelpWith, setCanHelpWith] = useState<string | null>(null);
   const [needHelpWith, setNeedHelpWith] = useState<string | null>(null);
   const [focusPreference, setFocusPreference] = useState(50);
-  const [organization, setOrganization] = useState<string | null>(null);
+  const [organization, setOrganization] = useState<string[] | null>(null); // MODIFIED: Changed to string[] | null
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [pronouns, setPronouns] = useState<string | null>(null);
@@ -193,7 +193,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       ...profile,
       profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
       visibility: profile.visibility || ['public'],
-      onboarding_complete: profile.onboarding_complete || false, // Ensure onboarding_complete is sent
+      onboarding_complete: profile.onboarding_complete || false,
+      organization: profile.organization || [], // MODIFIED: Ensure organization is an array
     };
 
     if ('host_code' in profileDataToSend) {
@@ -228,7 +229,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         });
       }
     }
-  }, [user, profile, areToastsEnabled]); // Removed getDefaultProfileDataJsonb from dependencies
+  }, [user, profile, areToastsEnabled]);
 
   // --- Initial Load Effect (Local-First) ---
   useEffect(() => {
@@ -262,7 +263,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...parsedProfile,
           profile_data: parsedProfile.profile_data || getDefaultProfileDataJsonb(),
           visibility: parsedProfile.visibility || ['public'],
-          onboarding_complete: parsedProfile.onboarding_complete ?? false, // NEW: Default to false if not present
+          onboarding_complete: parsedProfile.onboarding_complete ?? false,
+          organization: parsedProfile.organization || [], // MODIFIED: Ensure organization is an array
         };
         if (isMounted) {
           setProfile(defaultedProfile);
@@ -272,13 +274,13 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
           const defaultProfile: Profile = {
             id: user.id,
-            first_name: null, // Default to null so join_code can be used
-            last_name: null, avatar_url: null, organization: null,
+            first_name: null,
+            last_name: null, avatar_url: null, organization: [], // MODIFIED: Default to empty array
             focus_preference: 50, updated_at: new Date().toISOString(),
             join_code: generateRandomJoinCode(),
             profile_data: defaultProfileData,
             visibility: ['public'],
-            onboarding_complete: false, // NEW: Default to false for new users
+            onboarding_complete: false,
           };
           if (isMounted) {
             setProfile(defaultProfile);
@@ -306,7 +308,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     return () => {
       isMounted = false;
     };
-  }, [authLoading, user]); // Removed getDefaultProfileDataJsonb, getDefaultProfileDataField from dependencies
+  }, [authLoading, user]);
 
   // --- Effect to sync individual states from the main 'profile' object ---
   useEffect(() => {
@@ -314,7 +316,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       // Prioritize profile.first_name if it's explicitly set, otherwise use join_code
       setLocalFirstName(profile.first_name || profile.join_code || "Coworker");
       setFocusPreference(profile.focus_preference || 50);
-      setOrganization(profile.organization);
+      setOrganization(profile.organization); // MODIFIED: Set organization as array
       setJoinCode(profile.join_code);
       setProfileVisibility(profile.visibility || ['public']);
 
@@ -333,7 +335,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     } else {
       setLocalFirstName("Loading...");
       setFocusPreference(50);
-      setOrganization(null);
+      setOrganization(null); // MODIFIED: Set organization to null
       setJoinCode(null);
       setProfileVisibility(['public']);
       setBio(null);
@@ -348,7 +350,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setNeedHelpWithVisibility(['public']);
       setPronouns(null);
     }
-  }, [profile]); // Removed getDefaultProfileDataJsonb from dependencies
+  }, [profile]);
 
   // Effect to save the entire profile object to local storage whenever it changes
   useEffect(() => {
@@ -382,7 +384,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       return;
     }
 
-    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'], onboarding_complete: false } as Profile;
+    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'], onboarding_complete: false, organization: [] } as Profile; // MODIFIED: Default organization to empty array
 
     const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
 
@@ -392,7 +394,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     if (updates.can_help_with !== undefined) updatedProfileData.can_help_with = updates.can_help_with;
     if (updates.need_help_with !== undefined) updatedProfileData.need_help_with = updates.need_help_with;
     if (updates.pronouns !== undefined) updatedProfileData.pronouns = updates.pronouns;
-    if (updates.onboarding_complete !== undefined) updatedProfileData.onboarding_complete = updates.onboarding_complete; // NEW: Update onboarding_complete
+    if (updates.onboarding_complete !== undefined) updatedProfileData.onboarding_complete = updates.onboarding_complete;
 
     const newProfile: Profile = {
       ...currentProfile,
@@ -401,7 +403,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       updated_at: new Date().toISOString(),
       id: user.id,
       visibility: updates.visibility || currentProfile.visibility || ['public'],
-      onboarding_complete: updates.onboarding_complete ?? currentProfile.onboarding_complete ?? false, // NEW: Ensure onboarding_complete is set
+      onboarding_complete: updates.onboarding_complete ?? currentProfile.onboarding_complete ?? false,
+      organization: updates.organization || currentProfile.organization || [], // MODIFIED: Ensure organization is an array
     };
 
     setProfile(newProfile);
@@ -414,7 +417,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
     await syncProfileToSupabase();
 
-  }, [user, areToastsEnabled, profile, syncProfileToSupabase]); // Removed getDefaultProfileDataJsonb from dependencies
+  }, [user, areToastsEnabled, profile, syncProfileToSupabase]);
 
   const getPublicProfile = useCallback(async (userId: string, userName: string): Promise<Profile | null> => {
     const foundMockProfile = mockProfilesRef.current.find(p => p.id === userId);
@@ -442,7 +445,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...data,
           profile_data: data.profile_data || getDefaultProfileDataJsonb(),
           visibility: data.visibility || ['public'],
-          onboarding_complete: data.onboarding_complete ?? false, // NEW: Default to false
+          onboarding_complete: data.onboarding_complete ?? false,
+          organization: data.organization || [], // MODIFIED: Ensure organization is an array
         };
         return fetchedProfile;
       }
@@ -456,15 +460,15 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       first_name: userName,
       last_name: null,
       avatar_url: null,
-      organization: null,
+      organization: [], // MODIFIED: Default to empty array
       focus_preference: 50,
       updated_at: new Date().toISOString(),
       join_code: null,
       profile_data: defaultProfileData,
       visibility: ['private'],
-      onboarding_complete: false, // NEW: Default to false
+      onboarding_complete: false,
     };
-  }, [user?.id, profile]); // Removed getDefaultProfileDataJsonb from dependencies
+  }, [user?.id, profile]);
 
   const blockUser = useCallback((userName: string) => {
     setBlockedUsers(prev => {
@@ -568,7 +572,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     resetProfile,
     profileVisibility,
     setProfileVisibility,
-    unfriendUser, // NEW: Provide unfriendUser
+    unfriendUser,
   }), [
     profile, loading, authLoading, updateProfile, localFirstName, setLocalFirstName, joinCode, setJoinCode,
     bio, setBio, intention, setIntention, canHelpWith, setCanHelpWith, needHelpWith, setNeedHelpWith,

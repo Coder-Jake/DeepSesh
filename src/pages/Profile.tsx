@@ -22,7 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
-import { ProfileUpdate, ProfileDataJsonb, Profile as ProfileType } from "@/contexts/ProfileContext"; // Renamed Profile to ProfileType to avoid conflict
+import { ProfileUpdate, ProfileDataJsonb, Profile as ProfileType } from "@/contexts/ProfileContext";
 
 const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"];
 
@@ -34,7 +34,7 @@ type OriginalValuesType = {
   canHelpWith: string;
   needHelpWith: string;
   focusPreference: number;
-  organization: string;
+  organization: string[] | null; // MODIFIED: Changed to string[] | null
   linkedinUrl: string;
   joinCode: string;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -65,7 +65,7 @@ const Profile = () => {
   const [canHelpWithInput, setCanHelpWithInput] = useState<string | null>(null);
   const [needHelpWithInput, setNeedHelpWithInput] = useState<string | null>(null);
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
-  const [organizationInput, setOrganizationInput] = useState<string | null>(null);
+  const [organizationInput, setOrganizationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
   const [linkedinUrlInput, setLinkedinUrlInput] = useState<string | null>(null);
   const [joinCodeInput, setJoinCodeInput] = useState<string | null>(null);
   const [pronounsInput, setPronounsInput] = useState<string | null>(null);
@@ -283,17 +283,16 @@ const Profile = () => {
     if (!loading && profile) {
       const currentLinkedinUsername = profile.profile_data?.linkedin_url?.value ? (profile.profile_data.linkedin_url.value.startsWith("https://www.linkedin.com/in/") ? profile.profile_data.linkedin_url.value.substring("https://www.linkedin.com/in/".length) : profile.profile_data.linkedin_url.value) : "";
 
-      // Determine the effective display name for comparison
       const effectiveFirstName = profile.first_name || profile.join_code || "Coworker";
 
       setOriginalValues({
-        firstName: effectiveFirstName, // Use effective display name for original value
+        firstName: effectiveFirstName,
         bio: profile.profile_data?.bio?.value || "",
         intention: profile.profile_data?.intention?.value || "",
         canHelpWith: profile.profile_data?.can_help_with?.value || "",
         needHelpWith: profile.profile_data?.need_help_with?.value || "",
         focusPreference: profile.focus_preference || 50,
-        organization: profile.organization || "",
+        organization: profile.organization || [], // MODIFIED: Ensure it's an array
         linkedinUrl: currentLinkedinUsername,
         joinCode: profile.join_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
@@ -305,14 +304,13 @@ const Profile = () => {
         profileVisibility: profile.visibility || ['public'],
       });
 
-      // Set local input states to match the effective display name
       setFirstNameInput(effectiveFirstName);
       setBioInput(profile.profile_data?.bio?.value || null);
       setIntentionInput(profile.profile_data?.intention?.value || null);
       setCanHelpWithInput(profile.profile_data?.can_help_with?.value || null);
       setNeedHelpWithInput(profile.profile_data?.need_help_with?.value || null);
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganizationInput(profile.organization);
+      setOrganizationInput(profile.organization?.join('; ') || null); // MODIFIED: Join array for input display
       setLinkedinUrlInput(currentLinkedinUsername === "" ? null : currentLinkedinUsername);
       setJoinCodeInput(profile.join_code);
       setPronounsInput(profile.profile_data?.pronouns?.value || null);
@@ -337,12 +335,11 @@ const Profile = () => {
         .map(([userId]) => userId);
 
       for (const friendId of friendsList) {
-        // Only fetch if not already in state or if it's null
         if (!friendProfiles[friendId]) {
-          const friendProfile = await getPublicProfile(friendId, friendId); // Use friendId as fallback name
+          const friendProfile = await getPublicProfile(friendId, friendId);
           newFriendProfiles[friendId] = friendProfile;
         } else {
-          newFriendProfiles[friendId] = friendProfiles[friendId]; // Keep existing if already fetched
+          newFriendProfiles[friendId] = friendProfiles[friendId];
         }
       }
       setFriendProfiles(newFriendProfiles);
@@ -351,9 +348,9 @@ const Profile = () => {
     if (Object.keys(friendStatuses).length > 0) {
       fetchFriendsData();
     } else {
-      setFriendProfiles({}); // Clear if no friends
+      setFriendProfiles({});
     }
-  }, [friendStatuses, getPublicProfile]); // Re-run when friendStatuses changes
+  }, [friendStatuses, getPublicProfile]);
 
   useEffect(() => {
     if (isEditingFirstName && firstNameInputRef.current) {
@@ -379,9 +376,13 @@ const Profile = () => {
                                     ? linkedinUrlInput.substring("https://www.linkedin.com/in/".length)
                                     : linkedinUrlInput) : "";
 
-    // Determine the current effective display name for comparison
     const currentEffectiveFirstName = firstNameInput.trim();
     const originalEffectiveFirstName = originalValues.firstName;
+
+    // MODIFIED: Compare organization arrays
+    const currentOrganizationArray = organizationInput?.split(';').map(org => org.trim()).filter(org => org.length > 0) || [];
+    const originalOrganizationArray = originalValues.organization || [];
+    const organizationChanged = JSON.stringify(currentOrganizationArray.sort()) !== JSON.stringify(originalOrganizationArray.sort());
 
     const changed = currentEffectiveFirstName !== originalEffectiveFirstName ||
                    (bioInput || "") !== originalValues.bio ||
@@ -389,7 +390,7 @@ const Profile = () => {
                    (canHelpWithInput || "") !== originalValues.canHelpWith ||
                    (needHelpWithInput || "") !== originalValues.needHelpWith ||
                    focusPreferenceInput !== originalValues.focusPreference ||
-                   (organizationInput || "") !== originalValues.organization ||
+                   organizationChanged || // MODIFIED: Use organizationChanged
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
                    (joinCodeInput || "") !== originalValues.joinCode ||
                    JSON.stringify(bioVisibilityInput) !== JSON.stringify(originalValues.bioVisibility) ||
@@ -440,8 +441,9 @@ const Profile = () => {
   };
 
   const handleSaveOrganization = async () => {
-    const trimmedOrganization = organizationInput?.trim() || "";
-    await updateProfile({ organization: trimmedOrganization === "" ? null : trimmedOrganization }, "Organization Saved!");
+    const trimmedOrganizationString = organizationInput?.trim() || "";
+    const organizationArray = trimmedOrganizationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
+    await updateProfile({ organization: organizationArray.length > 0 ? organizationArray : null }, "Organization Saved!"); // MODIFIED: Pass array
     setIsOrganizationDialogOpen(false);
   };
 
@@ -451,7 +453,6 @@ const Profile = () => {
     const nameInput = firstNameInput.trim();
     const defaultDisplayName = profile.join_code || "Coworker";
     
-    // If the user's input matches the current default display name, save null to first_name
     const nameToSave = (nameInput === defaultDisplayName) ? null : nameInput;
 
     const trimmedJoinCode = joinCodeInput?.trim() || "";
@@ -464,10 +465,13 @@ const Profile = () => {
       return;
     }
 
+    // MODIFIED: Convert organization input string to array
+    const organizationArray = organizationInput?.split(';').map(org => org.trim()).filter(org => org.length > 0) || [];
+
     const dataToUpdate: ProfileUpdate = {
       first_name: nameToSave,
       focus_preference: focusPreferenceInput,
-      organization: organizationInput?.trim() === "" ? null : organizationInput?.trim(),
+      organization: organizationArray.length > 0 ? organizationArray : null, // MODIFIED: Pass array
       join_code: trimmedJoinCode,
       visibility: profileVisibilityInput,
       bio: { value: bioInput?.trim() === "" ? null : bioInput, visibility: bioVisibilityInput },
@@ -509,7 +513,7 @@ const Profile = () => {
       setCanHelpWithInput(originalValues.canHelpWith === "" ? null : originalValues.canHelpWith);
       setNeedHelpWithInput(originalValues.needHelpWith === "" ? null : originalValues.needHelpWith);
       setFocusPreferenceInput(originalValues.focusPreference);
-      setOrganizationInput(originalValues.organization === "" ? null : originalValues.organization);
+      setOrganizationInput(originalValues.organization?.join('; ') || null); // MODIFIED: Join array for input display
       setLinkedinUrlInput(originalValues.linkedinUrl === "" ? null : originalValues.linkedinUrl);
       setJoinCodeInput(originalValues.joinCode === "" ? null : originalValues.joinCode);
       setPronounsInput(originalValues.pronouns);
@@ -935,17 +939,26 @@ const Profile = () => {
               <CardTitle>Organisation</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {organizationInput ? (
-                <p className="text-sm text-muted-foreground">
-                  Currently affiliated with: <span className="font-medium text-foreground">{organizationInput}</span>
-                </p>
+              {profile?.organization && profile.organization.length > 0 ? ( // MODIFIED: Check for array length
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Currently affiliated with:
+                  </p>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm">
+                    {profile.organization.map((org, index) => (
+                      <span key={index} className="font-medium text-foreground">
+                        {org}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Not currently affiliated with an organisation.
+                  Not currently affiliated with any organisation.
                 </p>
               )}
               <Button onClick={() => setIsOrganizationDialogOpen(true)}>
-                {organizationInput ? "Edit Organisation" : "Add Organisation"}
+                {profile?.organization && profile.organization.length > 0 ? "Edit Organisations" : "Add Organisations"}
               </Button>
             </CardContent>
           </Card>
@@ -961,19 +974,19 @@ const Profile = () => {
               {friends.length > 0 ? (
                 friends.map((friendId) => {
                   const friendProfile = friendProfiles[friendId];
-                  const displayName = friendProfile?.first_name || friendId; // Display name or fallback to ID
+                  const displayName = friendProfile?.first_name || friendId;
                   return (
                     <div
                       key={friendId}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/80 relative"
-                      onClick={(e) => handleFriendClick(friendId, displayName, e)} // Pass displayName
+                      onClick={(e) => handleFriendClick(friendId, displayName, e)}
                       onMouseDown={() => handleFriendLongPressStart(friendId)}
                       onMouseUp={handleFriendLongPressEnd}
                       onMouseLeave={handleFriendLongPressEnd}
                       onTouchStart={() => handleLongPressStart(() => handleFriendLongPressStart(friendId))}
                       onTouchEnd={handleFriendLongPressEnd}
                     >
-                      <p className="font-medium">{displayName}</p> {/* Display name here */}
+                      <p className="font-medium">{displayName}</p>
                       {longPressedFriendId === friendId && (
                         <Button
                           variant="ghost"
@@ -1024,14 +1037,14 @@ const Profile = () => {
       <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{organizationInput ? "Edit Organisations" : "Add Organisations"}</DialogTitle>
+            <DialogTitle>{profile?.organization && profile.organization.length > 0 ? "Edit Organisations" : "Add Organisations"}</DialogTitle>
             <DialogDescription>
-              Enter the name of your organizations (seperated by ;).
+              Enter the names of your organizations, separated by semicolons (e.g., OrgA; OrgB).
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="organization-name">Organisation Name</Label>
+              <Label htmlFor="organization-name">Organisation Name(s)</Label>
               <Input
                 id="organization-name"
                 value={organizationInput || ""}
