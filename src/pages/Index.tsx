@@ -1574,7 +1574,7 @@ const Index = () => {
                 if (!isLongPressDetected.current) {
                   setIsOpen(prev => !prev);
                 }
-              }}
+              })}
               onMouseDown={() => handlePressStart(() => {
                 navigate('/settings', { state: { openAccordion: 'location' } });
               })}
@@ -1733,6 +1733,28 @@ const Index = () => {
     }
   };
 
+  // NEW: Logic for Host as selector
+  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganizations.length > 0 && !isActiveTimer;
+  const useToggleButton = userOrganizations.length <= 4;
+
+  const handleCycleOrganization = useCallback(() => {
+    if (!userOrganizations || userOrganizations.length === 0) return;
+
+    const currentIndex = selectedHostingOrganization
+      ? userOrganizations.indexOf(selectedHostingOrganization)
+      : -1;
+
+    const nextIndex = (currentIndex + 1) % userOrganizations.length;
+    setSelectedHostingOrganization(userOrganizations[nextIndex]);
+
+    if (areToastsEnabled) {
+      toast.info("Hosting Organization", {
+        description: `Now hosting as '${userOrganizations[nextIndex]}'.`,
+      });
+    }
+  }, [userOrganizations, selectedHostingOrganization, setSelectedHostingOrganization, areToastsEnabled]);
+
+
   return (
     <TooltipProvider>
       <main className="max-w-4xl mx-auto pt-12 px-1 pb-4 lg:pt-15 lg:px-1 lg:pb-6">
@@ -1818,6 +1840,37 @@ const Index = () => {
                           )}
                       </button>
 
+                      {/* NEW: Host as selector */}
+                      {shouldShowOrgSelector && (
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="select-hosting-org" className="text-sm text-muted-foreground">Host as:</Label>
+                          {useToggleButton ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleCycleOrganization}
+                              className="h-8 px-3 text-sm"
+                            >
+                              {selectedHostingOrganization || (userOrganizations.length > 0 ? userOrganizations[0] : "None")}
+                            </Button>
+                          ) : (
+                            <Select
+                              value={selectedHostingOrganization || ""}
+                              onValueChange={setSelectedHostingOrganization}
+                            >
+                              <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm">
+                                <SelectValue placeholder="Select Organization" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {userOrganizations.map(org => (
+                                  <SelectItem key={org} value={org}>{org}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                      )}
+
                       {isActiveTimer ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -1850,25 +1903,6 @@ const Index = () => {
                       )}
                     </div>
                   </div>
-
-                  {sessionVisibility === 'organisation' && userOrganizations.length > 0 && !isActiveTimer && (
-                    <div className="flex justify-center items-center gap-2 mb-4">
-                      <Label htmlFor="select-hosting-org" className="text-sm text-muted-foreground">Host as:</Label>
-                      <Select
-                        value={selectedHostingOrganization || ""}
-                        onValueChange={setSelectedHostingOrganization}
-                      >
-                        <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm">
-                          <SelectValue placeholder="Select Organization" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {userOrganizations.map(org => (
-                            <SelectItem key={org} value={org}>{org}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
 
                   <div
                     className="relative flex flex-col items-center mb-4"

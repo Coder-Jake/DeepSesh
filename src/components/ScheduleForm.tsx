@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Play, X, Clock, Save, Repeat } from "lucide-react";
+import { Plus, Trash2, Play, X, Clock, Save, Repeat, Building2 } from "lucide-react"; // Added Building2 icon
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { toast } from 'sonner';
@@ -114,8 +114,8 @@ const ScheduleForm: React.FC = () => {
     switch (displayDay) {
       case "Monday": return 1;
       case "Tuesday": return 2;
-      case "Wednesday": return 3;
-      case "Thursday": return 4;
+      case "Thursday": return 3;
+      case "Wednesday": return 4;
       case "Friday": return 5;
       case "Saturday": return 6;
       case "Sunday": return 0;
@@ -408,6 +408,28 @@ const ScheduleForm: React.FC = () => {
     return parts.join(' ');
   };
 
+  // NEW: Logic for Host as selector
+  const userOrganizations = useMemo(() => profile?.organization || [], [profile?.organization]);
+  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganizations.length > 0;
+  const useToggleButton = userOrganizations.length <= 4;
+
+  const handleCycleOrganization = useCallback(() => {
+    if (!userOrganizations || userOrganizations.length === 0) return;
+
+    const currentIndex = selectedHostingOrganization
+      ? userOrganizations.indexOf(selectedHostingOrganization)
+      : -1;
+
+    const nextIndex = (currentIndex + 1) % userOrganizations.length;
+    setSelectedHostingOrganization(userOrganizations[nextIndex]);
+
+    if (areToastsEnabled) {
+      toast.info("Hosting Organization", {
+        description: `Now hosting as '${userOrganizations[nextIndex]}'.`,
+      });
+    }
+  }, [userOrganizations, selectedHostingOrganization, setSelectedHostingOrganization, areToastsEnabled]);
+
   return (
     <Card className="px-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -447,22 +469,33 @@ const ScheduleForm: React.FC = () => {
           </Button>
         </CardHeader>
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
-          {sessionVisibility === 'organisation' && profile?.organization && profile.organization.length > 0 && ( // NEW: Organization selection
+          {shouldShowOrgSelector && ( // NEW: Organization selection
             <div className="flex items-center gap-2">
               <Label htmlFor="select-hosting-org" className="text-sm text-muted-foreground">Host as:</Label>
-              <Select
-                value={selectedHostingOrganization || ""}
-                onValueChange={setSelectedHostingOrganization}
-              >
-                <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm">
-                  <SelectValue placeholder="Select Organization" />
-                </SelectTrigger>
-                <SelectContent>
-                  {profile.organization.map(org => (
-                    <SelectItem key={org} value={org}>{org}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {useToggleButton ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCycleOrganization}
+                  className="h-8 px-3 text-sm"
+                >
+                  {selectedHostingOrganization || (userOrganizations.length > 0 ? userOrganizations[0] : "None")}
+                </Button>
+              ) : (
+                <Select
+                  value={selectedHostingOrganization || ""}
+                  onValueChange={setSelectedHostingOrganization}
+                >
+                  <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm">
+                    <SelectValue placeholder="Select Organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userOrganizations.map(org => (
+                      <SelectItem key={org} value={org}>{org}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           )}
 
