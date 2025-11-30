@@ -416,7 +416,7 @@ const Index = () => {
   const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const linkCopiedTimeoutRef = useRef<NodeS.Timeout | null>(null);
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState("");
@@ -1570,11 +1570,11 @@ const Index = () => {
         return (
           <div className="mb-6" data-name="Nearby Sessions Section">
             <button
-              onClick={(e) => {
+              onClick={() => {
                 if (!isLongPressDetected.current) {
                   setIsOpen(prev => !prev);
                 }
-              })}
+              }}
               onMouseDown={() => handlePressStart(() => {
                 navigate('/settings', { state: { openAccordion: 'location' } });
               })}
