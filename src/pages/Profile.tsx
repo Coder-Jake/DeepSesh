@@ -751,7 +751,7 @@ const Profile = () => {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-0">
                 <Tooltip
                   open={isNeedHelpWithClickTooltipOpen || isNeedHelpWithIconHoverTooltipOpen}
                   onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsNeedHelpWithIconHoverTooltipOpen, needHelpWithIconHoverTooltipRef)}
