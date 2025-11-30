@@ -42,7 +42,7 @@ const Navigation = () => {
           />
           
           {/* Menu */}
-          <div className="absolute right-0 top-full mt-2 w-56 bg-popover border border-border rounded-md shadow-lg z-50">
+          <div className="absolute right-0 top-full mt-2 min-w-[9rem] max-w-xs bg-popover border border-border rounded-md shadow-lg z-50">
             <div className="py-2">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
