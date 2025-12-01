@@ -1482,16 +1482,36 @@ const Index = () => {
   }, [setIsNearbySessionsOpen, setIsFriendsSessionsOpen, setIsOrganizationSessionsOpen]);
 
   useEffect(() => {
+    const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
+    const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
+    const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+
+    const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
+    const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
+
+    const orgMockSessions = mockOrganizationSessions;
+    const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
+
     if (isDiscoveryActivated) {
-      setIsNearbySessionsOpen(true);
-      setIsFriendsSessionsOpen(true);
-      setIsOrganizationSessionsOpen(true);
+      setIsNearbySessionsOpen(allNearbySessions.length > 0);
+      setIsFriendsSessionsOpen(allFriendsSessions.length > 0);
+      setIsOrganizationSessionsOpen(allOrganizationSessions.length > 0);
     } else {
       setIsNearbySessionsOpen(false);
       setIsFriendsSessionsOpen(false);
       setIsOrganizationSessionsOpen(false);
     }
-  }, [isDiscoveryActivated]);
+  }, [
+    isDiscoveryActivated,
+    supabaseActiveSessions,
+    showDemoSessions,
+    filteredMockNearbySessions,
+    filteredMockFriendsSessions,
+    mockOrganizationSessions,
+    currentUserId,
+    // Dependencies for sortSessions
+    userLocation.latitude, userLocation.longitude, userOrganizations, limitDiscoveryRadius, maxDistance, friendStatuses
+  ]);
 
   const expandedSections = useMemo(() => {
     return sectionOrder.filter(sectionId => getIsOpenState(sectionId));
@@ -2103,7 +2123,7 @@ const Index = () => {
 
             <ActiveAskSection
               activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend}
+              onVoteExtend={handleExtendSubmit}
               onVotePoll={handleVoteOnExistingPoll}
               currentUserId={currentUserId}
             />
