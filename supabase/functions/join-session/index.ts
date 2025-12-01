@@ -53,7 +53,7 @@ serve(async (req) => {
       });
     }
 
-    const joiningUserOrganisations: string[] = userProfile?.organization || []; // MODIFIED: Get organization as array
+    const joiningUserOrganisations: string[] = userProfile?.organisation || []; // MODIFIED: Get organisation as array
     console.log('JOIN_SESSION_EDGE_FUNCTION: Joining User Organizations:', joiningUserOrganizations);
 
     const { data: sessions, error: fetchError } = await supabaseServiceRoleClient
