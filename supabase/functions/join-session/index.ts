@@ -53,12 +53,12 @@ serve(async (req) => {
       });
     }
 
-    const joiningUserOrganisations: string[] = userProfile?.organisation || []; // MODIFIED: Get organisation as array
-    console.log('JOIN_SESSION_EDGE_FUNCTION: Joining User Organizations:', joiningUserOrganizations);
+    const joiningUserOrganisations: string[] = userProfile?.organisation || [];
+    console.log('JOIN_SESSION_EDGE_FUNCTION: Joining User Organizations:', joiningUserOrganisations);
 
     const { data: sessions, error: fetchError } = await supabaseServiceRoleClient
       .from('active_sessions')
-      .select('id, participants_data, is_active, visibility, user_id, join_code, organization')
+      .select('id, participants_data, is_active, visibility, user_id, join_code, organisation') // Corrected 'organization' to 'organisation'
       .eq('join_code', sessionCode)
       .eq('is_active', true)
       .limit(1);
@@ -82,7 +82,7 @@ serve(async (req) => {
     const session = sessions[0];
     console.log('JOIN_SESSION_EDGE_FUNCTION: Session ID:', session.id);
     console.log('JOIN_SESSION_EDGE_FUNCTION: Session Visibility:', session.visibility);
-    console.log('JOIN_SESSION_EDGE_FUNCTION: Session Organization:', session.organization);
+    console.log('JOIN_SESSION_EDGE_FUNCTION: Session Organisation (from DB):', session.organisation);
 
     const currentParticipants = (session.participants_data || []) as any[];
 
@@ -93,9 +93,11 @@ serve(async (req) => {
         status: 403,
       });
     } else if (session.visibility === 'organisation') {
-      // MODIFIED: Check if the session's organization is included in the joining user's organizations array
-      if (!session.organization || !joiningUserOrganizations.includes(session.organization)) {
-        console.warn('JOIN_SESSION_EDGE_FUNCTION: Forbidden: Organization session access denied. Session Org:', session.organization, 'Joining User Orgs:', joiningUserOrganizations);
+      const sessionOrganisations: string[] = session.organisation || []; // Ensure it's an array
+      const hasSharedOrganisation = sessionOrganisations.some(sessionOrg => joiningUserOrganisations.includes(sessionOrg));
+
+      if (!hasSharedOrganisation) {
+        console.warn('JOIN_SESSION_EDGE_FUNCTION: Forbidden: Organization session access denied. Session Orgs:', sessionOrganisations, 'Joining User Orgs:', joiningUserOrganisations);
         return new Response(JSON.stringify({ error: 'Forbidden: This is an organization-only session.' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 403,
