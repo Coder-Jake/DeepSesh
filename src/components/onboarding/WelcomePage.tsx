@@ -113,8 +113,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
       <div className="flex flex-col items-center justify-center mb-8">
         <div className="flex items-center">
           <img
-            src="/ds-logo.
-png"
+            src="/ds-logo.png"
             alt="DeepSesh Logo"
             className="h-12 w-12 mr-2 rotate-45"
           />
