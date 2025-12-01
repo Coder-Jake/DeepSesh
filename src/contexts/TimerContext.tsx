@@ -773,34 +773,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
     const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
 
-    // Determine if this is a local-only session (not published to Supabase)
-    const isLocalOnlySession = (currentSessionRole === 'host' || currentSessionRole === null) && sessionVisibility === 'private';
-
-    if (isLocalOnlySession) {
-      console.log("stopTimer: Handling local-only session stop.");
-      await saveSessionToDatabase(
-        user?.id,
-        _seshTitle,
-        notes,
-        hostNotes,
-        finalAccumulatedFocus,
-        finalAccumulatedBreak,
-        totalSessionSeconds,
-        activeJoinedSessionCoworkerCount,
-        sessionStartTime || Date.now(),
-        activeAsks,
-        allParticipantsToDisplay,
-        areToastsEnabled
-      );
-    } else if (currentSessionRole === 'host') {
-      console.log("stopTimer: Handling host role for published session.");
-      await transferHostRole(); // This will either transfer or delete the session
-    } else if (currentSessionRole === 'coworker') {
-      console.log("stopTimer: Handling coworker role for published session.");
-      await leaveSession();
+    // If activeSessionRecordId exists, it means the session was successfully published to Supabase.
+    // Otherwise, it was a truly local-only session (e.g., due to Supabase insertion failure).
+    if (activeSessionRecordId) {
+      console.log("stopTimer: Handling published session stop.");
+      if (currentSessionRole === 'host') {
+        await transferHostRole(); // This will either transfer or delete the session
+      } else if (currentSessionRole === 'coworker') {
+        await leaveSession();
+      } else {
+        console.warn("stopTimer: Unexpected state - activeSessionRecordId exists but no active role. Resetting states.");
+      }
     } else {
-      // This case should ideally not be reached if currentSessionRole is correctly managed
-      console.warn("stopTimer: Unexpected state - no active role, but not a local-only session. Saving locally as fallback.");
+      console.log("stopTimer: Handling local-only session stop (no activeSessionRecordId).");
       await saveSessionToDatabase(
         user?.id,
         _seshTitle,
@@ -825,7 +810,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentSessionRole, accumulatedFocusSeconds, accumulatedBreakSeconds,
     isRunning, currentPhaseStartTime, timerType, user?.id, _seshTitle, notes, hostNotes,
     activeJoinedSessionCoworkerCount, sessionStartTime, activeAsks, allParticipantsToDisplay,
-    areToastsEnabled, resetSessionStates, playSound, triggerVibration, transferHostRole, leaveSession, sessionVisibility
+    areToastsEnabled, resetSessionStates, playSound, triggerVibration, transferHostRole, leaveSession
   ]);
 
 
@@ -896,54 +881,60 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     let newActiveSessionRecordId: string | null = null;
 
-    // --- Supabase Insertion (for public/organisation sessions) ---
-    if (sessionVisibility !== 'private') {
-      const { latitude, longitude } = await getLocation();
-      try {
-        const { data, error } = await supabase
-          .from('active_sessions')
-          .insert({
-            user_id: hostParticipant.userId,
-            host_name: hostParticipant.userName,
-            session_title: initialScheduleTitle,
-            visibility: sessionVisibility,
-            focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
-            break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
-            current_phase_type: initialSchedule[simulatedCurrentPhaseIndex]?.type || 'focus', // Use initial phase type
-            current_phase_end_time: new Date(Date.now() + (simulatedTimeLeftInPhase !== null ? simulatedTimeLeftInPhase : (initialSchedule[simulatedCurrentPhaseIndex]?.durationMinutes || 0) * 60) * 1000).toISOString(),
-            total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
-            schedule_id: initialSchedule[0]?.id && isValidUUID(initialSchedule[0].id) ? initialSchedule[0].id : null,
-            is_active: true, // Temporarily true, will be updated by sync
-            is_paused: false, // Temporarily false, will be updated by sync
-            current_schedule_index: simulatedCurrentPhaseIndex,
-            schedule_data: initialSchedule,
-            location_lat: latitude,
-            location_long: longitude,
-            participants_data: [hostParticipant],
-            join_code: userJoinCode,
-            organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation
-              ? [selectedHostingOrganisation]
-              : null,
-            last_heartbeat: new Date().toISOString(),
-            host_notes: hostNotes,
-            active_asks: activeAsks,
-            is_mock: false,
-          })
-          .select('id')
-          .single();
+    // --- Supabase Insertion (for ALL sessions) ---
+    let latitude: number | null = null;
+    let longitude: number | null = null;
 
-        if (error) throw error;
-        newActiveSessionRecordId = data.id;
-        console.log("startSessionCommonLogic: Active session inserted into Supabase:", newActiveSessionRecordId);
-      } catch (error: any) {
-        console.error("Error inserting active session into Supabase:", error.message);
-        if (areToastsEnabled) {
-          toast.error("Supabase Error", {
-            description: `Failed to publish session: ${error.message}`,
-          });
-        }
-        return false; // Crucial: if Supabase fails, don't proceed as if it's a published session
+    if (sessionVisibility !== 'private') {
+      const locationData = await getLocation();
+      latitude = locationData.latitude;
+      longitude = locationData.longitude;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('active_sessions')
+        .insert({
+          user_id: hostParticipant.userId,
+          host_name: hostParticipant.userName,
+          session_title: initialScheduleTitle,
+          visibility: sessionVisibility,
+          focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
+          break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
+          current_phase_type: initialSchedule[simulatedCurrentPhaseIndex]?.type || 'focus', // Use initial phase type
+          current_phase_end_time: new Date(Date.now() + (simulatedTimeLeftInPhase !== null ? simulatedTimeLeftInPhase : (initialSchedule[simulatedCurrentPhaseIndex]?.durationMinutes || 0) * 60) * 1000).toISOString(),
+          total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
+          schedule_id: initialSchedule[0]?.id && isValidUUID(initialSchedule[0].id) ? initialSchedule[0].id : null,
+          is_active: true, // Temporarily true, will be updated by sync
+          is_paused: false, // Temporarily false, will be updated by sync
+          current_schedule_index: simulatedCurrentPhaseIndex,
+          schedule_data: initialSchedule,
+          location_lat: latitude, // Set to null for private sessions
+          location_long: longitude, // Set to null for private sessions
+          participants_data: [hostParticipant],
+          join_code: userJoinCode,
+          organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation
+            ? [selectedHostingOrganisation]
+            : null,
+          last_heartbeat: new Date().toISOString(),
+          host_notes: hostNotes,
+          active_asks: activeAsks,
+          is_mock: false,
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      newActiveSessionRecordId = data.id;
+      console.log("startSessionCommonLogic: Active session inserted into Supabase:", newActiveSessionRecordId);
+    } catch (error: any) {
+      console.error("Error inserting active session into Supabase:", error.message);
+      if (areToastsEnabled) {
+        toast.error("Supabase Error", {
+          description: `Failed to publish session: ${error.message}`,
+        });
       }
+      return false; // Crucial: if Supabase fails, don't proceed as if it's a published session
     }
 
     // --- Update Local State (after Supabase success or for private sessions) ---
