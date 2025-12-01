@@ -14,7 +14,8 @@ const UpcomingFeatures = () => {
     { name: "Stake Accountability", description: "Allow users to set stakes (e.g., donate to charity) for meeting their focus goals, with automated tracking." },
     { name: "Advanced Scheduling", description: "More flexible and powerful scheduling options, including recurring events and calendar integrations." },
     { name: "Customizable Workspaces", description: "Personalize your digital workspace with themes, backgrounds, and custom soundscapes." },
-    { name: "Integrations (Calendar, To-Do Apps)", description: "Seamlessly connect DeepSesh with popular productivity tools like Google Calendar, Todoist, and Notion." },
+    { name: "Integrations (Calendar, Notion)", description: "Seamlessly connect DeepSesh with popular productivity tools" },
+    { name: "Enterprise", description: "Finetuned Organisation controls. Set incentives." },
   ];
 
   return (
