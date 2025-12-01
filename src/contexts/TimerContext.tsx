@@ -1134,16 +1134,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `"${templateToLoad.title}" has been loaded into the editor.`,
         });
       }
-      setIsHomepageFocusCustomized(false);
-      setIsHomepageBreakCustomized(false);
-
-      _setSeshTitle(getDefaultSeshTitle());
-      setIsSeshTitleCustomized(false);
-      setNotes("");
-      setHostNotes("");
+      // Do NOT set main timer states here. They should remain independent.
+      // setIsHomepageFocusCustomized(false);
+      // setIsHomepageBreakCustomized(false);
+      // _setSeshTitle(getDefaultSeshTitle());
+      // setIsSeshTitleCustomized(false);
+      // setNotes("");
+      // setHostNotes("");
       setSelectedHostingOrganisation(null); // NEW: Reset selected hosting organisation
     }
-  }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, getDefaultSeshTitle, setSelectedHostingOrganisation]);
+  }, [savedSchedules, areToastsEnabled, toast, setSelectedHostingOrganisation]);
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
@@ -1862,6 +1862,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       );
 
       if (initialScheduleToLoad) {
+        // Only set schedule-related states for the editor
         setSchedule(initialScheduleToLoad.schedule);
         setScheduleTitle(initialScheduleToLoad.title);
         setCommenceTime(initialScheduleToLoad.commenceTime);
@@ -1870,41 +1871,24 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setIsRecurring(initialScheduleToLoad.isRecurring);
         setRecurrenceFrequency(initialScheduleToLoad.recurrenceFrequency);
         setTimerColors(initialScheduleToLoad.timerColors || {});
+        // Do NOT set main timer states here. They should remain independent.
+        // The default values for the main timer will be set by the else block below.
+      } 
+      // This else block ensures the main timer is always initialized to defaults
+      // if no active session is being restored, regardless of whether a schedule
+      // was loaded into the editor.
+      const currentHomepageFocus = data.focusMinutes ?? _defaultFocusMinutes;
+      const currentHomepageBreak = data.breakMinutes ?? _defaultBreakMinutes;
+      const currentTimerType = data.timerType ?? 'focus';
 
-        setIsHomepageFocusCustomized(false);
-        setIsHomepageBreakCustomized(false);
-
-        const firstScheduleItem = initialScheduleToLoad.schedule[0];
-        if (firstScheduleItem) {
-          _setFocusMinutes(firstScheduleItem.type === 'focus' ? firstScheduleItem.durationMinutes : _defaultFocusMinutes);
-          _setBreakMinutes(firstScheduleItem.type === 'break' ? firstScheduleItem.durationMinutes : _defaultBreakMinutes);
-          setTimerType(firstScheduleItem.type);
-          setTimeLeft(firstScheduleItem.durationMinutes * 60);
-          setCurrentPhaseDurationSeconds(firstScheduleItem.durationMinutes * 60);
-        } else {
-          setTimerType('focus');
-          setTimeLeft(_defaultFocusMinutes * 60);
-          setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
-        }
-        _setSeshTitle(getDefaultSeshTitle());
-        setIsSeshTitleCustomized(false);
-        setNotes("");
-        setHostNotes("");
-        setSelectedHostingOrganisation(null); // NEW: Reset selected hosting organisation
-      } else {
-        const currentHomepageFocus = data.focusMinutes ?? _defaultFocusMinutes;
-        const currentHomepageBreak = data.breakMinutes ?? _defaultBreakMinutes;
-        const currentTimerType = data.timerType ?? 'focus';
-
-        setTimerType(currentTimerType);
-        setTimeLeft((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
-        setCurrentPhaseDurationSeconds((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
-        _setSeshTitle(data._seshTitle ?? getDefaultSeshTitle());
-        setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
-        setNotes(data.notes ?? "");
-        setHostNotes(data.hostNotes ?? "");
-        setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null); // NEW: Load selectedHostingOrganisation
-      }
+      setTimerType(currentTimerType);
+      setTimeLeft((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
+      setCurrentPhaseDurationSeconds((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
+      _setSeshTitle(data._seshTitle ?? getDefaultSeshTitle());
+      setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
+      setNotes(data.notes ?? "");
+      setHostNotes(data.hostNotes ?? "");
+      setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null); // NEW: Load selectedHostingOrganisation
     }
   }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules, setNotes, setHostNotes, setSelectedHostingOrganisation]);
 
