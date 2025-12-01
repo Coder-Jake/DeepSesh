@@ -1347,7 +1347,7 @@ const Index = () => {
   }, [isDraggingDiscoverySlider, handleDiscoverySliderDrag]);
 
   const handleDiscoveryPointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    setIsDraggingSlider(false);
+    setIsDraggingDiscoverySlider(false);
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
@@ -1935,24 +1935,26 @@ const Index = () => {
                         Start {timerType === 'focus' ? 'Break' : 'Focus'}
                       </Button>
                     ) : (
-                      <Button
-                        size="lg"
-                        className="w-28"
-                        onClick={() => {
-                          if (isSchedulePrepared) {
-                            startNewManualTimer();
-                          } else if (isRunning) {
-                            pauseTimer();
-                          } else if (isPaused) {
-                            resumeTimer();
-                          } else {
-                            startNewManualTimer();
-                          }
-                        }}
-                        data-name={`${isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')} Timer Button`}
-                      >
-                        {isRunning ? 'Pause' : (isPaused ? 'Resume' : 'Start')}
-                      </Button>
+                      isRunning ? (
+                        <div className="w-28 h-12" aria-hidden="true"></div> // Placeholder to maintain size
+                      ) : (
+                        <Button
+                          size="lg"
+                          className="w-28"
+                          onClick={() => {
+                            if (isSchedulePrepared) {
+                              startNewManualTimer();
+                            } else if (isPaused) {
+                              resumeTimer();
+                            } else {
+                              startNewManualTimer();
+                            }
+                          }}
+                          data-name={`${isPaused ? 'Resume' : 'Start'} Timer Button`}
+                        >
+                          {isPaused ? 'Resume' : 'Start'}
+                        </Button>
+                      )
                     )}
                   </div>
 
