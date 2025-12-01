@@ -951,6 +951,16 @@ const Index = () => {
       return;
     }
 
+    // NEW: First, check if the code matches any mock sessions
+    const mockSessionToJoin = MOCK_SESSIONS.find(s => s.join_code === trimmedCode);
+    if (mockSessionToJoin && showDemoSessions) {
+      console.log("Joining mock session by code:", trimmedCode);
+      await handleJoinSession(mockSessionToJoin);
+      setShowJoinInput(false);
+      setJoinSessionCode("");
+      return;
+    }
+
     if (areToastsEnabled) {
       toast.info("Searching for session...", {
         description: `Looking for session with code: ${trimmedCode}`,
@@ -999,6 +1009,8 @@ const Index = () => {
           organisation: joinedSession.organisation,
         };
         await handleJoinSession(demoSession);
+        setShowJoinInput(false);
+        setJoinSessionCode("");
       } else {
         if (areToastsEnabled) {
           toast.error("Session Not Found", {
