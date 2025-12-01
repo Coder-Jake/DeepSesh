@@ -218,3 +218,82 @@ export const MOCK_PROFILES: Profile[] = [
     },
   },
 ];
+
+// Helper to find a mock profile by first name
+const findMockProfile = (firstName: string): Profile | undefined => {
+  return MOCK_PROFILES.find(p => p.first_name === firstName);
+};
+
+// Helper to create a ParticipantSessionData from a mock profile
+const createParticipantData = (profile: Profile, role: 'host' | 'coworker'): ParticipantSessionData => ({
+  userId: profile.id,
+  userName: profile.first_name || "Unknown",
+  joinTime: Date.now(),
+  role: role,
+  focusPreference: profile.focus_preference || 50,
+  intention: profile.profile_data?.intention?.value || null,
+  bio: profile.profile_data?.bio?.value || null,
+});
+
+// Define mock sessions
+const altman = findMockProfile("Sam Altman");
+const musk = findMockProfile("Musk");
+const freud = findMockProfile("Freud");
+const rogers = findMockProfile("Rogers");
+const jake = findMockProfile("Jake");
+
+export const MOCK_SESSIONS: DemoSession[] = [
+  {
+    id: "mock-session-1",
+    title: "Deep Work @ StartSpace",
+    startTime: Date.now() - 30 * 60 * 1000, // Started 30 minutes ago
+    location: "StartSpace, Melbourne",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "A quiet corner for focused work.",
+    participants: [
+      altman ? createParticipantData(altman, 'host') : { userId: "mock-altman", userName: "Sam Altman", joinTime: Date.now(), role: 'host', focusPreference: 20 },
+      musk ? createParticipantData(musk, 'coworker') : { userId: "mock-musk", userName: "Musk", joinTime: Date.now(), role: 'coworker', focusPreference: 10 },
+    ],
+    location_lat: -37.8136, // Melbourne latitude
+    location_long: 144.9631, // Melbourne longitude
+    active_asks: [],
+    visibility: 'public',
+    fullSchedule: [
+      { id: "mock-focus-1", title: "Deep Focus", type: "focus", durationMinutes: 45 },
+      { id: "mock-break-1", title: "Quick Break", type: "break", durationMinutes: 15 },
+      { id: "mock-focus-2", title: "Coding Sprint", type: "focus", durationMinutes: 60 },
+    ],
+    user_id: altman?.id || "mock-altman",
+    join_code: "StartSpaceDeep",
+    organisation: ["StartSpace", "OpenAI", "SpaceX"],
+    host_notes: "Working on a new AI model. Feel free to join for a focused session!",
+    is_mock: true,
+  },
+  {
+    id: "mock-session-2",
+    title: "Psych101 Study Sesh",
+    startTime: Date.now() - 15 * 60 * 1000, // Started 15 minutes ago
+    location: "University Library, Level 3",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Reviewing theories of personality.",
+    participants: [
+      freud ? createParticipantData(freud, 'host') : { userId: "mock-freud", userName: "Freud", joinTime: Date.now(), role: 'host', focusPreference: 60 },
+      rogers ? createParticipantData(rogers, 'coworker') : { userId: "mock-rogers", userName: "Rogers", joinTime: Date.now(), role: 'coworker', focusPreference: 75 },
+      jake ? createParticipantData(jake, 'coworker') : { userId: "mock-jake", userName: "Jake", joinTime: Date.now(), role: 'coworker', focusPreference: 85 },
+    ],
+    location_lat: -37.7965, // University of Melbourne latitude
+    location_long: 144.9613, // University of Melbourne longitude
+    active_asks: [],
+    visibility: 'private',
+    fullSchedule: [
+      { id: "mock-study-1", title: "Reading Chapter 5", type: "focus", durationMinutes: 60 },
+      { id: "mock-discussion-1", title: "Concept Discussion", type: "break", durationMinutes: 20 },
+      { id: "mock-study-2", title: "Essay Outline", type: "focus", durationMinutes: 90 },
+    ],
+    user_id: freud?.id || "mock-freud",
+    join_code: "PsychStudy",
+    organisation: ["Psychology Dept.", "Humanistic Psychology", "DeepSesh"],
+    host_notes: "Reviewing classic psychological theories. Quiet study preferred.",
+    is_mock: true,
+  },
+];

@@ -23,6 +23,7 @@ import { ProfileProvider, useProfile } from './contexts/ProfileContext';
 import OnboardingLayout from './components/onboarding/OnboardingLayout';
 import WelcomePage from './components/onboarding/WelcomePage';
 import VisibilityPage from './components/onboarding/VisibilityPage';
+import MockSessionSeeder from './components/MockSessionSeeder'; // NEW: Import MockSessionSeeder
 
 const queryClient = new QueryClient();
 
@@ -104,6 +105,7 @@ function App() {
               <ProfileProvider areToastsEnabled={areToastsEnabled}>
                 <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
                   <ProfilePopUpProvider>
+                    <MockSessionSeeder /> {/* NEW: Render MockSessionSeeder here */}
                     <OnboardingWrapper />
                   </ProfilePopUpProvider>
                 </TimerProvider>
