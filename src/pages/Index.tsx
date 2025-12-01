@@ -1936,7 +1936,14 @@ const Index = () => {
                       </Button>
                     ) : (
                       isRunning ? (
-                        <div className="w-28 h-12" aria-hidden="true"></div> // Placeholder to maintain size
+                        <Button
+                          size="lg"
+                          variant="ghost" // Use ghost variant to remove background/border
+                          className="w-28 invisible pointer-events-none" // Make it invisible and non-interactive
+                          aria-hidden="true"
+                        >
+                          &nbsp; {/* Non-breaking space to ensure content exists for sizing */}
+                        </Button>
                       ) : (
                         <Button
                           size="lg"
