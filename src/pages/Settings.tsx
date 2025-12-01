@@ -992,7 +992,7 @@ const Settings = () => {
                   {limitDiscoveryRadius ? (
                     maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`
                   ) : (
-                    <Infinity size={20} />
+                    <InfinityIcon size={20} />
                   )}
                 </Button>
               </div>

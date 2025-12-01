@@ -49,8 +49,8 @@ const ScheduleForm: React.FC = () => {
     is24HourFormat, 
     getDefaultSeshTitle,
     sessionVisibility, // ADDED: sessionVisibility
-    selectedHostingOrganization, // NEW: Get selectedHostingOrganization
-    setSelectedHostingOrganization, // NEW: Get setSelectedHostingOrganization
+    selectedHostingOrganisation, // NEW: Get selectedHostingOrganisation
+    setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
   } = useTimer();
 
   const { isDarkMode } = useTheme();
@@ -64,14 +64,14 @@ const ScheduleForm: React.FC = () => {
     setScheduleTitle(contextScheduleTitle || getDefaultSeshTitle());
   }, [contextScheduleTitle, getDefaultSeshTitle]);
 
-  // NEW: Sync selectedHostingOrganization with the first organization from profile if available
+  // NEW: Sync selectedHostingOrganisation with the first organisation from profile if available
   useEffect(() => {
-    if (profile?.organization && profile.organization.length > 0 && !selectedHostingOrganization) {
-      setSelectedHostingOrganization(profile.organization[0]);
-    } else if (!profile?.organization || profile.organization.length === 0) {
-      setSelectedHostingOrganization(null);
+    if (profile?.organisation && profile.organisation.length > 0 && !selectedHostingOrganisation) {
+      setSelectedHostingOrganisation(profile.organisation[0]);
+    } else if (!profile?.organisation || profile.organisation.length === 0) {
+      setSelectedHostingOrganisation(null);
     }
-  }, [profile?.organization, selectedHostingOrganization, setSelectedHostingOrganization]);
+  }, [profile?.organisation, selectedHostingOrganisation, setSelectedHostingOrganisation]);
 
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
@@ -269,10 +269,10 @@ const ScheduleForm: React.FC = () => {
       }
       return;
     }
-    if (sessionVisibility === 'organisation' && !selectedHostingOrganization) { // NEW: Check if organization is selected
+    if (sessionVisibility === 'organisation' && !selectedHostingOrganisation) { // NEW: Check if organisation is selected
       if (areToastsEnabled) {
-        toast.error("Organization Not Selected", {
-          description: "Please select an organization to host this session.",
+        toast.error("Organisation Not Selected", {
+          description: "Please select an organisation to host this session.",
         });
       }
       return;
@@ -409,26 +409,26 @@ const ScheduleForm: React.FC = () => {
   };
 
   // NEW: Logic for Host as selector
-  const userOrganizations = useMemo(() => profile?.organization || [], [profile?.organization]);
-  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganizations.length > 0;
-  const useToggleButton = userOrganizations.length <= 4;
+  const userOrganisations = useMemo(() => profile?.organisation || [], [profile?.organisation]);
+  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisations.length > 0;
+  const useToggleButton = userOrganisations.length <= 4;
 
-  const handleCycleOrganization = useCallback(() => {
-    if (!userOrganizations || userOrganizations.length === 0) return;
+  const handleCycleOrganisation = useCallback(() => {
+    if (!userOrganisations || userOrganisations.length === 0) return;
 
-    const currentIndex = selectedHostingOrganization
-      ? userOrganizations.indexOf(selectedHostingOrganization)
+    const currentIndex = selectedHostingOrganisation
+      ? userOrganisations.indexOf(selectedHostingOrganisation)
       : -1;
 
-    const nextIndex = (currentIndex + 1) % userOrganizations.length;
-    setSelectedHostingOrganization(userOrganizations[nextIndex]);
+    const nextIndex = (currentIndex + 1) % userOrganisations.length;
+    setSelectedHostingOrganisation(userOrganisations[nextIndex]);
 
     if (areToastsEnabled) {
-      toast.info("Hosting Organization", {
-        description: `Now hosting as '${userOrganizations[nextIndex]}'.`,
+      toast.info("Hosting Organisation", {
+        description: `Now hosting as '${userOrganisations[nextIndex]}'.`,
       });
     }
-  }, [userOrganizations, selectedHostingOrganization, setSelectedHostingOrganization, areToastsEnabled]);
+  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation, areToastsEnabled]);
 
   return (
     <Card className="px-0">
@@ -469,27 +469,27 @@ const ScheduleForm: React.FC = () => {
           </Button>
         </CardHeader>
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
-          {shouldShowOrgSelector && ( // NEW: Organization selection
+          {shouldShowOrgSelector && ( // NEW: Organisation selection
             <div className="flex items-center gap-2">
               {useToggleButton ? (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleCycleOrganization}
+                  onClick={handleCycleOrganisation}
                   className="h-8 px-3 text-sm ml-auto"
                 >
-                  {selectedHostingOrganization || (userOrganizations.length > 0 ? userOrganizations[0] : "None")}
+                  {selectedHostingOrganisation || (userOrganisations.length > 0 ? userOrganisations[0] : "None")}
                 </Button>
               ) : (
                 <Select
-                  value={selectedHostingOrganization || ""}
-                  onValueChange={setSelectedHostingOrganization}
+                  value={selectedHostingOrganisation || ""}
+                  onValueChange={setSelectedHostingOrganisation}
                 >
                   <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm ml-auto">
-                    <SelectValue placeholder="Select Organization" />
+                    <SelectValue placeholder="Select Organisation" />
                   </SelectTrigger>
                   <SelectContent>
-                    {userOrganizations.map(org => (
+                    {userOrganisations.map(org => (
                       <SelectItem key={org} value={org}>{org}</SelectItem>
                     ))}
                   </SelectContent>
