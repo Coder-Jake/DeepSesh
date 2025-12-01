@@ -1858,7 +1858,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     if (!(loadedIsRunning || loadedIsPaused || loadedIsScheduleActive || loadedIsSchedulePending)) {
       const initialScheduleToLoad = finalSavedSchedules.find(
-        (template) => template.id === "default-school-timetable"
+        (template) => template.id === "b2c3d4e5-f6a7-4890-8123-4567890abcdef0" // Corrected ID for "School Timetable"
       );
 
       if (initialScheduleToLoad) {
