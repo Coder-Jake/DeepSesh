@@ -679,8 +679,13 @@ const Settings = () => {
                 {isBatchNotificationsEnabled && (
                   <div className="space-y-2">
                     <Label htmlFor="batch-notifications-preference">Hold until:</Label>
-                    <Select value={batchNotificationPreference} onValueChange={(value: 'break' | 'sesh_end' | 'custom') => setBatchNotificationPreference(value)}>
-                      <SelectTrigger id="batch-notifications-preference">
+                    <Select 
+                      value={batchNotificationPreference} 
+                      onValueChange={(value: 'break' | 'sesh_end' | 'custom') => setBatchNotificationPreference(value)}
+                      name="batchNotificationPreference"
+                      id="batch-notifications-preference"
+                    >
+                      <SelectTrigger>
                         <SelectValue placeholder="Select when to batch" />
                       </SelectTrigger>
                       <SelectContent>
@@ -691,6 +696,8 @@ const Settings = () => {
                     </Select>
                     {batchNotificationPreference === 'custom' && (
                       <Input
+                        id="custom-batch-minutes"
+                        name="customBatchMinutes"
                         type="number"
                         placeholder="Enter minutes"
                         value={customBatchMinutes === 0 ? "" : customBatchMinutes}
@@ -888,6 +895,7 @@ const Settings = () => {
                     <Label htmlFor="focus-duration">Focus</Label>
                     <Input
                       id="focus-duration"
+                      name="defaultFocusDuration"
                       type="number"
                       placeholder="Minutes"
                       value={localFocusMinutes}
@@ -909,6 +917,7 @@ const Settings = () => {
                     <Label htmlFor="break-duration">Break</Label>
                     <Input
                       id="break-duration"
+                      name="defaultBreakDuration"
                       type="number"
                       placeholder="Minutes"
                       value={localBreakMinutes}
@@ -991,7 +1000,7 @@ const Settings = () => {
                   {limitDiscoveryRadius ? (
                     maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`
                   ) : (
-                    <Infinity size={20} />
+                    <InfinityIcon size={20} />
                   )}
                 </Button>
               </div>
@@ -1121,6 +1130,8 @@ const Settings = () => {
                         <Select 
                           value={verificationStandard}
                           onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                          name="verificationStandard"
+                          id="verification-standard"
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select verification status" />
@@ -1146,6 +1157,8 @@ const Settings = () => {
                         <Select 
                           value={verificationStandard} 
                           onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
+                          name="minimumVerificationStandard"
+                          id="minimum-verification-standard"
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select verification standard" />
@@ -1178,6 +1191,8 @@ const Settings = () => {
                 <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input
+                      id="username-to-block"
+                      name="usernameToBlock"
                       placeholder="Enter username to block"
                       value={userNameToBlock}
                       onChange={(e) => setUserNameToBlock(e.target.value)}
@@ -1196,8 +1211,10 @@ const Settings = () => {
                     <Select
                       value={selectedCoworkerToBlock}
                       onValueChange={(value) => setSelectedCoworkerToBlock(value)}
+                      name="coworkerToBlock"
+                      id="block-coworker-select"
                     >
-                      <SelectTrigger id="block-coworker-select">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select a coworker" />
                       </SelectTrigger>
                       <SelectContent>

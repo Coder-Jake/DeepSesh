@@ -442,6 +442,8 @@ const ScheduleForm: React.FC = () => {
             isEditingScheduleTitle ? (
               <Input
                 ref={scheduleTitleInputRef}
+                id="schedule-title-input"
+                name="scheduleTitle"
                 value={scheduleTitle}
                 onChange={(e) => setScheduleTitle(e.target.value)}
                 onKeyDown={handleScheduleTitleInputKeyDown}
@@ -484,8 +486,10 @@ const ScheduleForm: React.FC = () => {
                 <Select
                   value={selectedHostingOrganisation || ""}
                   onValueChange={setSelectedHostingOrganisation}
+                  name="selectedHostingOrganisation"
+                  id="select-hosting-org"
                 >
-                  <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm ml-auto">
+                  <SelectTrigger className="w-[180px] h-8 text-sm ml-auto">
                     <SelectValue placeholder="Select Organisation" />
                   </SelectTrigger>
                   <SelectContent>
@@ -519,6 +523,8 @@ const ScheduleForm: React.FC = () => {
                       {index + 1}.
                     </span>
                     <Input
+                      id={`timer-title-${timer.id}`}
+                      name={`timerTitle-${timer.id}`}
                       placeholder="Timer Title"
                       value={timer.title}
                       onChange={(e) => handleUpdateTimer(timer.id, 'title', e.target.value)}
@@ -530,6 +536,8 @@ const ScheduleForm: React.FC = () => {
                   </div>
                   
                   <Input
+                    id={`timer-duration-${timer.id}`}
+                    name={`timerDuration-${timer.id}`}
                     type="number"
                     placeholder="Min"
                     value={timer.durationMinutes === 0 ? "" : timer.durationMinutes}
@@ -563,6 +571,8 @@ const ScheduleForm: React.FC = () => {
                   <Select
                     value={timer.type}
                     onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
+                    name={`timerType-${timer.id}`}
+                    id={`timer-type-${timer.id}`}
                   >
                     <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center hidden" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
                       <SelectValue />
@@ -683,6 +693,7 @@ const ScheduleForm: React.FC = () => {
                 <div className="space-y-2">
                   <Input
                     id="commence-time"
+                    name="commenceTime"
                     type="time"
                     value={commenceTime}
                     onChange={(e) => {
@@ -700,8 +711,10 @@ const ScheduleForm: React.FC = () => {
                     onValueChange={(value) => {
                       setCommenceDay(value === "today-default" ? null : parseInt(value));
                     }}
+                    name="commenceDay"
+                    id="commence-day"
                   >
-                    <SelectTrigger id="commence-day" onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
+                    <SelectTrigger onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
                       <SelectValue placeholder="Select Day">
                         {commenceDay === null ? "Today (default)" : DAYS_OF_WEEK[commenceDay]}
                       </SelectValue>

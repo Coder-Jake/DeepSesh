@@ -128,6 +128,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
           <Label htmlFor="first-name">Your Name</Label>
           <Input
             id="first-name"
+            name="firstName"
             placeholder={joinCode || "Coworker"}
             value={firstNameInput}
             onChange={(e) => setFirstNameInput(e.target.value)}
@@ -173,6 +174,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
           <Label htmlFor="organisation-name-input">Organisation (Optional)</Label>
           <Input
             id="organisation-name-input"
+            name="organisation"
             placeholder="e.g. Unimelb; StartSpace"
             value={organisationInput || ""}
             onChange={(e) => setOrganisationInput(e.target.value)}
@@ -206,6 +208,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
               <Label htmlFor="organisation-dialog-input">Organisation Name(s)</Label>
               <Input
                 id="organisation-dialog-input"
+                name="organisationDialog"
                 value={organisationInput || ""}
                 onChange={(e) => setOrganisationInput(e.target.value)}
                 placeholder="e.g. Unimelb; StartSpace"

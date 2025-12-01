@@ -1347,7 +1347,7 @@ const Index = () => {
   }, [isDraggingDiscoverySlider, handleDiscoverySliderDrag]);
 
   const handleDiscoveryPointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    setIsDraggingDiscoverySlider(false);
+    setIsDraggingSlider(false);
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
@@ -1676,7 +1676,7 @@ const Index = () => {
               ) : (
                 <p className="text-muted-foreground text-sm text-center py-4">
                   {isDiscoveryActivated && userOrganisations.length > 0 ? "No organisation sessions found." : "Join an organisation to see Organisation sessions."}
-                </p>
+                  </p>
               )
             )}
           </div>
@@ -1749,7 +1749,22 @@ const Index = () => {
                           onTouchStart={() => handlePressStart(handleTitleLongPress)}
                           onTouchEnd={handlePressEnd}
                         >
-                          {seshTitle}
+                          {isEditingSeshTitle ? (
+                            <Input
+                              ref={titleInputRef}
+                              id="sesh-title-input"
+                              name="seshTitle"
+                              value={seshTitle}
+                              onChange={(e) => setSeshTitle(e.target.value)}
+                              onKeyDown={handleTitleInputKeyDown}
+                              onBlur={handleTitleInputBlur}
+                              placeholder={getDefaultSeshTitle()}
+                              className="text-xl font-bold h-auto py-1 px-2 italic text-center"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            <span onClick={handleTitleClick}>{seshTitle}</span>
+                          )}
                         </h2>
                       ) : (
                         <p className="text-sm md:text-base font-bold text-muted-foreground">
@@ -1809,8 +1824,10 @@ const Index = () => {
                             <Select
                               value={selectedHostingOrganisation || ""}
                               onValueChange={setSelectedHostingOrganisation}
+                              name="selectedHostingOrganisation"
+                              id="select-hosting-org-index"
                             >
-                              <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm ml-auto">
+                              <SelectTrigger className="w-[180px] h-8 text-sm ml-auto">
                                 <SelectValue placeholder="Select Organisation" />
                               </SelectTrigger>
                               <SelectContent>
@@ -1984,6 +2001,8 @@ const Index = () => {
                           Focus:
                         </span>
                         <Input
+                          id="homepage-focus-minutes"
+                          name="homepageFocusMinutes"
                           type="number"
                           value={focusMinutes === 0 ? "" : focusMinutes}
                           onChange={e => {
@@ -2022,6 +2041,8 @@ const Index = () => {
                           Break:
                         </span>
                         <Input
+                          id="homepage-break-minutes"
+                          name="homepageBreakMinutes"
                           type="number"
                           value={breakMinutes === 0 ? "" : breakMinutes}
                           onChange={e => {
@@ -2105,7 +2126,6 @@ const Index = () => {
                       onChange={setNotes}
                       placeholder="Jot down your thoughts, to-do items, or reflections..."
                       rows={5}
-                      readOnly={false}
                     />
                   </TabsContent>
                   <TabsContent value="host-notes">
@@ -2275,6 +2295,7 @@ const Index = () => {
             <div className="grid gap-4 py-4">
               <Input
                 id="session-code"
+                name="sessionCode"
                 placeholder="Enter code"
                 value={joinSessionCode}
                 onChange={(e) => setJoinSessionCode(e.target.value)}
@@ -2301,6 +2322,7 @@ const Index = () => {
                 <Label htmlFor="discovery-display-name">Name</Label>
                 <Input
                   id="discovery-display-name"
+                  name="discoveryDisplayName"
                   value={discoveryDisplayName}
                   onChange={(e) => setDiscoveryDisplayName(e.target.value)}
                   onFocus={(e) => e.target.select()}

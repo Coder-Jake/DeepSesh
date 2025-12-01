@@ -81,6 +81,8 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
                 selectedVisibility === 'public' && "bg-public-bg text-public-bg-foreground border-public-bg-hover hover:bg-public-bg-hover"
               )}
               onClick={() => setSelectedVisibility('public')}
+              name="visibilityPublic"
+              id="visibility-public"
             >
               <Globe size={20} />
               Public
@@ -95,6 +97,8 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
                   selectedVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground border-organisation-bg-hover hover:bg-organisation-bg-hover"
                 )}
                 onClick={() => setSelectedVisibility('organisation')}
+                name="visibilityOrganisation"
+                id="visibility-organisation"
               >
                 <Building2 size={20} />
                 Organisation
@@ -109,6 +113,8 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
                 selectedVisibility === 'private' && "bg-private-bg text-private-bg-foreground border-private-bg-hover hover:bg-private-bg-hover"
               )}
               onClick={() => setSelectedVisibility('private')}
+              name="visibilityPrivate"
+              id="visibility-private"
             >
               <Lock size={20} />
               Private
@@ -139,6 +145,8 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
               geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover"
             )}
             onClick={handleLocationButtonClick}
+            name="locationSharingButton"
+            id="location-sharing-button"
           >
             <MapPin size={16} />
             {geolocationPermissionStatus === 'granted' && "Enabled"}

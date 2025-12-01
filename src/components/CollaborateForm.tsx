@@ -48,6 +48,7 @@ const CollaborateForm = () => {
         <Label htmlFor="collaborate-name">Name</Label>
         <Input
           id="collaborate-name"
+          name="name"
           {...register('name')}
           placeholder="Enter your name"
           disabled={isSubmitting}
@@ -58,6 +59,7 @@ const CollaborateForm = () => {
         <Label htmlFor="collaborate-email">Email</Label>
         <Input
           id="collaborate-email"
+          name="email"
           type="email"
           {...register('email')}
           placeholder="Enter your email"
@@ -69,6 +71,7 @@ const CollaborateForm = () => {
         <Label htmlFor="collaborate-message">Message</Label>
         <Textarea
           id="collaborate-message"
+          name="message"
           {...register('message')}
           placeholder="Tell us about your IT skills..."
           rows={5}

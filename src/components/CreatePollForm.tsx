@@ -94,6 +94,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
         <Label htmlFor="poll-question">Question</Label>
         <Input
           id="poll-question"
+          name="question"
           placeholder={getQuestionPlaceholderText(pollType)}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
@@ -146,6 +147,7 @@ const CreatePollForm: React.FC<CreatePollFormProps> = ({ onClose, onSubmit }) =>
           <Label htmlFor="poll-options">Options</Label>
           <Textarea
             id="poll-options"
+            name="options"
             placeholder={getOptionsPlaceholderText(pollType)}
             value={options}
             onChange={(e) => setOptions(e.target.value)}

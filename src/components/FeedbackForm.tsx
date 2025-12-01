@@ -48,6 +48,7 @@ const FeedbackForm = () => {
         <Label htmlFor="feedback-name"> Name</Label>
         <Input
           id="feedback-name"
+          name="name"
           {...register('name')}
           placeholder="Enter your name"
           disabled={isSubmitting}
@@ -58,6 +59,7 @@ const FeedbackForm = () => {
         <Label htmlFor="feedback-email"> Email (optional)</Label>
         <Input
           id="feedback-email"
+          name="email"
           type="email"
           {...register('email')}
           placeholder="Enter your email"
@@ -69,6 +71,7 @@ const FeedbackForm = () => {
         <Label htmlFor="feedback-message">Message</Label>
         <Textarea
           id="feedback-message"
+          name="message"
           {...register('message')}
           placeholder="Report an idea or bug..."
           rows={5}

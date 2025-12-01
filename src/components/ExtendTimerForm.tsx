@@ -36,6 +36,7 @@ const ExtendTimerForm: React.FC<ExtendTimerFormProps> = ({ onClose, onSubmit }) 
         <Label htmlFor="extend-minutes">Minutes to Add</Label>
         <Input
           id="extend-minutes"
+          name="minutes"
           type="number"
           value={minutes === 0 ? "" : minutes}
           onChange={(e) => {

@@ -641,6 +641,8 @@ const Profile = () => {
                 {isEditingFirstName ? (
                   <Input
                     ref={firstNameInputRef}
+                    id="first-name-input"
+                    name="firstName"
                     value={firstNameInput}
                     onChange={(e) => { e.stopPropagation(); setFirstNameInput(e.target.value); }}
                     onKeyDown={handleFirstNameInputKeyDown}
@@ -689,6 +691,7 @@ const Profile = () => {
                 </Tooltip>
                 <Textarea
                   id="bio"
+                  name="bio"
                   placeholder="Share a bit about yourself..."
                   value={bioInput || ""}
                   onChange={(e) => setBioInput(e.target.value)}
@@ -718,6 +721,7 @@ const Profile = () => {
                 </Tooltip>
                 <Textarea
                   id="intention"
+                  name="intention"
                   placeholder="What are you working on? Goals for upcoming sessions?"
                   value={intentionInput || ""}
                   onChange={(e) => setIntentionInput(e.target.value)}
@@ -747,6 +751,7 @@ const Profile = () => {
                 </Tooltip>
                 <Textarea
                   id="can-help-with"
+                  name="canHelpWith"
                   placeholder="e.g., React, TypeScript, UI/UX Design, Project Management"
                   value={canHelpWithInput || ""}
                   onChange={(e) => setCanHelpWithInput(e.target.value)}
@@ -776,6 +781,7 @@ const Profile = () => {
                 </Tooltip>
                 <Textarea
                   id="need-help-with"
+                  name="needHelpWith"
                   placeholder="e.g., Backend integration, Advanced algorithms, Marketing strategy"
                   value={needHelpWithInput || ""}
                   onChange={(e) => setNeedHelpWithInput(e.target.value)}
@@ -809,6 +815,7 @@ const Profile = () => {
                   </span>
                   <Input
                     id="linkedin-username"
+                    name="linkedinUsername"
                     type="text"
                     placeholder="yourusername"
                     value={linkedinUrlInput ? (linkedinUrlInput.startsWith("https://www.linkedin.com/in/") ? linkedinUrlInput.substring("https://www.linkedin.com/in/".length) : linkedinUrlInput) : ""}
@@ -844,6 +851,8 @@ const Profile = () => {
                   {isEditingJoinCode ? (
                     <Input
                       ref={joinCodeInputRef}
+                      id="join-code-input"
+                      name="joinCode"
                       value={joinCodeInput || ""}
                       onChange={(e) => { e.stopPropagation(); setJoinCodeInput(e.target.value); }}
                       onKeyDown={handleJoinCodeInputKeyDown}
@@ -1046,6 +1055,7 @@ const Profile = () => {
               <Label htmlFor="organisation-name">Organisation Name(s)</Label>
               <Input
                 id="organisation-name"
+                name="organisationDialog"
                 value={organisationInput || ""}
                 onChange={(e) => setOrganisationInput(e.target.value)}
                 placeholder="e.g., StartSpace; Unimelb"
