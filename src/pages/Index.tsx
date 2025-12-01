@@ -274,6 +274,11 @@ const sortSessions = (sessions: DemoSession[], currentUserId: string | undefined
   });
 };
 
+// Local Storage Keys for section open states
+const LOCAL_STORAGE_NEARBY_OPEN_KEY = 'deepsesh_nearby_sessions_open';
+const LOCAL_STORAGE_FRIENDS_OPEN_KEY = 'deepsesh_friends_sessions_open';
+const LOCAL_STORAGE_ORG_OPEN_KEY = 'deepsesh_organization_sessions_open';
+
 
 const Index = () => {
   const {
@@ -416,7 +421,7 @@ const Index = () => {
   const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const linkCopiedTimeoutRef = useRef<NodeS.Timeout | null>(null);
+  const linkCopiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isDiscoverySetupOpen, setIsDiscoverySetupOpen] = useState(false);
   const [discoveryDisplayName, setDiscoveryDisplayName] = useState("");
@@ -426,9 +431,22 @@ const Index = () => {
   const discoverySliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingDiscoverySlider, setIsDraggingDiscoverySlider] = useState(false);
 
-  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(false);
-  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(false);
-  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(false);
+  // MODIFIED: Initialize section open states from localStorage or default to false
+  const [isNearbySessionsOpen, setIsNearbySessionsOpen] = useState(() => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_NEARBY_OPEN_KEY);
+    return stored ? JSON.parse(stored) : false;
+  });
+  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(() => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY);
+    return stored ? JSON.parse(stored) : false;
+  });
+  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(() => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_ORG_OPEN_KEY);
+    return stored ? JSON.parse(stored) : false;
+  });
+
+  // NEW: State to track if initial auto-minimization has run
+  const [initialMinimizationRun, setInitialMinimizationRun] = useState(false);
 
   // NEW: Get user's organizations from profile
   const userOrganizations = useMemo(() => profile?.organization || [], [profile?.organization]);
@@ -1467,6 +1485,7 @@ const Index = () => {
     isLongPressDetected.current = true;
   };
 
+  // MODIFIED: getIsOpenState to use local state
   const getIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
     if (sectionId === 'nearby') return isNearbySessionsOpen;
     if (sectionId === 'friends') return isFriendsSessionsOpen;
@@ -1474,24 +1493,43 @@ const Index = () => {
     return false;
   }, [isNearbySessionsOpen, isFriendsSessionsOpen, isOrganizationSessionsOpen]);
 
+  // MODIFIED: getSetIsOpenState to use local state and persist to localStorage
   const getSetIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
-    if (sectionId === 'nearby') return setIsNearbySessionsOpen;
-    if (sectionId === 'friends') return setIsFriendsSessionsOpen;
-    if (sectionId === 'organization') return setIsOrganizationSessionsOpen;
+    if (sectionId === 'nearby') return (value: boolean) => { setIsNearbySessionsOpen(value); localStorage.setItem(LOCAL_STORAGE_NEARBY_OPEN_KEY, JSON.stringify(value)); };
+    if (sectionId === 'friends') return (value: boolean) => { setIsFriendsSessionsOpen(value); localStorage.setItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY, JSON.stringify(value)); };
+    if (sectionId === 'organization') return (value: boolean) => { setIsOrganizationSessionsOpen(value); localStorage.setItem(LOCAL_STORAGE_ORG_OPEN_KEY, JSON.stringify(value)); };
     return () => {};
   }, [setIsNearbySessionsOpen, setIsFriendsSessionsOpen, setIsOrganizationSessionsOpen]);
 
+  // REMOVED: The useEffect that directly set isNearbySessionsOpen, etc. based on isDiscoveryActivated
+
+  // NEW: Effect to handle initial auto-minimization on first load
   useEffect(() => {
-    if (isDiscoveryActivated) {
-      setIsNearbySessionsOpen(true);
-      setIsFriendsSessionsOpen(true);
-      setIsOrganizationSessionsOpen(true);
-    } else {
-      setIsNearbySessionsOpen(false);
-      setIsFriendsSessionsOpen(false);
-      setIsOrganizationSessionsOpen(false);
+    if (!initialMinimizationRun && !profileLoading) {
+      const hasStoredNearby = localStorage.getItem(LOCAL_STORAGE_NEARBY_OPEN_KEY) !== null;
+      const hasStoredFriends = localStorage.getItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY) !== null;
+      const hasStoredOrg = localStorage.getItem(LOCAL_STORAGE_ORG_OPEN_KEY) !== null;
+
+      // Only apply initial minimization if no user preference is stored
+      if (!hasStoredNearby) {
+        setIsNearbySessionsOpen(isDiscoveryActivated && filteredMockNearbySessions.length > 0);
+        localStorage.setItem(LOCAL_STORAGE_NEARBY_OPEN_KEY, JSON.stringify(isDiscoveryActivated && filteredMockNearbySessions.length > 0));
+      }
+      if (!hasStoredFriends) {
+        setIsFriendsSessionsOpen(isDiscoveryActivated && filteredMockFriendsSessions.length > 0);
+        localStorage.setItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY, JSON.stringify(isDiscoveryActivated && filteredMockFriendsSessions.length > 0));
+      }
+      if (!hasStoredOrg) {
+        setIsOrganizationSessionsOpen(isDiscoveryActivated && mockOrganizationSessions.length > 0);
+        localStorage.setItem(LOCAL_STORAGE_ORG_OPEN_KEY, JSON.stringify(isDiscoveryActivated && mockOrganizationSessions.length > 0));
+      }
+      setInitialMinimizationRun(true);
     }
-  }, [isDiscoveryActivated]);
+  }, [
+    initialMinimizationRun, profileLoading, isDiscoveryActivated,
+    filteredMockNearbySessions.length, filteredMockFriendsSessions.length, mockOrganizationSessions.length
+  ]);
+
 
   const expandedSections = useMemo(() => {
     return sectionOrder.filter(sectionId => getIsOpenState(sectionId));
@@ -1572,7 +1610,7 @@ const Index = () => {
             <button
               onClick={() => {
                 if (!isLongPressDetected.current) {
-                  setIsOpen(prev => !prev);
+                  setIsOpen(!isOpen);
                 }
               }}
               onMouseDown={() => handlePressStart(() => {
@@ -1662,7 +1700,7 @@ const Index = () => {
         return (
           <div data-name="Friends Sessions Section">
             <button
-              onClick={() => setIsOpen(prev => !prev)}
+              onClick={() => setIsOpen(!isOpen)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
             >
               <div className="flex items-center gap-2">
@@ -1698,7 +1736,7 @@ const Index = () => {
         return (
           <div data-name="Organization Sessions Section">
             <button
-              onClick={() => setIsOpen(prev => !prev)}
+              onClick={() => setIsOpen(!isOpen)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
             >
               <div className="flex items-center gap-2">
