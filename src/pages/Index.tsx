@@ -106,6 +106,7 @@ interface SupabaseSessionData {
   join_code: string | null;
   organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
+  active_asks: ActiveAskItem[]; // NEW: Added active_asks property
 }
 
 // Helper function to filter local mock sessions

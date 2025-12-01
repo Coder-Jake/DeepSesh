@@ -434,6 +434,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MODIFIED: Use selectedHostingOrganisation as an array
       last_heartbeat: new Date().toISOString(),
       host_notes: hostNotes,
+      active_asks: activeAsks, // NEW: Include active_asks
     };
 
     try {
@@ -459,7 +460,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
-    userJoinCode, selectedHostingOrganisation, hostNotes // MODIFIED: Use selectedHostingOrganisation
+    userJoinCode, selectedHostingOrganisation, hostNotes, activeAsks // NEW: Include activeAsks
   ]);
 
   useEffect(() => {
@@ -473,7 +474,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
     focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, user?.id,
-    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation // MODIFIED: Add selectedHostingOrganisation
+    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation, activeAsks // NEW: Include activeAsks
   ]);
 
   // NEW: Periodic heartbeat sender for all participants
@@ -944,6 +945,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MODIFIED: Use selectedHostingOrganisation as an array
             last_heartbeat: new Date().toISOString(),
             host_notes: hostNotes,
+            active_asks: activeAsks, // NEW: Include active_asks
           })
           .select('id')
           .single();
@@ -967,7 +969,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
-    sessionVisibility, selectedHostingOrganisation, hostNotes, // MODIFIED: Use selectedHostingOrganisation
+    sessionVisibility, selectedHostingOrganisation, hostNotes, activeAsks, // NEW: Include activeAsks
     _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
   ]);
 
