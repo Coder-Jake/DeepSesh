@@ -41,7 +41,7 @@ serve(async (req) => {
 
     const { data: userProfile, error: userProfileError } = await supabaseServiceRoleClient
       .from('profiles')
-      .select('organization')
+      .select('organisation')
       .eq('id', authenticatedUserId)
       .single();
 
