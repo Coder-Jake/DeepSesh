@@ -438,6 +438,26 @@ const Index = () => {
   const isLoadingMockProfiles = false;
   const mockProfilesError = null;
 
+  // Define these memoized values *before* they are used in other memoized values' dependency arrays.
+  const shouldShowNearbySessions = useMemo(() => {
+    const result = isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
+    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "sessionVisibility:", sessionVisibility, "showSessionsWhileActive:", showSessionsWhileActive);
+    return result;
+  }, [isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
+
+  const shouldShowFriendsSessions = useMemo(() => {
+    const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
+    console.log("shouldShowFriendsSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "showSessionsWhileActive:", showSessionsWhileActive);
+    return result;
+  }, [isDiscoveryActivated, showSessionsWhileActive]);
+
+  const shouldShowOrganisationSessions = useMemo(() => {
+    const result = isDiscoveryActivated && userOrganisations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganisations
+    console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisations:", userOrganisations, "sessionVisibility:", sessionVisibility); // MODIFIED: userOrganisations
+    return result;
+  }, [userOrganisations, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
+
+
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
     queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions], // NEW: Add showDemoSessions to queryKey
     queryFn: async () => {
@@ -468,7 +488,7 @@ const Index = () => {
       const isNearbyByDistance = (session.location_lat && session.location_long && session.distance !== null && session.distance <= maxDistance);
       return isPublic && (limitDiscoveryRadius ? isNearbyByDistance : true);
     });
-  }, [allSessions, shouldShowNearbySessions, userLocation, maxDistance, limitDiscoveryRadius]);
+  }, [allSessions, shouldShowNearbySessions, userLocation.latitude, userLocation.longitude, maxDistance, limitDiscoveryRadius]);
 
   const friendsSessions = useMemo(() => {
     if (!shouldShowFriendsSessions || !profile?.id) return [];
@@ -944,24 +964,6 @@ const Index = () => {
     return timerType === 'focus' ? focusMinutes : breakMinutes;
   }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType, focusMinutes, breakMinutes]);
 
-  const shouldShowNearbySessions = useMemo(() => {
-    const result = isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
-    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "sessionVisibility:", sessionVisibility, "showSessionsWhileActive:", showSessionsWhileActive);
-    return result;
-  }, [isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
-
-  const shouldShowFriendsSessions = useMemo(() => {
-    const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
-    console.log("shouldShowFriendsSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "showSessionsWhileActive:", showSessionsWhileActive);
-    return result;
-  }, [isDiscoveryActivated, showSessionsWhileActive]);
-
-  const shouldShowOrganisationSessions = useMemo(() => {
-    const result = isDiscoveryActivated && userOrganisations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganisations
-    console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisations:", userOrganisations, "sessionVisibility:", sessionVisibility); // MODIFIED: userOrganisations
-    return result;
-  }, [userOrganisations, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]); // MODIFIED: userOrganisations
-
   const handleExtendSubmit = async (minutes: number) => {
     if (!user?.id || !activeSessionRecordId) {
       if (areToastsEnabled) {
@@ -1159,7 +1161,7 @@ const Index = () => {
     let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
     const currentDay = now.getDay();
-    const templateDay = template.commenceDay === null ? currentDay : template.commenceDay;
+    const templateDay = template.commenceDay === null ? currentDay : currentDay; // Changed to currentDay if null
     
     let daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
