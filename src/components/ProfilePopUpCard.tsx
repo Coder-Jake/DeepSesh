@@ -24,7 +24,7 @@ const ProfilePopUpCard: React.FC = () => {
     canHelpWith,
     needHelpWith,
     focusPreference: currentUserFocusPreference,
-    organization: currentUserOrganization,
+    organisation: currentUserOrganisation,
     pronouns: currentUserPronouns,
     // Visibility states from context
     bioVisibility,
@@ -51,7 +51,7 @@ const ProfilePopUpCard: React.FC = () => {
   }, [currentUserProfile, targetProfile]);
 
   // NEW: Long press state for unfriend button
-  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTimerRef = useRef(null);
   const isLongPressDetected = useRef(false);
 
   const getDisplayVisibilityStatus = useCallback((visibility: ("public" | "friends" | "organisation" | "private")[]): string => {
@@ -104,7 +104,7 @@ const ProfilePopUpCard: React.FC = () => {
     isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile,
     bio, intention, linkedinUrl, canHelpWith, needHelpWith, currentUserPronouns,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    currentUserFocusPreference, currentUserOrganization, currentUserProfileVisibility
+    currentUserFocusPreference, currentUserOrganisation, currentUserProfileVisibility
   ]);
 
   useLayoutEffect(() => {
@@ -211,7 +211,7 @@ const ProfilePopUpCard: React.FC = () => {
       if (!field || !field.value || field.visibility.includes('private')) return false;
 
       const isFriend = currentFriendStatus === 'friends';
-      const isOrgMember = currentUserProfile?.organization && targetProfile.organization && currentUserProfile.organization === targetProfile.organization;
+      const isOrgMember = currentUserProfile?.organisation && targetProfile.organisation && currentUserProfile.organisation === targetProfile.organisation;
 
       return (
         field.visibility.includes('public') ||
@@ -227,7 +227,7 @@ const ProfilePopUpCard: React.FC = () => {
     const isProfileFriendsOnly = targetProfile.visibility.includes('friends');
 
     const isFriend = currentFriendStatus === 'friends';
-    const isOrgMember = currentUserProfile?.organization && targetProfile.organization && currentUserProfile.organization === targetProfile.organization;
+    const isOrgMember = currentUserProfile?.organisation && targetProfile.organisation && currentUserProfile.organisation === targetProfile.organisation;
 
     const canViewProfile = isCurrentUserProfile || isProfilePublic || (isProfileOrgOnly && isOrgMember) || (isProfileFriendsOnly && isFriend);
 
@@ -379,12 +379,12 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.organization && (isFieldVisible(targetBio) || isFieldVisible(targetIntention) || isFieldVisible(targetLinkedinUrl) || isFieldVisible(targetCanHelpWith) || isFieldVisible(targetNeedHelpWith)) && (
+        {targetProfile.organisation && (isFieldVisible(targetBio) || isFieldVisible(targetIntention) || isFieldVisible(targetLinkedinUrl) || isFieldVisible(targetCanHelpWith) || isFieldVisible(targetNeedHelpWith)) && (
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
-              <Building2 size={16} /> Organization
+              <Building2 size={16} /> Organisation
             </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.organization}</p>
+            <p className="text-sm text-foreground mt-1">{targetProfile.organisation}</p>
           </div>
         )}
 

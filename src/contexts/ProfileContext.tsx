@@ -28,7 +28,7 @@ export type Profile = {
   first_name: string | null;
   id: string;
   last_name: string | null;
-  organization: string[] | null; // MODIFIED: Changed to string[] | null
+  organisation: string[] | null; // MODIFIED: Changed to string[] | null
   focus_preference: number | null;
   updated_at: string | null;
   join_code: string | null;
@@ -57,7 +57,7 @@ export type ProfileInsert = {
   focus_preference: number | null;
   join_code: string | null;
   profile_data: ProfileDataJsonb;
-  organization?: string[] | null; // MODIFIED: Changed to string[] | null
+  organisation?: string[] | null; // MODIFIED: Changed to string[] | null
   avatar_url?: string | null;
   visibility: ("public" | "friends" | "organisation" | "private")[];
   onboarding_complete: boolean;
@@ -106,8 +106,8 @@ interface ProfileContextType {
   setNeedHelpWith: React.Dispatch<React.SetStateAction<string | null>>;
   focusPreference: number;
   setFocusPreference: React.Dispatch<React.SetStateAction<number>>;
-  organization: string[] | null; // MODIFIED: Changed to string[] | null
-  setOrganization: React.Dispatch<React.SetStateAction<string[] | null>>; // MODIFIED: Changed to string[] | null
+  organisation: string[] | null; // MODIFIED: Changed to string[] | null
+  setOrganisation: React.Dispatch<React.SetStateAction<string[] | null>>; // MODIFIED: Changed to string[] | null
   linkedinUrl: string | null;
   setLinkedinUrl: React.Dispatch<React.SetStateAction<string | null>>;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -159,7 +159,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [canHelpWith, setCanHelpWith] = useState<string | null>(null);
   const [needHelpWith, setNeedHelpWith] = useState<string | null>(null);
   const [focusPreference, setFocusPreference] = useState(50);
-  const [organization, setOrganization] = useState<string[] | null>(null); // MODIFIED: Changed to string[] | null
+  const [organisation, setOrganisation] = useState<string[] | null>(null); // MODIFIED: Changed to string[] | null
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [pronouns, setPronouns] = useState<string | null>(null);
@@ -194,7 +194,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
       visibility: profile.visibility || ['public'],
       onboarding_complete: profile.onboarding_complete || false,
-      organization: profile.organization || [], // MODIFIED: Ensure organization is an array
+      organisation: profile.organisation || [], // MODIFIED: Ensure organisation is an array
     };
 
     if ('host_code' in profileDataToSend) {
@@ -264,7 +264,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           profile_data: parsedProfile.profile_data || getDefaultProfileDataJsonb(),
           visibility: parsedProfile.visibility || ['public'],
           onboarding_complete: parsedProfile.onboarding_complete ?? false,
-          organization: parsedProfile.organization || [], // MODIFIED: Ensure organization is an array
+          organisation: parsedProfile.organisation || [], // MODIFIED: Ensure organisation is an array
         };
         if (isMounted) {
           setProfile(defaultedProfile);
@@ -275,7 +275,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           const defaultProfile: Profile = {
             id: user.id,
             first_name: null,
-            last_name: null, avatar_url: null, organization: [], // MODIFIED: Default to empty array
+            last_name: null, avatar_url: null, organisation: [], // MODIFIED: Default to empty array
             focus_preference: 50, updated_at: new Date().toISOString(),
             join_code: generateRandomJoinCode(),
             profile_data: defaultProfileData,
@@ -316,7 +316,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       // Prioritize profile.first_name if it's explicitly set, otherwise use join_code
       setLocalFirstName(profile.first_name || profile.join_code || "Coworker");
       setFocusPreference(profile.focus_preference || 50);
-      setOrganization(profile.organization); // MODIFIED: Set organization as array
+      setOrganisation(profile.organisation); // MODIFIED: Set organisation as array
       setJoinCode(profile.join_code);
       setProfileVisibility(profile.visibility || ['public']);
 
@@ -335,7 +335,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     } else {
       setLocalFirstName("Loading...");
       setFocusPreference(50);
-      setOrganization(null); // MODIFIED: Set organization to null
+      setOrganisation(null); // MODIFIED: Set organisation to null
       setJoinCode(null);
       setProfileVisibility(['public']);
       setBio(null);
@@ -384,7 +384,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       return;
     }
 
-    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'], onboarding_complete: false, organization: [] } as Profile; // MODIFIED: Default organization to empty array
+    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'], onboarding_complete: false, organisation: [] } as Profile; // MODIFIED: Default organisation to empty array
 
     const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
 
@@ -404,7 +404,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       id: user.id,
       visibility: updates.visibility || currentProfile.visibility || ['public'],
       onboarding_complete: updates.onboarding_complete ?? currentProfile.onboarding_complete ?? false,
-      organization: updates.organization || currentProfile.organization || [], // MODIFIED: Ensure organization is an array
+      organisation: updates.organisation || currentProfile.organisation || [], // MODIFIED: Ensure organisation is an array
     };
 
     setProfile(newProfile);
@@ -446,7 +446,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           profile_data: data.profile_data || getDefaultProfileDataJsonb(),
           visibility: data.visibility || ['public'],
           onboarding_complete: data.onboarding_complete ?? false,
-          organization: data.organization || [], // MODIFIED: Ensure organization is an array
+          organisation: data.organisation || [], // MODIFIED: Ensure organisation is an array
         };
         return fetchedProfile;
       }
@@ -460,7 +460,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       first_name: userName,
       last_name: null,
       avatar_url: null,
-      organization: [], // MODIFIED: Default to empty array
+      organisation: [], // MODIFIED: Default to empty array
       focus_preference: 50,
       updated_at: new Date().toISOString(),
       join_code: null,
@@ -547,8 +547,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     setNeedHelpWith,
     focusPreference,
     setFocusPreference,
-    organization,
-    setOrganization,
+    organisation,
+    setOrganisation,
     linkedinUrl,
     setLinkedinUrl,
     bioVisibility,
@@ -576,7 +576,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   }), [
     profile, loading, authLoading, updateProfile, localFirstName, setLocalFirstName, joinCode, setJoinCode,
     bio, setBio, intention, setIntention, canHelpWith, setCanHelpWith, needHelpWith, setNeedHelpWith,
-    focusPreference, setFocusPreference, organization, setOrganization, linkedinUrl, setLinkedinUrl,
+    focusPreference, setFocusPreference, organisation, setOrganisation, linkedinUrl, setLinkedinUrl,
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
     canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility,
     pronouns, setPronouns, friendStatuses, blockedUsers, recentCoworkers, getPublicProfile, blockUser, unblockUser,

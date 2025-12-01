@@ -191,8 +191,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     return false;
   });
 
-  // NEW: State for the organization selected by the host for the current session
-  const [selectedHostingOrganization, setSelectedHostingOrganization] = useState<string | null>(null);
+  // NEW: State for the organisation selected by the host for the current session
+  const [selectedHostingOrganisation, setSelectedHostingOrganisation] = useState<string | null>(null);
 
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
@@ -431,7 +431,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
       join_code: userJoinCode,
-      organization: selectedHostingOrganization, // MODIFIED: Use selectedHostingOrganization
+      organisation: selectedHostingOrganisation, // MODIFIED: Use selectedHostingOrganisation
       last_heartbeat: new Date().toISOString(),
       host_notes: hostNotes,
     };
@@ -459,7 +459,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
-    userJoinCode, selectedHostingOrganization, hostNotes // MODIFIED: Use selectedHostingOrganization
+    userJoinCode, selectedHostingOrganisation, hostNotes // MODIFIED: Use selectedHostingOrganisation
   ]);
 
   useEffect(() => {
@@ -473,7 +473,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
     focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, user?.id,
-    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganization // MODIFIED: Add selectedHostingOrganization
+    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation // MODIFIED: Add selectedHostingOrganisation
   ]);
 
   // NEW: Periodic heartbeat sender for all participants
@@ -538,7 +538,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
             setActiveAsks(updatedSession.active_asks || []);
             setHostNotes(updatedSession.host_notes || "");
-            setSelectedHostingOrganization(updatedSession.organization || null); // NEW: Sync selected hosting organization
+            setSelectedHostingOrganisation(updatedSession.organisation || null); // NEW: Sync selected hosting organisation
           }
         )
         .subscribe();
@@ -550,7 +550,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         supabase.removeChannel(subscription);
       }
     };
-  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganization]);
+  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation]);
 
   const resetSessionStates = useCallback(() => {
     setIsScheduleActive(false);
@@ -599,7 +599,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setLastActivityTime(null);
     setCurrentPhaseDurationSeconds(0);
     setRemainingTimeAtPause(0);
-    setSelectedHostingOrganization(null); // NEW: Reset selected hosting organization
+    setSelectedHostingOrganisation(null); // NEW: Reset selected hosting organisation
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
   ]);
@@ -750,6 +750,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `An unexpected error occurred: ${await getEdgeFunctionErrorMessage(error)}.`,
         });
       }
+      resetSessionStates();
       return false;
     }
   }, [user?.id, activeSessionRecordId, areToastsEnabled, session?.access_token]);
@@ -940,7 +941,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: userJoinCode,
-            organization: selectedHostingOrganization, // MODIFIED: Use selectedHostingOrganization
+            organisation: selectedHostingOrganisation, // MODIFIED: Use selectedHostingOrganisation
             last_heartbeat: new Date().toISOString(),
             host_notes: hostNotes,
           })
@@ -966,7 +967,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
-    sessionVisibility, selectedHostingOrganization, hostNotes, // MODIFIED: Use selectedHostingOrganization
+    sessionVisibility, selectedHostingOrganisation, hostNotes, // MODIFIED: Use selectedHostingOrganisation
     _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
   ]);
 
@@ -1109,9 +1110,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsSeshTitleCustomized(false);
       setNotes("");
       setHostNotes("");
-      setSelectedHostingOrganization(null); // NEW: Reset selected hosting organization
+      setSelectedHostingOrganisation(null); // NEW: Reset selected hosting organisation
     }
-  }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, getDefaultSeshTitle, setSelectedHostingOrganization]);
+  }, [savedSchedules, areToastsEnabled, toast, _defaultFocusMinutes, _defaultBreakMinutes, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, getDefaultSeshTitle, setSelectedHostingOrganisation]);
 
   const deleteScheduleTemplate = useCallback((templateId: string) => {
     setSavedSchedules((prev) => prev.filter(template => template.id !== templateId));
@@ -1155,7 +1156,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setIsHomepageBreakCustomized(false);
       setNotes("");
       setHostNotes("");
-      setSelectedHostingOrganization(null); // NEW: Reset selected hosting organization
+      setSelectedHostingOrganisation(null); // NEW: Reset selected hosting organisation
     }
 
     setActiveSessionRecordId(sessionToJoin.id);
@@ -1274,7 +1275,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
     setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, _defaultBreakMinutes, _defaultFocusMinutes,
-    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds, session?.access_token, setSelectedHostingOrganization
+    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds, session?.access_token, setSelectedHostingOrganisation
   ]);
 
   // NEW: Main timer countdown effect
@@ -1696,7 +1697,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       currentPhaseDurationSeconds,
       remainingTimeAtPause,
       limitDiscoveryRadius,
-      selectedHostingOrganization, // NEW: Save selectedHostingOrganization
+      selectedHostingOrganisation, // NEW: Save selectedHostingOrganisation
     };
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
@@ -1711,7 +1712,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     preparedSchedules, timerIncrement, startStopNotifications, hasWonPrize, currentSessionRole, currentSessionHostName,
     currentSessionOtherParticipants, isHomepageFocusCustomized, isHomepageBreakCustomized, activeSessionRecordId,
     isDiscoveryActivated, geolocationPermissionStatus, currentSessionParticipantsData, lastActivityTime, showDemoSessions,
-    currentPhaseDurationSeconds, remainingTimeAtPause, limitDiscoveryRadius, selectedHostingOrganization,
+    currentPhaseDurationSeconds, remainingTimeAtPause, limitDiscoveryRadius, selectedHostingOrganisation,
   ]);
 
   useEffect(() => {
@@ -1806,7 +1807,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setCurrentPhaseDurationSeconds(data.currentPhaseDurationSeconds ?? 0);
         setRemainingTimeAtPause(data.remainingTimeAtPause ?? 0);
         setLimitDiscoveryRadius(data.limitDiscoveryRadius ?? false);
-        setSelectedHostingOrganization(data.selectedHostingOrganization ?? null); // NEW: Load selectedHostingOrganization
+        setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null); // NEW: Load selectedHostingOrganisation
       }
 
       initialSavedSchedules = data.savedSchedules ?? [];
@@ -1858,7 +1859,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setIsSeshTitleCustomized(false);
         setNotes("");
         setHostNotes("");
-        setSelectedHostingOrganization(null); // NEW: Reset selected hosting organization
+        setSelectedHostingOrganisation(null); // NEW: Reset selected hosting organisation
       } else {
         const currentHomepageFocus = data.focusMinutes ?? _defaultFocusMinutes;
         const currentHomepageBreak = data.breakMinutes ?? _defaultBreakMinutes;
@@ -1871,10 +1872,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
         setNotes(data.notes ?? "");
         setHostNotes(data.hostNotes ?? "");
-        setSelectedHostingOrganization(data.selectedHostingOrganization ?? null); // NEW: Load selectedHostingOrganization
+        setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null); // NEW: Load selectedHostingOrganisation
       }
     }
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules, setNotes, setHostNotes, setSelectedHostingOrganization]);
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules, setNotes, setHostNotes, setSelectedHostingOrganisation]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -1915,7 +1916,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     showDemoSessions,
     remainingTimeAtPause,
     limitDiscoveryRadius,
-    selectedHostingOrganization,
+    selectedHostingOrganisation,
     getTimerContextDataToSave,
   ]);
 
@@ -2112,8 +2113,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setRemainingTimeAtPause,
     limitDiscoveryRadius,
     setLimitDiscoveryRadius,
-    selectedHostingOrganization,
-    setSelectedHostingOrganization,
+    selectedHostingOrganisation,
+    setSelectedHostingOrganisation,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

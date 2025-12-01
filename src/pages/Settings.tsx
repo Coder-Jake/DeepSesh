@@ -90,6 +90,8 @@ const Settings = () => {
     limitDiscoveryRadius,
     // Removed duplicate setMaxDistance here
     setLimitDiscoveryRadius,
+    selectedHostingOrganisation, // NEW: Get selectedHostingOrganisation
+    setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
   } = useTimer();
 
   const { user } = useAuth();
@@ -145,6 +147,7 @@ const Settings = () => {
     isDiscoveryActivated,
     showDemoSessions,
     limitDiscoveryRadius,
+    selectedHostingOrganisation, // NEW: Save selectedHostingOrganisation
   });
 
   useEffect(() => {
@@ -203,6 +206,7 @@ const Settings = () => {
       isDiscoveryActivated,
       showDemoSessions,
       limitDiscoveryRadius,
+      selectedHostingOrganisation, // NEW: Compare selectedHostingOrganisation
     };
 
     const savedValRef = savedSettingsRef.current;
@@ -235,6 +239,7 @@ const Settings = () => {
     isDiscoveryActivated,
     showDemoSessions,
     limitDiscoveryRadius,
+    selectedHostingOrganisation, // NEW: Add selectedHostingOrganisation
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -456,6 +461,7 @@ const Settings = () => {
     setIsDiscoveryActivated(isDiscoveryActivated);
     setShowDemoSessions(showDemoSessions);
     setLimitDiscoveryRadius(limitDiscoveryRadius);
+    setSelectedHostingOrganisation(selectedHostingOrganisation); // NEW: Save selectedHostingOrganisation
 
     savedSettingsRef.current = {
       showSessionsWhileActive,
@@ -492,6 +498,7 @@ const Settings = () => {
       isDiscoveryActivated,
       showDemoSessions,
       limitDiscoveryRadius,
+      selectedHostingOrganisation, // NEW: Save selectedHostingOrganisation
     };
     setHasChanges(false);
   };
@@ -525,7 +532,7 @@ const Settings = () => {
 
   const handleGlobalSessionVisibilityToggle = () => {
     const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
-    if (profile?.organization) {
+    if (profile?.organisation) {
       modes.push('organisation');
     }
     const currentIndex = modes.indexOf(sessionVisibility);

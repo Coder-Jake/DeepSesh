@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { CardTitle } from '@/components/ui/card';
@@ -87,7 +87,7 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
               <span className="ml-auto text-sm text-muted-foreground">Open to all</span>
             </Button>
 
-            {profile?.organization && (
+            {profile?.organisation && (
               <Button
                 variant="outline"
                 className={cn(

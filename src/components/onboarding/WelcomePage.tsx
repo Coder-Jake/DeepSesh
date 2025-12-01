@@ -18,12 +18,12 @@ interface WelcomePageProps {
 }
 
 const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled }) => {
-  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organization, setFocusPreference, setOrganization } = useProfile();
+  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organisation, setFocusPreference, setOrganisation } = useProfile();
 
   const [firstNameInput, setFirstNameInput] = useState("");
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
-  const [organizationInput, setOrganizationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
-  const [isOrganizationDialogOpen, setIsOrganizationDialogOpen] = useState(false);
+  const [organisationInput, setOrganisationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
+  const [isOrganisationDialogOpen, setIsOrganisationDialogOpen] = useState(false);
 
   const sliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingSlider, setIsDraggingSlider] = useState(false);
@@ -32,7 +32,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     if (!profileLoading && profile) {
       setFirstNameInput(profile.first_name || profile.join_code || "Coworker");
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganizationInput(profile.organization?.join('; ') || null); // MODIFIED: Join array for input display
+      setOrganisationInput(profile.organisation?.join('; ') || null); // MODIFIED: Join array for input display
     }
   }, [profileLoading, profile]);
 
@@ -45,15 +45,15 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     const trimmedFirstName = firstNameInput.trim();
     const nameToSave = (trimmedFirstName === (profile.join_code || "Coworker")) ? null : trimmedFirstName;
     
-    // MODIFIED: Convert organization input string to array
-    const trimmedOrganizationString = organizationInput?.trim() || "";
-    const organizationArray = trimmedOrganizationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
+    // MODIFIED: Convert organisation input string to array
+    const trimmedOrganisationString = organisationInput?.trim() || "";
+    const organisationArray = trimmedOrganisationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
 
     try {
       await updateProfile({
         first_name: nameToSave,
         focus_preference: focusPreferenceInput,
-        organization: organizationArray.length > 0 ? organizationArray : null, // MODIFIED: Pass array
+        organisation: organisationArray.length > 0 ? organisationArray : null, // MODIFIED: Pass array
       }, "Profile details saved!");
       nextStep?.();
     } catch (error: any) {
@@ -62,9 +62,9 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     }
   };
 
-  const handleSaveOrganization = () => {
+  const handleSaveOrganisation = () => {
     // This function is now only for closing the dialog, actual saving happens in handleSaveAndNext
-    setIsOrganizationDialogOpen(false);
+    setIsOrganisationDialogOpen(false);
   };
 
   const handleSliderDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
@@ -98,11 +98,11 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
-  // NEW: Memoized list of organizations
-  const organizationsList = useMemo(() => {
-    if (!organizationInput) return [];
-    return organizationInput.split(';').map(org => org.trim()).filter(org => org.length > 0);
-  }, [organizationInput]);
+  // NEW: Memoized list of organisations
+  const organisationsList = useMemo(() => {
+    if (!organisationInput) return [];
+    return organisationInput.split(';').map(org => org.trim()).filter(org => org.length > 0);
+  }, [organisationInput]);
 
   if (profileLoading) {
     return <div className="text-center text-muted-foreground">Loading profile...</div>;
@@ -171,19 +171,19 @@ png"
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="organization-name-input">Organisation (Optional)</Label>
+          <Label htmlFor="organisation-name-input">Organisation (Optional)</Label>
           <Input
-            id="organization-name-input"
+            id="organisation-name-input"
             placeholder="e.g. Unimelb; StartSpace"
-            value={organizationInput || ""}
-            onChange={(e) => setOrganizationInput(e.target.value)}
+            value={organisationInput || ""}
+            onChange={(e) => setOrganisationInput(e.target.value)}
             readOnly
-            onClick={() => setIsOrganizationDialogOpen(true)}
+            onClick={() => setIsOrganisationDialogOpen(true)}
             className="flex-grow cursor-pointer"
           />
-          {organizationsList.length > 0 && (
+          {organisationsList.length > 0 && (
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm mt-2">
-              {organizationsList.map((org, index) => (
+              {organisationsList.map((org, index) => (
                 <span key={index} className="font-bold text-foreground">
                   {org}
                 </span>
@@ -197,25 +197,25 @@ png"
         Next <ChevronRight className="ml-2 h-4 w-4" />
       </Button>
 
-      <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
+      <Dialog open={isOrganisationDialogOpen} onOpenChange={setIsOrganisationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{organizationInput ? "Edit Organisation Name(s)" : "Add Organisation Name(s)"}</DialogTitle>
+            <DialogTitle>{organisationInput ? "Edit Organisation Name(s)" : "Add Organisation Name(s)"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="organization-dialog-input">Organisation Name(s)</Label>
+              <Label htmlFor="organisation-dialog-input">Organisation Name(s)</Label>
               <Input
-                id="organization-dialog-input"
-                value={organizationInput || ""}
-                onChange={(e) => setOrganizationInput(e.target.value)}
+                id="organisation-dialog-input"
+                value={organisationInput || ""}
+                onChange={(e) => setOrganisationInput(e.target.value)}
                 placeholder="e.g. Unimelb; StartSpace"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOrganizationDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveOrganization}>Save</Button>
+            <Button variant="outline" onClick={() => setIsOrganisationDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveOrganisation}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

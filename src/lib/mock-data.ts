@@ -34,7 +34,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 20,
     updated_at: new Date().toISOString(),
-    organization: ["OpenAI"], // MODIFIED: Changed to array
+    organisation: ["OpenAI"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -54,7 +54,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 10,
     updated_at: new Date().toISOString(),
-    organization: ["SpaceX"], // MODIFIED: Changed to array
+    organisation: ["SpaceX"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -74,7 +74,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 60,
     updated_at: new Date().toISOString(),
-    organization: ["Psychology Dept."], // MODIFIED: Changed to array
+    organisation: ["Psychology Dept."], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -94,7 +94,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 50,
     updated_at: new Date().toISOString(),
-    organization: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
+    organisation: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -114,7 +114,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 40,
     updated_at: new Date().toISOString(),
-    organization: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
+    organisation: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -134,7 +134,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 70,
     updated_at: new Date().toISOString(),
-    organization: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
+    organisation: ["Ancient Philosophy Guild"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -154,7 +154,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 85,
     updated_at: new Date().toISOString(),
-    organization: ["DeepSesh", "StartSpace"], // MODIFIED: Changed to array with multiple organizations
+    organisation: ["DeepSesh", "StartSpace"], // MODIFIED: Changed to array with multiple organisations
     join_code: "DeepSeshJake",
     visibility: ['public'],
     profile_data: {
@@ -174,7 +174,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 75,
     updated_at: new Date().toISOString(),
-    organization: ["Humanistic Psychology"], // MODIFIED: Changed to array
+    organisation: ["Humanistic Psychology"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -194,7 +194,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 80,
     updated_at: new Date().toISOString(),
-    organization: ["Humanistic Psychology"], // MODIFIED: Changed to array
+    organisation: ["Humanistic Psychology"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -214,7 +214,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 90,
     updated_at: new Date().toISOString(),
-    organization: ["Relationship Therapy"], // MODIFIED: Changed to array
+    organisation: ["Relationship Therapy"], // MODIFIED: Changed to array
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -269,7 +269,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[0].id,
     join_code: generateRandomJoinCode(),
-    organization: MOCK_PROFILES[0].organization?.[0] || null, // MODIFIED: Get first organization
+    organisation: MOCK_PROFILES[0].organisation?.[0] || null, // MODIFIED: Get first organisation
   },
   {
     id: "2b3c4d5e-6f7a-4890-8123-4567890abcdef0",
@@ -293,7 +293,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[2].id,
     join_code: generateRandomJoinCode(),
-    organization: MOCK_PROFILES[2].organization?.[0] || null, // MODIFIED: Get first organization
+    organisation: MOCK_PROFILES[2].organisation?.[0] || null, // MODIFIED: Get first organisation
   },
   {
     id: "3c4d5e6f-7a8b-4901-8234-567890abcdef01",
@@ -315,6 +315,6 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[3].id,
     join_code: generateRandomJoinCode(),
-    organization: MOCK_PROFILES[3].organization?.[0] || null, // MODIFIED: Get first organization
+    organisation: MOCK_PROFILES[3].organisation?.[0] || null, // MODIFIED: Get first organisation
   },
 ];

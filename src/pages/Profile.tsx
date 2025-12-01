@@ -34,7 +34,7 @@ type OriginalValuesType = {
   canHelpWith: string;
   needHelpWith: string;
   focusPreference: number;
-  organization: string[] | null; // MODIFIED: Changed to string[] | null
+  organisation: string[] | null; // MODIFIED: Changed to string[] | null
   linkedinUrl: string;
   joinCode: string;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -65,7 +65,7 @@ const Profile = () => {
   const [canHelpWithInput, setCanHelpWithInput] = useState<string | null>(null);
   const [needHelpWithInput, setNeedHelpWithInput] = useState<string | null>(null);
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
-  const [organizationInput, setOrganizationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
+  const [organisationInput, setOrganisationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
   const [linkedinUrlInput, setLinkedinUrlInput] = useState<string | null>(null);
   const [joinCodeInput, setJoinCodeInput] = useState<string | null>(null);
   const [pronounsInput, setPronounsInput] = useState<string | null>(null);
@@ -91,7 +91,7 @@ const Profile = () => {
   const [isEditingFirstName, setIsEditingFirstName] = useState(false);
   const firstNameInputRef = useRef<HTMLInputElement>(null);
 
-  const [isOrganizationDialogOpen, setIsOrganizationDialogOpen] = useState(false);
+  const [isOrganisationDialogOpen, setIsOrganisationDialogOpen] = useState(false);
 
   const isTimerActive = isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending;
 
@@ -292,7 +292,7 @@ const Profile = () => {
         canHelpWith: profile.profile_data?.can_help_with?.value || "",
         needHelpWith: profile.profile_data?.need_help_with?.value || "",
         focusPreference: profile.focus_preference || 50,
-        organization: profile.organization || [], // MODIFIED: Ensure it's an array
+        organisation: profile.organisation || [], // MODIFIED: Ensure it's an array
         linkedinUrl: currentLinkedinUsername,
         joinCode: profile.join_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
@@ -310,7 +310,7 @@ const Profile = () => {
       setCanHelpWithInput(profile.profile_data?.can_help_with?.value || null);
       setNeedHelpWithInput(profile.profile_data?.need_help_with?.value || null);
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganizationInput(profile.organization?.join('; ') || null); // MODIFIED: Join array for input display
+      setOrganisationInput(profile.organisation?.join('; ') || null); // MODIFIED: Join array for input display
       setLinkedinUrlInput(currentLinkedinUsername === "" ? null : currentLinkedinUsername);
       setJoinCodeInput(profile.join_code);
       setPronounsInput(profile.profile_data?.pronouns?.value || null);
@@ -379,10 +379,10 @@ const Profile = () => {
     const currentEffectiveFirstName = firstNameInput.trim();
     const originalEffectiveFirstName = originalValues.firstName;
 
-    // MODIFIED: Compare organization arrays
-    const currentOrganizationArray = organizationInput?.split(';').map(org => org.trim()).filter(org => org.length > 0) || [];
-    const originalOrganizationArray = originalValues.organization || [];
-    const organizationChanged = JSON.stringify(currentOrganizationArray.sort()) !== JSON.stringify(originalOrganizationArray.sort());
+    // MODIFIED: Compare organisation arrays
+    const currentOrganisationArray = organisationInput?.split(';').map(org => org.trim()).filter(org => org.length > 0) || [];
+    const originalOrganisationArray = originalValues.organisation || [];
+    const organisationChanged = JSON.stringify(currentOrganisationArray.sort()) !== JSON.stringify(originalOrganisationArray.sort());
 
     const changed = currentEffectiveFirstName !== originalEffectiveFirstName ||
                    (bioInput || "") !== originalValues.bio ||
@@ -390,7 +390,7 @@ const Profile = () => {
                    (canHelpWithInput || "") !== originalValues.canHelpWith ||
                    (needHelpWithInput || "") !== originalValues.needHelpWith ||
                    focusPreferenceInput !== originalValues.focusPreference ||
-                   organizationChanged || // MODIFIED: Use organizationChanged
+                   organisationChanged || // MODIFIED: Use organisationChanged
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
                    (joinCodeInput || "") !== originalValues.joinCode ||
                    JSON.stringify(bioVisibilityInput) !== JSON.stringify(originalValues.bioVisibility) ||
@@ -402,7 +402,7 @@ const Profile = () => {
                    JSON.stringify(profileVisibilityInput) !== JSON.stringify(originalValues.profileVisibility);
     setHasChanges(changed);
   }, [
-    originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organizationInput, linkedinUrlInput, joinCodeInput,
+    originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organisationInput, linkedinUrlInput, joinCodeInput,
     bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput, profileVisibilityInput, profile
   ]);
 
@@ -440,11 +440,11 @@ const Profile = () => {
     setIsEditingFirstName(false);
   };
 
-  const handleSaveOrganization = async () => {
-    const trimmedOrganizationString = organizationInput?.trim() || "";
-    const organizationArray = trimmedOrganizationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
-    await updateProfile({ organization: organizationArray.length > 0 ? organizationArray : null }, "Organization Saved!"); // MODIFIED: Pass array
-    setIsOrganizationDialogOpen(false);
+  const handleSaveOrganisation = async () => {
+    const trimmedOrganisationString = organisationInput?.trim() || "";
+    const organisationArray = trimmedOrganisationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
+    await updateProfile({ organisation: organisationArray.length > 0 ? organisationArray : null }, "Organisation Saved!"); // MODIFIED: Pass array
+    setIsOrganisationDialogOpen(false);
   };
 
   const handleSave = async () => {
@@ -465,13 +465,13 @@ const Profile = () => {
       return;
     }
 
-    // MODIFIED: Convert organization input string to array
-    const organizationArray = organizationInput?.split(';').map(org => org.trim()).filter(org => org.length > 0) || [];
+    // MODIFIED: Convert organisation input string to array
+    const organisationArray = organisationInput?.split(';').map(org => org.trim()).filter(org => org.length > 0) || [];
 
     const dataToUpdate: ProfileUpdate = {
       first_name: nameToSave,
       focus_preference: focusPreferenceInput,
-      organization: organizationArray.length > 0 ? organizationArray : null, // MODIFIED: Pass array
+      organisation: organisationArray.length > 0 ? organisationArray : null, // MODIFIED: Pass array
       join_code: trimmedJoinCode,
       visibility: profileVisibilityInput,
       bio: { value: bioInput?.trim() === "" ? null : bioInput, visibility: bioVisibilityInput },
@@ -513,7 +513,7 @@ const Profile = () => {
       setCanHelpWithInput(originalValues.canHelpWith === "" ? null : originalValues.canHelpWith);
       setNeedHelpWithInput(originalValues.needHelpWith === "" ? null : originalValues.needHelpWith);
       setFocusPreferenceInput(originalValues.focusPreference);
-      setOrganizationInput(originalValues.organization?.join('; ') || null); // MODIFIED: Join array for input display
+      setOrganisationInput(originalValues.organisation?.join('; ') || null); // MODIFIED: Join array for input display
       setLinkedinUrlInput(originalValues.linkedinUrl === "" ? null : originalValues.linkedinUrl);
       setJoinCodeInput(originalValues.joinCode === "" ? null : originalValues.joinCode);
       setPronounsInput(originalValues.pronouns);
@@ -939,13 +939,13 @@ const Profile = () => {
               <CardTitle>Organisation</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {profile?.organization && profile.organization.length > 0 ? ( // MODIFIED: Check for array length
+              {profile?.organisation && profile.organisation.length > 0 ? ( // MODIFIED: Check for array length
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
                     Currently affiliated with:
                   </p>
                   <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm">
-                    {profile.organization.map((org, index) => (
+                    {profile.organisation.map((org, index) => (
                       <span key={index} className="font-medium text-foreground">
                         {org}
                       </span>
@@ -957,8 +957,8 @@ const Profile = () => {
                   Not currently affiliated with any organisation.
                 </p>
               )}
-              <Button onClick={() => setIsOrganizationDialogOpen(true)}>
-                {profile?.organization && profile.organization.length > 0 ? "Edit Organisations" : "Add Organisations"}
+              <Button onClick={() => setIsOrganisationDialogOpen(true)}>
+                {profile?.organisation && profile.organisation.length > 0 ? "Edit Organisations" : "Add Organisations"}
               </Button>
             </CardContent>
           </Card>
@@ -1034,28 +1034,28 @@ const Profile = () => {
           </div>
         )}
 
-      <Dialog open={isOrganizationDialogOpen} onOpenChange={setIsOrganizationDialogOpen}>
+      <Dialog open={isOrganisationDialogOpen} onOpenChange={setIsOrganisationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{profile?.organization && profile.organization.length > 0 ? "Edit Organisations" : "Add Organisations"}</DialogTitle>
+            <DialogTitle>{profile?.organisation && profile.organisation.length > 0 ? "Edit Organisations" : "Add Organisations"}</DialogTitle>
             <DialogDescription>
-              Enter the names of your organizations, separated by semicolons (e.g., OrgA; OrgB).
+              Enter the names of your organisations, separated by semicolons (e.g., OrgA; OrgB).
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="organization-name">Organisation Name(s)</Label>
+              <Label htmlFor="organisation-name">Organisation Name(s)</Label>
               <Input
-                id="organization-name"
-                value={organizationInput || ""}
-                onChange={(e) => setOrganizationInput(e.target.value)}
+                id="organisation-name"
+                value={organisationInput || ""}
+                onChange={(e) => setOrganisationInput(e.target.value)}
                 placeholder="e.g., StartSpace; Unimelb"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOrganizationDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveOrganization}>Save</Button>
+            <Button variant="outline" onClick={() => setIsOrganisationDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveOrganisation}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

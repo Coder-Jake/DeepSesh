@@ -105,7 +105,7 @@ interface SupabaseSessionData {
   participants_data: ParticipantSessionData[];
   join_code: string | null;
   active_asks: ActiveAskItem[];
-  organization: string | null;
+  organisation: string | null;
   host_notes: string | null;
 }
 
@@ -116,7 +116,7 @@ const filterLocalMockSessions = (
   currentUserId: string | undefined,
   userLatitude: number | null,
   userLongitude: number | null,
-  profileOrganizations: string[] | null, // MODIFIED: Changed to string[] | null
+  profileOrganisations: string[] | null, // MODIFIED: Changed to string[] | null
   limitDiscoveryRadius: boolean,
   maxDistance: number,
   friendStatuses: Record<string, 'friends' | 'pending' | 'none'>
@@ -132,7 +132,7 @@ const filterLocalMockSessions = (
     const isPublic = session.visibility === 'public';
     const isPrivate = session.visibility === 'private';
     const isFriendsOnly = session.visibility === 'friends';
-    const isOrganizationOnly = session.visibility === 'organisation';
+    const isOrganisationOnly = session.visibility === 'organisation';
 
     // Check if the current user is a participant in this specific session
     const isUserInSession = currentUserId ? session.participants.some(p => p.userId === currentUserId) : false;
@@ -140,11 +140,11 @@ const filterLocalMockSessions = (
     // Check if any participant in the session is a friend of the current user
     const hasFriendParticipant = currentUserId ? session.participants.some(p => friendStatuses[p.userId] === 'friends') : false;
 
-    // Check if any participant in the session is in the same organization as the current user
-    const hasOrganizationParticipant = currentUserId && profileOrganizations && session.participants.some(p => {
+    // Check if any participant in the session is in the same organisation as the current user
+    const hasOrganisationParticipant = currentUserId && profileOrganisations && session.participants.some(p => {
       const participantProfile = mockProfiles.find(mp => mp.id === p.userId);
-      // MODIFIED: Check if session's organization is in the participant's organization array
-      return participantProfile?.organization && session.organization && participantProfile.organization.includes(session.organization);
+      // MODIFIED: Check if session's organisation is included in the participant's organisation array
+      return participantProfile?.organisation && session.organisation && participantProfile.organisation.includes(session.organisation);
     });
 
     if (isPublic) {
@@ -156,8 +156,8 @@ const filterLocalMockSessions = (
     if (isFriendsOnly) {
       return isUserInSession || hasFriendParticipant;
     }
-    if (isOrganizationOnly) {
-      return isUserInSession || hasOrganizationParticipant;
+    if (isOrganisationOnly) {
+      return isUserInSession || hasOrganisationParticipant;
     }
 
     return false;
@@ -243,7 +243,7 @@ const fetchSupabaseSessions = async (
       user_id: session.user_id,
       join_code: session.join_code,
       host_notes: session.host_notes,
-      organization: session.organization,
+      organisation: session.organisation,
     };
   }).filter(session => {
     if (limitDiscoveryRadius && session.distance !== null) {
@@ -277,7 +277,7 @@ const sortSessions = (sessions: DemoSession[], currentUserId: string | undefined
 // Local Storage Keys for section open states
 const LOCAL_STORAGE_NEARBY_OPEN_KEY = 'deepsesh_nearby_sessions_open';
 const LOCAL_STORAGE_FRIENDS_OPEN_KEY = 'deepsesh_friends_sessions_open';
-const LOCAL_STORAGE_ORG_OPEN_KEY = 'deepsesh_organization_sessions_open';
+const LOCAL_STORAGE_ORG_OPEN_KEY = 'deepsesh_organisation_sessions_open';
 
 
 const Index = () => {
@@ -387,8 +387,8 @@ const Index = () => {
     remainingTimeAtPause,
     limitDiscoveryRadius,
     maxDistance,
-    selectedHostingOrganization, // NEW: Get selectedHostingOrganization
-    setSelectedHostingOrganization, // NEW: Get setSelectedHostingOrganization
+    selectedHostingOrganisation, // NEW: Get selectedHostingOrganisation
+    setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses } = useProfile();
@@ -414,8 +414,8 @@ const Index = () => {
 
   const [openUpcomingScheduleAccordions, setOpenUpcomingScheduleAccordions] = useState<string[]>([]);
 
-  const allSectionIds: ('nearby' | 'friends' | 'organization')[] = ['nearby', 'friends', 'organization'];
-  const [sectionOrder, setSectionOrder] = useState<('nearby' | 'friends' | 'organization')[]>(allSectionIds);
+  const allSectionIds: ('nearby' | 'friends' | 'organisation')[] = ['nearby', 'friends', 'organisation'];
+  const [sectionOrder, setSectionOrder] = useState<('nearby' | 'friends' | 'organisation')[]>(allSectionIds);
 
   const [openFocusPreferenceTooltipId, setOpenFocusPreferenceTooltipId] = useState<string | null>(null);
   const focusPreferenceTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -440,7 +440,7 @@ const Index = () => {
     const stored = localStorage.getItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY);
     return stored ? JSON.parse(stored) : false;
   });
-  const [isOrganizationSessionsOpen, setIsOrganizationSessionsOpen] = useState(() => {
+  const [isOrganisationSessionsOpen, setIsOrganisationSessionsOpen] = useState(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_ORG_OPEN_KEY);
     return stored ? JSON.parse(stored) : false;
   });
@@ -448,17 +448,17 @@ const Index = () => {
   // NEW: State to track if initial auto-minimization has run
   const [initialMinimizationRun, setInitialMinimizationRun] = useState(false);
 
-  // NEW: Get user's organizations from profile
-  const userOrganizations = useMemo(() => profile?.organization || [], [profile?.organization]);
+  // NEW: Get user's organisations from profile
+  const userOrganisations = useMemo(() => profile?.organisation || [], [profile?.organisation]);
 
-  // NEW: Set default selected hosting organization if user has organizations
+  // NEW: Set default selected hosting organisation if user has organisations
   useEffect(() => {
-    if (userOrganizations.length > 0 && !selectedHostingOrganization) {
-      setSelectedHostingOrganization(userOrganizations[0]);
-    } else if (userOrganizations.length === 0 && selectedHostingOrganization) {
-      setSelectedHostingOrganization(null);
+    if (userOrganisations.length > 0 && !selectedHostingOrganisation) {
+      setSelectedHostingOrganisation(userOrganisations[0]);
+    } else if (userOrganisations.length === 0 && selectedHostingOrganisation) {
+      setSelectedHostingOrganisation(null);
     }
-  }, [userOrganizations, selectedHostingOrganization, setSelectedHostingOrganization]);
+  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation]);
 
   useEffect(() => {
     if (isDiscoverySetupOpen) {
@@ -468,7 +468,7 @@ const Index = () => {
 
   const handleSessionVisibilityToggle = useCallback(() => {
     const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
-    if (userOrganizations.length > 0) { // MODIFIED: Check userOrganizations
+    if (userOrganisations.length > 0) { // MODIFIED: Check userOrganisations
       modes.push('organisation');
     }
     const currentIndex = modes.indexOf(sessionVisibility);
@@ -480,7 +480,7 @@ const Index = () => {
         description: `Your sessions are now ${newVisibility}.`,
       });
     }
-  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, userOrganizations]); // MODIFIED: userOrganizations
+  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, userOrganisations]); // MODIFIED: userOrganisations
 
   const mockProfiles = MOCK_PROFILES;
   const isLoadingMockProfiles = false;
@@ -494,12 +494,12 @@ const Index = () => {
       user?.id,
       userLocation.latitude,
       userLocation.longitude,
-      userOrganizations, // MODIFIED: Pass userOrganizations
+      userOrganisations, // MODIFIED: Pass userOrganisations
       limitDiscoveryRadius,
       maxDistance,
       friendStatuses
     );
-  }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, userOrganizations, limitDiscoveryRadius, maxDistance, friendStatuses]); // MODIFIED: userOrganizations
+  }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, userOrganisations, limitDiscoveryRadius, maxDistance, friendStatuses]); // MODIFIED: userOrganisations
 
 
   const filteredMockNearbySessions = useMemo(() => {
@@ -540,19 +540,19 @@ const Index = () => {
     });
   }, [filteredLocalMockSessions, profile?.id, friendStatuses]);
 
-  const mockOrganizationSessions: DemoSession[] = useMemo(() => {
-    if (!userOrganizations || userOrganizations.length === 0 || !showDemoSessions || !filteredLocalMockSessions) return []; // MODIFIED: Check userOrganizations
+  const mockOrganisationSessions: DemoSession[] = useMemo(() => {
+    if (!userOrganisations || userOrganisations.length === 0 || !showDemoSessions || !filteredLocalMockSessions) return []; // MODIFIED: Check userOrganisations
 
     const sessions: DemoSession[] = [];
 
     filteredLocalMockSessions.forEach(session => {
-      // MODIFIED: Check if session's organization is in the user's organization array
-      if (session.organization && userOrganizations.includes(session.organization)) {
+      // MODIFIED: Check if session's organisation is in the user's organisation array
+      if (session.organisation && userOrganisations.includes(session.organisation)) {
         sessions.push(session);
       }
     });
     return sessions;
-  }, [userOrganizations, showDemoSessions, filteredLocalMockSessions]); // MODIFIED: userOrganizations
+  }, [userOrganisations, showDemoSessions, filteredLocalMockSessions]); // MODIFIED: userOrganisations
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
@@ -753,7 +753,7 @@ const Index = () => {
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: joinCode,
-            organization: selectedHostingOrganization, // NEW: Use selectedHostingOrganization
+            organisation: selectedHostingOrganisation, // NEW: Use selectedHostingOrganisation
             host_notes: hostNotes,
           })
           .select('id')
@@ -772,7 +772,7 @@ const Index = () => {
       }
     }
   }, [
-    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, selectedHostingOrganization, hostNotes
+    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, selectedHostingOrganisation, hostNotes
   ]);
 
   const resumeTimer = () => {
@@ -997,7 +997,7 @@ const Index = () => {
           user_id: joinedSession.user_id,
           join_code: joinedSession.join_code,
           host_notes: joinedSession.host_notes,
-          organization: joinedSession.organization,
+          organisation: joinedSession.organisation,
         };
         await handleJoinSession(demoSession);
       } else {
@@ -1039,11 +1039,11 @@ const Index = () => {
     return result;
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
-  const shouldShowOrganizationSessions = useMemo(() => {
-    const result = isDiscoveryActivated && userOrganizations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganizations
-    console.log("shouldShowOrganizationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganizations:", userOrganizations, "sessionVisibility:", sessionVisibility); // MODIFIED: userOrganizations
+  const shouldShowOrganisationSessions = useMemo(() => {
+    const result = isDiscoveryActivated && userOrganisations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganisations
+    console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisations:", userOrganisations, "sessionVisibility:", sessionVisibility); // MODIFIED: userOrganisations
     return result;
-  }, [userOrganizations, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]); // MODIFIED: userOrganizations
+  }, [userOrganisations, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]); // MODIFIED: userOrganisations
 
   const handleExtendSubmit = async (minutes: number) => {
     if (!user?.id || !activeSessionRecordId) {
@@ -1442,24 +1442,24 @@ const Index = () => {
     console.log("sessionVisibility:", sessionVisibility);
     console.log("showSessionsWhileActive:", showSessionsWhileActive);
     console.log("profile?.id:", profile?.id);
-    console.log("userOrganizations:", userOrganizations); // MODIFIED: userOrganizations
+    console.log("userOrganisations:", userOrganisations); // MODIFIED: userOrganisations
     console.log("filteredLocalMockSessions (local data):", filteredLocalMockSessions);
     console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
     console.log("filteredMockNearbySessions.length:", filteredMockNearbySessions.length);
     console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions);
     console.log("filteredMockFriendsSessions.length:", filteredMockFriendsSessions.length);
-    console.log("shouldShowOrganizationSessions (memo):", shouldShowOrganizationSessions);
-    console.log("mockOrganizationSessions.length:", mockOrganizationSessions.length);
+    console.log("shouldShowOrganisationSessions (memo):", shouldShowOrganisationSessions);
+    console.log("mockOrganisationSessions.length:", mockOrganisationSessions.length);
     console.log("limitDiscoveryRadius:", limitDiscoveryRadius);
     console.log("maxDistance:", maxDistance);
     console.groupEnd();
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
-    sessionVisibility, showSessionsWhileActive, profile?.id, userOrganizations, // MODIFIED: userOrganizations
+    sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisations, // MODIFIED: userOrganisations
     filteredLocalMockSessions,
     shouldShowNearbySessions, filteredMockNearbySessions.length,
     shouldShowFriendsSessions, filteredMockFriendsSessions.length,
-    shouldShowOrganizationSessions, mockOrganizationSessions.length,
+    shouldShowOrganisationSessions, mockOrganisationSessions.length,
     limitDiscoveryRadius, maxDistance
   ]);
 
@@ -1486,20 +1486,20 @@ const Index = () => {
   };
 
   // MODIFIED: getIsOpenState to use local state
-  const getIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+  const getIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organisation') => {
     if (sectionId === 'nearby') return isNearbySessionsOpen;
     if (sectionId === 'friends') return isFriendsSessionsOpen;
-    if (sectionId === 'organization') return isOrganizationSessionsOpen;
+    if (sectionId === 'organisation') return isOrganisationSessionsOpen;
     return false;
-  }, [isNearbySessionsOpen, isFriendsSessionsOpen, isOrganizationSessionsOpen]);
+  }, [isNearbySessionsOpen, isFriendsSessionsOpen, isOrganisationSessionsOpen]);
 
   // MODIFIED: getSetIsOpenState to use local state and persist to localStorage
-  const getSetIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organization') => {
+  const getSetIsOpenState = useCallback((sectionId: 'nearby' | 'friends' | 'organisation') => {
     if (sectionId === 'nearby') return (value: boolean) => { setIsNearbySessionsOpen(value); localStorage.setItem(LOCAL_STORAGE_NEARBY_OPEN_KEY, JSON.stringify(value)); };
     if (sectionId === 'friends') return (value: boolean) => { setIsFriendsSessionsOpen(value); localStorage.setItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY, JSON.stringify(value)); };
-    if (sectionId === 'organization') return (value: boolean) => { setIsOrganizationSessionsOpen(value); localStorage.setItem(LOCAL_STORAGE_ORG_OPEN_KEY, JSON.stringify(value)); };
+    if (sectionId === 'organisation') return (value: boolean) => { setIsOrganisationSessionsOpen(value); localStorage.setItem(LOCAL_STORAGE_ORG_OPEN_KEY, JSON.stringify(value)); };
     return () => {};
-  }, [setIsNearbySessionsOpen, setIsFriendsSessionsOpen, setIsOrganizationSessionsOpen]);
+  }, [setIsNearbySessionsOpen, setIsFriendsSessionsOpen, setIsOrganisationSessionsOpen]);
 
   // REMOVED: The useEffect that directly set isNearbySessionsOpen, etc. based on isDiscoveryActivated
 
@@ -1520,14 +1520,14 @@ const Index = () => {
         localStorage.setItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY, JSON.stringify(isDiscoveryActivated && filteredMockFriendsSessions.length > 0));
       }
       if (!hasStoredOrg) {
-        setIsOrganizationSessionsOpen(isDiscoveryActivated && mockOrganizationSessions.length > 0);
-        localStorage.setItem(LOCAL_STORAGE_ORG_OPEN_KEY, JSON.stringify(isDiscoveryActivated && mockOrganizationSessions.length > 0));
+        setIsOrganisationSessionsOpen(isDiscoveryActivated && mockOrganisationSessions.length > 0);
+        localStorage.setItem(LOCAL_STORAGE_ORG_OPEN_KEY, JSON.stringify(isDiscoveryActivated && mockOrganisationSessions.length > 0));
       }
       setInitialMinimizationRun(true);
     }
   }, [
     initialMinimizationRun, profileLoading, isDiscoveryActivated,
-    filteredMockNearbySessions.length, filteredMockFriendsSessions.length, mockOrganizationSessions.length
+    filteredMockNearbySessions.length, filteredMockFriendsSessions.length, mockOrganisationSessions.length
   ]);
 
 
@@ -1539,7 +1539,7 @@ const Index = () => {
     return sectionOrder.filter(sectionId => !getIsOpenState(sectionId));
   }, [sectionOrder, getIsOpenState]);
 
-  const renderMinimizedSectionButton = (sectionId: 'nearby' | 'friends' | 'organization') => {
+  const renderMinimizedSectionButton = (sectionId: 'nearby' | 'friends' | 'organisation') => {
     const commonClasses = "flex items-center justify-center gap-1 px-3 py-1 rounded-full border border-border text-sm font-medium transition-colors hover:bg-accent-hover";
     const iconSize = 16;
     const setIsOpen = getSetIsOpenState(sectionId);
@@ -1569,10 +1569,10 @@ const Index = () => {
         tooltipContent = "Show Friends' Sessions";
         iconColorClass = "text-blue-500";
         break;
-      case 'organization':
+      case 'organisation':
         icon = <Building2 size={iconSize} />;
         text = 'Organisations';
-        tooltipContent = "Show Organization Sessions";
+        tooltipContent = "Show Organisation Sessions";
         iconColorClass = "text-olive-foreground";
         break;
       default:
@@ -1594,7 +1594,7 @@ const Index = () => {
     );
   };
 
-  const renderSection = (sectionId: 'nearby' | 'friends' | 'organization') => {
+  const renderSection = (sectionId: 'nearby' | 'friends' | 'organisation') => {
     const setIsOpen = getSetIsOpenState(sectionId);
     const isOpen = getIsOpenState(sectionId);
 
@@ -1728,13 +1728,13 @@ const Index = () => {
             )}
           </div>
         );
-      case 'organization':
-        const orgMockSessions = mockOrganizationSessions;
-        const allOrganizationSessions = sortSessions(orgMockSessions, currentUserId);
-        const hasOrganizationSessions = allOrganizationSessions.length > 0;
+      case 'organisation':
+        const orgMockSessions = mockOrganisationSessions;
+        const allOrganisationSessions = sortSessions(orgMockSessions, currentUserId);
+        const hasOrganisationSessions = allOrganisationSessions.length > 0;
 
         return (
-          <div data-name="Organization Sessions Section">
+          <div data-name="Organisation Sessions Section">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center justify-between w-full text-lg font-semibold text-foreground mb-3 transition-opacity"
@@ -1748,9 +1748,9 @@ const Index = () => {
               </div>
             </button>
             {isOpen && (
-              hasOrganizationSessions ? (
+              hasOrganisationSessions ? (
                 <div className="space-y-3">
-                  {allOrganizationSessions.map(session => (
+                  {allOrganisationSessions.map(session => (
                     <SessionCard
                       key={session.id}
                       session={session}
@@ -1760,7 +1760,7 @@ const Index = () => {
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm text-center py-4">
-                  {isDiscoveryActivated && userOrganizations.length > 0 ? "No organization sessions found." : "Join an organization to see Organization sessions."}
+                  {isDiscoveryActivated && userOrganisations.length > 0 ? "No organisation sessions found." : "Join an organisation to see Organisation sessions."}
                 </p>
               )
             )}
@@ -1772,25 +1772,25 @@ const Index = () => {
   };
 
   // NEW: Logic for Host as selector
-  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganizations.length > 0 && !isActiveTimer;
-  const useToggleButton = userOrganizations.length <= 4;
+  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisations.length > 0 && !isActiveTimer;
+  const useToggleButton = userOrganisations.length <= 4;
 
-  const handleCycleOrganization = useCallback(() => {
-    if (!userOrganizations || userOrganizations.length === 0) return;
+  const handleCycleOrganisation = useCallback(() => {
+    if (!userOrganisations || userOrganisations.length === 0) return;
 
-    const currentIndex = selectedHostingOrganization
-      ? userOrganizations.indexOf(selectedHostingOrganization)
+    const currentIndex = selectedHostingOrganisation
+      ? userOrganisations.indexOf(selectedHostingOrganisation)
       : -1;
 
-    const nextIndex = (currentIndex + 1) % userOrganizations.length;
-    setSelectedHostingOrganization(userOrganizations[nextIndex]);
+    const nextIndex = (currentIndex + 1) % userOrganisations.length;
+    setSelectedHostingOrganisation(userOrganisations[nextIndex]);
 
     if (areToastsEnabled) {
-      toast.info("Hosting Organization", {
-        description: `Now hosting as '${userOrganizations[nextIndex]}'.`,
+      toast.info("Hosting Organisation", {
+        description: `Now hosting as '${userOrganisations[nextIndex]}'.`,
       });
     }
-  }, [userOrganizations, selectedHostingOrganization, setSelectedHostingOrganization, areToastsEnabled]);
+  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation, areToastsEnabled]);
 
 
   return (
@@ -1885,21 +1885,21 @@ const Index = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={handleCycleOrganization}
+                              onClick={handleCycleOrganisation}
                               className="h-8 px-3 text-sm ml-auto"
                             >
-                              {selectedHostingOrganization || (userOrganizations.length > 0 ? userOrganizations[0] : "None")}
+                              {selectedHostingOrganisation || (userOrganisations.length > 0 ? userOrganisations[0] : "None")}
                             </Button>
                           ) : (
                             <Select
-                              value={selectedHostingOrganization || ""}
-                              onValueChange={setSelectedHostingOrganization}
+                              value={selectedHostingOrganisation || ""}
+                              onValueChange={setSelectedHostingOrganisation}
                             >
                               <SelectTrigger id="select-hosting-org" className="w-[180px] h-8 text-sm ml-auto">
-                                <SelectValue placeholder="Select Organization" />
+                                <SelectValue placeholder="Select Organisation" />
                               </SelectTrigger>
                               <SelectContent>
-                                {userOrganizations.map(org => (
+                                {userOrganisations.map(org => (
                                   <SelectItem key={org} value={org}>{org}</SelectItem>
                                 ))}
                               </SelectContent>

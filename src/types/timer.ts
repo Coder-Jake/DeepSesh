@@ -111,7 +111,7 @@ export interface DemoSession {
   fullSchedule: ScheduledTimer[];
   user_id?: string | null;
   join_code?: string | null;
-  organization?: string | null; // REMAINS string | null for the hosted organization
+  organisation?: string | null; // REMAINS string | null for the hosted organisation
   host_notes?: string | null;
 }
 
@@ -138,7 +138,7 @@ export interface SupabaseSessionData {
   participants_data: ParticipantSessionData[];
   join_code: string | null;
   active_asks: ActiveAskItem[];
-  organization: string | null; // REMAINS string | null for the hosted organization
+  organisation: string | null; // REMAINS string | null for the hosted organisation
   host_notes: string | null;
 }
 
@@ -325,8 +325,8 @@ export type TimerContextType = {
   setRemainingTimeAtPause: React.Dispatch<React.SetStateAction<number>>;
   limitDiscoveryRadius: boolean;
   setLimitDiscoveryRadius: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedHostingOrganization: string | null; // NEW: Add selectedHostingOrganization
-  setSelectedHostingOrganization: React.Dispatch<React.SetStateAction<string | null>>; // NEW: Add setter
+  selectedHostingOrganisation: string | null; // NEW: Add selectedHostingOrganisation
+  setSelectedHostingOrganisation: React.Dispatch<React.SetStateAction<string | null>>; // NEW: Add setter
 };
 
 // Define the structure for a saved session
