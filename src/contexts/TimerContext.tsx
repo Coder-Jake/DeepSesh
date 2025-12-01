@@ -14,6 +14,7 @@ import { getEdgeFunctionErrorMessage } from '@/utils/error-utils';
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY_TIMER = 'deepsesh_timer_context';
+const LOCAL_STORAGE_MOCK_SESSIONS_SEEDED_KEY = 'deepsesh_mock_sessions_seeded'; // NEW: Key for mock sessions seeded status
 
 interface TimerProviderProps {
   children: React.ReactNode;
@@ -193,6 +194,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   // NEW: State for the organisation selected by the host for the current session
   const [selectedHostingOrganisation, setSelectedHostingOrganisation] = useState<string | null>(null);
+
+  // NEW: State to track if mock sessions have been seeded
+  const [areMockSessionsSeeded, setAreMockSessionsSeeded] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(LOCAL_STORAGE_MOCK_SESSIONS_SEEDED_KEY) === 'true';
+    }
+    return false;
+  });
 
   const isSchedulePrepared = preparedSchedules.length > 0;
   const setIsSchedulePrepared = useCallback((_val: boolean) => {}, []);
@@ -1706,6 +1715,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       remainingTimeAtPause,
       limitDiscoveryRadius,
       selectedHostingOrganisation, // NEW: Save selectedHostingOrganisation
+      areMockSessionsSeeded, // NEW: Save mock sessions seeded status
     };
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
@@ -1720,7 +1730,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     preparedSchedules, timerIncrement, startStopNotifications, hasWonPrize, currentSessionRole, currentSessionHostName,
     currentSessionOtherParticipants, isHomepageFocusCustomized, isHomepageBreakCustomized, activeSessionRecordId,
     isDiscoveryActivated, geolocationPermissionStatus, currentSessionParticipantsData, lastActivityTime, showDemoSessions,
-    currentPhaseDurationSeconds, remainingTimeAtPause, limitDiscoveryRadius, selectedHostingOrganisation,
+    currentPhaseDurationSeconds, remainingTimeAtPause, limitDiscoveryRadius, selectedHostingOrganisation, areMockSessionsSeeded,
   ]);
 
   useEffect(() => {
@@ -1816,6 +1826,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setRemainingTimeAtPause(data.remainingTimeAtPause ?? 0);
         setLimitDiscoveryRadius(data.limitDiscoveryRadius ?? false);
         setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null); // NEW: Load selectedHostingOrganisation
+        setAreMockSessionsSeeded(data.areMockSessionsSeeded ?? false); // NEW: Load mock sessions seeded status
       }
 
       initialSavedSchedules = data.savedSchedules ?? [];
@@ -1925,6 +1936,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     remainingTimeAtPause,
     limitDiscoveryRadius,
     selectedHostingOrganisation,
+    areMockSessionsSeeded, // NEW: Include mock sessions seeded status
     getTimerContextDataToSave,
   ]);
 
@@ -1935,6 +1947,47 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       console.log("TimerContext: Immediate state saved to local storage (isRunning/isPaused change).");
     }
   }, [isRunning, isPaused, isScheduleActive, isSchedulePending, getTimerContextDataToSave]);
+
+  // NEW: Effect to seed mock sessions
+  useEffect(() => {
+    const seedMockSessions = async () => {
+      if (showDemoSessions && !areMockSessionsSeeded) {
+        console.log("Attempting to seed mock sessions...");
+        try {
+          const response = await supabase.functions.invoke('seed-mock-sessions', {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`, // Pass user's token if available
+            },
+          });
+
+          if (response.error) throw response.error;
+          if (response.data.error) throw new Error(response.data.error);
+
+          console.log("Mock sessions seeded successfully:", response.data.message);
+          setAreMockSessionsSeeded(true);
+          localStorage.setItem(LOCAL_STORAGE_MOCK_SESSIONS_SEEDED_KEY, 'true');
+          if (areToastsEnabled) {
+            toast.success("Mock Sessions Loaded", {
+              description: "Demo sessions have been added to your discovery list.",
+            });
+          }
+        } catch (error: any) {
+          console.error("Error seeding mock sessions:", error);
+          if (areToastsEnabled) {
+            toast.error("Failed to Load Mock Sessions", {
+              description: `Could not load demo sessions: ${await getEdgeFunctionErrorMessage(error)}.`,
+            });
+          }
+        }
+      }
+    };
+
+    // Only attempt to seed if user is loaded and showDemoSessions is true
+    if (!profileLoading && user && showDemoSessions) {
+      seedMockSessions();
+    }
+  }, [showDemoSessions, areMockSessionsSeeded, profileLoading, user, areToastsEnabled, session?.access_token]);
 
 
   const value: TimerContextType = {
