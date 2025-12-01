@@ -34,7 +34,7 @@ type OriginalValuesType = {
   canHelpWith: string;
   needHelpWith: string;
   focusPreference: number;
-  organisation: string[] | null; // MODIFIED: Changed to string[] | null
+  organisation: string[] | null;
   linkedinUrl: string;
   joinCode: string;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -65,7 +65,7 @@ const Profile = () => {
   const [canHelpWithInput, setCanHelpWithInput] = useState<string | null>(null);
   const [needHelpWithInput, setNeedHelpWithInput] = useState<string | null>(null);
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
-  const [organisationInput, setOrganisationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
+  const [organisationInput, setOrganisationInput] = useState<string | null>(null);
   const [linkedinUrlInput, setLinkedinUrlInput] = useState<string | null>(null);
   const [joinCodeInput, setJoinCodeInput] = useState<string | null>(null);
   const [pronounsInput, setPronounsInput] = useState<string | null>(null);
@@ -292,7 +292,7 @@ const Profile = () => {
         canHelpWith: profile.profile_data?.can_help_with?.value || "",
         needHelpWith: profile.profile_data?.need_help_with?.value || "",
         focusPreference: profile.focus_preference || 50,
-        organisation: profile.organisation || [], // MODIFIED: Ensure it's an array
+        organisation: profile.organisation || [],
         linkedinUrl: currentLinkedinUsername,
         joinCode: profile.join_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
@@ -310,7 +310,7 @@ const Profile = () => {
       setCanHelpWithInput(profile.profile_data?.can_help_with?.value || null);
       setNeedHelpWithInput(profile.profile_data?.need_help_with?.value || null);
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganisationInput(profile.organisation?.join('; ') || null); // MODIFIED: Join array for input display
+      setOrganisationInput(profile.organisation?.join('; ') || null);
       setLinkedinUrlInput(currentLinkedinUsername === "" ? null : currentLinkedinUsername);
       setJoinCodeInput(profile.join_code);
       setPronounsInput(profile.profile_data?.pronouns?.value || null);
@@ -390,7 +390,7 @@ const Profile = () => {
                    (canHelpWithInput || "") !== originalValues.canHelpWith ||
                    (needHelpWithInput || "") !== originalValues.needHelpWith ||
                    focusPreferenceInput !== originalValues.focusPreference ||
-                   organisationChanged || // MODIFIED: Use organisationChanged
+                   organisationChanged ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
                    (joinCodeInput || "") !== originalValues.joinCode ||
                    JSON.stringify(bioVisibilityInput) !== JSON.stringify(originalValues.bioVisibility) ||
@@ -443,7 +443,7 @@ const Profile = () => {
   const handleSaveOrganisation = async () => {
     const trimmedOrganisationString = organisationInput?.trim() || "";
     const organisationArray = trimmedOrganisationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
-    await updateProfile({ organisation: organisationArray.length > 0 ? organisationArray : null }, "Organisation Saved!"); // MODIFIED: Pass array
+    await updateProfile({ organisation: organisationArray.length > 0 ? organisationArray : null }, "Organisation Saved!");
     setIsOrganisationDialogOpen(false);
   };
 
@@ -465,13 +465,12 @@ const Profile = () => {
       return;
     }
 
-    // MODIFIED: Convert organisation input string to array
     const organisationArray = organisationInput?.split(';').map(org => org.trim()).filter(org => org.length > 0) || [];
 
     const dataToUpdate: ProfileUpdate = {
       first_name: nameToSave,
       focus_preference: focusPreferenceInput,
-      organisation: organisationArray.length > 0 ? organisationArray : null, // MODIFIED: Pass array
+      organisation: organisationArray.length > 0 ? organisationArray : null,
       join_code: trimmedJoinCode,
       visibility: profileVisibilityInput,
       bio: { value: bioInput?.trim() === "" ? null : bioInput, visibility: bioVisibilityInput },
@@ -513,7 +512,7 @@ const Profile = () => {
       setCanHelpWithInput(originalValues.canHelpWith === "" ? null : originalValues.canHelpWith);
       setNeedHelpWithInput(originalValues.needHelpWith === "" ? null : originalValues.needHelpWith);
       setFocusPreferenceInput(originalValues.focusPreference);
-      setOrganisationInput(originalValues.organisation?.join('; ') || null); // MODIFIED: Join array for input display
+      setOrganisationInput(originalValues.organisation?.join('; ') || null);
       setLinkedinUrlInput(originalValues.linkedinUrl === "" ? null : originalValues.linkedinUrl);
       setJoinCodeInput(originalValues.joinCode === "" ? null : originalValues.joinCode);
       setPronounsInput(originalValues.pronouns);
@@ -939,7 +938,7 @@ const Profile = () => {
               <CardTitle>Organisation</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {profile?.organisation && profile.organisation.length > 0 ? ( // MODIFIED: Check for array length
+              {profile?.organisation && profile.organisation.length > 0 ? (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
                     Currently affiliated with:

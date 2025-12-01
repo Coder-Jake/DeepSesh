@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { NotificationSettings } from "@/types/timer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useAuth } from "@/contexts/AuthContext"; // Corrected import path
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from 'sonner';
 import { useTheme } from "@/contexts/ThemeContext";
@@ -55,7 +55,7 @@ const Settings = () => {
     manualTransition,
     setManualTransition,
     maxDistance,
-    setMaxDistance, // Keep this one
+    setMaxDistance,
     askNotifications,
     setAskNotifications,
     joinNotifications, 
@@ -88,10 +88,9 @@ const Settings = () => {
     showDemoSessions,
     setShowDemoSessions,
     limitDiscoveryRadius,
-    // Removed duplicate setMaxDistance here
     setLimitDiscoveryRadius,
-    selectedHostingOrganisation, // NEW: Get selectedHostingOrganisation
-    setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
+    selectedHostingOrganisation,
+    setSelectedHostingOrganisation,
   } = useTimer();
 
   const { user } = useAuth();
@@ -147,7 +146,7 @@ const Settings = () => {
     isDiscoveryActivated,
     showDemoSessions,
     limitDiscoveryRadius,
-    selectedHostingOrganisation, // NEW: Save selectedHostingOrganisation
+    selectedHostingOrganisation,
   });
 
   useEffect(() => {
@@ -206,7 +205,7 @@ const Settings = () => {
       isDiscoveryActivated,
       showDemoSessions,
       limitDiscoveryRadius,
-      selectedHostingOrganisation, // NEW: Compare selectedHostingOrganisation
+      selectedHostingOrganisation,
     };
 
     const savedValRef = savedSettingsRef.current;
@@ -239,7 +238,7 @@ const Settings = () => {
     isDiscoveryActivated,
     showDemoSessions,
     limitDiscoveryRadius,
-    selectedHostingOrganisation, // NEW: Add selectedHostingOrganisation
+    selectedHostingOrganisation,
   ]);
 
   const showMomentaryText = (key: string, text: string) => {
@@ -461,7 +460,7 @@ const Settings = () => {
     setIsDiscoveryActivated(isDiscoveryActivated);
     setShowDemoSessions(showDemoSessions);
     setLimitDiscoveryRadius(limitDiscoveryRadius);
-    setSelectedHostingOrganisation(selectedHostingOrganisation); // NEW: Save selectedHostingOrganisation
+    setSelectedHostingOrganisation(selectedHostingOrganisation);
 
     savedSettingsRef.current = {
       showSessionsWhileActive,
@@ -498,7 +497,7 @@ const Settings = () => {
       isDiscoveryActivated,
       showDemoSessions,
       limitDiscoveryRadius,
-      selectedHostingOrganisation, // NEW: Save selectedHostingOrganisation
+      selectedHostingOrganisation,
     };
     setHasChanges(false);
   };
@@ -581,7 +580,7 @@ const Settings = () => {
                   onClick={cycleSessionVisibility}
                   className={cn(
                     "px-4 py-2 rounded-full transition-colors text-foreground bg-muted select-none",
-                    "hover:bg-muted-hover" // NEW: Added hover effect
+                    "hover:bg-muted-hover"
                   )}
                 >
                   {showSessionsWhileActive === 'hidden' && "Hidden"}
@@ -820,10 +819,10 @@ const Settings = () => {
                   onClick={handleGlobalSessionVisibilityToggle}
                   className={cn(
                     "px-3 py-1 rounded-full transition-colors select-none",
-                    "hover:bg-transparent", // Add this to clear default hover
-                    sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover", // NEW: Added hover effect
-                    sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover", // NEW: Added hover effect
-                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover" // NEW: Added hover effect
+                    "hover:bg-transparent",
+                    sessionVisibility === 'public' && "bg-public-bg text-public-bg-foreground hover:bg-public-bg-hover",
+                    sessionVisibility === 'private' && "bg-private-bg text-private-bg-foreground hover:bg-private-bg-hover",
+                    sessionVisibility === 'organisation' && "bg-organisation-bg text-organisation-bg-foreground hover:bg-organisation-bg-hover"
                   )}
                 >
                   {sessionVisibility === 'public' && (
@@ -853,7 +852,7 @@ const Settings = () => {
                   onClick={() => setIs24HourFormat(prev => !prev)}
                   className={cn(
                     "px-4 py-2 rounded-full transition-colors text-foreground bg-muted select-none",
-                    "hover:bg-muted-hover" // NEW: Added hover effect
+                    "hover:bg-muted-hover"
                   )}
                 >
                   {is24HourFormat ? "24hr" : "AM/PM"}
@@ -876,7 +875,7 @@ const Settings = () => {
                   onClick={() => setCurrentTimerIncrement(prev => prev === 1 ? 5 : 1)}
                   className={cn(
                     "px-4 py-2 rounded-full transition-colors text-foreground bg-muted select-none",
-                    "hover:bg-muted-hover" // NEW: Added hover effect
+                    "hover:bg-muted-hover"
                   )}
                 >
                   {currentTimerIncrement}
@@ -957,9 +956,9 @@ const Settings = () => {
                   variant="outline"
                   className={cn(
                     "w-full flex items-center gap-2",
-                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover hover:text-success-foreground", // NEW: Added hover:text-success-foreground
-                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover", // NEW: Added hover effect
-                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover" // NEW: Added hover effect
+                    geolocationPermissionStatus === 'granted' && "bg-success text-success-foreground border-success hover:bg-success-hover hover:text-success-foreground",
+                    geolocationPermissionStatus === 'denied' && "bg-error text-error-foreground border-error hover:bg-error-hover",
+                    geolocationPermissionStatus === 'prompt' && "bg-muted text-muted-foreground hover:bg-muted-hover"
                   )}
                   onClick={handleLocationButtonClick}
                 >
@@ -986,7 +985,7 @@ const Settings = () => {
                   onClick={() => setLimitDiscoveryRadius(prev => !prev)}
                   className={cn(
                     "px-4 py-2 rounded-full transition-colors text-foreground bg-muted select-none",
-                    "hover:bg-muted-hover" // NEW: Added hover effect
+                    "hover:bg-muted-hover"
                   )}
                 >
                   {limitDiscoveryRadius ? (
@@ -1108,7 +1107,7 @@ const Settings = () => {
               <div className="border-t border-border pt-6 mt-6 opacity-50 pointer-events-none">
                 <Tooltip>
                   <TooltipTrigger className="cursor-help block w-full text-left">
-                    <div> {/* NEW: Wrapped content in a single div */}
+                    <div>
                       <h3 className="text-lg font-semibold mb-4">Verification</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <p className="text-sm text-muted-foreground">
@@ -1159,7 +1158,7 @@ const Settings = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                    </div> {/* NEW: Closing div for the content */}
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent className="select-none">
                     <p>Requires App development</p>

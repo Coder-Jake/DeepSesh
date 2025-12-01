@@ -18,7 +18,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TimerProvider, useTimer } from './contexts/TimerContext'; // Import useTimer
+import { TimerProvider, useTimer } from './contexts/TimerContext';
 import { ProfileProvider, useProfile } from './contexts/ProfileContext';
 import OnboardingLayout from './components/onboarding/OnboardingLayout';
 import WelcomePage from './components/onboarding/WelcomePage';
@@ -26,22 +26,35 @@ import VisibilityPage from './components/onboarding/VisibilityPage';
 
 const queryClient = new QueryClient();
 
+// NEW: Local storage key for onboarding status
+const LOCAL_STORAGE_ONBOARDING_COMPLETE_KEY = 'deepsesh_onboarding_complete_local';
+
 const OnboardingWrapper: React.FC = () => {
-  const { profile, loading: profileLoading, updateProfile } = useProfile();
+  const { profile, loading: profileLoading } = useProfile();
   const { areToastsEnabled } = useTimer();
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(LOCAL_STORAGE_ONBOARDING_COMPLETE_KEY) === 'true';
+    }
+    return false;
+  });
 
   useEffect(() => {
-    if (!profileLoading && profile) {
-      setIsOnboardingComplete(profile.onboarding_complete || false);
+    // If profile is loaded and onboarding is not yet marked complete locally,
+    // but the profile has a first name or join code, consider it implicitly onboarded.
+    // This handles cases where a user might have an existing profile but no local onboarding flag.
+    if (!profileLoading && profile && !isOnboardingComplete) {
+      if (profile.first_name || profile.join_code) {
+        setIsOnboardingComplete(true);
+        localStorage.setItem(LOCAL_STORAGE_ONBOARDING_COMPLETE_KEY, 'true');
+      }
     }
-  }, [profile, profileLoading]);
+  }, [profile, profileLoading, isOnboardingComplete]);
 
-  const handleOnboardingComplete = async () => {
-    if (profile) {
-      await updateProfile({ onboarding_complete: true }, "Onboarding complete!");
-      setIsOnboardingComplete(true);
-    }
+  const handleOnboardingComplete = () => {
+    // Update local state and local storage directly
+    setIsOnboardingComplete(true);
+    localStorage.setItem(LOCAL_STORAGE_ONBOARDING_COMPLETE_KEY, 'true');
   };
 
   if (profileLoading) {
