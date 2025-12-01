@@ -924,9 +924,9 @@ const Profile = () => {
                   >
                     {focusPreferenceInput <= 20 && "Looking to collaborate/brainstorm"}
                     {focusPreferenceInput > 20 && focusPreferenceInput <= 40 && "Happy to chat while we work"}
-                    {focusPreferenceInput > 40 && focusPreferenceInput <= 60 && "I don't mind"}
-                    {focusPreferenceInput > 60 && focusPreferenceInput <= 80 && "Socialise only during breaks"}
-                    {focusPreferenceInput > 80 && "Minimal interaction even during breaks"}
+                    {focusPreferenceInput > 40 && focusPreference <= 60 && "I don't mind"}
+                    {focusPreference > 60 && focusPreference <= 80 && "Socialise only during breaks"}
+                    {focusPreference > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
               </div>

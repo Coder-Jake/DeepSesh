@@ -259,7 +259,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[0].id,
     join_code: generateRandomJoinCode(),
-    organisation: MOCK_PROFILES[0].organisation?.[0] || null,
+    organisation: MOCK_PROFILES[0].organisation || null,
   },
   {
     id: "2b3c4d5e-6f7a-4890-8123-4567890abcdef0",
@@ -283,7 +283,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[2].id,
     join_code: generateRandomJoinCode(),
-    organisation: MOCK_PROFILES[2].organisation?.[0] || null,
+    organisation: MOCK_PROFILES[2].organisation || null,
   },
   {
     id: "3c4d5e6f-7a8b-4901-8234-567890abcdef01",
@@ -305,6 +305,6 @@ export const MOCK_SESSIONS: DemoSession[] = [
     fullSchedule: createMockSchedule(),
     user_id: MOCK_PROFILES[3].id,
     join_code: generateRandomJoinCode(),
-    organisation: MOCK_PROFILES[3].organisation?.[0] || null,
+    organisation: MOCK_PROFILES[3].organisation || null,
   },
 ];

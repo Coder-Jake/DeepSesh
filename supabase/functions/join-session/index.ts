@@ -98,7 +98,7 @@ serve(async (req) => {
 
       if (!hasSharedOrganisation) {
         console.warn('JOIN_SESSION_EDGE_FUNCTION: Forbidden: Organization session access denied. Session Orgs:', sessionOrganisations, 'Joining User Orgs:', joiningUserOrganisations);
-        return new Response(JSON.stringify({ error: 'Forbidden: This is an organization-only session.' }), {
+        return new Response(JSON.stringify({ error: 'Forbidden: This is an organisation-only session.' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 403,
         });

@@ -200,6 +200,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     if ('host_code' in profileDataToSend) {
       delete profileDataToSend.host_code;
     }
+    // NEW: Explicitly remove 'organization' if it exists (due to potential old local storage data)
+    if ('organization' in profileDataToSend) {
+      delete profileDataToSend.organization;
+    }
 
     try {
       const { error } = await supabase

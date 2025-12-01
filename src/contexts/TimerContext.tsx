@@ -538,7 +538,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
             setActiveAsks(updatedSession.active_asks || []);
             setHostNotes(updatedSession.host_notes || "");
-            setSelectedHostingOrganisation(updatedSession.organisation || null); // NEW: Sync selected hosting organisation
+            setSelectedHostingOrganisation(updatedSession.organisation?.[0] || null); // NEW: Sync selected hosting organisation, assuming single org for simplicity
           }
         )
         .subscribe();

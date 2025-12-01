@@ -104,8 +104,7 @@ interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null;
-  active_asks: ActiveAskItem[];
-  organisation: string | null;
+  organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
 }
 
@@ -144,7 +143,7 @@ const filterLocalMockSessions = (
     const hasOrganisationParticipant = currentUserId && profileOrganisations && session.participants.some(p => {
       const participantProfile = mockProfiles.find(mp => mp.id === p.userId);
       // MODIFIED: Check if session's organisation is included in the participant's organisation array
-      return participantProfile?.organisation && session.organisation && participantProfile.organisation.includes(session.organisation);
+      return participantProfile?.organisation && session.organisation && session.organisation.some(sessionOrg => participantProfile.organisation?.includes(sessionOrg));
     });
 
     if (isPublic) {
@@ -547,7 +546,7 @@ const Index = () => {
 
     filteredLocalMockSessions.forEach(session => {
       // MODIFIED: Check if session's organisation is in the user's organisation array
-      if (session.organisation && userOrganisations.includes(session.organisation)) {
+      if (session.organisation && userOrganisations.some(userOrg => session.organisation?.includes(userOrg))) {
         sessions.push(session);
       }
     });
@@ -753,7 +752,7 @@ const Index = () => {
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: joinCode,
-            organisation: selectedHostingOrganisation, // NEW: Use selectedHostingOrganisation
+            organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MODIFIED: Use selectedHostingOrganisation as an array
             host_notes: hostNotes,
           })
           .select('id')
