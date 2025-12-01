@@ -431,7 +431,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
       join_code: userJoinCode,
-      organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MODIFIED: Use selectedHostingOrganisation as an array
+      organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation // MODIFIED
+        ? [selectedHostingOrganisation]
+        : null,
       last_heartbeat: new Date().toISOString(),
       host_notes: hostNotes,
       active_asks: activeAsks, // NEW: Include active_asks
@@ -942,7 +944,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: userJoinCode,
-            organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MODIFIED: Use selectedHostingOrganisation as an array
+            organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation // MODIFIED
+              ? [selectedHostingOrganisation]
+              : null,
             last_heartbeat: new Date().toISOString(),
             host_notes: hostNotes,
             active_asks: activeAsks, // NEW: Include active_asks
