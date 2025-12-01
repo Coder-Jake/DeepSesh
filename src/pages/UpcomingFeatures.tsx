@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 const UpcomingFeatures = () => {
   const features = [
     { name: "Mobile App", description: "Native applications for iOS and Android, enabling on-the-go focus and collaboration." },
+    { name: "New Interface", description: "Streamline features for less scrolling and easier navigation." },
     { name: "User Verification", description: "Implement ID verification to enhance trust and security within the community. Filter to only interact with verified coworkers." },
     { name: "Real-time Collaboration", description: "Shared notes, coworker polling, and live interaction during sessions." },
     { name: "Leaderboard", description: "Weekly, Monthly, and All Time leaderboards (Local & Global). Including gamified elements to track and display user achievements, streaks, and focus hours." },
