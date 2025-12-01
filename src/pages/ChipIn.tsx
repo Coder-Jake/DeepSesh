@@ -175,21 +175,21 @@ const ChipIn = () => {
                 <TrendingUp className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium text-foreground">Development Costs:</p>
-                  <p>$6,000 (initial development & design)</p>
+                  <p>Initial development & design</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium text-foreground">Annual Expenses per User:</p>
-                  <p>$0.69 (hosting, database, third-party services)</p>
+                  <p>Hosting, database, third-party services</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Heart className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium text-foreground">Funding Already Received:</p>
-                  <p>$4,500 (from early supporters)</p>
+                  <p>From early supporters</p>
                 </div>
               </div>
               <Link to="/upcoming-features" className="block cursor-pointer rounded-md p-2 -mx-2 -my-1 transition-colors">

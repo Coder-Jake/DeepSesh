@@ -6,15 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const UpcomingFeatures = () => {
   const features = [
-    { name: "Mobile App", cost: "$12,000", description: "Native applications for iOS and Android, enabling on-the-go focus and collaboration." },
-    { name: "User Verification", cost: "$6,000", description: "Implement robust identity verification to enhance trust and security within the community. Filter to only interact with verified coworkers." },
-    { name: "Real-time Collaboration", cost: "$5,000", description: "Shared notes, coworker polling, and live interaction during sessions." },
-    { name: "Leaderboard", cost: "$3,500", description: "Weekly, Monthly, and All Time leaderboards. Including gamified elements to track and display user achievements, streaks, and focus hours." },
-    { name: "History", cost: "$3,000", description: "View a timeline of your previous study sessions, with notes and helpful statistics" },
-    { name: "Stake Accountability", cost: "$7,500", description: "Allow users to set stakes (e.g., donate to charity) for meeting their focus goals, with automated tracking." },
-    { name: "Advanced Scheduling", cost: "$4,000", description: "More flexible and powerful scheduling options, including recurring events and calendar integrations." },
-    { name: "Customizable Workspaces", cost: "$2,500", description: "Personalize your digital workspace with themes, backgrounds, and custom soundscapes." },
-    { name: "Integrations (Calendar, To-Do Apps)", cost: "$4,500", description: "Seamlessly connect DeepSesh with popular productivity tools like Google Calendar, Todoist, and Notion." },
+    { name: "Mobile App", description: "Native applications for iOS and Android, enabling on-the-go focus and collaboration." },
+    { name: "User Verification", description: "Implement robust identity verification to enhance trust and security within the community. Filter to only interact with verified coworkers." },
+    { name: "Real-time Collaboration", description: "Shared notes, coworker polling, and live interaction during sessions." },
+    { name: "Leaderboard", description: "Weekly, Monthly, and All Time leaderboards. Including gamified elements to track and display user achievements, streaks, and focus hours." },
+    { name: "History", description: "View a timeline of your previous study sessions, with notes and helpful statistics" },
+    { name: "Stake Accountability", description: "Allow users to set stakes (e.g., donate to charity) for meeting their focus goals, with automated tracking." },
+    { name: "Advanced Scheduling", description: "More flexible and powerful scheduling options, including recurring events and calendar integrations." },
+    { name: "Customizable Workspaces", description: "Personalize your digital workspace with themes, backgrounds, and custom soundscapes." },
+    { name: "Integrations (Calendar, To-Do Apps)", description: "Seamlessly connect DeepSesh with popular productivity tools like Google Calendar, Todoist, and Notion." },
   ];
 
   return (
@@ -41,7 +41,6 @@ const UpcomingFeatures = () => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>{feature.name}</span>
-                <span className="text-base font-medium text-primary">{feature.cost}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
