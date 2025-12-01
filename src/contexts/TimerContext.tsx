@@ -773,12 +773,34 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
     const totalSessionSeconds = finalAccumulatedFocus + finalAccumulatedBreak;
 
-    if (currentSessionRole === 'host') {
-      await transferHostRole();
+    // Determine if this is a local-only session (not published to Supabase)
+    const isLocalOnlySession = (currentSessionRole === 'host' || currentSessionRole === null) && sessionVisibility === 'private';
+
+    if (isLocalOnlySession) {
+      console.log("stopTimer: Handling local-only session stop.");
+      await saveSessionToDatabase(
+        user?.id,
+        _seshTitle,
+        notes,
+        hostNotes,
+        finalAccumulatedFocus,
+        finalAccumulatedBreak,
+        totalSessionSeconds,
+        activeJoinedSessionCoworkerCount,
+        sessionStartTime || Date.now(),
+        activeAsks,
+        allParticipantsToDisplay,
+        areToastsEnabled
+      );
+    } else if (currentSessionRole === 'host') {
+      console.log("stopTimer: Handling host role for published session.");
+      await transferHostRole(); // This will either transfer or delete the session
     } else if (currentSessionRole === 'coworker') {
+      console.log("stopTimer: Handling coworker role for published session.");
       await leaveSession();
     } else {
-      console.log("TimerContext: Calling saveSessionToDatabase with activeAsks:", activeAsks);
+      // This case should ideally not be reached if currentSessionRole is correctly managed
+      console.warn("stopTimer: Unexpected state - no active role, but not a local-only session. Saving locally as fallback.");
       await saveSessionToDatabase(
         user?.id,
         _seshTitle,
@@ -803,7 +825,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentSessionRole, accumulatedFocusSeconds, accumulatedBreakSeconds,
     isRunning, currentPhaseStartTime, timerType, user?.id, _seshTitle, notes, hostNotes,
     activeJoinedSessionCoworkerCount, sessionStartTime, activeAsks, allParticipantsToDisplay,
-    areToastsEnabled, resetSessionStates, playSound, triggerVibration, transferHostRole, leaveSession
+    areToastsEnabled, resetSessionStates, playSound, triggerVibration, transferHostRole, leaveSession, sessionVisibility
   ]);
 
 
@@ -861,6 +883,70 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
     }
 
+    // Prepare host participant data
+    const hostParticipant: ParticipantSessionData = {
+      userId: user?.id || `anon-${crypto.randomUUID()}`,
+      userName: localFirstName,
+      joinTime: Date.now(),
+      role: 'host',
+      focusPreference: userFocusPreference || 50,
+      intention: profile?.profile_data?.intention?.value || null,
+      bio: profile?.profile_data?.bio?.value || null,
+    };
+
+    let newActiveSessionRecordId: string | null = null;
+
+    // --- Supabase Insertion (for public/organisation sessions) ---
+    if (sessionVisibility !== 'private') {
+      const { latitude, longitude } = await getLocation();
+      try {
+        const { data, error } = await supabase
+          .from('active_sessions')
+          .insert({
+            user_id: hostParticipant.userId,
+            host_name: hostParticipant.userName,
+            session_title: initialScheduleTitle,
+            visibility: sessionVisibility,
+            focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
+            break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
+            current_phase_type: initialSchedule[simulatedCurrentPhaseIndex]?.type || 'focus', // Use initial phase type
+            current_phase_end_time: new Date(Date.now() + (simulatedTimeLeftInPhase !== null ? simulatedTimeLeftInPhase : (initialSchedule[simulatedCurrentPhaseIndex]?.durationMinutes || 0) * 60) * 1000).toISOString(),
+            total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
+            schedule_id: initialSchedule[0]?.id && isValidUUID(initialSchedule[0].id) ? initialSchedule[0].id : null,
+            is_active: true, // Temporarily true, will be updated by sync
+            is_paused: false, // Temporarily false, will be updated by sync
+            current_schedule_index: simulatedCurrentPhaseIndex,
+            schedule_data: initialSchedule,
+            location_lat: latitude,
+            location_long: longitude,
+            participants_data: [hostParticipant],
+            join_code: userJoinCode,
+            organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation
+              ? [selectedHostingOrganisation]
+              : null,
+            last_heartbeat: new Date().toISOString(),
+            host_notes: hostNotes,
+            active_asks: activeAsks,
+            is_mock: false,
+          })
+          .select('id')
+          .single();
+
+        if (error) throw error;
+        newActiveSessionRecordId = data.id;
+        console.log("startSessionCommonLogic: Active session inserted into Supabase:", newActiveSessionRecordId);
+      } catch (error: any) {
+        console.error("Error inserting active session into Supabase:", error.message);
+        if (areToastsEnabled) {
+          toast.error("Supabase Error", {
+            description: `Failed to publish session: ${error.message}`,
+          });
+        }
+        return false; // Crucial: if Supabase fails, don't proceed as if it's a published session
+      }
+    }
+
+    // --- Update Local State (after Supabase success or for private sessions) ---
     setActiveSchedule(initialSchedule);
     setActiveTimerColors(initialTimerColors);
     _setSeshTitle(initialScheduleTitle);
@@ -898,84 +984,21 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     playSound();
     triggerVibration();
 
-    const hostParticipant: ParticipantSessionData = {
-      userId: user?.id || `anon-${crypto.randomUUID()}`,
-      userName: localFirstName,
-      joinTime: Date.now(),
-      role: 'host',
-      focusPreference: userFocusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || null,
-      bio: profile?.profile_data?.bio?.value || null,
-    };
     setCurrentSessionParticipantsData([hostParticipant]);
     setCurrentSessionRole('host');
     setCurrentSessionHostName(localFirstName);
     setCurrentSessionOtherParticipants([]);
     setActiveJoinedSessionCoworkerCount(0);
 
-    console.log("--- Debugging Session Title before Supabase Insert ---");
-    console.log("User ID:", user?.id);
-    console.log("localFirstName (from ProfileContext):", localFirstName);
-    console.log("isSeshTitleCustomized (from TimerContext):", isSeshTitleCustomized);
-    console.log("getDefaultSeshTitle():", getDefaultSeshTitle());
-    console.log("initialScheduleTitle (value being sent to Supabase):", initialScheduleTitle);
-    console.log("--- End Debugging Session Title ---");
+    setActiveSessionRecordId(newActiveSessionRecordId); // Set the ID here after local state is ready
 
-    if (sessionVisibility !== 'private') {
-      const { latitude, longitude } = await getLocation();
-      try {
-        const { data, error } = await supabase
-          .from('active_sessions')
-          .insert({
-            user_id: hostParticipant.userId,
-            host_name: hostParticipant.userName,
-            session_title: initialScheduleTitle,
-            visibility: sessionVisibility,
-            focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
-            break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
-            current_phase_type: actualTimerType,
-            current_phase_end_time: new Date(Date.now() + actualTimeLeft * 1000).toISOString(),
-            total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
-            schedule_id: initialSchedule[0]?.id && isValidUUID(initialSchedule[0].id) ? initialSchedule[0].id : null,
-            is_active: true,
-            is_paused: false,
-            current_schedule_index: actualCurrentScheduleIndex,
-            schedule_data: initialSchedule,
-            location_lat: latitude,
-            location_long: longitude,
-            participants_data: [hostParticipant],
-            join_code: userJoinCode,
-            organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation // MODIFIED
-              ? [selectedHostingOrganisation]
-              : null,
-            last_heartbeat: new Date().toISOString(),
-            host_notes: hostNotes,
-            active_asks: activeAsks, // NEW: Include active_asks
-            is_mock: false, // NEW: Set is_mock to false for user-created sessions
-          })
-          .select('id')
-          .single();
-
-        if (error) throw error;
-        setActiveSessionRecordId(data.id);
-        console.log("startSessionCommonLogic: Active session inserted into Supabase:", data.id);
-      } catch (error: any) {
-        console.error("Error inserting active session into Supabase:", error.message);
-        if (areToastsEnabled) {
-          toast.error("Supabase Error", {
-            description: `Failed to publish session: ${error.message}`,
-          });
-        }
-        return false;
-      }
-    }
     return true;
   }, [
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
-    sessionVisibility, selectedHostingOrganisation, hostNotes, activeAsks, // NEW: Include activeAsks
+    sessionVisibility, selectedHostingOrganisation, hostNotes, activeAsks,
     _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
   ]);
 
@@ -1712,7 +1735,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, isSchedulingMode,
     isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
     savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
-    activeJoinedSessionCoworkerCount, activeAsks, isSeshTitleCustomized, scheduleStartOption, isTimeLeftManagedBySession,
+    activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
     askNotifications, joinNotifications, sessionInvites, friendActivity, breakNotificationsVibrate, verificationStandard,
