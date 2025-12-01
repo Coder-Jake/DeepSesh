@@ -682,10 +682,11 @@ const Settings = () => {
                     <Select 
                       value={batchNotificationPreference} 
                       onValueChange={(value: 'break' | 'sesh_end' | 'custom') => setBatchNotificationPreference(value)}
-                      name="batchNotificationPreference"
-                      id="batch-notifications-preference"
                     >
-                      <SelectTrigger>
+                      <SelectTrigger 
+                        name="batchNotificationPreference"
+                        id="batch-notifications-preference"
+                      >
                         <SelectValue placeholder="Select when to batch" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1000,7 +1001,7 @@ const Settings = () => {
                   {limitDiscoveryRadius ? (
                     maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`
                   ) : (
-                    <InfinityIcon size={20} />
+                    <Infinity size={20} />
                   )}
                 </Button>
               </div>
@@ -1130,10 +1131,11 @@ const Settings = () => {
                         <Select 
                           value={verificationStandard}
                           onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
-                          name="verificationStandard"
-                          id="verification-standard"
                         >
-                          <SelectTrigger>
+                          <SelectTrigger 
+                            name="verificationStandard"
+                            id="verification-standard"
+                          >
                             <SelectValue placeholder="Select verification status" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1157,10 +1159,11 @@ const Settings = () => {
                         <Select 
                           value={verificationStandard} 
                           onValueChange={(value: string) => setVerificationStandard(value as 'anyone' | 'phone1' | 'organisation' | 'id1')}
-                          name="minimumVerificationStandard"
-                          id="minimum-verification-standard"
                         >
-                          <SelectTrigger>
+                          <SelectTrigger 
+                            name="minimumVerificationStandard"
+                            id="minimum-verification-standard"
+                          >
                             <SelectValue placeholder="Select verification standard" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1211,10 +1214,11 @@ const Settings = () => {
                     <Select
                       value={selectedCoworkerToBlock}
                       onValueChange={(value) => setSelectedCoworkerToBlock(value)}
-                      name="coworkerToBlock"
-                      id="block-coworker-select"
                     >
-                      <SelectTrigger>
+                      <SelectTrigger 
+                        name="coworkerToBlock"
+                        id="block-coworker-select"
+                      >
                         <SelectValue placeholder="Select a coworker" />
                       </SelectTrigger>
                       <SelectContent>

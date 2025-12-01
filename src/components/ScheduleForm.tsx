@@ -486,10 +486,12 @@ const ScheduleForm: React.FC = () => {
                 <Select
                   value={selectedHostingOrganisation || ""}
                   onValueChange={setSelectedHostingOrganisation}
-                  name="selectedHostingOrganisation"
-                  id="select-hosting-org"
                 >
-                  <SelectTrigger className="w-[180px] h-8 text-sm ml-auto">
+                  <SelectTrigger 
+                    className="w-[180px] h-8 text-sm ml-auto"
+                    name="selectedHostingOrganisation"
+                    id="select-hosting-org"
+                  >
                     <SelectValue placeholder="Select Organisation" />
                   </SelectTrigger>
                   <SelectContent>
@@ -571,10 +573,14 @@ const ScheduleForm: React.FC = () => {
                   <Select
                     value={timer.type}
                     onValueChange={(value: 'focus' | 'break') => handleUpdateTimer(timer.id, 'type', value)}
-                    name={`timerType-${timer.id}`}
-                    id={`timer-type-${timer.id}`}
                   >
-                    <SelectTrigger className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center hidden" onKeyDown={handleEnterKeyNavigation} data-input-type="timer-type-select">
+                    <SelectTrigger 
+                      className="w-[90px] h-10 text-sm font-medium flex-shrink-0 text-center hidden" 
+                      onKeyDown={handleEnterKeyNavigation} 
+                      data-input-type="timer-type-select"
+                      name={`timerType-${timer.id}`}
+                      id={`timer-type-${timer.id}`}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -711,10 +717,13 @@ const ScheduleForm: React.FC = () => {
                     onValueChange={(value) => {
                       setCommenceDay(value === "today-default" ? null : parseInt(value));
                     }}
-                    name="commenceDay"
-                    id="commence-day"
                   >
-                    <SelectTrigger onKeyDown={handleEnterKeyNavigation} data-input-type="commence-day">
+                    <SelectTrigger 
+                      onKeyDown={handleEnterKeyNavigation} 
+                      data-input-type="commence-day"
+                      name="commenceDay"
+                      id="commence-day"
+                    >
                       <SelectValue placeholder="Select Day">
                         {commenceDay === null ? "Today (default)" : DAYS_OF_WEEK[commenceDay]}
                       </SelectValue>

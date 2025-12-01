@@ -1824,10 +1824,12 @@ const Index = () => {
                             <Select
                               value={selectedHostingOrganisation || ""}
                               onValueChange={setSelectedHostingOrganisation}
-                              name="selectedHostingOrganisation"
-                              id="select-hosting-org-index"
                             >
-                              <SelectTrigger className="w-[180px] h-8 text-sm ml-auto">
+                              <SelectTrigger 
+                                className="w-[180px] h-8 text-sm ml-auto"
+                                name="selectedHostingOrganisation"
+                                id="select-hosting-org-index"
+                              >
                                 <SelectValue placeholder="Select Organisation" />
                               </SelectTrigger>
                               <SelectContent>
