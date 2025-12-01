@@ -244,7 +244,7 @@ const jake = findMockProfile("Jake");
 
 export const MOCK_SESSIONS: DemoSession[] = [
   {
-    id: "mock-session-1",
+    id: crypto.randomUUID(), // Use crypto.randomUUID()
     title: "Deep Work @ StartSpace",
     startTime: Date.now() - 30 * 60 * 1000, // Started 30 minutes ago
     location: "StartSpace, Melbourne",
@@ -259,9 +259,9 @@ export const MOCK_SESSIONS: DemoSession[] = [
     active_asks: [],
     visibility: 'public',
     fullSchedule: [
-      { id: "mock-focus-1", title: "Deep Focus", type: "focus", durationMinutes: 45 },
-      { id: "mock-break-1", title: "Quick Break", type: "break", durationMinutes: 15 },
-      { id: "mock-focus-2", title: "Coding Sprint", type: "focus", durationMinutes: 60 },
+      { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 45 },
+      { id: crypto.randomUUID(), title: "Quick Break", type: "break", durationMinutes: 15 },
+      { id: crypto.randomUUID(), title: "Coding Sprint", type: "focus", durationMinutes: 60 },
     ],
     user_id: altman?.id || "mock-altman",
     join_code: "StartSpaceDeep",
@@ -270,7 +270,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
     is_mock: true,
   },
   {
-    id: "mock-session-2",
+    id: crypto.randomUUID(), // Use crypto.randomUUID()
     title: "Psych101 Study Sesh",
     startTime: Date.now() - 15 * 60 * 1000, // Started 15 minutes ago
     location: "University Library, Level 3",
@@ -286,9 +286,9 @@ export const MOCK_SESSIONS: DemoSession[] = [
     active_asks: [],
     visibility: 'private',
     fullSchedule: [
-      { id: "mock-study-1", title: "Reading Chapter 5", type: "focus", durationMinutes: 60 },
-      { id: "mock-discussion-1", title: "Concept Discussion", type: "break", durationMinutes: 20 },
-      { id: "mock-study-2", title: "Essay Outline", type: "focus", durationMinutes: 90 },
+      { id: crypto.randomUUID(), title: "Reading Chapter 5", type: "focus", durationMinutes: 60 },
+      { id: crypto.randomUUID(), title: "Concept Discussion", type: "break", durationMinutes: 20 },
+      { id: crypto.randomUUID(), title: "Essay Outline", type: "focus", durationMinutes: 90 },
     ],
     user_id: freud?.id || "mock-freud",
     join_code: "PsychStudy",
