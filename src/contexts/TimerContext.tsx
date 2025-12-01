@@ -437,6 +437,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       last_heartbeat: new Date().toISOString(),
       host_notes: hostNotes,
       active_asks: activeAsks, // NEW: Include active_asks
+      is_mock: false, // NEW: Ensure is_mock is false for user-created sessions
     };
 
     try {
@@ -950,6 +951,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             last_heartbeat: new Date().toISOString(),
             host_notes: hostNotes,
             active_asks: activeAsks, // NEW: Include active_asks
+            is_mock: false, // NEW: Set is_mock to false for user-created sessions
           })
           .select('id')
           .single();
@@ -1212,7 +1214,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     setIsScheduleActive(true);
 
-    if (!sessionToJoin.user_id) {
+    if (sessionToJoin.is_mock) { // NEW: Handle mock sessions locally
       console.log("Joining mock session locally:", sessionToJoin.id);
       const updatedParticipantsData = [...participants, newCoworker];
       setCurrentSessionParticipantsData(updatedParticipantsData);

@@ -58,7 +58,7 @@ serve(async (req) => {
 
     const { data: sessions, error: fetchError } = await supabaseServiceRoleClient
       .from('active_sessions')
-      .select('id, participants_data, is_active, visibility, user_id, join_code, organisation') // Corrected 'organization' to 'organisation'
+      .select('id, participants_data, is_active, visibility, user_id, join_code, organisation, is_mock') // NEW: Select is_mock
       .eq('join_code', sessionCode)
       .eq('is_active', true)
       .limit(1);
@@ -83,6 +83,7 @@ serve(async (req) => {
     console.log('JOIN_SESSION_EDGE_FUNCTION: Session ID:', session.id);
     console.log('JOIN_SESSION_EDGE_FUNCTION: Session Visibility:', session.visibility);
     console.log('JOIN_SESSION_EDGE_FUNCTION: Session Organisation (from DB):', session.organisation);
+    console.log('JOIN_SESSION_EDGE_FUNCTION: Session is_mock:', session.is_mock); // NEW: Log is_mock
 
     const currentParticipants = (session.participants_data || []) as any[];
 
@@ -107,7 +108,7 @@ serve(async (req) => {
 
     if (currentParticipants.some(p => p.userId === participantData.userId)) {
       console.log('JOIN_SESSION_EDGE_FUNCTION: Already a participant:', participantData.userId);
-      return new Response(JSON.stringify({ message: 'Already a participant' }), {
+      return new Response(JSON.stringify({ message: 'Already a participant', session: session }), { // NEW: Return session data even if already a participant
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });

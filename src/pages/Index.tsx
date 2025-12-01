@@ -47,7 +47,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from "@/components/ui/slider";
 import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
 import { calculateDistance } from '@/utils/location-utils';
-import { MOCK_PROFILES, MOCK_SESSIONS } from '@/lib/mock-data';
+import { MOCK_PROFILES } from '@/lib/mock-data';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MarkdownEditor from "@/components/MarkdownEditor";
@@ -107,63 +107,8 @@ interface SupabaseSessionData {
   organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
   active_asks: ActiveAskItem[]; // NEW: Added active_asks property
+  is_mock: boolean; // NEW: Added is_mock property
 }
-
-// Helper function to filter local mock sessions
-const filterLocalMockSessions = (
-  mockSessions: DemoSession[],
-  mockProfiles: ProfileType[],
-  currentUserId: string | undefined,
-  userLatitude: number | null,
-  userLongitude: number | null,
-  profileOrganisations: string[] | null, // MODIFIED: Changed to string[] | null
-  limitDiscoveryRadius: boolean,
-  maxDistance: number,
-  friendStatuses: Record<string, 'friends' | 'pending' | 'none'>
-): DemoSession[] => {
-  return mockSessions.map(session => {
-    let distance: number | null = null;
-    if (userLatitude !== null && userLongitude !== null && session.location_lat !== null && session.location_long !== null) {
-      distance = calculateDistance(userLatitude, userLongitude, session.location_lat, session.location_long);
-    }
-    return { ...session, distance };
-  }).filter(session => {
-    // Apply visibility filters
-    const isPublic = session.visibility === 'public';
-    const isPrivate = session.visibility === 'private';
-    const isFriendsOnly = session.visibility === 'friends';
-    const isOrganisationOnly = session.visibility === 'organisation';
-
-    // Check if the current user is a participant in this specific session
-    const isUserInSession = currentUserId ? session.participants.some(p => p.userId === currentUserId) : false;
-
-    // Check if any participant in the session is a friend of the current user
-    const hasFriendParticipant = currentUserId ? session.participants.some(p => friendStatuses[p.userId] === 'friends') : false;
-
-    // Check if any participant in the session is in the same organisation as the current user
-    const hasOrganisationParticipant = currentUserId && profileOrganisations && session.participants.some(p => {
-      const participantProfile = mockProfiles.find(mp => mp.id === p.userId);
-      // MODIFIED: Check if session's organisation is included in the participant's organisation array
-      return participantProfile?.organisation && session.organisation && session.organisation.some(sessionOrg => participantProfile.organisation?.includes(sessionOrg));
-    });
-
-    if (isPublic) {
-      return true;
-    }
-    if (isPrivate) {
-      return isUserInSession;
-    }
-    if (isFriendsOnly) {
-      return isUserInSession || hasFriendParticipant;
-    }
-    if (isOrganisationOnly) {
-      return isUserInSession || hasOrganisationParticipant;
-    }
-
-    return false;
-  });
-};
-
 
 // Function to fetch live sessions from Supabase
 const fetchSupabaseSessions = async (
@@ -171,7 +116,8 @@ const fetchSupabaseSessions = async (
   userLatitude: number | null,
   userLongitude: number | null,
   limitDiscoveryRadius: boolean,
-  maxDistance: number
+  maxDistance: number,
+  showDemoSessions: boolean // NEW: Pass showDemoSessions
 ): Promise<DemoSession[]> => {
   if (!userId) {
     console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
@@ -180,7 +126,7 @@ const fetchSupabaseSessions = async (
 
   const { data, error } = await supabase
     .from('active_sessions')
-    .select('*')
+    .select('*, profiles(organisation)') // NEW: Select profiles to get organisation data
     .eq('is_active', true);
 
   if (error) {
@@ -188,7 +134,7 @@ const fetchSupabaseSessions = async (
     throw new Error(error.message);
   }
 
-  return data.map((session: SupabaseSessionData) => {
+  return data.map((session: SupabaseSessionData & { profiles: { organisation: string[] | null } | null }) => { // NEW: Type for profiles
     const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
     const participants: ParticipantSessionData[] = rawParticipantsData.map(p => ({
       userId: p.userId,
@@ -244,8 +190,14 @@ const fetchSupabaseSessions = async (
       join_code: session.join_code,
       host_notes: session.host_notes,
       organisation: session.organisation,
+      is_mock: session.is_mock, // NEW: Include is_mock
     };
   }).filter(session => {
+    // Filter by showDemoSessions: if false, hide mock sessions
+    if (!showDemoSessions && session.is_mock) {
+      return false;
+    }
+    // Apply distance filtering
     if (limitDiscoveryRadius && session.distance !== null) {
       return session.distance <= maxDistance;
     }
@@ -486,80 +438,11 @@ const Index = () => {
   const isLoadingMockProfiles = false;
   const mockProfilesError = null;
 
-  const filteredLocalMockSessions = useMemo(() => {
-    if (!MOCK_SESSIONS || !mockProfiles) return [];
-    return filterLocalMockSessions(
-      MOCK_SESSIONS,
-      mockProfiles,
-      user?.id,
-      userLocation.latitude,
-      userLocation.longitude,
-      userOrganisations, // MODIFIED: Pass userOrganisations
-      limitDiscoveryRadius,
-      maxDistance,
-      friendStatuses
-    );
-  }, [MOCK_SESSIONS, mockProfiles, user?.id, userLocation.latitude, userLocation.longitude, userOrganisations, limitDiscoveryRadius, maxDistance, friendStatuses]); // MODIFIED: userOrganisations
-
-
-  const filteredMockNearbySessions = useMemo(() => {
-    console.log("Filtering mock nearby sessions...");
-    console.log("filteredLocalMockSessions:", filteredLocalMockSessions);
-    console.log("userLocation.latitude:", userLocation.latitude, "userLocation.longitude:", userLocation.longitude);
-
-    if (!filteredLocalMockSessions || !userLocation.latitude || !userLocation.longitude) {
-      console.log("Skipping nearby filter: filteredLocalMockSessions or userLocation missing.");
-      return [];
-    }
-    return filteredLocalMockSessions.filter(session => {
-      const isPublic = session.visibility === 'public';
-      const isNearbyByDistance = (session.location_lat && session.location_long && session.distance !== null && session.distance <= maxDistance);
-
-      if (limitDiscoveryRadius) {
-        return isPublic && isNearbyByDistance;
-      } else {
-        return isPublic;
-      }
-    });
-  }, [filteredLocalMockSessions, userLocation, maxDistance, limitDiscoveryRadius]);
-
-  const filteredMockFriendsSessions = useMemo(() => {
-    console.log("Filtering mock friends sessions...");
-    console.log("filteredLocalMockSessions:", filteredLocalMockSessions);
-    console.log("profile?.id:", profile?.id);
-    console.log("friendStatuses:", friendStatuses);
-
-    if (!filteredLocalMockSessions || !profile?.id) {
-      console.log("Skipping friends filter: filteredLocalMockSessions or profile ID missing.");
-      return [];
-    }
-    return filteredLocalMockSessions.filter(session => {
-      const isFriendSession = session.participants.some(p => friendStatuses[p.userId] === 'friends');
-      console.log(`Session ${session.id} (${session.title}): isFriendSession=${isFriendSession}`);
-      return isFriendSession;
-    });
-  }, [filteredLocalMockSessions, profile?.id, friendStatuses]);
-
-  const mockOrganisationSessions: DemoSession[] = useMemo(() => {
-    if (!userOrganisations || userOrganisations.length === 0 || !showDemoSessions || !filteredLocalMockSessions) return []; // MODIFIED: Check userOrganisations
-
-    const sessions: DemoSession[] = [];
-
-    filteredLocalMockSessions.forEach(session => {
-      // MODIFIED: Check if session's organisation is in the user's organisation array
-      if (session.organisation && userOrganisations.some(userOrg => session.organisation?.includes(userOrg))) {
-        sessions.push(session);
-      }
-    });
-    return sessions;
-  }, [userOrganisations, showDemoSessions, filteredLocalMockSessions]); // MODIFIED: userOrganisations
-
-
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance],
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions], // NEW: Add showDemoSessions to queryKey
     queryFn: async () => {
       try {
-        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance);
+        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions); // NEW: Pass showDemoSessions
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message);
         if (areToastsEnabled) {
@@ -573,6 +456,35 @@ const Index = () => {
     refetchInterval: 5000,
     enabled: isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends'),
   });
+
+  const allSessions = useMemo(() => {
+    return supabaseActiveSessions || [];
+  }, [supabaseActiveSessions]);
+
+  const nearbySessions = useMemo(() => {
+    if (!shouldShowNearbySessions || !userLocation.latitude || !userLocation.longitude) return [];
+    return allSessions.filter(session => {
+      const isPublic = session.visibility === 'public';
+      const isNearbyByDistance = (session.location_lat && session.location_long && session.distance !== null && session.distance <= maxDistance);
+      return isPublic && (limitDiscoveryRadius ? isNearbyByDistance : true);
+    });
+  }, [allSessions, shouldShowNearbySessions, userLocation, maxDistance, limitDiscoveryRadius]);
+
+  const friendsSessions = useMemo(() => {
+    if (!shouldShowFriendsSessions || !profile?.id) return [];
+    return allSessions.filter(session => {
+      const isFriendSession = session.participants.some(p => friendStatuses[p.userId] === 'friends');
+      return isFriendSession;
+    });
+  }, [allSessions, shouldShowFriendsSessions, profile?.id, friendStatuses]);
+
+  const organisationSessions = useMemo(() => {
+    if (!shouldShowOrganisationSessions || userOrganisations.length === 0) return [];
+    return allSessions.filter(session => {
+      return session.organisation && userOrganisations.some(userOrg => session.organisation?.includes(userOrg));
+    });
+  }, [allSessions, shouldShowOrganisationSessions, userOrganisations]);
+
 
   useEffect(() => {
     const getUserLocation = async () => {
@@ -755,6 +667,8 @@ const Index = () => {
             join_code: joinCode,
             organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MODIFIED: Use selectedHostingOrganisation as an array
             host_notes: hostNotes,
+            active_asks: [],
+            is_mock: false, // NEW: Set is_mock to false for user-created sessions
           })
           .select('id')
           .single();
@@ -952,16 +866,6 @@ const Index = () => {
       return;
     }
 
-    // NEW: First, check if the code matches any mock sessions
-    const mockSessionToJoin = MOCK_SESSIONS.find(s => s.join_code === trimmedCode);
-    if (mockSessionToJoin && showDemoSessions) {
-      console.log("Joining mock session by code:", trimmedCode);
-      await handleJoinSession(mockSessionToJoin);
-      setShowJoinInput(false);
-      setJoinSessionCode("");
-      return;
-    }
-
     if (areToastsEnabled) {
       toast.info("Searching for session...", {
         description: `Looking for session with code: ${trimmedCode}`,
@@ -1008,6 +912,7 @@ const Index = () => {
           join_code: joinedSession.join_code,
           host_notes: joinedSession.host_notes,
           organisation: joinedSession.organisation,
+          is_mock: joinedSession.is_mock, // NEW: Include is_mock
         };
         await handleJoinSession(demoSession);
         setShowJoinInput(false);
@@ -1455,23 +1360,23 @@ const Index = () => {
     console.log("showSessionsWhileActive:", showSessionsWhileActive);
     console.log("profile?.id:", profile?.id);
     console.log("userOrganisations:", userOrganisations); // MODIFIED: userOrganisations
-    console.log("filteredLocalMockSessions (local data):", filteredLocalMockSessions);
+    console.log("allSessions (from Supabase):", allSessions);
     console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
-    console.log("filteredMockNearbySessions.length:", filteredMockNearbySessions.length);
+    console.log("nearbySessions.length:", nearbySessions.length);
     console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions);
-    console.log("filteredMockFriendsSessions.length:", filteredMockFriendsSessions.length);
+    console.log("friendsSessions.length:", friendsSessions.length);
     console.log("shouldShowOrganisationSessions (memo):", shouldShowOrganisationSessions);
-    console.log("mockOrganisationSessions.length:", mockOrganisationSessions.length);
+    console.log("organisationSessions.length:", organisationSessions.length);
     console.log("limitDiscoveryRadius:", limitDiscoveryRadius);
     console.log("maxDistance:", maxDistance);
     console.groupEnd();
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
     sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisations, // MODIFIED: userOrganisations
-    filteredLocalMockSessions,
-    shouldShowNearbySessions, filteredMockNearbySessions.length,
-    shouldShowFriendsSessions, filteredMockFriendsSessions.length,
-    shouldShowOrganisationSessions, mockOrganisationSessions.length,
+    allSessions,
+    shouldShowNearbySessions, nearbySessions.length,
+    shouldShowFriendsSessions, friendsSessions.length,
+    shouldShowOrganisationSessions, organisationSessions.length,
     limitDiscoveryRadius, maxDistance
   ]);
 
@@ -1524,22 +1429,22 @@ const Index = () => {
 
       // Only apply initial minimization if no user preference is stored
       if (!hasStoredNearby) {
-        setIsNearbySessionsOpen(isDiscoveryActivated && filteredMockNearbySessions.length > 0);
-        localStorage.setItem(LOCAL_STORAGE_NEARBY_OPEN_KEY, JSON.stringify(isDiscoveryActivated && filteredMockNearbySessions.length > 0));
+        setIsNearbySessionsOpen(isDiscoveryActivated && nearbySessions.length > 0);
+        localStorage.setItem(LOCAL_STORAGE_NEARBY_OPEN_KEY, JSON.stringify(isDiscoveryActivated && nearbySessions.length > 0));
       }
       if (!hasStoredFriends) {
-        setIsFriendsSessionsOpen(isDiscoveryActivated && filteredMockFriendsSessions.length > 0);
-        localStorage.setItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY, JSON.stringify(isDiscoveryActivated && filteredMockFriendsSessions.length > 0));
+        setIsFriendsSessionsOpen(isDiscoveryActivated && friendsSessions.length > 0);
+        localStorage.setItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY, JSON.stringify(isDiscoveryActivated && friendsSessions.length > 0));
       }
       if (!hasStoredOrg) {
-        setIsOrganisationSessionsOpen(isDiscoveryActivated && mockOrganisationSessions.length > 0);
-        localStorage.setItem(LOCAL_STORAGE_ORG_OPEN_KEY, JSON.stringify(isDiscoveryActivated && mockOrganisationSessions.length > 0));
+        setIsOrganisationSessionsOpen(isDiscoveryActivated && organisationSessions.length > 0);
+        localStorage.setItem(LOCAL_STORAGE_ORG_OPEN_KEY, JSON.stringify(isDiscoveryActivated && organisationSessions.length > 0));
       }
       setInitialMinimizationRun(true);
     }
   }, [
     initialMinimizationRun, profileLoading, isDiscoveryActivated,
-    filteredMockNearbySessions.length, filteredMockFriendsSessions.length, mockOrganisationSessions.length
+    nearbySessions.length, friendsSessions.length, organisationSessions.length
   ]);
 
 
@@ -1612,9 +1517,7 @@ const Index = () => {
 
     switch (sectionId) {
       case 'nearby':
-        const nearbySupabaseSessions = supabaseActiveSessions?.filter(session => session.visibility === 'public') || [];
-        const nearbyMockSessions = showDemoSessions ? filteredMockNearbySessions : [];
-        const allNearbySessions = sortSessions([...nearbySupabaseSessions, ...nearbyMockSessions], currentUserId);
+        const allNearbySessions = sortSessions(nearbySessions, currentUserId);
         const hasNearbySessions = allNearbySessions.length > 0;
 
         return (
@@ -1705,8 +1608,7 @@ const Index = () => {
           </div>
         );
       case 'friends':
-        const friendsMockSessions = showDemoSessions ? filteredMockFriendsSessions : [];
-        const allFriendsSessions = sortSessions(friendsMockSessions, currentUserId);
+        const allFriendsSessions = sortSessions(friendsSessions, currentUserId);
         const hasFriendsSessions = allFriendsSessions.length > 0;
 
         return (
@@ -1741,8 +1643,7 @@ const Index = () => {
           </div>
         );
       case 'organisation':
-        const orgMockSessions = mockOrganisationSessions;
-        const allOrganisationSessions = sortSessions(orgMockSessions, currentUserId);
+        const allOrganisationSessions = sortSessions(organisationSessions, currentUserId);
         const hasOrganisationSessions = allOrganisationSessions.length > 0;
 
         return (

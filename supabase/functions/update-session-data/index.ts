@@ -67,7 +67,7 @@ serve(async (req) => {
     // Fetch the session
     const { data: session, error: fetchError } = await supabaseClient
       .from('active_sessions')
-      .select('*')
+      .select('*, is_mock') // NEW: Select is_mock
       .eq('id', sessionId)
       .single();
 
@@ -92,6 +92,7 @@ serve(async (req) => {
     let newHostName = session.host_name;
     const originalJoinCode = session.join_code;
     const originalOrganisation = session.organisation; // NEW: Keep original organisation
+    const originalIsMock = session.is_mock; // NEW: Keep original is_mock
 
     const isHost = session.user_id === authenticatedUserId;
     const isParticipant = updatedParticipants.some(p => p.userId === authenticatedUserId);
@@ -325,6 +326,7 @@ serve(async (req) => {
         join_code: originalJoinCode,
         organisation: originalOrganisation, // NEW: Ensure organisation is preserved
         last_heartbeat: new Date().toISOString(), // ADDED: last_heartbeat
+        is_mock: originalIsMock, // NEW: Ensure is_mock is preserved
       })
       .eq('id', sessionId)
       .select()
