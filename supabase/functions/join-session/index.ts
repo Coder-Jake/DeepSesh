@@ -47,7 +47,7 @@ serve(async (req) => {
 
     if (userProfileError && userProfileError.code !== 'PGRST116') {
       console.error('JOIN_SESSION_EDGE_FUNCTION: Error fetching joining user profile:', userProfileError);
-      return new Response(JSON.stringify({ error: 'Failed to verify user organization.' }), {
+      return new Response(JSON.stringify({ error: 'Failed to verify user organisation.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       });
