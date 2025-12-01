@@ -263,7 +263,7 @@ export const MOCK_SESSIONS: DemoSession[] = [
   },
   {
     id: "2b3c4d5e-6f7a-4890-8123-4567890abcdef0",
-    title: "Psychotherapy101 Study Sesh",
+    title: "Psych101 Study Sesh",
     startTime: Date.now() - 30 * 60 * 1000, // Started 30 minutes ago
     location: "Library Study Room",
     workspaceImage: "/api/placeholder/200/120",
