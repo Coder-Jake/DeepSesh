@@ -414,7 +414,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const currentPhaseDuration = currentScheduleItem ? currentScheduleItem.durationMinutes : (timerType === 'focus' ? focusMinutes : breakMinutes);
     const currentPhaseEndTime = new Date(Date.now() + timeLeft * 1000).toISOString();
 
-    const sessionData = {
+    const sessionDataToUpdate = {
       host_name: currentSessionHostName,
       session_title: activeScheduleDisplayTitle,
       current_phase_type: timerType,
@@ -431,39 +431,45 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
       join_code: userJoinCode,
-      organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation // MODIFIED
+      organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation
         ? [selectedHostingOrganisation]
         : null,
       last_heartbeat: new Date().toISOString(),
       host_notes: hostNotes,
-      active_asks: activeAsks, // NEW: Include active_asks
-      is_mock: false, // NEW: Ensure is_mock is false for user-created sessions
+      active_asks: activeAsks,
+      is_mock: false,
     };
 
     try {
-      const { error } = await supabase
-        .from('active_sessions')
-        .update(sessionData)
-        .eq('id', activeSessionRecordId);
+      const response = await supabase.functions.invoke('update-session-data', {
+        body: JSON.stringify({
+          sessionId: activeSessionRecordId,
+          actionType: 'update_full_session_state', // New action type
+          payload: sessionDataToUpdate,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+      });
 
-      if (error) {
-        console.error("Error updating active session in Supabase:", error);
-        if (areToastsEnabled) {
-          toast.error("Supabase Sync Error", {
-            description: `Failed to update active session: ${error.message}`,
-          });
-        }
-      } else {
-        console.log("syncSessionToSupabase: Successfully updated session:", activeSessionRecordId);
+      if (response.error) throw response.error;
+      if (response.data.error) throw new Error(response.data.error);
+
+      console.log("syncSessionToSupabase: Successfully updated session via Edge Function:", activeSessionRecordId);
+    } catch (error: any) {
+      console.error("Error updating active session via Edge Function:", error);
+      if (areToastsEnabled) {
+        toast.error("Supabase Sync Error", {
+          description: `Failed to update active session: ${await getEdgeFunctionErrorMessage(error)}`,
+        });
       }
-    } catch (error) {
-      console.error("Unexpected error during Supabase sync:", error);
     }
   }, [
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
-    userJoinCode, selectedHostingOrganisation, hostNotes, activeAsks // NEW: Include activeAsks
+    userJoinCode, selectedHostingOrganisation, hostNotes, activeAsks, session?.access_token
   ]);
 
   useEffect(() => {
@@ -477,7 +483,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
     focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, user?.id,
-    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation, activeAsks // NEW: Include activeAsks
+    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation, activeAsks // NEW: Include active_asks
   ]);
 
   // NEW: Periodic heartbeat sender for all participants

@@ -97,7 +97,7 @@ serve(async (req) => {
     const isHost = session.user_id === authenticatedUserId;
     const isParticipant = updatedParticipants.some(p => p.userId === authenticatedUserId);
 
-    if (!isHost && !isParticipant) {
+    if (!isHost && !isParticipant && actionType !== 'update_full_session_state') { // Allow update_full_session_state only for host
       return new Response(JSON.stringify({ error: 'Forbidden: Not a participant or host of this session' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
@@ -309,6 +309,36 @@ serve(async (req) => {
         // No specific data manipulation for participants_data or active_asks for a simple heartbeat.
         break;
       }
+      case 'update_full_session_state': { // NEW: Handle full session state update
+        if (!isHost) {
+          return new Response(JSON.stringify({ error: 'Forbidden: Only the host can perform a full session state update' }), { status: 403, headers: corsHeaders });
+        }
+        const fullSessionState = payload;
+        // Exclude id and created_at from direct update as they are immutable
+        const { id, created_at, ...updatableFields } = fullSessionState; 
+
+        const { data: updatedSession, error: updateError } = await supabaseClient
+          .from('active_sessions')
+          .update({
+            ...updatableFields,
+            last_heartbeat: new Date().toISOString(), // Always update heartbeat
+          })
+          .eq('id', sessionId)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Error updating full session state:', updateError.message);
+          return new Response(JSON.stringify({ error: updateError.message }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+          });
+        }
+        return new Response(JSON.stringify({ message: 'Full session state updated successfully', session: updatedSession }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      }
       default:
         return new Response(JSON.stringify({ error: 'Invalid actionType' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -345,7 +375,7 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Unexpected error:', error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
