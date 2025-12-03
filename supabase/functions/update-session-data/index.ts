@@ -31,9 +31,19 @@ serve(async (req) => {
       throw new Error('JWT_SECRET is not set in environment variables.');
     }
 
+    // NEW: Convert string secret to CryptoKey
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(jwtSecret),
+      { name: "HMAC", hash: "SHA-256" }, // Assuming HS256 as per verify call
+      true,
+      ["verify"]
+    );
+
     let authenticatedUserId: string | null = null;
     try {
-      const { sub } = await verify(token, jwtSecret, 'HS256');
+      // Use the CryptoKey for verification
+      const { sub } = await verify(token, key); // Removed 'HS256' as it's part of key config
       authenticatedUserId = sub || null;
       console.log('UPDATE_SESSION_DATA_EDGE_FUNCTION: JWT verified. Authenticated User ID:', authenticatedUserId);
     } catch (jwtError: any) {
@@ -165,14 +175,14 @@ serve(async (req) => {
       }
       case 'vote_poll': {
         if (!isParticipant) {
-          console.warn(`VOTE_POLL: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
+warn(`VOTE_POLL: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
           return new Response(JSON.stringify({ error: 'Forbidden: Only participants can vote' }), { status: 403, headers: corsHeaders });
         }
         const { pollId, optionIds, customOptionText, isCustomOptionSelected } = payload;
         const pollIndex = updatedAsks.findIndex((ask: any) => ask.id === pollId);
 
         if (pollIndex === -1 || !('question' in updatedAsks[pollIndex])) {
-          console.warn(`VOTE_POLL: Warning: Poll not found for pollId ${pollId} in session ${sessionId}. Status: 404.`);
+warn(`VOTE_POLL: Warning: Poll not found for pollId ${pollId} in session ${sessionId}. Status: 404.`);
           return new Response(JSON.stringify({ error: 'Poll not found' }), { status: 404, headers: corsHeaders });
         }
 
@@ -229,16 +239,16 @@ serve(async (req) => {
       }
       case 'add_ask': {
         if (!isParticipant) {
-          console.warn(`ADD_ASK: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
+warn(`ADD_ASK: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
           return new Response(JSON.stringify({ error: 'Forbidden: Only participants can add asks' }), { status: 403, headers: corsHeaders });
         }
         const newAsk = payload.ask;
         if (!newAsk || !newAsk.id || !newAsk.creatorId) {
-          console.warn(`ADD_ASK: Error: Invalid ask payload for session ${sessionId}. Payload:`, payload, 'Status: 400.');
+warn(`ADD_ASK: Error: Invalid ask payload for session ${sessionId}. Payload:`, payload, 'Status: 400.');
           return new Response(JSON.stringify({ error: 'Invalid ask payload' }), { status: 400, headers: corsHeaders });
         }
         if (newAsk.creatorId !== authenticatedUserId) {
-          console.warn(`ADD_ASK: Warning: Forbidden: Creator ID mismatch for user ${authenticatedUserId} and ask creator ${newAsk.creatorId}. Status: 403.`);
+warn(`ADD_ASK: Warning: Forbidden: Creator ID mismatch for user ${authenticatedUserId} and ask creator ${newAsk.creatorId}. Status: 403.`);
           return new Response(JSON.stringify({ error: 'Forbidden: Creator ID mismatch' }), { status: 403, headers: corsHeaders });
         }
         updatedAsks.push(newAsk);
@@ -247,22 +257,22 @@ serve(async (req) => {
       }
       case 'update_ask': {
         if (!isParticipant) {
-          console.warn(`UPDATE_ASK: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
+warn(`UPDATE_ASK: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
           return new Response(JSON.stringify({ error: 'Forbidden: Only participants can update asks' }), { status: 403, headers: corsHeaders });
         }
         const updatedAsk = payload.ask;
         if (!updatedAsk || !updatedAsk.id || !updatedAsk.creatorId) {
-          console.warn(`UPDATE_ASK: Error: Invalid updated ask payload for session ${sessionId}. Payload:`, payload, 'Status: 400.');
+warn(`UPDATE_ASK: Error: Invalid updated ask payload for session ${sessionId}. Payload:`, payload, 'Status: 400.');
           return new Response(JSON.stringify({ error: 'Invalid updated ask payload' }), { status: 400, headers: corsHeaders });
         }
         const askIndex = updatedAsks.findIndex((ask: any) => ask.id === updatedAsk.id);
         if (askIndex === -1) {
-          console.warn(`UPDATE_ASK: Warning: Ask not found for askId ${updatedAsk.id} in session ${sessionId}. Status: 404.`);
+warn(`UPDATE_ASK: Warning: Ask not found for askId ${updatedAsk.id} in session ${sessionId}. Status: 404.`);
           return new Response(JSON.stringify({ error: 'Ask not found' }), { status: 404, headers: corsHeaders });
         }
         const existingAsk = updatedAsks[askIndex];
         if (existingAsk.creatorId !== authenticatedUserId && !isHost) {
-             console.warn(`UPDATE_ASK: Warning: Forbidden: User ${authenticatedUserId} is not the creator of ask ${updatedAsk.id} or host of session ${sessionId}. Status: 403.`);
+warn(`UPDATE_ASK: Warning: Forbidden: User ${authenticatedUserId} is not the creator of ask ${updatedAsk.id} or host of session ${sessionId}. Status: 403.`);
              return new Response(JSON.stringify({ error: 'Forbidden: Not the creator of the ask or host' }), { status: 403, headers: corsHeaders });
         }
         updatedAsks[askIndex] = updatedAsk;
@@ -272,12 +282,12 @@ serve(async (req) => {
       case 'update_participant_profile': {
         const { participantId, updates } = payload;
         if (participantId !== authenticatedUserId) {
-          console.warn(`UPDATE_PARTICIPANT_PROFILE: Warning: Forbidden attempt by user ${authenticatedUserId} to update profile of ${participantId} in session ${sessionId}. Status: 403.`);
+warn(`UPDATE_PARTICIPANT_PROFILE: Warning: Forbidden attempt by user ${authenticatedUserId} to update profile of ${participantId} in session ${sessionId}. Status: 403.`);
           return new Response(JSON.stringify({ error: 'Forbidden: Cannot update another user\'s profile data' }), { status: 403, headers: corsHeaders });
         }
         const participantIndex = updatedParticipants.findIndex((p: any) => p.userId === participantId);
         if (participantIndex === -1) {
-          console.warn(`UPDATE_PARTICIPANT_PROFILE: Warning: Participant ${participantId} not found in session ${sessionId}. Status: 404.`);
+warn(`UPDATE_PARTICIPANT_PROFILE: Warning: Participant ${participantId} not found in session ${sessionId}. Status: 404.`);
           return new Response(JSON.stringify({ error: 'Participant not found in session' }), { status: 404, headers: corsHeaders });
         }
         updatedParticipants[participantIndex] = { ...updatedParticipants[participantIndex], ...updates };
@@ -286,13 +296,13 @@ serve(async (req) => {
       }
       case 'transfer_host': {
         if (!isHost) {
-          console.warn(`TRANSFER_HOST: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not host. Status: 403.`);
+warn(`TRANSFER_HOST: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not host. Status: 403.`);
           return new Response(JSON.stringify({ error: 'Forbidden: Only the host can transfer host role' }), { status: 403, headers: corsHeaders });
         }
         const { newHostId, newHostName } = payload;
         const newHostParticipant = updatedParticipants.find((p: any) => p.userId === newHostId);
         if (!newHostParticipant) {
-          console.warn(`TRANSFER_HOST: Warning: New host ${newHostId} not found among participants in session ${sessionId}. Status: 404.`);
+warn(`TRANSFER_HOST: Warning: New host ${newHostId} not found among participants in session ${sessionId}. Status: 404.`);
           return new Response(JSON.stringify({ error: 'New host not found among participants' }), { status: 404, headers: corsHeaders });
         }
 
@@ -312,7 +322,7 @@ serve(async (req) => {
       }
       case 'leave_session': {
         if (!isParticipant) {
-          console.warn(`LEAVE_SESSION: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
+warn(`LEAVE_SESSION: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
           return new Response(JSON.stringify({ error: 'Forbidden: Not a participant of this session' }), { status: 403, headers: corsHeaders });
         }
         if (isHost) {
@@ -338,7 +348,7 @@ serve(async (req) => {
               .delete()
               .eq('id', sessionId);
             if (deleteError) {
-              console.error(`LEAVE_SESSION: Error deleting session ${sessionId} after host ${authenticatedUserId} left and no other participants. Message:`, deleteError.message, 'Status: 500.');
+warn(`LEAVE_SESSION: Error deleting session ${sessionId} after host ${authenticatedUserId} left and no other participants. Message:`, deleteError.message, 'Status: 500.');
               throw deleteError;
             }
             console.log(`LEAVE_SESSION: Session ${sessionId} ended as host ${authenticatedUserId} left and no other participants.`);
@@ -361,7 +371,7 @@ serve(async (req) => {
       }
       case 'update_full_session_state': {
         if (!isHost) {
-          console.warn(`UPDATE_FULL_SESSION_STATE: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not host. Status: 403.`);
+warn(`UPDATE_FULL_SESSION_STATE: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not host. Status: 403.`);
           return new Response(JSON.stringify({ error: 'Forbidden: Only the host can perform a full session state update' }), { status: 403, headers: corsHeaders });
         }
         const fullSessionState = payload;
@@ -380,7 +390,7 @@ serve(async (req) => {
           .single();
 
         if (updateError) {
-          console.error('UPDATE_FULL_SESSION_STATE: Error updating full session state. Message:', updateError.message, 'Status: 500. Session ID:', sessionId);
+warn('UPDATE_FULL_SESSION_STATE: Error updating full session state. Message:', updateError.message, 'Status: 500. Session ID:', sessionId);
           return new Response(JSON.stringify({ error: updateError.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,
@@ -393,7 +403,7 @@ serve(async (req) => {
         });
       }
       default:
-        console.warn(`UPDATE_SESSION_DATA_EDGE_FUNCTION: Warning: Invalid actionType received: ${actionType} for session ${sessionId}. Status: 400.`);
+warn(`UPDATE_SESSION_DATA_EDGE_FUNCTION: Warning: Invalid actionType received: ${actionType} for session ${sessionId}. Status: 400.`);
         return new Response(JSON.stringify({ error: 'Invalid actionType' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
@@ -417,7 +427,7 @@ serve(async (req) => {
       .single();
 
     if (updateError) {
-      console.error('UPDATE_SESSION_DATA_EDGE_FUNCTION: Error updating session data. Message:', updateError.message, 'Status: 500. Session ID:', sessionId);
+warn('UPDATE_SESSION_DATA_EDGE_FUNCTION: Error updating session data. Message:', updateError.message, 'Status: 500. Session ID:', sessionId);
       return new Response(JSON.stringify({ error: updateError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -431,7 +441,7 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    console.error('UPDATE_SESSION_DATA_EDGE_FUNCTION: Unexpected error. Message:', error.message, 'Status: 500.');
+warn('UPDATE_SESSION_DATA_EDGE_FUNCTION: Unexpected error. Message:', error.message, 'Status: 500.');
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
