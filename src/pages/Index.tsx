@@ -107,7 +107,7 @@ interface SupabaseSessionData {
   organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
   active_asks: ActiveAskItem[];
-  is_mock: boolean; // NEW: Added is_mock property
+  is_mock: boolean;
 }
 
 // Function to fetch live sessions from Supabase
