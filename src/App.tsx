@@ -14,25 +14,16 @@ import UpcomingFeatures from './pages/UpcomingFeatures';
 import Credits from './pages/Credits';
 import Vibes from './pages/Vibes';
 import NotFound from './pages/NotFound';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext'; // Import useAuth
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProfilePopUpProvider } from './contexts/ProfilePopUpContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TimerProvider, useTimer } from './contexts/TimerContext';
-import { ProfileProvider, useProfile } from './contexts/ProfileContext';
-import OnboardingLayout from './components/onboarding/OnboardingLayout';
-import WelcomePage from './components/onboarding/WelcomePage';
-import VisibilityPage from './components/onboarding/VisibilityPage';
-import MockSessionSeeder from './components/MockSessionSeeder'; // NEW: Import MockSessionSeeder
-import AuthSessionWrapper from './components/AuthSessionWrapper'; // NEW: Import AuthSessionWrapper
+import { TimerProvider } from './contexts/TimerContext';
+import { ProfileProvider } from './contexts/ProfileContext';
+import OnboardingWrapper from './components/onboarding/OnboardingWrapper';
+import MockSessionSeeder from './components/MockSessionSeeder';
 
 const queryClient = new QueryClient();
-
-// NEW: Local storage key for onboarding status
-const LOCAL_STORAGE_ONBOARDING_COMPLETE_KEY = 'deepsesh_onboarding_complete_local';
-
-// The OnboardingWrapper component has been moved to src/components/onboarding/OnboardingWrapper.tsx
-// and is now rendered inside AuthSessionWrapper.
 
 function App() {
   const [areToastsEnabled, setAreToastsEnabled] = useState(false);
@@ -43,12 +34,11 @@ function App() {
         <Router>
           <ThemeProvider>
             <AuthProvider>
-              <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
-                <ProfilePopUpProvider>
-                  <MockSessionSeeder />
-                  <AuthSessionWrapper areToastsEnabled={areToastsEnabled} /> {/* Use AuthSessionWrapper here */}
-                </ProfilePopUpProvider>
-              </TimerProvider>
+              {/* useAuth must be called inside AuthProvider, so we get the session here */}
+              <AuthConsumer
+                areToastsEnabled={areToastsEnabled}
+                setAreToastsEnabled={setAreToastsEnabled}
+              />
             </AuthProvider>
           </ThemeProvider>
         </Router>
@@ -56,5 +46,24 @@ function App() {
     </QueryClientProvider>
   );
 }
+
+// New component to consume AuthContext and render subsequent providers
+const AuthConsumer: React.FC<{
+  areToastsEnabled: boolean;
+  setAreToastsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ areToastsEnabled, setAreToastsEnabled }) => {
+  const { session } = useAuth(); // Now useAuth is called within AuthProvider's scope
+
+  return (
+    <ProfileProvider areToastsEnabled={areToastsEnabled} session={session}>
+      <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
+        <ProfilePopUpProvider>
+          <MockSessionSeeder />
+          <OnboardingWrapper areToastsEnabled={areToastsEnabled} session={session} />
+        </ProfilePopUpProvider>
+      </TimerProvider>
+    </ProfileProvider>
+  );
+};
 
 export default App;
