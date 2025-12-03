@@ -18,6 +18,7 @@ const MockSessionSeeder: React.FC = () => {
   useEffect(() => {
     const seedMockSessions = async () => {
       if (!user || !session || hasSeeded || !showDemoSessions) {
+        console.log("MockSessionSeeder: Skipping seed. Conditions not met:", { user: !!user, session: !!session, hasSeeded, showDemoSessions });
         return;
       }
 
@@ -25,10 +26,11 @@ const MockSessionSeeder: React.FC = () => {
       const seededLocally = localStorage.getItem(LOCAL_STORAGE_MOCK_SEED_KEY);
       if (seededLocally === 'true') {
         setHasSeeded(true);
+        console.log("MockSessionSeeder: Already seeded locally.");
         return;
       }
 
-      console.log("Attempting to seed mock sessions...");
+      console.log("MockSessionSeeder: Attempting to seed mock sessions...");
 
       try {
         const response = await supabase.functions.invoke('seed-mock-sessions', {
@@ -42,27 +44,36 @@ const MockSessionSeeder: React.FC = () => {
         if (response.error) throw response.error;
         if (response.data.error) throw new Error(response.data.error);
 
-        const { insertedCount, skippedCount } = response.data;
+        const { insertedCount, skippedCount, insertedIds, skippedTitles } = response.data; // Log more details
 
-        if (insertedCount > 0 && areToastsEnabled) {
-          toast.success("Mock Sessions Added!", {
-            description: `${insertedCount} demo sessions have been added.`,
-          });
-        } else if (skippedCount > 0 && areToastsEnabled) {
-          toast.info("Mock Sessions Already Exist", {
-            description: "Demo sessions are already present in your environment.",
-          });
-        } else if (areToastsEnabled) {
-          toast.info("No Mock Sessions Added", {
-            description: "No new demo sessions were added.",
-          });
+        if (insertedCount > 0) {
+          console.log(`MockSessionSeeder: Successfully inserted ${insertedCount} sessions. IDs:`, insertedIds);
+          if (areToastsEnabled) {
+            toast.success("Mock Sessions Added!", {
+              description: `${insertedCount} demo sessions have been added.`,
+            });
+          }
+        } else if (skippedCount > 0) {
+          console.log(`MockSessionSeeder: Skipped ${skippedCount} existing sessions. Titles:`, skippedTitles);
+          if (areToastsEnabled) {
+            toast.info("Mock Sessions Already Exist", {
+              description: "Demo sessions are already present in your environment.",
+            });
+          }
+        } else {
+          console.log("MockSessionSeeder: No new mock sessions added or skipped.");
+          if (areToastsEnabled) {
+            toast.info("No Mock Sessions Added", {
+              description: "No new demo sessions were added.",
+            });
+          }
         }
 
         localStorage.setItem(LOCAL_STORAGE_MOCK_SEED_KEY, 'true');
         setHasSeeded(true);
 
       } catch (error: any) {
-        console.error("Error seeding mock sessions:", error);
+        console.error("MockSessionSeeder: Error seeding mock sessions:", error);
         if (areToastsEnabled) {
           toast.error("Failed to Seed Mock Sessions", {
             description: `An error occurred: ${await getEdgeFunctionErrorMessage(error)}.`,

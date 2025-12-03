@@ -134,6 +134,8 @@ const fetchSupabaseSessions = async (
     throw new Error(error.message);
   }
 
+  console.log("fetchSupabaseSessions: Raw data from Supabase:", data); // Log raw data
+
   return data.map((session: SupabaseSessionData & { profiles: { organisation: string[] | null } | null }) => { // NEW: Type for profiles
     const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
     const participants: ParticipantSessionData[] = rawParticipantsData.map(p => ({
@@ -193,6 +195,7 @@ const fetchSupabaseSessions = async (
       is_mock: session.is_mock, // NEW: Include is_mock
     };
   }).filter(session => {
+    console.log(`fetchSupabaseSessions: Filtering session '${session.title}' (is_mock: ${session.is_mock}, showDemoSessions: ${showDemoSessions})`);
     // Filter by showDemoSessions: if false, hide mock sessions
     if (!showDemoSessions && session.is_mock) {
       return false;
@@ -1353,24 +1356,18 @@ const Index = () => {
 
   useEffect(() => {
     console.group("Index.tsx Debugging Session Visibility");
-    console.log("showDemoSessions:", showDemoSessions);
-    console.log("isDiscoveryActivated:", isDiscoveryActivated);
-    console.log("geolocationPermissionStatus:", geolocationPermissionStatus);
-    console.log("userLocation.latitude:", userLocation.latitude);
-    console.log("userLocation.longitude:", userLocation.longitude);
-    console.log("sessionVisibility:", sessionVisibility);
-    console.log("showSessionsWhileActive:", showSessionsWhileActive);
-    console.log("profile?.id:", profile?.id);
-    console.log("userOrganisations:", userOrganisations); // MODIFIED: userOrganisations
-    console.log("allSessions (from Supabase):", allSessions);
-    console.log("shouldShowNearbySessions (memo):", shouldShowNearbySessions);
-    console.log("nearbySessions.length:", nearbySessions.length);
-    console.log("shouldShowFriendsSessions (memo):", shouldShowFriendsSessions);
-    console.log("friendsSessions.length:", friendsSessions.length);
-    console.log("shouldShowOrganisationSessions (memo):", shouldShowOrganisationSessions);
-    console.log("organisationSessions.length:", organisationSessions.length);
-    console.log("limitDiscoveryRadius:", limitDiscoveryRadius);
-    console.log("maxDistance:", maxDistance);
+    console.log("  showDemoSessions:", showDemoSessions);
+    console.log("  isDiscoveryActivated:", isDiscoveryActivated);
+    console.log("  geolocationPermissionStatus:", geolocationPermissionStatus);
+    console.log("  userLocation:", userLocation);
+    console.log("  sessionVisibility:", sessionVisibility);
+    console.log("  showSessionsWhileActive:", showSessionsWhileActive);
+    console.log("  profile?.id:", profile?.id);
+    console.log("  userOrganisations:", userOrganisations); // MODIFIED: userOrganisations
+    console.log("  allSessions (from Supabase):", allSessions);
+    console.log("  nearbySessions (memo):", nearbySessions);
+    console.log("  friendsSessions (memo):", friendsSessions);
+    console.log("  organisationSessions (memo):", organisationSessions);
     console.groupEnd();
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
