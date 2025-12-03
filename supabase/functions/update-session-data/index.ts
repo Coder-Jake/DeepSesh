@@ -25,10 +25,10 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
+    const jwtSecret = Deno.env.get('JWT_SECRET'); // MODIFIED: Changed to JWT_SECRET
     if (!jwtSecret) {
-      console.error('UPDATE_SESSION_DATA_EDGE_FUNCTION: Error: SUPABASE_JWT_SECRET is not set.');
-      throw new Error('SUPABASE_JWT_SECRET is not set in environment variables.');
+      console.error('UPDATE_SESSION_DATA_EDGE_FUNCTION: Error: JWT_SECRET is not set.');
+      throw new Error('JWT_SECRET is not set in environment variables.');
     }
 
     let authenticatedUserId: string | null = null;
