@@ -474,7 +474,7 @@ const Index = () => {
       }
     },
     refetchInterval: 5000,
-    enabled: isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all' || showSessionsWhileActive === 'friends'),
+    enabled: isDiscoveryActivated && !!user?.id, // MODIFIED: Simplified enabled condition
   });
 
   const allSessions = useMemo(() => {
