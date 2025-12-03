@@ -2122,8 +2122,8 @@ const Index = () => {
 
             <Card>
               <Tabs defaultValue="my-notes" className="w-full">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
+                <CardHeader className="p-0"> {/* Changed pb-2 to p-0 */}
+                  <div className="flex items-center justify-between px-6 pt-6"> {/* Added px-6 pt-6 */}
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="my-notes">My Notes</TabsTrigger>
                       <TabsTrigger value="host-notes" disabled={currentSessionRole !== 'host' && currentSessionRole !== 'coworker' && isActiveTimer}>Host Notes</TabsTrigger>
@@ -2136,7 +2136,9 @@ const Index = () => {
                       value={notes}
                       onChange={setNotes}
                       placeholder="Thoughts, to-do items, or reflections..."
-                      rows={5}
+                      // rows={5} // Removed fixed rows
+                      initialRows={3} // Set initial rows
+                      maxRows={10} // Set max rows
                     />
                   </TabsContent>
                   <TabsContent value="host-notes">
@@ -2149,7 +2151,9 @@ const Index = () => {
                             ? "Location details, plan, etc."
                             : "No host notes available."
                         }
-                        rows={5}
+                        // rows={5} // Removed fixed rows
+                        initialRows={3} // Set initial rows
+                        maxRows={10} // Set max rows
                         readOnly={isActiveTimer && currentSessionRole !== 'host'}
                         isCoworkerView={currentSessionRole === 'coworker'}
                       />

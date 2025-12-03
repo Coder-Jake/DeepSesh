@@ -1,81 +1,82 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Eye, Edit } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 
 interface MarkdownEditorProps {
-  value: string | null;
+  value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  rows?: number;
   readOnly?: boolean;
-  className?: string;
-  isCoworkerView?: boolean; // NEW: Prop to indicate if it's a coworker viewing (read-only, no edit toggle)
+  isCoworkerView?: boolean;
+  initialRows?: number; // New prop for initial visible rows
+  maxRows?: number; // New prop for maximum visible rows
 }
 
 const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   value,
   onChange,
-  placeholder = "Type your notes here...",
-  rows = 5,
+  placeholder,
   readOnly = false,
-  className,
   isCoworkerView = false,
+  initialRows = 3, // Default initial rows
+  maxRows = 10, // Default max rows
 }) => {
-  // Start in edit mode if not readOnly and not a coworker view, otherwise start in preview
-  const [isEditing, setIsEditing] = useState(!readOnly && !isCoworkerView);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // If it's a coworker view, always show preview and disable editing
-  useEffect(() => {
-    if (isCoworkerView) {
-      setIsEditing(false);
+  const adjustHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'; // Reset height to calculate scrollHeight correctly
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const computedStyle = getComputedStyle(textareaRef.current);
+      const lineHeight = parseFloat(computedStyle.lineHeight) || 20; // Fallback to 20px
+
+      // Calculate min and max heights based on initialRows and maxRows
+      const minCalculatedHeight = initialRows * lineHeight;
+      const maxCalculatedHeight = maxRows * lineHeight;
+
+      // Set height, clamping between min and max
+      textareaRef.current.style.height = `${Math.min(Math.max(minCalculatedHeight, scrollHeight), maxCalculatedHeight)}px`;
+
+      // Ensure overflow-y is hidden unless content truly exceeds max height
+      if (scrollHeight > maxCalculatedHeight) {
+        textareaRef.current.style.overflowY = 'auto';
+      } else {
+        textareaRef.current.style.overflowY = 'hidden';
+      }
     }
-  }, [isCoworkerView]);
+  };
 
-  const markdownContent = value || '';
+  useEffect(() => {
+    adjustHeight();
+  }, [value, initialRows, maxRows]); // Re-adjust height when value or row limits change
+
+  // Also adjust height on window resize
+  useEffect(() => {
+    window.addEventListener('resize', adjustHeight);
+    return () => {
+      window.removeEventListener('resize', adjustHeight);
+    };
+  }, []);
 
   return (
-    <div className={cn("relative flex flex-col", className)}>
-      {isEditing && !readOnly && !isCoworkerView ? (
-        <Textarea
-          value={markdownContent}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={rows}
-          readOnly={readOnly}
-          className="resize-none overflow-hidden min-h-[100px]"
-          onFocus={() => setIsEditing(true)}
-          onBlur={() => setIsEditing(false)}
-        />
-      ) : (
-        <div
-          className={cn(
-            "prose dark:prose-invert max-w-none p-3 border rounded-md min-h-[100px] overflow-auto",
-            "prose-sm sm:prose lg:prose-lg xl:prose-xl", // Tailwind Typography classes for styling markdown
-            markdownContent.trim() === '' && "text-muted-foreground italic",
-            !readOnly && !isCoworkerView && "cursor-text" // Indicate it's clickable to edit
-          )}
-          onClick={() => {
-            if (!readOnly && !isCoworkerView) {
-              setIsEditing(true);
-            }
-          }}
-        >
-          {markdownContent.trim() === '' ? (
-            <p>{placeholder}</p>
-          ) : (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {markdownContent}
-            </ReactMarkdown>
-          )}
-        </div>
+    <Textarea
+      ref={textareaRef}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      readOnly={readOnly}
+      className={cn(
+        "resize-none", // Prevent manual resizing
+        isCoworkerView && "bg-muted text-muted-foreground",
+        readOnly && "cursor-default"
       )}
-    </div>
+      style={{
+        minHeight: `${initialRows * 1.5}em`, // Initial min-height based on estimated line height
+        maxHeight: `${maxRows * 1.5}em`,   // Max height before scrollbar appears
+      }}
+    />
   );
 };
 
