@@ -93,6 +93,7 @@ serve(async (req) => {
     const originalJoinCode = session.join_code;
     const originalOrganisation = session.organisation; // NEW: Keep original organisation
     const originalIsMock = session.is_mock; // NEW: Keep original is_mock
+    const originalCurrentPhaseEndTime = session.current_phase_end_time; // NEW: Keep original current_phase_end_time
 
     const isHost = session.user_id === authenticatedUserId;
     const isParticipant = updatedParticipants.some(p => p.userId === authenticatedUserId);
@@ -357,6 +358,7 @@ serve(async (req) => {
         organisation: originalOrganisation, // NEW: Ensure organisation is preserved
         last_heartbeat: new Date().toISOString(), // ADDED: last_heartbeat
         is_mock: originalIsMock, // NEW: Ensure is_mock is preserved
+        current_phase_end_time: originalCurrentPhaseEndTime, // NEW: Ensure current_phase_end_time is preserved if not explicitly updated by full state
       })
       .eq('id', sessionId)
       .select()

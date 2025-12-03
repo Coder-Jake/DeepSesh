@@ -114,6 +114,10 @@ export interface DemoSession {
   organisation?: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes?: string | null;
   is_mock?: boolean; // NEW: Added is_mock property
+  current_phase_type: 'focus' | 'break'; // NEW: Add current_phase_type
+  focus_duration: number; // NEW: Add focus_duration
+  break_duration: number; // NEW: Add break_duration
+  current_phase_end_time: number; // NEW: Add current_phase_end_time
 }
 
 // NEW: Define a type for Supabase fetched sessions
@@ -159,7 +163,7 @@ export type TimerContextType = {
   isPaused: boolean;
   setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
   timeLeft: number;
-  setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
+  setTimeLeft: React.Dispatch<React.SetStateAction<number | null>>; // MODIFIED: setTimeLeft now updates currentPhaseEndTime
   timerType: 'focus' | 'break';
   setTimerType: React.Dispatch<React.SetStateAction<'focus' | 'break'>>;
   isFlashing: boolean;

@@ -63,7 +63,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
   // State to toggle display of phase duration
   const [showPhaseDuration, setShowPhaseDuration] = useState(false);
 
-  // Helper function to calculate current phase and remaining time for repeating schedules
+  // Helper function to calculate current phase and remaining time using current_phase_end_time
   function calculateCurrentPhaseInfo(currentSession: DemoSession): {
     type: 'focus' | 'break';
     durationMinutes: number;
@@ -71,15 +71,9 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
     isEnded: boolean;
   } {
     const now = Date.now();
-    const elapsedSecondsSinceSessionStart = Math.floor((now - currentSession.startTime) / 1000);
+    const phaseEndTime = currentSession.current_phase_end_time; // Use the server-synced end time
 
-    // Calculate total duration of the defined schedule
-    const totalScheduleDurationSeconds = currentSession.fullSchedule.reduce(
-      (sum, phase) => sum + phase.durationMinutes * 60,
-      0
-    );
-
-    if (totalScheduleDurationSeconds === 0) {
+    if (phaseEndTime === undefined || phaseEndTime === null) {
       return {
         type: 'focus',
         durationMinutes: 0,
@@ -88,48 +82,21 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
       };
     }
 
-    // If the session hasn't started yet
-    if (elapsedSecondsSinceSessionStart < 0) {
-      return {
-        type: currentSession.fullSchedule[0]?.type || 'focus',
-        durationMinutes: currentSession.fullSchedule[0]?.durationMinutes || 0,
-        remainingSeconds: -elapsedSecondsSinceSessionStart,
-        isEnded: false,
-      };
-    }
+    const remainingSeconds = Math.max(0, Math.floor((phaseEndTime - now) / 1000));
 
-    // Calculate the effective elapsed time within one full cycle of the schedule
-    const effectiveElapsedSeconds = totalScheduleDurationSeconds > 0 ? elapsedSecondsSinceSessionStart % totalScheduleDurationSeconds : 0;
+    // Determine current phase type and duration from the session's current state
+    // This assumes the session object itself contains the current phase type and its original duration
+    // For simplicity, we'll use the session's focus_duration and break_duration if fullSchedule isn't detailed enough
+    const currentPhaseType = currentSession.current_phase_type || 'focus'; // Assuming current_phase_type is available
+    const currentPhaseDurationMinutes = currentSessionPhaseType === 'focus' 
+      ? currentSession.focus_duration // Assuming focus_duration is available
+      : currentSession.break_duration; // Assuming break_duration is available
 
-    let accumulatedDurationSecondsInCycle = 0;
-    for (let i = 0; i < currentSession.fullSchedule.length; i++) {
-      const phase = currentSession.fullSchedule[i];
-      const phaseDurationSeconds = phase.durationMinutes * 60;
-
-      if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
-        // Current effective time falls within this phase
-        const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle;
-        const remainingSeconds = phaseDurationSeconds - timeIntoPhase;
-        return {
-          type: phase.type,
-          durationMinutes: phase.durationMinutes,
-          remainingSeconds: Math.max(0, remainingSeconds),
-          isEnded: false,
-        };
-      }
-      accumulatedDurationSecondsInCycle += phaseDurationSeconds;
-    }
-
-    // This case should ideally not be reached if effectiveElapsedSeconds is correctly calculated
-    // and the loop covers all phases. It would imply effectiveElapsedSeconds is exactly
-    // totalScheduleDurationSeconds, meaning the very end of a cycle.
-    // For safety, return the last phase's info with 0 remaining.
-    const lastPhase = currentSession.fullSchedule[currentSession.fullSchedule.length - 1];
     return {
-      type: lastPhase?.type || 'focus',
-      durationMinutes: lastPhase?.durationMinutes || 0,
-      remainingSeconds: 0,
-      isEnded: true, // Mark as ended if it falls outside the schedule
+      type: currentPhaseType,
+      durationMinutes: currentPhaseDurationMinutes,
+      remainingSeconds: remainingSeconds,
+      isEnded: remainingSeconds === 0,
     };
   }
 
