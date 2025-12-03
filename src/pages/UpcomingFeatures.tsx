@@ -10,7 +10,7 @@ const UpcomingFeatures = () => {
     { name: "New Interface", description: "Streamline features for less scrolling and easier navigation." },
     { name: "User Verification", description: "Implement ID verification to enhance trust and security within the community. Filter to only interact with verified coworkers." },
     { name: "Real-time Collaboration", description: "Shared notes, coworker polling, and live interaction during sessions." },
-    { name: "Leaderboard", description: "Weekly, Monthly, and All Time leaderboards (Local & Global). Including gamified elements to track and display user achievements, streaks, and focus hours." },
+    { name: "Leaderboard", description: "Weekly, Monthly, and All Time leaderboards (Local & Global). Including elements to track and display user achievements, streaks, and focus hours." },
     { name: "History", description: "A timeline of your previous study sessions. Search notes and view helpful statistics" },
     { name: "Stake Accountability", description: "Allow users to set stakes (e.g., donate to charity) for meeting their focus goals, with automated tracking." },
     { name: "Advanced Scheduling", description: "More flexible and powerful scheduling options, including recurring events and calendar integrations." },
