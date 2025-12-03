@@ -614,7 +614,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setIsHomepageFocusCustomized(false);
     setIsHomepageBreakCustomized(false);
     setCurrentPhaseEndTime(null); // Reset server-synced end time
-    setTimeLeft(_defaultFocusMinutes * 60); // Reset derived timeLeft
+    // setTimeLeft(_defaultFocusMinutes * 60); // Reset derived timeLeft - this is now derived, no direct setter
     setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
     setIsRunning(false);
     setIsPaused(false);
@@ -1995,7 +1995,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isPaused,
     setIsPaused,
     timeLeft,
-    setTimeLeft: setCurrentPhaseEndTime, // timeLeft is now derived, setTimeLeft updates currentPhaseEndTime
+    setTimeLeft: setCurrentPhaseEndTime, // MODIFIED: setTimeLeft now updates currentPhaseEndTime
     timerType,
     setTimerType,
     isFlashing,
