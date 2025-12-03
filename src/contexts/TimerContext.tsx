@@ -410,6 +410,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return;
     }
 
+    // Only the host should send full session state updates
+    if (currentSessionRole !== 'host') {
+      console.log("syncSessionToSupabase: Skipping full state sync for non-host participant.");
+      return;
+    }
+
     const currentScheduleItem = isScheduleActive ? activeSchedule[currentScheduleIndex] : null;
     const currentPhaseDuration = currentScheduleItem ? currentScheduleItem.durationMinutes : (timerType === 'focus' ? focusMinutes : breakMinutes);
     const currentPhaseEndTime = new Date(Date.now() + timeLeft * 1000).toISOString();
@@ -469,7 +475,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
-    userJoinCode, selectedHostingOrganisation, hostNotes, activeAsks, session?.access_token
+    userJoinCode, selectedHostingOrganisation, hostNotes, activeAsks, session?.access_token, currentSessionRole
   ]);
 
   useEffect(() => {
@@ -483,7 +489,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
     focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, user?.id,
-    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation, activeAsks // NEW: Include active_asks
+    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation, activeAsks
   ]);
 
   // NEW: Periodic heartbeat sender for all participants
