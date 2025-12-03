@@ -59,6 +59,17 @@ serve(async (req) => {
       }
     );
 
+    // Create a service role client for privileged operations
+    const supabaseServiceRoleClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          persistSession: false,
+        },
+      }
+    );
+
     const { sessionId, actionType, payload } = await req.json();
     console.log('UPDATE_SESSION_DATA_EDGE_FUNCTION: Received:', { sessionId, actionType, payload });
 
@@ -321,7 +332,8 @@ serve(async (req) => {
             newHostName = newHost.userName;
             console.log(`LEAVE_SESSION: Host ${authenticatedUserId} left session ${sessionId}. Host role transferred to ${newHostId}.`);
           } else {
-            const { error: deleteError } = await supabaseClient
+            // Use the service role client for deletion to bypass RLS
+            const { error: deleteError } = await supabaseServiceRoleClient
               .from('active_sessions')
               .delete()
               .eq('id', sessionId);
