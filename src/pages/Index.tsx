@@ -1767,7 +1767,7 @@ const Index = () => {
                           )}
                         </h2>
                       ) : (
-                        <p className="text-sm md:text-base font-bold text-muted-foreground">
+                        <p className="text-sm md:text-base font-bold text-muted-foreground hidden sm:block">
                           Sync focus with <span className="whitespace-nowrap">{sessionVisibility === 'private' ? "known coworkers" : (sessionVisibility === 'organisation' ? "organisation coworkers" : "nearby coworkers")}</span>
                         </p>
                       )}
