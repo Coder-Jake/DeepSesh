@@ -33,6 +33,7 @@ const LOCAL_STORAGE_ONBOARDING_COMPLETE_KEY = 'deepsesh_onboarding_complete_loca
 const OnboardingWrapper: React.FC = () => {
   const { profile, loading: profileLoading } = useProfile();
   const { areToastsEnabled } = useTimer();
+  const { session } = useAuth(); // NEW: Get session from AuthContext
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem(LOCAL_STORAGE_ONBOARDING_COMPLETE_KEY) === 'true';
@@ -102,7 +103,7 @@ function App() {
         <Router>
           <ThemeProvider>
             <AuthProvider>
-              <ProfileProvider areToastsEnabled={areToastsEnabled}>
+              <ProfileProvider areToastsEnabled={areToastsEnabled} session={useAuth().session}> {/* MODIFIED: Pass session from AuthProvider */}
                 <TimerProvider areToastsEnabled={areToastsEnabled} setAreToastsEnabled={setAreToastsEnabled}>
                   <ProfilePopUpProvider>
                     <MockSessionSeeder /> {/* NEW: Render MockSessionSeeder here */}

@@ -4,6 +4,7 @@ import { useAuth } from "./AuthContext";
 import { supabase } from '@/integrations/supabase/client';
 import { colors, animals } from '@/lib/constants';
 import { MOCK_PROFILES } from '@/lib/mock-data';
+import { Session, createClient } from '@supabase/supabase-js'; // Import Session and createClient
 
 // Define the structure for a single field within profile_data
 export type ProfileDataField = {
@@ -139,9 +140,10 @@ const LOCAL_STORAGE_RECENT_COWORKERS_KEY = 'deepsesh_recent_coworkers';
 interface ProfileProviderProps {
   children: ReactNode;
   areToastsEnabled: boolean;
+  session: Session | null; // Add session here
 }
 
-export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areToastsEnabled }) => {
+export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areToastsEnabled, session }) => {
   const { user, loading: authLoading } = useAuth();
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -179,8 +181,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   }, []);
 
   const syncProfileToSupabase = useCallback(async (successMessage?: string) => {
-    if (!user || !profile) {
-      console.log("syncProfileToSupabase: Skipping sync. User or local profile not available.");
+    if (!user || !profile || !session) { // Ensure session is available
+      console.log("syncProfileToSupabase: Skipping sync. User, local profile, or session not available.");
       return;
     }
 
@@ -206,7 +208,21 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     try {
-      const { error } = await supabase
+      // Create a new Supabase client instance for this specific upsert call,
+      // explicitly passing the access_token in the headers.
+      const clientForUpsert = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          },
+        }
+      );
+
+      const { error } = await clientForUpsert
         .from('profiles')
         .upsert(profileDataToSend, { onConflict: 'id' });
 
@@ -233,7 +249,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         });
       }
     }
-  }, [user, profile, areToastsEnabled]);
+  }, [user, profile, areToastsEnabled, session]);
 
   // --- Initial Load Effect (Local-First) ---
   useEffect(() => {
@@ -368,14 +384,14 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
   // --- Periodic Sync Effect ---
   useEffect(() => {
-    if (!user || !profile) return;
+    if (!user || !profile || !session) return; // Ensure session is available
 
     const syncInterval = setInterval(() => {
       syncProfileToSupabase();
     }, 30000);
 
     return () => clearInterval(syncInterval);
-  }, [user, profile, syncProfileToSupabase]);
+  }, [user, profile, syncProfileToSupabase, session]); // Add session to dependencies
 
 
   // --- MODIFIED: updateProfile function (now local-first) ---
