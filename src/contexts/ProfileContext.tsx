@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from "react";
 import { toast } from 'sonner';
 import { useAuth } from "./AuthContext";
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client'; // Import the existing supabase client
 import { colors, animals } from '@/lib/constants';
 import { MOCK_PROFILES } from '@/lib/mock-data';
-import { Session, createClient } from '@supabase/supabase-js'; // Import Session and createClient
+import { Session } from '@supabase/supabase-js'; // Import Session
 
 // Define the structure for a single field within profile_data
 export type ProfileDataField = {
@@ -208,21 +208,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
 
     try {
-      // Create a new Supabase client instance for this specific upsert call,
-      // explicitly passing the access_token in the headers.
-      const clientForUpsert = createClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_ANON_KEY,
-        {
-          global: {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          },
-        }
-      );
-
-      const { error } = await clientForUpsert
+      // Use the existing supabase client directly
+      const { error } = await supabase
         .from('profiles')
         .upsert(profileDataToSend, { onConflict: 'id' });
 
