@@ -106,8 +106,8 @@ interface SupabaseSessionData {
   join_code: string | null;
   organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
-  active_asks: ActiveAskItem[]; // NEW: Added active_asks property
-  is_mock: boolean; // NEW: Added is_mock property
+  active_asks: ActiveAskItem[];
+  is_mock: boolean;
 }
 
 // Function to fetch live sessions from Supabase
