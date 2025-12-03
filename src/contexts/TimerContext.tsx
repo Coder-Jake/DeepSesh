@@ -429,7 +429,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       is_paused: isPaused,
       focus_duration: focusMinutes,
       break_duration: breakMinutes,
-      total_session_duration_seconds: isScheduleActive ? activeSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60 : currentPhaseDuration * 60,
+      // Ensure total_session_duration_seconds is an integer
+      total_session_duration_seconds: Math.round(isScheduleActive ? activeSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60 : currentPhaseDuration * 60),
       schedule_id: isScheduleActive && activeSchedule[0]?.id && isValidUUID(activeSchedule[0].id) ? activeSchedule[0].id : null,
       current_schedule_index: isScheduleActive ? currentScheduleIndex : 0,
       schedule_data: activeSchedule,
@@ -706,7 +707,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .from('active_sessions')
           .delete()
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id);
+          .eq('user.id', user.id); // MODIFIED: Changed 'user_id' to 'user.id' to match the RLS policy
 
         if (deleteError) throw deleteError;
 
