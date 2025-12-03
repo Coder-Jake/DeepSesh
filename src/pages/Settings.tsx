@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity, Globe, Lock, Building2 } from "lucide-react";
+import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity, Globe, Lock, Building2, Code } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { useTheme } from "@/contexts/ThemeContext";
 import { useProfile } from "@/contexts/ProfileContext";
 import { supabase } from '@/integrations/supabase/client';
+import SupabaseTestComponent from '@/components/SupabaseTestComponent'; // NEW: Import SupabaseTestComponent
 
 const Settings = () => {
   const { 
@@ -634,7 +635,7 @@ const Settings = () => {
                     <TooltipContent className="select-none">
                       <p>Disable other apps during Focus.</p>
                     </TooltipContent>
-                  </Tooltip>
+                </Tooltip>
                 </div >
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -1320,6 +1321,16 @@ const Settings = () => {
                   onCheckedChange={setAreToastsEnabled}
                 />
               </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* NEW: Developer Tools Accordion Item */}
+          <AccordionItem value="developer-tools" className="border rounded-lg px-6">
+            <AccordionTrigger className="text-xl font-semibold">
+              <Code className="mr-2 h-5 w-5" /> Developer Tools
+            </AccordionTrigger>
+            <AccordionContent className="pt-4">
+              <SupabaseTestComponent />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
