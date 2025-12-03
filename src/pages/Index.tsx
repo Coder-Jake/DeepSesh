@@ -104,7 +104,7 @@ interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null;
-  organisation: string[] | null; // MODIFIED: Changed to string[] | null
+  organisation: string[] | null;
   host_notes: string | null;
   active_asks: ActiveAskItem[];
   is_mock: boolean;
