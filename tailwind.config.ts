@@ -18,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			screens: { // NEW: Added custom screens
+        xs: '400px',
+      },
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

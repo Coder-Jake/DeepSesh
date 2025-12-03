@@ -104,10 +104,10 @@ interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null;
-  organisation: string[] | null;
+  organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
-  active_asks: ActiveAskItem[];
-  is_mock: boolean;
+  active_asks: ActiveAskItem[]; // NEW: Added active_asks property
+  is_mock: boolean; // NEW: Added is_mock property
 }
 
 // Function to fetch live sessions from Supabase
@@ -1767,7 +1767,7 @@ const Index = () => {
                           )}
                         </h2>
                       ) : (
-                        <p className="text-sm md:text-base font-bold text-muted-foreground hidden sm:block">
+                        <p className="text-sm md:text-base font-bold text-muted-foreground hidden xs:block">
                           Sync focus with <span className="whitespace-nowrap">{sessionVisibility === 'private' ? "known coworkers" : (sessionVisibility === 'organisation' ? "organisation coworkers" : "nearby coworkers")}</span>
                         </p>
                       )}
