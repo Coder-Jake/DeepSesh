@@ -2135,7 +2135,7 @@ const Index = () => {
                     <MarkdownEditor
                       value={notes}
                       onChange={setNotes}
-                      placeholder="Jot down your thoughts, to-do items, or reflections..."
+                      placeholder="Thoughts, to-do items, or reflections..."
                       rows={5}
                     />
                   </TabsContent>
