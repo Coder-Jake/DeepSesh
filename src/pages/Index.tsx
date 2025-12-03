@@ -2146,7 +2146,7 @@ const Index = () => {
                         onChange={setHostNotes}
                         placeholder={
                           (currentSessionRole === 'host' || !isActiveTimer)
-                            ? "Add notes for your session's participants..."
+                            ? "Location details, plan, etc."
                             : "No host notes available."
                         }
                         rows={5}
