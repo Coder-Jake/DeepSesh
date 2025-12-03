@@ -191,7 +191,6 @@ const fetchSupabaseSessions = async (
       host_notes: session.host_notes,
       organisation: session.organisation,
       is_mock: session.is_mock, // NEW: Include is_mock
-      current_phase_end_time: new Date(session.current_phase_end_time).getTime(), // NEW: Add current_phase_end_time
     };
   }).filter(session => {
     // Filter by showDemoSessions: if false, hide mock sessions
@@ -246,8 +245,8 @@ const Index = () => {
     setIsRunning,
     isPaused,
     setIsPaused,
-    timeLeft, // Derived from currentPhaseEndTime
-    setTimeLeft, // Now updates currentPhaseEndTime
+    timeLeft,
+    setTimeLeft,
     timerType,
     setTimerType,
     isFlashing,
@@ -644,7 +643,7 @@ const Index = () => {
     setAccumulatedBreakSeconds(0);
     const initialDurationSeconds = timerType === 'focus' ? currentFocusDuration * 60 : currentBreakDuration * 60;
     setCurrentPhaseDurationSeconds(initialDurationSeconds);
-    setTimeLeft(Date.now() + initialDurationSeconds * 1000); // Set currentPhaseEndTime
+    setTimeLeft(initialDurationSeconds);
     setIsTimeLeftManagedBySession(true);
 
     const hostParticipant: ParticipantSessionData = {
@@ -665,7 +664,8 @@ const Index = () => {
 
     if (sessionVisibility !== 'private') {
       const { latitude, longitude } = await getLocation();
-      const currentPhaseEndTimeISO = new Date(Date.now() + initialDurationSeconds * 1000).toISOString();
+      const currentPhaseDuration = timerType === 'focus' ? currentFocusDuration : currentBreakDuration;
+      const currentPhaseEndTime = new Date(Date.now() + currentPhaseDuration * 60 * 1000).toISOString();
       try {
         const { data, error } = await supabase
           .from('active_sessions')
@@ -677,8 +677,8 @@ const Index = () => {
             focus_duration: currentFocusDuration,
             break_duration: currentBreakDuration,
             current_phase_type: timerType,
-            current_phase_end_time: currentPhaseEndTimeISO,
-            total_session_duration_seconds: initialDurationSeconds,
+            current_phase_end_time: currentPhaseEndTime,
+            total_session_duration_seconds: currentPhaseDuration * 60,
             is_active: true,
             is_paused: false,
             location_lat: latitude,
@@ -717,7 +717,6 @@ const Index = () => {
     if (isScheduleActive && isSchedulePending) {
       setIsSchedulePending(false);
       setCurrentPhaseStartTime(Date.now());
-      setTimeLeft(Date.now() + timeLeft * 1000); // Update currentPhaseEndTime
       if (areToastsEnabled) {
         toast.success("Schedule Resumed!", {
           description: `"${activeScheduleDisplayTitle}" has resumed.`,
@@ -725,9 +724,9 @@ const Index = () => {
       }
     } else if (currentPhaseStartTime === null) {
       setCurrentPhaseStartTime(Date.now());
-      setTimeLeft(Date.now() + timeLeft * 1000); // Update currentPhaseEndTime
+      setCurrentPhaseDurationSeconds(timeLeft);
     } else {
-      setTimeLeft(Date.now() + timeLeft * 1000); // Update currentPhaseEndTime
+      setCurrentPhaseStartTime(Date.now() - (currentPhaseDurationSeconds - remainingTimeAtPause) * 1000);
     }
     setIsTimeLeftManagedBySession(true);
   };
@@ -761,7 +760,7 @@ const Index = () => {
     setTimerType('break');
     const newBreakDurationSeconds = breakMinutes * 60;
     setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
-    setTimeLeft(Date.now() + newBreakDurationSeconds * 1000); // Set currentPhaseEndTime
+    setTimeLeft(newBreakDurationSeconds);
     setCurrentPhaseStartTime(Date.now());
 
     setIsFlashing(false);
@@ -779,7 +778,7 @@ const Index = () => {
     setTimerType('focus');
     const newFocusDurationSeconds = focusMinutes * 60;
     setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
-    setTimeLeft(Date.now() + newFocusDurationSeconds * 1000); // Set currentPhaseEndTime
+    setTimeLeft(newFocusDurationSeconds);
     setCurrentPhaseStartTime(Date.now());
 
     setIsFlashing(false);
@@ -796,12 +795,12 @@ const Index = () => {
       setTimerType('focus');
       const newFocusDurationSeconds = focusMinutes * 60;
       setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
-      setTimeLeft(Date.now() + newFocusDurationSeconds * 1000); // Set currentPhaseEndTime
+      setTimeLeft(newFocusDurationSeconds);
     } else {
       setTimerType('break');
       const newBreakDurationSeconds = breakMinutes * 60;
       setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
-      setTimeLeft(Date.now() + newBreakDurationSeconds * 1000); // Set currentPhaseEndTime
+      setTimeLeft(newBreakDurationSeconds);
     }
     setIsTimeLeftManagedBySession(false);
   };
@@ -816,40 +815,44 @@ const Index = () => {
       const fullSchedule = session.fullSchedule;
 
       const now = Date.now();
-      const currentPhaseEndTime = session.current_phase_end_time; // Use server-synced end time
-      const remainingSecondsInPhase = Math.max(0, Math.floor((currentPhaseEndTime - now) / 1000));
+      const elapsedSecondsSinceSessionStart = Math.floor((now - session.startTime) / 1000);
 
-      // Recalculate current phase type and duration based on the full schedule and remaining time
+      const totalScheduleDurationSeconds = fullSchedule.reduce(
+        (sum, phase) => sum + phase.durationMinutes * 60,
+        0
+      );
+
       let currentPhaseType: 'focus' | 'break' = 'focus';
+      let remainingSecondsInPhase = 0;
       let currentPhaseDurationMinutes = 0;
-      let accumulatedDurationSeconds = 0;
-      let foundPhase = false;
 
-      for (let i = 0; i < fullSchedule.length; i++) {
-        const phase = fullSchedule[i];
-        const phaseDurationSeconds = phase.durationMinutes * 60;
-        
-        // If the remaining time is within this phase's duration (from its start in the cycle)
-        // This logic needs to be robust for repeating schedules.
-        // For simplicity, let's assume the current phase is the one whose end time is `currentPhaseEndTime`.
-        // A more complex calculation would involve figuring out which cycle and which phase within that cycle.
-        // For now, we'll derive it from the `current_phase_end_time` and the total schedule duration.
+      const cycleDurationSeconds = fullSchedule.reduce((sum, phase) => sum + phase.durationMinutes * 60, 0);
+      const effectiveElapsedSeconds = cycleDurationSeconds > 0 ? elapsedSecondsSinceSessionStart % cycleDurationSeconds : 0;
 
-        // A simpler approach for joining:
-        // The host's `current_phase_end_time` is the source of truth.
-        // We need to find which phase this `current_phase_end_time` corresponds to.
-        // This requires the host to also send `current_schedule_index` and `current_phase_type`.
-        // For now, we'll use the `current_phase_type` and `focus_duration`/`break_duration` from the fetched session.
-        
-        // This part needs to be derived from the `SupabaseSessionData` directly, not recalculated.
-        // The `fetchSupabaseSessions` already maps `current_phase_type` and `focus_duration`/`break_duration`.
-        // We need to pass these from `session` object.
+      if (totalScheduleDurationSeconds === 0) {
+        currentPhaseType = 'focus';
+        remainingSecondsInPhase = 0;
+        currentPhaseDurationMinutes = 0;
+      } else if (elapsedSecondsSinceSessionStart < 0) {
+        currentPhaseType = fullSchedule[0]?.type || 'focus';
+        currentPhaseDurationMinutes = fullSchedule[0]?.durationMinutes || 0;
+        remainingSecondsInPhase = -elapsedSecondsSinceSessionStart;
+      } else {
+        let accumulatedDurationSecondsInCycle = 0;
+        for (let i = 0; i < fullSchedule.length; i++) {
+          const phase = fullSchedule[i];
+          const phaseDurationSeconds = phase.durationMinutes * 60;
+
+          if (effectiveElapsedSeconds < accumulatedDurationSecondsInCycle + phaseDurationSeconds) {
+            const timeIntoPhase = effectiveElapsedSeconds - accumulatedDurationSecondsInCycle;
+            remainingSecondsInPhase = phaseDurationSeconds - timeIntoPhase;
+            currentPhaseDurationMinutes = phase.durationMinutes;
+            currentPhaseType = phase.type;
+            break;
+          }
+          accumulatedDurationSecondsInCycle += phaseDurationSeconds;
+        }
       }
-
-      // Use the current phase info directly from the fetched session
-      const currentSessionPhaseType = session.current_phase_type;
-      const currentSessionPhaseDurationMinutes = currentSessionPhaseType === 'focus' ? session.focus_duration : session.break_duration;
-
 
       await joinSessionAsCoworker(
         session,
@@ -857,8 +860,8 @@ const Index = () => {
         hostName,
         participants,
         fullSchedule,
-        currentSessionPhaseType,
-        currentSessionPhaseDurationMinutes,
+        currentPhaseType,
+        currentPhaseDurationMinutes,
         remainingSecondsInPhase
       );
     } catch (error: any) {
@@ -930,7 +933,6 @@ const Index = () => {
           host_notes: joinedSession.host_notes,
           organisation: joinedSession.organisation,
           is_mock: joinedSession.is_mock, // NEW: Include is_mock
-          current_phase_end_time: new Date(joinedSession.current_phase_end_time).getTime(), // NEW: Add current_phase_end_time
         };
         await handleJoinSession(demoSession);
         setShowJoinInput(false);

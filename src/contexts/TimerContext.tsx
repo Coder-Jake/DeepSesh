@@ -47,13 +47,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [currentPhaseEndTime, setCurrentPhaseEndTime] = useState<number | null>(null); // Server-synced end time
-  const [_now, set_Now] = useState(Date.now()); // Local time for deriving timeLeft
-  const timeLeft = useMemo(() => {
-    if (currentPhaseEndTime === null) return 0;
-    return Math.max(0, Math.floor((currentPhaseEndTime - _now) / 1000));
-  }, [currentPhaseEndTime, _now]);
-
+  const [timeLeft, setTimeLeft] = useState(focusMinutes * 60);
   const [timerType, setTimerType] = useState<'focus' | 'break'>('focus');
   const [isFlashing, setIsFlashing] = useState(false);
   const [notes, setNotes] = useState("");
@@ -61,7 +55,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [_seshTitle, _setSeshTitle] = useState("Coworker's DeepSesh");
   const [isSeshTitleCustomized, setIsSeshTitleCustomized] = useState(false);
   const [showSessionsWhileActive, setShowSessionsWhileActive] = useState<'hidden' | 'nearby' | 'friends' | 'all'>('all');
-  const timerRef = useRef<NodeJS.Timeout | null>(null); // This ref is now for the _now interval
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [schedule, setSchedule] = useState<ScheduledTimer[]>([]);
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
@@ -424,13 +418,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     const currentScheduleItem = isScheduleActive ? activeSchedule[currentScheduleIndex] : null;
     const currentPhaseDuration = currentScheduleItem ? currentScheduleItem.durationMinutes : (timerType === 'focus' ? focusMinutes : breakMinutes);
-    const currentPhaseEndTimeISO = currentPhaseEndTime ? new Date(currentPhaseEndTime).toISOString() : new Date().toISOString();
+    const currentPhaseEndTime = new Date(Date.now() + timeLeft * 1000).toISOString();
 
     const sessionDataToUpdate = {
       host_name: currentSessionHostName,
       session_title: activeScheduleDisplayTitle,
       current_phase_type: timerType,
-      current_phase_end_time: currentPhaseEndTimeISO,
+      current_phase_end_time: currentPhaseEndTime,
       is_active: isRunning,
       is_paused: isPaused,
       focus_duration: focusMinutes,
@@ -481,7 +475,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
-    currentScheduleIndex, currentPhaseEndTime, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
+    currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
     userJoinCode, selectedHostingOrganisation, hostNotes, activeAsks, session?.access_token, currentSessionRole
   ]);
 
@@ -562,28 +556,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setActiveAsks(updatedSession.active_asks || []);
             setHostNotes(updatedSession.host_notes || "");
             setSelectedHostingOrganisation(updatedSession.organisation?.[0] || null); // NEW: Sync selected hosting organisation, assuming single org for simplicity
-
-            // Sync timer state from host
-            if (user?.id !== updatedSession.user_id) { // Only sync if not the host
-              setIsRunning(updatedSession.is_active);
-              setIsPaused(updatedSession.is_paused);
-              setTimerType(updatedSession.current_phase_type);
-              setCurrentScheduleIndex(updatedSession.current_schedule_index);
-              setCurrentPhaseEndTime(new Date(updatedSession.current_phase_end_time).getTime());
-              setActiveSchedule(updatedSession.schedule_data || []);
-              setActiveScheduleDisplayTitleInternal(updatedSession.session_title);
-              _setSeshTitle(updatedSession.session_title);
-              setIsSeshTitleCustomized(true); // Assume it's customized if host changed it
-              setSessionStartTime(new Date(updatedSession.created_at).getTime());
-              setCurrentPhaseDurationSeconds(
-                updatedSession.current_phase_type === 'focus'
-                  ? updatedSession.focus_duration * 60
-                  : updatedSession.break_duration * 60
-              );
-              setIsTimeLeftManagedBySession(true);
-              setIsScheduleActive(updatedSession.schedule_data && updatedSession.schedule_data.length > 0);
-              setIsSchedulePending(false); // If active, it's not pending
-            }
           }
         )
         .subscribe();
@@ -595,7 +567,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         supabase.removeChannel(subscription);
       }
     };
-  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation, user?.id, setIsRunning, setIsPaused, setTimerType, setCurrentScheduleIndex, setCurrentPhaseEndTime, setActiveSchedule, setActiveScheduleDisplayTitleInternal, _setSeshTitle, setIsSeshTitleCustomized, setSessionStartTime, setCurrentPhaseDurationSeconds, setIsTimeLeftManagedBySession, setIsScheduleActive, setIsSchedulePending]);
+  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation]);
 
   const resetSessionStates = useCallback(() => {
     setIsScheduleActive(false);
@@ -613,8 +585,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     _setBreakMinutes(_defaultBreakMinutes);
     setIsHomepageFocusCustomized(false);
     setIsHomepageBreakCustomized(false);
-    setCurrentPhaseEndTime(null); // Reset server-synced end time
-    // setTimeLeft(_defaultFocusMinutes * 60); // Reset derived timeLeft - this is now derived, no direct setter
+    setTimeLeft(_defaultFocusMinutes * 60);
     setCurrentPhaseDurationSeconds(_defaultFocusMinutes * 60);
     setIsRunning(false);
     setIsPaused(false);
@@ -736,7 +707,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .from('active_sessions')
           .delete()
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id); // MODIFIED: Changed 'user_id' to 'user.id' to match the RLS policy
+          .eq('user.id', user.id); // MODIFIED: Changed 'user_id' to 'user.id' to match the RLS policy
 
         if (deleteError) throw deleteError;
 
@@ -934,9 +905,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     try {
-      const currentPhaseDuration = initialSchedule[simulatedCurrentPhaseIndex]?.durationMinutes || 0;
-      const currentPhaseEndTimeCalc = Date.now() + (simulatedTimeLeftInPhase !== null ? simulatedTimeLeftInPhase : currentPhaseDuration * 60) * 1000;
-
       const { data, error } = await supabase
         .from('active_sessions')
         .insert({
@@ -947,7 +915,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           focus_duration: initialSchedule.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.durationMinutes, 0),
           break_duration: initialSchedule.filter(s => s.type === 'break').reduce((sum, s) => sum + s.durationMinutes, 0),
           current_phase_type: initialSchedule[simulatedCurrentPhaseIndex]?.type || 'focus', // Use initial phase type
-          current_phase_end_time: new Date(currentPhaseEndTimeCalc).toISOString(),
+          current_phase_end_time: new Date(Date.now() + (simulatedTimeLeftInPhase !== null ? simulatedTimeLeftInPhase : (initialSchedule[simulatedCurrentPhaseIndex]?.durationMinutes || 0) * 60) * 1000).toISOString(),
           total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
           schedule_id: initialSchedule[0]?.id && isValidUUID(initialSchedule[0].id) ? initialSchedule[0].id : null,
           is_active: true, // Temporarily true, will be updated by sync
@@ -1000,7 +968,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setTimerType(actualTimerType);
     setIsTimeLeftManagedBySession(true);
     setCurrentPhaseDurationSeconds(actualCurrentPhaseDurationSeconds);
-    setCurrentPhaseEndTime(Date.now() + actualTimeLeft * 1000); // Set local currentPhaseEndTime
+    setTimeLeft(actualTimeLeft);
     setSessionStartTime(actualSessionStartTime);
     setCurrentPhaseStartTime(actualCurrentPhaseStartTime);
 
@@ -1035,7 +1003,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
     sessionVisibility, selectedHostingOrganisation, hostNotes, activeAsks,
-    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode, setCurrentPhaseEndTime
+    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1234,7 +1202,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     
     const initialDurationSeconds = currentPhaseDurationMinutes * 60;
     setCurrentPhaseDurationSeconds(initialDurationSeconds);
-    setCurrentPhaseEndTime(Date.now() + Math.max(0, remainingSecondsInPhase) * 1000); // Set local currentPhaseEndTime
+    setTimeLeft(Math.max(0, remainingSecondsInPhase));
 
     setIsRunning(true);
     setIsPaused(false);
@@ -1338,22 +1306,24 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setHasWonPrize,
     setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setActiveSessionRecordId,
     setActiveSchedule, setActiveScheduleDisplayTitleInternal, setTimerType,
-    setIsTimeLeftManagedBySession, setSessionStartTime, setCurrentPhaseStartTime,
+    setIsTimeLeftManagedBySession, setTimeLeft, setSessionStartTime, setCurrentPhaseStartTime,
     setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
     setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, _defaultBreakMinutes, _defaultFocusMinutes,
-    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds, session?.access_token, setSelectedHostingOrganisation, setCurrentPhaseEndTime
+    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds, session?.access_token, setSelectedHostingOrganisation
   ]);
 
-  // NEW: Main timer countdown effect (updates _now every second)
+  // NEW: Main timer countdown effect
   useEffect(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
 
-    if (isRunning && !isPaused && currentPhaseEndTime !== null) {
+    if (isRunning && !isPaused && currentPhaseStartTime !== null && currentPhaseDurationSeconds > 0) {
       timerRef.current = setInterval(() => {
-        set_Now(Date.now());
+        const elapsedSeconds = (Date.now() - currentPhaseStartTime) / 1000;
+        const secondsPassed = Math.floor(elapsedSeconds);
+        setTimeLeft(Math.max(0, currentPhaseDurationSeconds - secondsPassed));
       }, 1000);
     }
 
@@ -1362,11 +1332,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isPaused, currentPhaseEndTime]);
+  }, [isRunning, isPaused, currentPhaseStartTime, currentPhaseDurationSeconds]);
 
   // NEW: Effect to handle timer completion (when timeLeft hits 0)
   useEffect(() => {
-    if (timeLeft === 0 && isRunning && currentPhaseEndTime !== null) {
+    if (timeLeft === 0 && isRunning && currentPhaseStartTime !== null) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
@@ -1391,7 +1361,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           
           const nextPhaseDurationSeconds = activeSchedule[nextIndex].durationMinutes * 60;
           setCurrentPhaseDurationSeconds(nextPhaseDurationSeconds);
-          setCurrentPhaseEndTime(Date.now() + nextPhaseDurationSeconds * 1000); // Set new end time
+          setTimeLeft(nextPhaseDurationSeconds);
           setCurrentPhaseStartTime(Date.now());
 
           setIsRunning(true);
@@ -1403,7 +1373,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
             const firstPhaseDurationSeconds = activeSchedule[0].durationMinutes * 60;
             setCurrentPhaseDurationSeconds(firstPhaseDurationSeconds);
-            setCurrentPhaseEndTime(Date.now() + firstPhaseDurationSeconds * 1000); // Set new end time
+            setTimeLeft(firstPhaseDurationSeconds);
             setCurrentPhaseStartTime(Date.now());
 
             setIsRunning(true);
@@ -1454,7 +1424,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           setIsRunning(false);
           setIsFlashing(true);
           setCurrentPhaseStartTime(null);
-          setCurrentPhaseEndTime(null); // Clear end time
         } else {
           setIsFlashing(false);
           setIsRunning(true);
@@ -1463,25 +1432,25 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setTimerType('break');
             const newBreakDurationSeconds = breakMinutes * 60;
             setCurrentPhaseDurationSeconds(newBreakDurationSeconds);
-            setCurrentPhaseEndTime(Date.now() + newBreakDurationSeconds * 1000); // Set new end time
+            setTimeLeft(newBreakDurationSeconds);
             setCurrentPhaseStartTime(Date.now());
           } else {
             setTimerType('focus');
             const newFocusDurationSeconds = focusMinutes * 60;
             setCurrentPhaseDurationSeconds(newFocusDurationSeconds);
-            setCurrentPhaseEndTime(Date.now() + newFocusDurationSeconds * 1000); // Set new end time
+            setTimeLeft(newFocusDurationSeconds);
             setCurrentPhaseStartTime(Date.now());
           }
         }
       }
     }
   }, [
-    timeLeft, isRunning, currentPhaseEndTime, currentPhaseDurationSeconds,
+    timeLeft, isRunning, currentPhaseStartTime, currentPhaseDurationSeconds,
     isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle,
     setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldShowEndToast, user?.id, _seshTitle, notes, hostNotes,
     accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition,
     focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration,
-    isRecurring, setCurrentScheduleIndex, setTimerType, setIsRunning, setIsFlashing, setCurrentPhaseStartTime,
+    isRecurring, setCurrentScheduleIndex, setTimerType, setIsRunning, setIsFlashing, setCurrentPhaseStartTime, setTimeLeft,
     _defaultFocusMinutes, _defaultBreakMinutes, setHomepageFocusMinutes, setHomepageBreakMinutes, getDefaultSeshTitle,
     setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setHasWonPrize, shouldPlayEndSound
   ]);
@@ -1489,12 +1458,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   useEffect(() => {
     if (!isTimeLeftManagedBySession && !isRunning && !isPaused && !isScheduleActive && !isSchedulePending) {
       const expectedTime = (timerType === 'focus' ? focusMinutes : breakMinutes) * 60;
-      if (currentPhaseDurationSeconds !== expectedTime) {
+      if (timeLeft !== expectedTime) {
+        setTimeLeft(expectedTime);
         setCurrentPhaseDurationSeconds(expectedTime);
-        setCurrentPhaseEndTime(Date.now() + expectedTime * 1000); // Update end time for local timer
       }
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, currentPhaseDurationSeconds, setCurrentPhaseDurationSeconds, setCurrentPhaseEndTime]);
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isPaused, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, timeLeft, setCurrentPhaseDurationSeconds]);
 
   // Effect to update _seshTitle when profile or customization changes
   useEffect(() => {
@@ -1721,7 +1690,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(intervalId);
       }
     };
-  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, activeAsks, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds, currentPhaseEndTime]);
+  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, activeAsks, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]);
 
   useEffect(() => {
     if (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) {
@@ -1735,7 +1704,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     return {
       _defaultFocusMinutes, _defaultBreakMinutes,
       focusMinutes, breakMinutes,
-      isRunning, isPaused, currentPhaseEndTime, timerType, isFlashing,
+      isRunning, isPaused, timeLeft, timerType, isFlashing,
       notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
       isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
       sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
@@ -1766,7 +1735,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       selectedHostingOrganisation, // NEW: Save selectedHostingOrganisation
     };
   }, [
-    _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, isPaused, currentPhaseEndTime, timerType, isFlashing,
+    _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
     notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, isSchedulingMode,
     isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
     savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
@@ -1803,7 +1772,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         _setBreakMinutes(data.breakMinutes ?? _defaultBreakMinutes);
         setIsRunning(loadedIsRunning);
         setIsPaused(loadedIsPaused);
-        setCurrentPhaseEndTime(data.currentPhaseEndTime ?? null); // Load server-synced end time
+        setTimeLeft(data.timeLeft ?? (data.focusMinutes ?? _defaultFocusMinutes) * 60);
         setTimerType(data.timerType ?? 'focus');
         setIsFlashing(data.isFlashing ?? false);
         setNotes(data.notes ?? "");
@@ -1917,7 +1886,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const currentTimerType = data.timerType ?? 'focus';
 
       setTimerType(currentTimerType);
-      setCurrentPhaseEndTime(Date.now() + (currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60 * 1000); // Set initial end time
+      setTimeLeft((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
       setCurrentPhaseDurationSeconds((currentTimerType === 'focus' ? currentHomepageFocus : currentHomepageBreak) * 60);
       _setSeshTitle(data._seshTitle ?? getDefaultSeshTitle());
       setIsSeshTitleCustomized(data.isSeshTitleCustomized ?? false);
@@ -1925,7 +1894,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setHostNotes(data.hostNotes ?? "");
       setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null); // NEW: Load selectedHostingOrganisation
     }
-  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules, setNotes, setHostNotes, setSelectedHostingOrganisation, setCurrentPhaseEndTime]);
+  }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules, setNotes, setHostNotes, setSelectedHostingOrganisation]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -1995,7 +1964,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isPaused,
     setIsPaused,
     timeLeft,
-    setTimeLeft: setCurrentPhaseEndTime, // MODIFIED: setTimeLeft now updates currentPhaseEndTime
+    setTimeLeft,
     timerType,
     setTimerType,
     isFlashing,
