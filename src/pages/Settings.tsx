@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useRef, useEffect } from "react";
-import { MessageSquareWarning, Vibrate, Volume2, UserX, X, Info, MapPin, Infinity, Globe, Lock, Building2 } from "lucide-react";
+import { MessageSquareWarning, UserX, X, Info, MapPin, Infinity, Globe, Lock, Building2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,6 @@ const Settings = () => {
     setDefaultBreakMinutes, 
     timerIncrement, 
     setTimerIncrement,
-    shouldPlayEndSound, 
-    setShouldPlayEndSound, 
     shouldShowEndToast, 
     setShouldShowEndToast, 
     isBatchNotificationsEnabled,
@@ -64,8 +62,6 @@ const Settings = () => {
     setSessionInvites,
     friendActivity,
     setFriendActivity,
-    breakNotificationsVibrate,
-    setBreakNotificationsVibrate,
     verificationStandard,
     setVerificationStandard,
     locationSharing,
@@ -128,7 +124,6 @@ const Settings = () => {
     maxDistance,
     askNotifications,
     joinNotifications, 
-    breakNotificationsVibrate,
     sessionInvites,
     friendActivity,
     verificationStandard,
@@ -136,7 +131,7 @@ const Settings = () => {
     locationSharing,
     sessionVisibility,
     timerIncrement,
-    shouldPlayEndSound,
+    // shouldPlayEndSound, // Removed
     shouldShowEndToast,
     isDarkMode,
     is24HourFormat,
@@ -187,7 +182,6 @@ const Settings = () => {
       maxDistance,
       askNotifications,
       joinNotifications, 
-      breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
       verificationStandard,
@@ -195,7 +189,7 @@ const Settings = () => {
       locationSharing,
       sessionVisibility,
       timerIncrement: currentTimerIncrement,
-      shouldPlayEndSound,
+      // shouldPlayEndSound, // Removed
       shouldShowEndToast,
       isDarkMode,
       is24HourFormat,
@@ -225,11 +219,12 @@ const Settings = () => {
     isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches,
     manualTransition, localFocusMinutes, localBreakMinutes, maxDistance,
-    askNotifications, joinNotifications, breakNotificationsVibrate, sessionInvites, friendActivity, 
+    askNotifications, joinNotifications, sessionInvites, friendActivity, 
     verificationStandard, profileVisibility,
     locationSharing,
     sessionVisibility,
-    currentTimerIncrement, shouldPlayEndSound, shouldShowEndToast,
+    currentTimerIncrement, // shouldPlayEndSound, // Removed
+    shouldShowEndToast,
     isDarkMode,
     is24HourFormat,
     areToastsEnabled,
@@ -252,8 +247,8 @@ const Settings = () => {
   };
 
   const updateNotificationSetting = (
-    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins' | 'startStop',
-    field: 'push' | 'vibrate' | 'sound',
+    type: 'ask' | 'invites' | 'activity' | 'joins' | 'startStop',
+    field: 'push', // Only 'push' remains
     value: boolean
   ) => {
     const text = value ? 'Enabled' : 'Disabled';
@@ -263,10 +258,6 @@ const Settings = () => {
       setAskNotifications((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     } else if (type === 'joins') { 
       setJoinNotifications((prev: NotificationSettings) => ({ ...prev, [field]: value }));
-    } else if (type === 'break') {
-      if (field === 'push') setShouldShowEndToast(value);
-      if (field === 'vibrate') setBreakNotificationsVibrate(value);
-      if (field === 'sound') setShouldPlayEndSound(value);
     } else if (type === 'invites') {
       setSessionInvites((prev: NotificationSettings) => ({ ...prev, [field]: value }));
     } else if (type === 'activity') {
@@ -281,13 +272,11 @@ const Settings = () => {
     title, 
     description, 
     value,
-    hidePush = false,
   }: { 
-    type: 'ask' | 'break' | 'invites' | 'activity' | 'joins' | 'startStop';
+    type: 'ask' | 'invites' | 'activity' | 'joins' | 'startStop';
     title: string;
     description?: string;
-    value: { push: boolean; vibrate: boolean; sound: boolean; };
-    hidePush?: boolean;
+    value: NotificationSettings; // Only push property
   }) => (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
@@ -309,66 +298,25 @@ const Settings = () => {
       </div>
       
       <div className="flex items-center gap-4">
-        {!hidePush ? (
-          <div className="relative min-w-[100px]">
-            <Button
-              variant="outline"
-              size="icon"
-              className={cn(
-                "w-10 h-10 rounded-full transition-colors",
-                value.push ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'
-              )}
-              onClick={() => updateNotificationSetting(type, 'push', !value.push)}
-            >
-              <MessageSquareWarning size={20} />
-            </Button>
-            {momentaryText[`${type}-push`] && (
-              <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
-                Push {momentaryText[`${type}-push`]}
-              </span>
-            )}
-          </div>
-        ) : (
-          <div className="relative min-w-[100px]" />
-        )}
-
         <div className="relative min-w-[100px]">
           <Button
             variant="outline"
             size="icon"
             className={cn(
               "w-10 h-10 rounded-full transition-colors",
-              value.vibrate ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'
+              value.push ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'
             )}
-            onClick={() => updateNotificationSetting(type, 'vibrate', !value.vibrate)}
+            onClick={() => updateNotificationSetting(type, 'push', !value.push)}
           >
-            <Vibrate size={20} /> 
+            <MessageSquareWarning size={20} />
           </Button>
-          {momentaryText[`${type}-vibrate`] && (
+          {momentaryText[`${type}-push`] && (
             <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
-              Vibrate {momentaryText[`${type}-vibrate`]}
+              Push {momentaryText[`${type}-push`]}
             </span>
           )}
         </div>
-
-        <div className="relative min-w-[100px]">
-          <Button
-            variant="outline"
-            size="icon"
-            className={cn(
-              "w-10 h-10 rounded-full transition-colors",
-              value.sound ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'
-            )}
-            onClick={() => updateNotificationSetting(type, 'sound', !value.sound)}
-          >
-            <Volume2 size={20} />
-          </Button>
-          {momentaryText[`${type}-sound`] && (
-            <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
-              Sound {momentaryText[`${type}-sound`]}
-            </span>
-          )}
-        </div>
+        {/* Vibration and Sound controls removed */}
       </div>
     </div>
   );
@@ -448,12 +396,12 @@ const Settings = () => {
     setJoinNotifications(joinNotifications); 
     setSessionInvites(sessionInvites);
     setFriendActivity(friendActivity);
-    setBreakNotificationsVibrate(breakNotificationsVibrate);
+    // setBreakNotificationsVibrate(breakNotificationsVibrate); // Removed
     setVerificationStandard(verificationStandard);
     setLocationSharing(locationSharing);
     setSessionVisibility(sessionVisibility);
     setOpenSettingsAccordions(openSettingsAccordions);
-    setShouldPlayEndSound(shouldPlayEndSound);
+    // setShouldPlayEndSound(shouldPlayEndSound); // Removed
     setShouldShowEndToast(shouldShowEndToast);
     setAreToastsEnabled(areToastsEnabled);
     setStartStopNotifications(startStopNotifications);
@@ -479,7 +427,6 @@ const Settings = () => {
       maxDistance,
       askNotifications,
       joinNotifications, 
-      breakNotificationsVibrate,
       sessionInvites,
       friendActivity,
       verificationStandard,
@@ -487,7 +434,7 @@ const Settings = () => {
       locationSharing,
       sessionVisibility,
       timerIncrement: currentTimerIncrement,
-      shouldPlayEndSound,
+      // shouldPlayEndSound, // Removed
       shouldShowEndToast,
       isDarkMode,
       is24HourFormat,
@@ -632,7 +579,7 @@ const Settings = () => {
                       <Label htmlFor="lock" className="cursor-help text-muted-foreground">Lock in!</Label>
                     </TooltipTrigger>
                     <TooltipContent className="select-none">
-                      <p>Disable other apps during Focus.</p>
+                        <p>Disable other apps during Focus.</p>
                     </TooltipContent>
                   </Tooltip>
                 </div >
@@ -1001,7 +948,7 @@ const Settings = () => {
                   {limitDiscoveryRadius ? (
                     maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`
                   ) : (
-                    <Infinity size={20} />
+                    <InfinityIcon size={20} />
                   )}
                 </Button>
               </div>
@@ -1265,7 +1212,6 @@ const Settings = () => {
                 title="Start/Stop"
                 description="Notifications when the timer starts, pauses, or stops."
                 value={startStopNotifications}
-                hidePush={true}
               />
 
               <NotificationControl
@@ -1282,12 +1228,46 @@ const Settings = () => {
                 value={joinNotifications}
               />
               
-              <NotificationControl
-                type="break"
-                title="Break Reminders"
-                description="Notifications when the timer starts, ends, or switches between focus/break."
-                value={{ push: shouldShowEndToast, vibrate: breakNotificationsVibrate, sound: shouldPlayEndSound }}
-              />
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Label className="text-base font-medium">
+                    Break Reminders
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                        <Info size={16} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 text-sm">
+                      Notifications when the timer starts, ends, or switches between focus/break.
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="relative min-w-[100px]">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={cn(
+                        "w-10 h-10 rounded-full transition-colors",
+                        shouldShowEndToast ? 'bg-olive text-olive-foreground hover:bg-olive-hover' : 'text-muted-foreground hover:bg-muted-hover'
+                      )}
+                      onClick={() => {
+                        setShouldShowEndToast(prev => !prev);
+                        showMomentaryText('break-push', shouldShowEndToast ? 'Disabled' : 'Enabled');
+                      }}
+                    >
+                      <MessageSquareWarning size={20} />
+                    </Button>
+                    {momentaryText['break-push'] && (
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-popover text-popover-foreground px-2 py-1 rounded-full whitespace-nowrap opacity-100 transition-opacity duration-300 z-50 select-none">
+                        Push {momentaryText['break-push']}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
               
               <NotificationControl
                 type="invites"

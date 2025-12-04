@@ -13,7 +13,6 @@ export const saveSessionToDatabase = async (
   totalSessionSeconds: number,
   activeJoinedSessionCoworkerCount: number,
   sessionStartTime: number,
-  // activeAsks: ActiveAskItem[] | undefined, // Removed
   areToastsEnabled: boolean
 ) => {
   console.log("saveSessionToDatabase: received activeAsks:", "No active asks to save.");

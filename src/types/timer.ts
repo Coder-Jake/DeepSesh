@@ -45,8 +45,6 @@ export interface ActiveSchedule {
 // Define the structure for notification settings
 export type NotificationSettings = {
   push: boolean;
-  vibrate: boolean;
-  sound: boolean;
 };
 
 // NEW: Define ParticipantSessionData for tracking participants in Supabase
@@ -213,10 +211,6 @@ export type TimerContextType = {
   isTimeLeftManagedBySession: boolean;
   setIsTimeLeftManagedBySession: React.Dispatch<React.SetStateAction<boolean>>;
 
-  shouldPlayEndSound: boolean;
-  setShouldPlayEndSound: React.Dispatch<React.SetStateAction<boolean>>;
-  shouldShowEndToast: boolean;
-  setShouldShowEndToast: React.Dispatch<React.SetStateAction<boolean>>;
   isBatchNotificationsEnabled: boolean;
   setIsBatchNotificationsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   batchNotificationPreference: 'break' | 'sesh_end' | 'custom';
@@ -247,8 +241,6 @@ export type TimerContextType = {
   setSessionInvites: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   friendActivity: NotificationSettings;
   setFriendActivity: React.Dispatch<React.SetStateAction<NotificationSettings>>;
-  breakNotificationsVibrate: boolean;
-  setBreakNotificationsVibrate: React.Dispatch<React.SetStateAction<boolean>>;
   verificationStandard: 'anyone' | 'phone1' | 'organisation' | 'id1';
   setVerificationStandard: React.Dispatch<React.SetStateAction<'anyone' | 'phone1' | 'organisation' | 'id1'>>;
   locationSharing: boolean;

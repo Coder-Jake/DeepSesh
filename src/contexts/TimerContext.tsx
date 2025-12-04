@@ -144,8 +144,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [isSchedulePending, setIsSchedulePending] = useState(false);
   const [isTimeLeftManagedBySession, setIsTimeLeftManagedBySession] = useState(false);
 
-  const [shouldPlayEndSound, setShouldPlayEndSound] = useState(false);
-  const [shouldShowEndToast, setShouldShowEndToast] = useState(false);
   const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
   const [customBatchMinutes, setCustomBatchMinutes] = useState(timerIncrement);
@@ -157,11 +155,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [intentionalBreaches, setIntentionalBreaches] = useState(false);
   const [manualTransition, setManualTransition] = useState(false);
   const [maxDistance, setMaxDistance] = useState(1000);
-  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
-  const [joinNotifications, setJoinNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
-  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
-  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
-  const [breakNotificationsVibrate, setBreakNotificationsVibrate] = useState(false);
+  const [askNotifications, setAskNotifications] = useState<NotificationSettings>({ push: false });
+  const [joinNotifications, setJoinNotifications] = useState<NotificationSettings>({ push: false });
+  const [sessionInvites, setSessionInvites] = useState<NotificationSettings>({ push: false });
+  const [friendActivity, setFriendActivity] = useState<NotificationSettings>({ push: false });
   const [verificationStandard, setVerificationStandard] = useState<'anyone' | 'phone1' | 'organisation' | 'id1'>('anyone');
   const [locationSharing, setLocationSharing] = useState(false);
   const [openSettingsAccordions, setOpenSettingsAccordions] = useState<string[]>([]);
@@ -212,43 +209,15 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     _setDefaultBreakMinutes(minutes);
   }, []);
 
-  const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false, vibrate: false, sound: false });
+  const [startStopNotifications, setStartStopNotifications] = useState<NotificationSettings>({ push: false });
 
   const playSound = useCallback(() => {
-    if (!startStopNotifications || !startStopNotifications.sound) {
-      console.log("playSound: startStopNotifications object or sound property is not enabled/defined.");
-      return;
-    }
-    console.log("playSound called. startStopNotifications.sound:", startStopNotifications.sound);
-    if (typeof window.AudioContext !== 'undefined' || typeof (window as any).webkitAudioContext !== 'undefined') {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      oscillator.frequency.value = 440;
-      oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-    } else {
-      console.warn("AudioContext not supported in this browser.");
-    }
-  }, [startStopNotifications]);
+    // Sound notifications removed
+  }, []);
 
   const triggerVibration = useCallback(() => {
-    if (!startStopNotifications || !startStopNotifications.vibrate) {
-      console.log("triggerVibration: startStopNotifications object or vibrate property is not enabled/defined.");
-      return;
-    }
-    console.log("triggerVibration called. startStopNotifications.vibrate:", startStopNotifications.vibrate);
-    if (startStopNotifications.vibrate && navigator.vibrate) {
-      navigator.vibrate(200);
-    } else if (startStopNotifications.vibrate) {
-      console.warn("Vibration API not supported in this browser.");
-    }
-  }, [startStopNotifications]);
+    // Vibration notifications removed
+  }, []);
 
   const formatTime = useCallback((totalSeconds: number) => {
     const days = Math.floor(totalSeconds / (3600 * 24));
@@ -802,21 +771,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         totalSessionSeconds,
         activeJoinedSessionCoworkerCount,
         sessionStartTime || Date.now(),
-        undefined, // activeAsks removed
-        allParticipantsToDisplay,
         areToastsEnabled
       );
     }
 
     resetSessionStates();
-    playSound();
-    triggerVibration();
+    // playSound(); // Removed
+    // triggerVibration(); // Removed
 
   }, [
     currentSessionRole, accumulatedFocusSeconds, accumulatedBreakSeconds,
     isRunning, currentPhaseStartTime, timerType, user?.id, _seshTitle, notes, hostNotes,
     activeJoinedSessionCoworkerCount, sessionStartTime, allParticipantsToDisplay,
-    areToastsEnabled, resetSessionStates, playSound, triggerVibration, transferHostRole, leaveSession
+    areToastsEnabled, resetSessionStates, transferHostRole, leaveSession
   ]);
 
 
@@ -973,8 +940,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             description: `"${initialScheduleTitle}" has begun.`,
         });
     }
-    playSound();
-    triggerVibration();
+    // playSound(); // Removed
+    // triggerVibration(); // Removed
 
     setCurrentSessionParticipantsData([hostParticipant]);
     setCurrentSessionRole('host');
@@ -988,7 +955,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
-    areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
+    areToastsEnabled, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
     sessionVisibility, selectedHostingOrganisation, hostNotes,
     _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
@@ -1231,8 +1198,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `You've joined "${sessionTitle}" (mock session).`,
         });
       }
-      playSound();
-      triggerVibration();
+      // playSound(); // Removed
+      // triggerVibration(); // Removed
       return true;
     }
 
@@ -1268,8 +1235,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `You've joined "${sessionTitle}".`,
         });
       }
-      playSound();
-      triggerVibration();
+      // playSound(); // Removed
+      // triggerVibration(); // Removed
       return true;
     } catch (error: any) {
       console.error("Unexpected error during joinSessionAsCoworker:", error);
@@ -1291,7 +1258,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setHomepageFocusMinutes, setHomepageBreakMinutes, setCurrentSessionRole,
     setCurrentSessionHostName, setCurrentSessionOtherParticipants, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, _defaultBreakMinutes, _defaultFocusMinutes,
-    playSound, triggerVibration, getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds, session?.access_token, setSelectedHostingOrganisation
+    getDefaultSeshTitle, resetSessionStates, setCurrentPhaseDurationSeconds, session?.access_token, setSelectedHostingOrganisation
   ]);
 
   useEffect(() => {
@@ -1329,8 +1296,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
       }
 
-      if (shouldPlayEndSound) playSound();
-      if (breakNotificationsVibrate && navigator.vibrate) navigator.vibrate(200);
+      // if (shouldPlayEndSound) playSound(); // Removed
+      // if (breakNotificationsVibrate && navigator.vibrate) navigator.vibrate(200); // Removed
 
       if (isScheduleActive) {
         const nextIndex = currentScheduleIndex + 1;
@@ -1384,8 +1351,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
               totalSession,
               activeJoinedSessionCoworkerCount,
               sessionStartTime || Date.now(),
-              undefined, // activeAsks removed
-              allParticipantsToDisplay,
               areToastsEnabled
             );
 
@@ -1425,13 +1390,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [
     timeLeft, isRunning, currentPhaseStartTime, currentPhaseDurationSeconds,
-    isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle,
+    isFlashing, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle,
     setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldShowEndToast, user?.id, _seshTitle, notes, hostNotes,
     accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition,
-    focusMinutes, breakMinutes, areToastsEnabled, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration,
+    focusMinutes, breakMinutes, areToastsEnabled, allParticipantsToDisplay,
     isRecurring, setCurrentScheduleIndex, setTimerType, setIsRunning, setIsFlashing, setCurrentPhaseStartTime, setTimeLeft,
     _defaultFocusMinutes, _defaultBreakMinutes, setHomepageFocusMinutes, setHomepageBreakMinutes, getDefaultSeshTitle,
-    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setHasWonPrize, shouldPlayEndSound
+    setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setHasWonPrize
   ]);
 
   useEffect(() => {
@@ -1598,7 +1563,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(intervalId);
       }
     };
-  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]);
+  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]);
 
   useEffect(() => {
     if (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) {
@@ -1619,10 +1584,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, isSchedulePending, scheduleStartOption,
       isTimeLeftManagedBySession,
-      shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
+      isBatchNotificationsEnabled, batchNotificationPreference,
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
-      friendActivity, breakNotificationsVibrate, verificationStandard,
+      friendActivity, verificationStandard,
       locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
       is24HourFormat,
       preparedSchedules,
@@ -1648,9 +1613,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
     savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
-    shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
+    isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
-    askNotifications, joinNotifications, sessionInvites, friendActivity, breakNotificationsVibrate, verificationStandard,
+    askNotifications, joinNotifications, sessionInvites, friendActivity, verificationStandard,
     locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, is24HourFormat,
     preparedSchedules, timerIncrement, startStopNotifications, hasWonPrize, currentSessionRole, currentSessionHostName,
     currentSessionOtherParticipants, isHomepageFocusCustomized, isHomepageBreakCustomized, activeSessionRecordId,
@@ -1710,7 +1675,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setActiveJoinedSessionCoworkerCount(data.activeJoinedSessionCoworkerCount ?? 0);
         setIsSchedulePending(loadedIsSchedulePending);
         setIsTimeLeftManagedBySession(data.isTimeLeftManagedBySession ?? false);
-        setShouldPlayEndSound(data.shouldPlayEndSound ?? false);
+        // setShouldPlayEndSound(data.shouldPlayEndSound ?? false); // Removed
         setShouldShowEndToast(data.shouldShowEndToast ?? false);
         setIsBatchNotificationsEnabled(data.isBatchNotificationsEnabled ?? false);
         setBatchNotificationPreference(data.batchNotificationPreference ?? 'break');
@@ -1723,17 +1688,17 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setIntentionalBreaches(data.intentionalBreaches ?? false);
         setManualTransition(data.manualTransition ?? false);
         setMaxDistance(data.maxDistance ?? 1000);
-        setAskNotifications(data.askNotifications ?? { push: false, vibrate: false, sound: false });
-        setJoinNotifications(data.joinNotifications ?? { push: false, vibrate: false, sound: false });
-        setSessionInvites(data.sessionInvites ?? { push: false, vibrate: false, sound: false });
-        setFriendActivity(data.friendActivity ?? { push: false, vibrate: false, sound: false });
-        setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? false);
+        setAskNotifications(data.askNotifications ?? { push: false });
+        setJoinNotifications(data.joinNotifications ?? { push: false });
+        setSessionInvites(data.sessionInvites ?? { push: false });
+        setFriendActivity(data.friendActivity ?? { push: false });
+        // setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? false); // Removed
         setVerificationStandard(data.verificationStandard ?? 'anyone');
         setLocationSharing(data.locationSharing ?? false);
         setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
         setIs24HourFormat(data.is24HourFormat ?? true);
         setAreToastsEnabled(data.areToastsEnabled ?? false);
-        setStartStopNotifications(data.startStopNotifications ?? { push: false, vibrate: false, sound: false });
+        setStartStopNotifications(data.startStopNotifications ?? { push: false });
         setHasWonPrize(data.hasWonPrize ?? false);
         setCurrentSessionRole(data.currentSessionRole ?? null);
         setCurrentSessionHostName(data.currentSessionHostName ?? null);
@@ -1814,10 +1779,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors,
     activeJoinedSessionCoworkerCount, isSeshTitleCustomized, scheduleStartOption,
     isTimeLeftManagedBySession,
-    shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
+    isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
     intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
-    friendActivity, breakNotificationsVibrate, verificationStandard,
+    friendActivity, verificationStandard,
     locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
     is24HourFormat,
     preparedSchedules,
@@ -1958,8 +1923,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isTimeLeftManagedBySession,
     setIsTimeLeftManagedBySession,
 
-    shouldPlayEndSound,
-    setShouldPlayEndSound,
+    // shouldPlayEndSound, // Removed
+    // setShouldPlayEndSound, // Removed
     shouldShowEndToast,
     setShouldShowEndToast,
     isBatchNotificationsEnabled,
@@ -1992,8 +1957,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setSessionInvites,
     friendActivity,
     setFriendActivity,
-    breakNotificationsVibrate,
-    setBreakNotificationsVibrate,
+    // breakNotificationsVibrate, // Removed
+    // setBreakNotificationsVibrate, // Removed
     verificationStandard,
     setVerificationStandard,
     locationSharing,

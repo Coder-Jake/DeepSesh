@@ -265,11 +265,6 @@ const Index = () => {
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
 
-    // activeAsks, // Removed
-    // addAsk, // Removed
-    // updateAsk, // Removed
-    // setActiveAsks, // Removed
-
     isSchedulePending,
     setIsSchedulePending,
     isTimeLeftManagedBySession,
@@ -288,9 +283,9 @@ const Index = () => {
     currentSessionParticipantsData,
     setCurrentSessionParticipantsData,
 
-    startStopNotifications,
-    playSound,
-    triggerVibration,
+    // startStopNotifications, // Removed
+    // playSound, // Removed
+    // triggerVibration, // Removed
     areToastsEnabled,
     getLocation,
     geolocationPermissionStatus,
@@ -601,8 +596,8 @@ const Index = () => {
     const currentFocusDuration = focusMinutes;
     const currentBreakDuration = breakMinutes;
 
-    playSound();
-    triggerVibration();
+    // playSound(); // Removed
+    // triggerVibration(); // Removed
     setIsRunning(true);
     setIsPaused(false);
     setIsFlashing(false);
@@ -674,12 +669,12 @@ const Index = () => {
       }
     }
   }, [
-    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, selectedHostingOrganisation, hostNotes
+    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, selectedHostingOrganisation, hostNotes
   ]);
 
   const resumeTimer = () => {
-    playSound();
-    triggerVibration();
+    // playSound(); // Removed
+    // triggerVibration(); // Removed
     setIsRunning(true);
     setIsPaused(false);
     if (isScheduleActive && isSchedulePending) {
@@ -711,8 +706,8 @@ const Index = () => {
     }
     setIsPaused(true);
     setIsRunning(false);
-    playSound();
-    triggerVibration();
+    // playSound(); // Removed
+    // triggerVibration(); // Removed
     setIsTimeLeftManagedBySession(true);
   };
 
@@ -733,8 +728,8 @@ const Index = () => {
 
     setIsFlashing(false);
     setIsRunning(true);
-    playSound();
-    triggerVibration();
+    // playSound(); // Removed
+    // triggerVibration(); // Removed
     setIsTimeLeftManagedBySession(true);
   };
 
@@ -751,8 +746,8 @@ const Index = () => {
 
     setIsFlashing(false);
     setIsRunning(true);
-    playSound();
-    triggerVibration();
+    // playSound(); // Removed
+    // triggerVibration(); // Removed
     setIsTimeLeftManagedBySession(true);
   };
 
