@@ -133,7 +133,7 @@ export interface SupabaseSessionData {
   schedule_id: string | null;
   schedule_data: ScheduledTimer[];
   is_active: boolean;
-  is_paused: boolean;
+  // is_paused: boolean; // REMOVED
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
@@ -156,8 +156,8 @@ export type TimerContextType = {
   setDefaultBreakMinutes: React.Dispatch<React.SetStateAction<number>>;
   isRunning: boolean;
   setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
-  isPaused: boolean;
-  setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
+  // isPaused: boolean; // REMOVED
+  // setIsPaused: React.Dispatch<React.SetStateAction<boolean>>; // REMOVED
   timeLeft: number;
   setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
   timerType: 'focus' | 'break';
