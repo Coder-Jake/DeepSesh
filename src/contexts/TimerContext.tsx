@@ -1877,7 +1877,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
       console.log("TimerContext: Immediate state saved to local storage (isRunning change).");
     }
-  }, [isRunning, isScheduleActive, isSchedulePending, getTimerContextDataToSave]);
+  }, [isRunning, isScheduleActive, isSchedulePending]); // Removed getTimerContextDataToSave from dependencies
 
 
   const value: TimerContextType = {
