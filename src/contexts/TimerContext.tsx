@@ -492,45 +492,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     let heartbeatInterval: NodeJS.Timeout | null = null;
 
     if (user?.id && activeSessionRecordId) {
-      heartbeatInterval = setInterval(async () => {
-        try {
-          const response = await supabase.functions.invoke('update-session-data', {
-            body: JSON.stringify({
-              sessionId: activeSessionRecordId,
-              actionType: 'heartbeat',
-              payload: {
-                participantId: user.id,
-              },
-            }),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session?.access_token}`,
-            },
-          });
-
-          if (response.error) throw response.error;
-          if (response.data.error) throw new Error(response.data.error);
-          console.log("Heartbeat sent for session:", activeSessionRecordId);
-        } catch (error: any) {
-          console.error("Error sending heartbeat:", error.message);
-        }
-      }, 30000);
-    }
-
-    return () => {
-      if (heartbeatInterval) {
-        clearInterval(heartbeatInterval);
-      }
-    };
-  }, [user?.id, activeSessionRecordId, session?.access_token]);
-
-
-  useEffect(() => {
-    let subscription: RealtimeChannel | null = null;
-
-    if (activeSessionRecordId) {
       console.log("TimerContext: Subscribing to active_sessions for ID:", activeSessionRecordId);
-      subscription = supabase
+      const subscription = supabase
         .channel(`active_sessions:${activeSessionRecordId}`)
         .on(
           'postgres_changes',
@@ -549,6 +512,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setActiveAsks(updatedSession.active_asks || []);
             setHostNotes(updatedSession.host_notes || "");
             setSelectedHostingOrganisation(updatedSession.organisation?.[0] || null);
+            
+            // NEW: Update isRunning based on remote state
+            setIsRunning(updatedSession.is_active);
           }
         )
         .subscribe();
@@ -560,7 +526,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         supabase.removeChannel(subscription);
       }
     };
-  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation]);
+  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation, setIsRunning]);
 
   const getTimerContextDataToSave = useCallback(() => {
     return {
