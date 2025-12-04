@@ -1879,9 +1879,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       clearTimeout(handler);
     };
   }, [
-    _defaultFocusMinutes, _defaultBreakMinutes,
-    focusMinutes, breakMinutes,
-    timerType, isFlashing,
+    _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
     notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
     isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
     sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors,

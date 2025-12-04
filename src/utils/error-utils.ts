@@ -13,10 +13,11 @@ export async function getEdgeFunctionErrorMessage(error: any): Promise<string> {
       // Clone the response because it can only be read once
       const clonedResponse = error.context.response.clone();
       const errorBody = await clonedResponse.json();
-      return errorBody.error || error.message;
+      return errorBody.error || `Edge Function Error: ${error.context.response.status} - ${error.message}`;
     } catch (parseError) {
-      console.error("Failed to parse Edge Function error response:", parseError);
-      return error.message;
+      const clonedResponseText = await error.context.response.clone().text();
+      console.error("Failed to parse Edge Function error response as JSON. Raw text:", clonedResponseText, "Parse error:", parseError);
+      return `Edge Function Error: ${error.context.response.status} - ${clonedResponseText || error.message}`;
     }
   }
   return error.message || String(error);
