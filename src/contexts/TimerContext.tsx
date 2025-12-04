@@ -564,6 +564,56 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     };
   }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation]);
 
+  const getTimerContextDataToSave = useCallback(() => {
+    return {
+      _defaultFocusMinutes, _defaultBreakMinutes,
+      focusMinutes, breakMinutes,
+      isRunning, isPaused, timeLeft, timerType, isFlashing,
+      notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
+      isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
+      sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
+      currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
+      activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
+      isTimeLeftManagedBySession,
+      shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
+      customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
+      intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
+      friendActivity, breakNotificationsVibrate, verificationStandard,
+      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
+      is24HourFormat,
+      preparedSchedules,
+      timerIncrement,
+      startStopNotifications,
+      hasWonPrize,
+      currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
+      isHomepageFocusCustomized, isHomepageBreakCustomized,
+      activeSessionRecordId,
+      isDiscoveryActivated,
+      geolocationPermissionStatus,
+      currentSessionParticipantsData,
+      lastActivityTime,
+      showDemoSessions,
+      currentPhaseDurationSeconds,
+      remainingTimeAtPause,
+      limitDiscoveryRadius,
+      selectedHostingOrganisation,
+    };
+  }, [
+    _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
+    notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, isSchedulingMode,
+    isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
+    savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
+    activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
+    shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
+    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
+    askNotifications, joinNotifications, sessionInvites, friendActivity, breakNotificationsVibrate, verificationStandard,
+    locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, is24HourFormat,
+    preparedSchedules, timerIncrement, startStopNotifications, hasWonPrize, currentSessionRole, currentSessionHostName,
+    currentSessionOtherParticipants, isHomepageFocusCustomized, isHomepageBreakCustomized, activeSessionRecordId,
+    isDiscoveryActivated, geolocationPermissionStatus, currentSessionParticipantsData, lastActivityTime, showDemoSessions,
+    currentPhaseDurationSeconds, remainingTimeAtPause, limitDiscoveryRadius, selectedHostingOrganisation,
+  ]);
+
   const resetSessionStates = useCallback(() => {
     setIsScheduleActive(false);
     setCurrentScheduleIndex(0);
@@ -612,8 +662,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setCurrentPhaseDurationSeconds(0);
     setRemainingTimeAtPause(0);
     setSelectedHostingOrganisation(null);
+
+    // Explicitly save the reset state to local storage
+    const dataToSave = getTimerContextDataToSave();
+    localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
+    console.log("TimerContext: resetSessionStates called. State explicitly saved to local storage.");
   }, [
-    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
+    _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, getTimerContextDataToSave
   ]);
 
   const resetSchedule = useCallback(async () => {
@@ -710,7 +765,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           toast.info("Session Ended", {
             description: "No other participants to transfer host role to. Session ended.",
           });
-        }
+        });
         return true;
 
       } catch (deleteError: any) {
@@ -926,7 +981,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           is_mock: false,
         })
         .select('id')
-        .single();
+.single();
 
       if (error) throw error;
       newActiveSessionRecordId = data.id;
@@ -1677,56 +1732,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setLastActivityTime(null);
     }
   }, [isRunning, isPaused, isFlashing, isScheduleActive, isSchedulePending]);
-
-  const getTimerContextDataToSave = useCallback(() => {
-    return {
-      _defaultFocusMinutes, _defaultBreakMinutes,
-      focusMinutes, breakMinutes,
-      isRunning, isPaused, timeLeft, timerType, isFlashing,
-      notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
-      isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
-      sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
-      currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
-      activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
-      isTimeLeftManagedBySession,
-      shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
-      customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
-      intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
-      friendActivity, breakNotificationsVibrate, verificationStandard,
-      locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
-      is24HourFormat,
-      preparedSchedules,
-      timerIncrement,
-      startStopNotifications,
-      hasWonPrize,
-      currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
-      isHomepageFocusCustomized, isHomepageBreakCustomized,
-      activeSessionRecordId,
-      isDiscoveryActivated,
-      geolocationPermissionStatus,
-      currentSessionParticipantsData,
-      lastActivityTime,
-      showDemoSessions,
-      currentPhaseDurationSeconds,
-      remainingTimeAtPause,
-      limitDiscoveryRadius,
-      selectedHostingOrganisation,
-    };
-  }, [
-    _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, isPaused, timeLeft, timerType, isFlashing,
-    notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, isSchedulingMode,
-    isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
-    savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
-    activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
-    shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
-    lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
-    askNotifications, joinNotifications, sessionInvites, friendActivity, breakNotificationsVibrate, verificationStandard,
-    locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle, is24HourFormat,
-    preparedSchedules, timerIncrement, startStopNotifications, hasWonPrize, currentSessionRole, currentSessionHostName,
-    currentSessionOtherParticipants, isHomepageFocusCustomized, isHomepageBreakCustomized, activeSessionRecordId,
-    isDiscoveryActivated, geolocationPermissionStatus, currentSessionParticipantsData, lastActivityTime, showDemoSessions,
-    currentPhaseDurationSeconds, remainingTimeAtPause, limitDiscoveryRadius, selectedHostingOrganisation,
-  ]);
 
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
