@@ -133,6 +133,7 @@ export interface SupabaseSessionData {
   schedule_id: string | null;
   schedule_data: ScheduledTimer[];
   is_active: boolean;
+  is_paused: boolean;
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
@@ -155,6 +156,8 @@ export type TimerContextType = {
   setDefaultBreakMinutes: React.Dispatch<React.SetStateAction<number>>;
   isRunning: boolean;
   setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
+  isPaused: boolean;
+  setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
   timeLeft: number;
   setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
   timerType: 'focus' | 'break';
@@ -314,7 +317,7 @@ export type TimerContextType = {
   joinSessionAsCoworker: (sessionToJoin: DemoSession, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<boolean>;
   leaveSession: () => Promise<boolean>;
   transferHostRole: () => Promise<boolean>;
-  stopTimer: (isLongPress: boolean) => Promise<void>;
+  stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>;
   resetSessionStates: () => void;
   showDemoSessions: boolean;
   setShowDemoSessions: React.Dispatch<React.SetStateAction<boolean>>;

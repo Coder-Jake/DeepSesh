@@ -55,7 +55,7 @@ const Profile = () => {
   } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { isRunning, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer();
+  const { isRunning, isPaused, isScheduleActive, isSchedulePrepared, isSchedulePending, areToastsEnabled } = useTimer();
   const { toggleProfilePopUp } = useProfilePopUp();
 
   // Local states for editable fields
@@ -93,7 +93,7 @@ const Profile = () => {
 
   const [isOrganisationDialogOpen, setIsOrganisationDialogOpen] = useState(false);
 
-  const isTimerActive = isRunning || isScheduleActive || isSchedulePrepared || isSchedulePending;
+  const isTimerActive = isRunning || isPaused || isScheduleActive || isSchedulePrepared || isSchedulePending;
 
   const longPressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);

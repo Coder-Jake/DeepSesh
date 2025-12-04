@@ -39,6 +39,7 @@ const ScheduleForm: React.FC = () => {
     isSchedulePending,
     isScheduleActive,
     isRunning,
+    isPaused,
     resetSchedule,
     saveCurrentScheduleAsTemplate,
     timerColors,
