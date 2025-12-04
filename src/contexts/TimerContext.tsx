@@ -132,7 +132,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     if (currentSessionRole === 'coworker' && currentSessionHostName && currentSessionHostName !== currentUserName) {
       uniqueNames.add(currentSessionHostName);
-    }
+      }
 
     currentSessionOtherParticipants.forEach(p => {
       if (p.userName !== currentUserName && p.userName !== currentSessionHostName) {
@@ -483,7 +483,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }, 500);
 
       return () => clearTimeout(handler);
-    }
+    };
   }, [
     isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
     focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, user?.id,
@@ -765,7 +765,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           toast.info("Session Ended", {
             description: "No other participants to transfer host role to. Session ended.",
           });
-        });
+        } // Removed the extra ')' here
         return true;
 
       } catch (deleteError: any) {
