@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const Header = () => {
   const location = useLocation();
-  const { timeLeft, formatTime, isRunning, isPaused, isFlashing, hasWonPrize } = useTimer();
+  const { timeLeft, formatTime, isRunning, isFlashing, hasWonPrize } = useTimer();
   const isHomePage = location.pathname === "/";
 
   const [secretTextVisible, setSecretTextVisible] = useState(false);
@@ -94,7 +94,7 @@ const Header = () => {
         </div>
         
         {/* Timer display on non-home pages */}
-        {!isHomePage && (isRunning || isPaused || isFlashing) && (
+        {!isHomePage && (isRunning || isFlashing) && (
           <Link to="/" className="transition-opacity">
             <div 
               className={`text-lg font-mono font-bold text-foreground transition-all duration-300 ${isFlashing ? 'animate-pulse' : ''} select-none`}

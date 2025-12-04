@@ -99,7 +99,6 @@ interface SupabaseSessionData {
   schedule_id: string | null;
   schedule_data: ScheduledTimer[];
   is_active: boolean;
-  is_paused: boolean;
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
@@ -107,7 +106,7 @@ interface SupabaseSessionData {
   organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
   active_asks: ActiveAskItem[];
-  is_mock: boolean;
+  is_mock: boolean; // NEW: Include is_mock
 }
 
 // Function to fetch live sessions from Supabase
@@ -246,8 +245,6 @@ const Index = () => {
 
     isRunning,
     setIsRunning,
-    isPaused,
-    setIsPaused,
     timeLeft,
     setTimeLeft,
     timerType,
@@ -616,13 +613,12 @@ const Index = () => {
   };
 
   const startNewManualTimer = useCallback(async () => {
-    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
+    if (isRunning || isScheduleActive || isSchedulePrepared) {
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
       }
       if (isScheduleActive || isSchedulePrepared) await resetSchedule();
       setIsRunning(false);
-      setIsPaused(false);
       setIsFlashing(false);
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
@@ -638,7 +634,6 @@ const Index = () => {
     playSound();
     triggerVibration();
     setIsRunning(true);
-    setIsPaused(false);
     setIsFlashing(false);
     setSessionStartTime(Date.now());
     setCurrentPhaseStartTime(Date.now());
@@ -683,7 +678,6 @@ const Index = () => {
             current_phase_end_time: currentPhaseEndTime,
             total_session_duration_seconds: currentPhaseDuration * 60,
             is_active: true,
-            is_paused: false,
             location_lat: latitude,
             location_long: longitude,
             participants_data: [hostParticipant],
@@ -709,14 +703,13 @@ const Index = () => {
       }
     }
   }, [
-    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, selectedHostingOrganisation, hostNotes
+    isRunning, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, selectedHostingOrganisation, hostNotes
   ]);
 
   const resumeTimer = () => {
     playSound();
     triggerVibration();
     setIsRunning(true);
-    setIsPaused(false);
     if (isScheduleActive && isSchedulePending) {
       setIsSchedulePending(false);
       setCurrentPhaseStartTime(Date.now());
@@ -744,7 +737,6 @@ const Index = () => {
       }
       setCurrentPhaseStartTime(null);
     }
-    setIsPaused(true);
     setIsRunning(false);
     playSound();
     triggerVibration();
@@ -792,7 +784,7 @@ const Index = () => {
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
-    if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) return;
+    if (isRunning || isScheduleActive || isSchedulePrepared) return;
 
     if (mode === 'focus') {
       setTimerType('focus');
@@ -958,7 +950,7 @@ const Index = () => {
     }
   };
 
-  const isActiveTimer = isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending;
+  const isActiveTimer = isRunning || isFlashing || isScheduleActive || isSchedulePending;
 
   const currentItemDuration = useMemo(() => {
     if (isScheduleActive && activeSchedule[currentScheduleIndex]) {
@@ -1142,7 +1134,6 @@ const Index = () => {
     setIsSchedulePending(false);
     setIsScheduleActive(true);
     setIsRunning(true);
-    setIsPaused(false);
     setCurrentPhaseStartTime(Date.now());
     if (areToastsEnabled) {
       toast("Schedule Commenced!", {
@@ -1153,7 +1144,7 @@ const Index = () => {
     setCurrentSessionRole('host');
     setCurrentSessionHostName(currentUserName);
     setCurrentSessionOtherParticipants([]);
-  }, [setIsSchedulePending, setIsRunning, setIsPaused, setCurrentPhaseStartTime, areToastsEnabled, currentUserName, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants]);
+  }, [setIsSchedulePending, setIsRunning, setCurrentPhaseStartTime, areToastsEnabled, currentUserName, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants]);
 
   const getEffectiveStartTime = useCallback((template: ScheduledTimerTemplate, now: Date): number => {
     if (template.scheduleStartOption === 'manual') {
@@ -1950,27 +1941,25 @@ const Index = () => {
                           onClick={() => {
                             if (isSchedulePrepared) {
                               startNewManualTimer();
-                            } else if (isPaused) {
-                              resumeTimer();
                             } else {
                               startNewManualTimer();
                             }
                           }}
-                          data-name={`${isPaused ? 'Resume' : 'Start'} Timer Button`}
+                          data-name={`${isRunning ? 'Resume' : 'Start'} Timer Button`}
                         >
-                          {isPaused ? 'Resume' : 'Start'}
+                          {isRunning ? 'Resume' : 'Start'}
                         </Button>
                       )
                     )}
                   </div>
 
-                  {(isRunning || isPaused || isScheduleActive || isSchedulePending) && (
+                  {(isRunning || isScheduleActive || isSchedulePending) && (
                     <div className="flex items-end justify-between px-4 mt-4">
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
                         isRunning && "opacity-50",
                         "opacity-100",
-                        isPaused && "text-error-foreground"
+                        !isRunning && "text-error-foreground"
                       )}>
                         <Button
                           variant="ghost"
@@ -1983,7 +1972,7 @@ const Index = () => {
                           onTouchEnd={handlePressEnd}
                           className={cn(
                             "w-full h-full rounded-none bg-transparent",
-                            isPaused ? "text-error-foreground" : "text-secondary-foreground",
+                            !isRunning ? "text-error-foreground" : "text-secondary-foreground",
                             "hover:bg-accent-hover"
                           )}
                           data-name="Stop Timer Button"

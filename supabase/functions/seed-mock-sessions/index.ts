@@ -70,7 +70,6 @@ serve(async (req) => {
         schedule_id: null, // Mock sessions don't necessarily have a schedule_id
         schedule_data: session.fullSchedule,
         is_active: true,
-        is_paused: false,
         current_schedule_index: 0,
         visibility: session.visibility,
         participants_data: session.participants,
