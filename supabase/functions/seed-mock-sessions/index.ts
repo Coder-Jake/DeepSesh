@@ -69,8 +69,6 @@ serve(async (req) => {
         total_session_duration_seconds: session.fullSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
         schedule_id: null, // Mock sessions don't necessarily have a schedule_id
         schedule_data: session.fullSchedule,
-        // Removed 'is_active: true' as the column no longer exists
-        is_paused: false,
         current_schedule_index: 0,
         visibility: session.visibility,
         participants_data: session.participants,
