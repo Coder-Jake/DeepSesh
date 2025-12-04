@@ -37,8 +37,7 @@ serve(async (req) => {
     const { data: sessionsToMigrate, error: fetchError } = await supabaseServiceRoleClient
       .from('active_sessions')
       .select('id')
-      .eq('user_id', oldUserId)
-      .eq('is_active', true); // Only migrate active sessions
+      .eq('user_id', oldUserId); // Removed .eq('is_active', true)
 
     if (fetchError) {
       console.error('MIGRATE_SESSION_HOST_EDGE_FUNCTION: Error fetching sessions to migrate:', fetchError.message);

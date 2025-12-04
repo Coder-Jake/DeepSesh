@@ -31,7 +31,7 @@ serve(async (req) => {
     const { data: sessionsToDelete, error: fetchError } = await supabaseClient
       .from('active_sessions')
       .select('id, session_title, last_heartbeat')
-      .lt('last_heartbeat', ninetyMinutesAgo);
+      .lt('last_heartbeat', ninetyMinutesAgo); // Removed .eq('is_active', true)
 
     if (fetchError) {
       console.error('Error fetching inactive sessions:', fetchError.message);

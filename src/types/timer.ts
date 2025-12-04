@@ -95,7 +95,7 @@ export interface SupabaseSessionData {
   total_session_duration_seconds: number;
   schedule_id: string | null;
   schedule_data: ScheduledTimer[];
-  is_active: boolean;
+  // Removed 'is_active: boolean;' as the column no longer exists
   is_paused: boolean;
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';

@@ -58,9 +58,8 @@ serve(async (req) => {
 
     const { data: sessions, error: fetchError } = await supabaseServiceRoleClient
       .from('active_sessions')
-      .select('id, participants_data, is_active, visibility, user_id, join_code, organisation, is_mock') // NEW: Select is_mock
+      .select('id, participants_data, visibility, user_id, join_code, organisation, is_mock') // Removed is_active from select and filter
       .eq('join_code', sessionCode)
-      .eq('is_active', true)
       .limit(1);
 
     if (fetchError) {

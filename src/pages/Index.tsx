@@ -67,7 +67,7 @@ interface SupabaseSessionData {
   total_session_duration_seconds: number;
   schedule_id: string | null;
   schedule_data: ScheduledTimer[];
-  is_active: boolean;
+  // Removed 'is_active: boolean;'
   is_paused: boolean;
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
@@ -94,8 +94,7 @@ const fetchSupabaseSessions = async (
 
   const { data, error } = await supabase
     .from('active_sessions')
-    .select('*, profiles(organisation)') // NEW: Select profiles to get organisation data
-    .eq('is_active', true);
+    .select('*, profiles(organisation)'); // Removed .eq('is_active', true)
 
   if (error) {
     console.error("Error fetching active sessions from Supabase:", error);
@@ -643,7 +642,7 @@ const Index = () => {
             current_phase_type: timerType,
             current_phase_end_time: currentPhaseEndTime,
             total_session_duration_seconds: currentPhaseDuration * 60,
-            is_active: true,
+            schedule_id: null,
             is_paused: false,
             location_lat: latitude,
             location_long: longitude,

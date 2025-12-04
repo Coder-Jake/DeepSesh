@@ -391,7 +391,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       session_title: activeScheduleDisplayTitle,
       current_phase_type: timerType,
       current_phase_end_time: currentPhaseEndTime,
-      is_active: isRunning,
+      // Removed 'is_active: isRunning,' as the column no longer exists
       is_paused: isPaused,
       focus_duration: focusMinutes,
       break_duration: breakMinutes,
@@ -592,7 +592,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .from('active_sessions')
           .delete()
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id); // MODIFIED: Changed 'user.id' to 'user_id'
+          .eq('user_id', user.id);
 
         if (error) {
           console.error("Error deleting active session from Supabase:", error);
@@ -671,7 +671,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .from('active_sessions')
           .delete()
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id); // MODIFIED: Changed 'user.id' to 'user_id'
+          .eq('user_id', user.id);
 
         if (deleteError) throw deleteError;
 
@@ -876,7 +876,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           current_phase_end_time: new Date(Date.now() + (simulatedTimeLeftInPhase !== null ? simulatedTimeLeftInPhase : (initialSchedule[simulatedCurrentPhaseIndex]?.durationMinutes || 0) * 60) * 1000).toISOString(),
           total_session_duration_seconds: initialSchedule.reduce((sum, item) => sum + item.durationMinutes, 0) * 60,
           schedule_id: initialSchedule[0]?.id && isValidUUID(initialSchedule[0].id) ? initialSchedule[0].id : null,
-          is_active: true,
+          // Removed 'is_active: true,' as the column no longer exists
           is_paused: false,
           current_schedule_index: simulatedCurrentPhaseIndex,
           schedule_data: initialSchedule,

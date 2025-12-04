@@ -25,7 +25,7 @@ serve(async (req) => {
     // Fetch all active sessions
     const { data: sessions, error: fetchError } = await supabaseClient
       .from('active_sessions')
-      .select('id, participants_data');
+      .select('id, participants_data'); // Removed .eq('is_active', true)
 
     if (fetchError) {
       console.error('Error fetching active sessions:', fetchError.message);
