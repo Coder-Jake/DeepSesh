@@ -577,6 +577,15 @@ const Index = () => {
   };
 
   const startNewManualTimer = useCallback(async () => {
+    if (!user?.id) {
+      if (areToastsEnabled) {
+        toast.error("Authentication Required", {
+          description: "You must be logged in to start a session.",
+        });
+      }
+      return;
+    }
+
     if (isRunning || isPaused || isScheduleActive || isSchedulePrepared) {
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
@@ -610,7 +619,7 @@ const Index = () => {
     setIsTimeLeftManagedBySession(true);
 
     const hostParticipant: ParticipantSessionData = {
-      userId: user?.id || `anon-${crypto.randomUUID()}`,
+      userId: user.id,
       userName: localFirstName,
       joinTime: Date.now(),
       role: 'host',
@@ -859,7 +868,7 @@ const Index = () => {
         body: JSON.stringify({
           sessionCode: trimmedCode,
           participantData: {
-            userId: user?.id || `anon-${crypto.randomUUID()}`,
+            userId: user?.id, // Ensure user.id is passed
             userName: localFirstName,
             focusPreference: focusPreference || 50,
             intention: profile?.profile_data?.intention?.value || null,

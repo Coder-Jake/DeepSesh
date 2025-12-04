@@ -802,6 +802,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     simulatedCurrentPhaseIndex: number = 0,
     simulatedTimeLeftInPhase: number | null = null
   ): Promise<boolean> => {
+    if (!user?.id) {
+      if (areToastsEnabled) {
+        toast.error("Authentication Required", {
+          description: "You must be logged in to start a session.",
+        });
+      }
+      console.error("startSessionCommonLogic: User ID is null, cannot start session.");
+      return false;
+    }
+
     let needsOverrideConfirmation = false;
     let confirmationMessageParts: string[] = [];
     let shouldResetManualTimer = false;
@@ -842,7 +852,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     const hostParticipant: ParticipantSessionData = {
-      userId: user?.id || `anon-${crypto.randomUUID()}`,
+      userId: user.id,
       userName: localFirstName,
       joinTime: Date.now(),
       role: 'host',
