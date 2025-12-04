@@ -314,7 +314,7 @@ export type TimerContextType = {
   joinSessionAsCoworker: (sessionToJoin: DemoSession, sessionTitle: string, hostName: string, participants: ParticipantSessionData[], fullSchedule: ScheduledTimer[], currentPhaseType: 'focus' | 'break', currentPhaseDurationMinutes: number, remainingSecondsInPhase: number) => Promise<boolean>;
   leaveSession: () => Promise<boolean>;
   transferHostRole: () => Promise<boolean>;
-  stopTimer: (confirmPrompt: boolean, isLongPress: boolean) => Promise<void>;
+  stopTimer: (isLongPress: boolean) => Promise<void>;
   resetSessionStates: () => void;
   showDemoSessions: boolean;
   setShowDemoSessions: React.Dispatch<React.SetStateAction<boolean>>;

@@ -744,7 +744,7 @@ const Index = () => {
   };
 
   const resetTimer = async () => {
-    stopTimer(true, false);
+    stopTimer(false);
   };
 
   const switchToBreak = () => {
@@ -1384,11 +1384,11 @@ const Index = () => {
       isLongPressDetected.current = false;
       return;
     }
-    stopTimer(true, false);
+    stopTimer(false);
   };
 
   const handleLongPressStop = () => {
-    stopTimer(false, true);
+    stopTimer(true);
     isLongPressDetected.current = true;
   };
 

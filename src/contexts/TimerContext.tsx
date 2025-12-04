@@ -819,7 +819,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [user?.id, activeSessionRecordId, areToastsEnabled, session?.access_token]);
 
-  const stopTimer = useCallback(async (confirmPrompt: boolean, isLongPress: boolean) => {
+  const stopTimer = useCallback(async (isLongPress: boolean) => {
     let finalAccumulatedFocus = accumulatedFocusSeconds;
     let finalAccumulatedBreak = accumulatedBreakSeconds;
 
