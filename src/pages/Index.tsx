@@ -643,7 +643,7 @@ const Index = () => {
             current_phase_end_time: currentPhaseEndTime,
             total_session_duration_seconds: currentPhaseDuration * 60,
             schedule_id: null,
-            is_paused: false,
+            // Removed 'is_paused: false,'
             location_lat: latitude,
             location_long: longitude,
             participants_data: [hostParticipant],
