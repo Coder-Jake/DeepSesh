@@ -7,7 +7,7 @@ import { DAYS_OF_WEEK } from '@/lib/constants';
 import { saveSessionToDatabase } from '@/utils/session-utils';
 import { useProfile } from '../contexts/ProfileContext';
 import { supabase } from '@/integrations/supabase/client';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { RealtimeChannel } from '@supabase/supabase-js'; // Import RealtimeChannel
 import { isValidUUID } from '@/lib/utils';
 import { getEdgeFunctionErrorMessage } from '@/utils/error-utils';
 
@@ -489,11 +489,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   ]);
 
   useEffect(() => {
-    let heartbeatInterval: NodeJS.Timeout | null = null;
+    let subscription: RealtimeChannel | null = null; // Declare subscription here
 
     if (user?.id && activeSessionRecordId) {
       console.log("TimerContext: Subscribing to active_sessions for ID:", activeSessionRecordId);
-      const subscription = supabase
+      subscription = supabase // Assign to the declared variable
         .channel(`active_sessions:${activeSessionRecordId}`)
         .on(
           'postgres_changes',
@@ -526,7 +526,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         supabase.removeChannel(subscription);
       }
     };
-  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation, setIsRunning]);
+  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation, setIsRunning, user?.id]);
 
   const getTimerContextDataToSave = useCallback(() => {
     return {
