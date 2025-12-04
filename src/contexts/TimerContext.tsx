@@ -445,6 +445,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     };
 
     try {
+      console.log(`Invoking Edge Function 'update-session-data' (syncSessionToSupabase). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
       const response = await supabase.functions.invoke('update-session-data', {
         body: JSON.stringify({
           sessionId: activeSessionRecordId,
@@ -496,6 +497,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     if (user?.id && activeSessionRecordId) {
       heartbeatInterval = setInterval(async () => {
         try {
+          console.log(`Invoking Edge Function 'update-session-data' (heartbeat). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
           const response = await supabase.functions.invoke('update-session-data', {
             body: JSON.stringify({
               sessionId: activeSessionRecordId,
@@ -660,6 +662,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const newHost = otherCoworkers[0];
       
       try {
+        console.log(`Invoking Edge Function 'update-session-data' (transfer_host). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
         const response = await supabase.functions.invoke('update-session-data', {
           body: JSON.stringify({
             sessionId: activeSessionRecordId,
@@ -732,6 +735,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     try {
+      console.log(`Invoking Edge Function 'update-session-data' (leave_session). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
       const response = await supabase.functions.invoke('update-session-data', {
         body: JSON.stringify({
           sessionId: activeSessionRecordId,
@@ -1240,6 +1244,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     try {
+      console.log(`Invoking Edge Function 'join-session'. Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
       const response = await supabase.functions.invoke('join-session', {
         body: JSON.stringify({
           sessionCode: sessionToJoin.join_code,
@@ -1481,6 +1486,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     try {
+      console.log(`Invoking Edge Function 'update-session-data' (add_ask). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
       const response = await supabase.functions.invoke('update-session-data', {
         body: JSON.stringify({
           sessionId: activeSessionRecordId,
@@ -1522,6 +1528,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     try {
+      console.log(`Invoking Edge Function 'update-session-data' (update_ask). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
       const response = await supabase.functions.invoke('update-session-data', {
         body: JSON.stringify({
           sessionId: activeSessionRecordId,
