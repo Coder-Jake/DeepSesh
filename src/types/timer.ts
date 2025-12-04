@@ -211,6 +211,8 @@ export type TimerContextType = {
   isTimeLeftManagedBySession: boolean;
   setIsTimeLeftManagedBySession: React.Dispatch<React.SetStateAction<boolean>>;
 
+  shouldShowEndToast: boolean; // NEW
+  setShouldShowEndToast: React.Dispatch<React.SetStateAction<boolean>>; // NEW
   isBatchNotificationsEnabled: boolean;
   setIsBatchNotificationsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   batchNotificationPreference: 'break' | 'sesh_end' | 'custom';

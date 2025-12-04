@@ -131,7 +131,6 @@ const Settings = () => {
     locationSharing,
     sessionVisibility,
     timerIncrement,
-    // shouldPlayEndSound, // Removed
     shouldShowEndToast,
     isDarkMode,
     is24HourFormat,
@@ -189,7 +188,6 @@ const Settings = () => {
       locationSharing,
       sessionVisibility,
       timerIncrement: currentTimerIncrement,
-      // shouldPlayEndSound, // Removed
       shouldShowEndToast,
       isDarkMode,
       is24HourFormat,
@@ -223,7 +221,7 @@ const Settings = () => {
     verificationStandard, profileVisibility,
     locationSharing,
     sessionVisibility,
-    currentTimerIncrement, // shouldPlayEndSound, // Removed
+    currentTimerIncrement,
     shouldShowEndToast,
     isDarkMode,
     is24HourFormat,
@@ -396,12 +394,10 @@ const Settings = () => {
     setJoinNotifications(joinNotifications); 
     setSessionInvites(sessionInvites);
     setFriendActivity(friendActivity);
-    // setBreakNotificationsVibrate(breakNotificationsVibrate); // Removed
     setVerificationStandard(verificationStandard);
     setLocationSharing(locationSharing);
     setSessionVisibility(sessionVisibility);
     setOpenSettingsAccordions(openSettingsAccordions);
-    // setShouldPlayEndSound(shouldPlayEndSound); // Removed
     setShouldShowEndToast(shouldShowEndToast);
     setAreToastsEnabled(areToastsEnabled);
     setStartStopNotifications(startStopNotifications);
@@ -434,7 +430,6 @@ const Settings = () => {
       locationSharing,
       sessionVisibility,
       timerIncrement: currentTimerIncrement,
-      // shouldPlayEndSound, // Removed
       shouldShowEndToast,
       isDarkMode,
       is24HourFormat,
@@ -792,7 +787,8 @@ const Settings = () => {
                   )}
                   {sessionVisibility === 'organisation' && (
                     <>
-                      <Building2 size={16} className="mr-1" /> Organisation
+                      <Building2 size={16} className="text-olive-foreground" />
+                      <span className="text-sm font-medium">Organisation</span>
                     </>
                   )}
                 </Button>
@@ -948,7 +944,7 @@ const Settings = () => {
                   {limitDiscoveryRadius ? (
                     maxDistance >= 1000 ? `${(maxDistance / 1000).toFixed(1)}km` : `${maxDistance}m`
                   ) : (
-                    <InfinityIcon size={20} />
+                    <Infinity size={20} />
                   )}
                 </Button>
               </div>

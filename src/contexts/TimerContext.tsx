@@ -144,6 +144,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [isSchedulePending, setIsSchedulePending] = useState(false);
   const [isTimeLeftManagedBySession, setIsTimeLeftManagedBySession] = useState(false);
 
+  const [shouldShowEndToast, setShouldShowEndToast] = useState(false); // NEW: Initialize shouldShowEndToast
   const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
   const [customBatchMinutes, setCustomBatchMinutes] = useState(timerIncrement);
@@ -1584,6 +1585,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, isSchedulePending, scheduleStartOption,
       isTimeLeftManagedBySession,
+      shouldShowEndToast, // NEW
       isBatchNotificationsEnabled, batchNotificationPreference,
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
@@ -1613,6 +1615,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
     savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
+    shouldShowEndToast, // NEW
     isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
     askNotifications, joinNotifications, sessionInvites, friendActivity, verificationStandard,
@@ -1675,8 +1678,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setActiveJoinedSessionCoworkerCount(data.activeJoinedSessionCoworkerCount ?? 0);
         setIsSchedulePending(loadedIsSchedulePending);
         setIsTimeLeftManagedBySession(data.isTimeLeftManagedBySession ?? false);
-        // setShouldPlayEndSound(data.shouldPlayEndSound ?? false); // Removed
-        setShouldShowEndToast(data.shouldShowEndToast ?? false);
+        setShouldShowEndToast(data.shouldShowEndToast ?? false); // NEW
         setIsBatchNotificationsEnabled(data.isBatchNotificationsEnabled ?? false);
         setBatchNotificationPreference(data.batchNotificationPreference ?? 'break');
         setCustomBatchMinutes(data.customBatchMinutes ?? timerIncrement);
@@ -1692,7 +1694,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setJoinNotifications(data.joinNotifications ?? { push: false });
         setSessionInvites(data.sessionInvites ?? { push: false });
         setFriendActivity(data.friendActivity ?? { push: false });
-        // setBreakNotificationsVibrate(data.breakNotificationsVibrate ?? false); // Removed
         setVerificationStandard(data.verificationStandard ?? 'anyone');
         setLocationSharing(data.locationSharing ?? false);
         setOpenSettingsAccordions(data.openSettingsAccordions ?? []);
@@ -1779,6 +1780,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors,
     activeJoinedSessionCoworkerCount, isSeshTitleCustomized, scheduleStartOption,
     isTimeLeftManagedBySession,
+    shouldShowEndToast, // NEW
     isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
     intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
@@ -1903,11 +1905,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
 
-    // activeAsks, // Removed
-    addAsk, // Placeholder
-    updateAsk, // Placeholder
-    // setActiveAsks, // Removed
-
     currentSessionRole,
     setCurrentSessionRole,
     currentSessionHostName,
@@ -1923,10 +1920,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isTimeLeftManagedBySession,
     setIsTimeLeftManagedBySession,
 
-    // shouldPlayEndSound, // Removed
-    // setShouldPlayEndSound, // Removed
-    shouldShowEndToast,
-    setShouldShowEndToast,
+    shouldShowEndToast, // NEW
+    setShouldShowEndToast, // NEW
     isBatchNotificationsEnabled,
     setIsBatchNotificationsEnabled,
     batchNotificationPreference,
@@ -1957,8 +1952,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setSessionInvites,
     friendActivity,
     setFriendActivity,
-    // breakNotificationsVibrate, // Removed
-    // setBreakNotificationsVibrate, // Removed
     verificationStandard,
     setVerificationStandard,
     locationSharing,
