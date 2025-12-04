@@ -42,40 +42,6 @@ export interface ActiveSchedule {
   timerColors: Record<string, string>;
 }
 
-// Define types for ExtendSuggestion (an "Ask" item)
-export interface ExtendSuggestion {
-  id: string;
-  minutes: number;
-  creator: string;
-  creatorId: string;
-  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
-  status: 'pending' | 'accepted' | 'rejected';
-}
-
-// Define types for Poll (another "Ask" item)
-export interface PollOption {
-  id: string;
-  text: string;
-  votes: { userId: string }[];
-}
-
-export interface Poll {
-  id: string;
-  question: string;
-  type: 'closed' | 'choice' | 'selection';
-  creator: string;
-  creatorId: string;
-  options: PollOption[];
-  status: 'active' | 'closed';
-  allowCustomResponses: boolean;
-}
-
-// Union type for all possible active "Ask" items
-export type ActiveAskItem = ExtendSuggestion | Poll;
-
-// Type for poll types
-export type PollType = 'closed' | 'choice' | 'selection';
-
 // Define the structure for notification settings
 export type NotificationSettings = {
   push: boolean;
@@ -106,7 +72,6 @@ export interface DemoSession {
   location_lat?: number | null;
   location_long?: number | null;
   distance?: number | null;
-  active_asks: ActiveAskItem[];
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   fullSchedule: ScheduledTimer[];
   user_id?: string | null;
@@ -140,7 +105,6 @@ export interface SupabaseSessionData {
   join_code: string | null;
   organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
-  active_asks: ActiveAskItem[]; // NEW: Added active_asks property
   is_mock: boolean; // NEW: Added is_mock property
 }
 
@@ -233,11 +197,6 @@ export type TimerContextType = {
   setAccumulatedBreakSeconds: React.Dispatch<React.SetStateAction<number>>;
   activeJoinedSessionCoworkerCount: number;
   setActiveJoinedSessionCoworkerCount: React.Dispatch<React.SetStateAction<number>>;
-
-  activeAsks: ActiveAskItem[];
-  addAsk: (ask: ActiveAskItem) => void;
-  updateAsk: (updatedAsk: ActiveAskItem) => void;
-  setActiveAsks: React.Dispatch<React.SetStateAction<ActiveAskItem[]>>;
 
   currentSessionRole: 'host' | 'coworker' | null;
   setCurrentSessionRole: React.Dispatch<React.SetStateAction<'host' | 'coworker' | null>>;
@@ -343,6 +302,5 @@ export interface SavedSession {
   coworkerCount: number;
   startTime: number; // Timestamp of when the session started
   endTime: number; // Timestamp of when the session ended
-  asks: ActiveAskItem[];
   participants: Array<{ id: string; name: string; focusPreference: number; role: 'host' | 'coworker'; intention?: string | null; bio?: string | null }>; // MODIFIED: Allow null
 }

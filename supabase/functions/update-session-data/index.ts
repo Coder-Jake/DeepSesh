@@ -111,7 +111,6 @@ serve(async (req) => {
     }
 
     let updatedParticipants = (session.participants_data || []) as any[];
-    let updatedAsks = (session.active_asks || []) as any[];
     let newHostId = session.user_id;
     let newHostName = session.host_name;
     const originalJoinCode = session.join_code;
@@ -137,150 +136,6 @@ serve(async (req) => {
     }
 
     switch (actionType) {
-      case 'vote_extend': {
-        if (!isParticipant) {
-          console.warn(`VOTE_EXTEND: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
-          return new Response(JSON.stringify({ error: 'Forbidden: Only participants can vote' }), { status: 403, headers: corsHeaders });
-        }
-        const { askId, voteType } = payload;
-        const askIndex = updatedAsks.findIndex((ask: any) => ask.id === askId);
-
-        if (askIndex === -1 || !('minutes' in updatedAsks[askIndex])) {
-          console.warn(`VOTE_EXTEND: Warning: Ask not found or not an extend suggestion for askId ${askId} in session ${sessionId}. Status: 404.`);
-          return new Response(JSON.stringify({ error: 'Ask not found or not an extend suggestion' }), { status: 404, headers: corsHeaders });
-        }
-
-        let currentAsk = updatedAsks[askIndex];
-        let updatedVotes = currentAsk.votes.filter((v: any) => v.userId !== authenticatedUserId);
-
-        if (voteType !== null) {
-          updatedVotes.push({ userId: authenticatedUserId, vote: voteType });
-        }
-        currentAsk.votes = updatedVotes;
-
-        const totalParticipants = updatedParticipants.length;
-        const yesVotes = updatedVotes.filter((v: any) => v.vote === 'yes').length;
-        const noVotes = updatedVotes.filter((v: any) => v.vote === 'no').length;
-        const threshold = Math.ceil(totalParticipants / 2);
-
-        let newStatus = 'pending';
-        if (yesVotes >= threshold) {
-          newStatus = 'accepted';
-        } else if (noVotes >= threshold) {
-          newStatus = 'rejected';
-        }
-        currentAsk.status = newStatus;
-
-        updatedAsks[askIndex] = currentAsk;
-        console.log(`VOTE_EXTEND: User ${authenticatedUserId} voted on ask ${askId}. New status: ${newStatus}.`);
-        break;
-      }
-      case 'vote_poll': {
-        if (!isParticipant) {
-          console.warn(`VOTE_POLL: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
-          return new Response(JSON.stringify({ error: 'Forbidden: Only participants can vote' }), { status: 403, headers: corsHeaders });
-        }
-        const { pollId, optionIds, customOptionText, isCustomOptionSelected } = payload;
-        const pollIndex = updatedAsks.findIndex((ask: any) => ask.id === pollId);
-
-        if (pollIndex === -1 || !('question' in updatedAsks[pollIndex])) {
-          console.warn(`VOTE_POLL: Warning: Poll not found for pollId ${pollId} in session ${sessionId}. Status: 404.`);
-          return new Response(JSON.stringify({ error: 'Poll not found' }), { status: 404, headers: corsHeaders });
-        }
-
-        let currentPoll = updatedAsks[pollIndex];
-        let finalOptionIdsToVote: string[] = [...optionIds];
-        const trimmedCustomText = customOptionText?.trim();
-        let userCustomOptionId: string | null = null;
-
-        const existingUserCustomOption = currentPoll.options.find(
-          (opt: any) => opt.id.startsWith('custom-') && opt.votes.some((vote: any) => vote.userId === authenticatedUserId)
-        );
-
-        if (trimmedCustomText && isCustomOptionSelected) {
-          if (existingUserCustomOption) {
-            if (existingUserCustomOption.text !== trimmedCustomText) {
-              currentPoll.options = currentPoll.options.map((opt: any) =>
-                opt.id === existingUserCustomOption.id ? { ...opt, text: trimmedCustomText } : opt
-              );
-            }
-            userCustomOptionId = existingUserCustomOption.id;
-          } else {
-            const newCustomOption = {
-              id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-              text: trimmedCustomText,
-              votes: [],
-            };
-            currentPoll.options.push(newCustomOption);
-            userCustomOptionId = newCustomOption.id;
-          }
-          if (userCustomOptionId && !finalOptionIdsToVote.includes(userCustomOptionId)) {
-            finalOptionIdsToVote.push(userCustomOptionId);
-          }
-        } else {
-          if (existingUserCustomOption) {
-            finalOptionIdsToVote = finalOptionIdsToVote.filter(id => id !== existingUserCustomOption.id);
-          }
-        }
-
-        currentPoll.options = currentPoll.options.map((option: any) => {
-          let newVotes = option.votes.filter((v: any) => v.userId !== authenticatedUserId);
-          if (finalOptionIdsToVote.includes(option.id)) {
-            newVotes.push({ userId: authenticatedUserId });
-          }
-          return { ...option, votes: newVotes };
-        });
-
-        currentPoll.options = currentPoll.options.filter((option: any) =>
-          !option.id.startsWith('custom-') || option.votes.length > 0 || (option.id === userCustomOptionId && isCustomOptionSelected)
-        );
-
-        updatedAsks[pollIndex] = currentPoll;
-        console.log(`VOTE_POLL: User ${authenticatedUserId} voted on poll ${pollId}.`);
-        break;
-      }
-      case 'add_ask': {
-        if (!isParticipant) {
-          console.warn(`ADD_ASK: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
-          return new Response(JSON.stringify({ error: 'Forbidden: Only participants can add asks' }), { status: 403, headers: corsHeaders });
-        }
-        const newAsk = payload.ask;
-        if (!newAsk || !newAsk.id || !newAsk.creatorId) {
-          console.warn(`ADD_ASK: Error: Invalid ask payload for session ${sessionId}. Payload:`, payload, 'Status: 400.');
-          return new Response(JSON.stringify({ error: 'Invalid ask payload' }), { status: 400, headers: corsHeaders });
-        }
-        if (newAsk.creatorId !== authenticatedUserId) {
-          console.warn(`ADD_ASK: Warning: Forbidden: Creator ID mismatch for user ${authenticatedUserId} and ask creator ${newAsk.creatorId}. Status: 403.`);
-          return new Response(JSON.stringify({ error: 'Forbidden: Creator ID mismatch' }), { status: 403, headers: corsHeaders });
-        }
-        updatedAsks.push(newAsk);
-        console.log(`ADD_ASK: User ${authenticatedUserId} added ask ${newAsk.id} to session ${sessionId}.`);
-        break;
-      }
-      case 'update_ask': {
-        if (!isParticipant) {
-          console.warn(`UPDATE_ASK: Warning: Forbidden attempt by user ${authenticatedUserId} on session ${sessionId}. Not participant. Status: 403.`);
-          return new Response(JSON.stringify({ error: 'Forbidden: Only participants can update asks' }), { status: 403, headers: corsHeaders });
-        }
-        const updatedAsk = payload.ask;
-        if (!updatedAsk || !updatedAsk.id || !updatedAsk.creatorId) {
-          console.warn(`UPDATE_ASK: Error: Invalid updated ask payload for session ${sessionId}. Payload:`, payload, 'Status: 400.');
-          return new Response(JSON.stringify({ error: 'Invalid updated ask payload' }), { status: 400, headers: corsHeaders });
-        }
-        const askIndex = updatedAsks.findIndex((ask: any) => ask.id === updatedAsk.id);
-        if (askIndex === -1) {
-          console.warn(`UPDATE_ASK: Warning: Ask not found for askId ${updatedAsk.id} in session ${sessionId}. Status: 404.`);
-          return new Response(JSON.stringify({ error: 'Ask not found' }), { status: 404, headers: corsHeaders });
-        }
-        const existingAsk = updatedAsks[askIndex];
-        if (existingAsk.creatorId !== authenticatedUserId && !isHost) {
-          console.warn(`UPDATE_ASK: Warning: Forbidden: User ${authenticatedUserId} is not the creator of ask ${updatedAsk.id} or host of session ${sessionId}. Status: 403.`);
-             return new Response(JSON.stringify({ error: 'Forbidden: Not the creator of the ask or host' }), { status: 403, headers: corsHeaders });
-        }
-        updatedAsks[askIndex] = updatedAsk;
-        console.log(`UPDATE_ASK: User ${authenticatedUserId} updated ask ${updatedAsk.id} in session ${sessionId}.`);
-        break;
-      }
       case 'update_participant_profile': {
         const { participantId, updates } = payload;
         if (participantId !== authenticatedUserId) {
@@ -413,7 +268,6 @@ serve(async (req) => {
       .from('active_sessions')
       .update({
         participants_data: updatedParticipants,
-        active_asks: updatedAsks,
         user_id: newHostId,
         host_name: newHostName,
         join_code: originalJoinCode,

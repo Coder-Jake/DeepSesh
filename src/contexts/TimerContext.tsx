@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, ActiveAskItem, NotificationSettings, ParticipantSessionData, SupabaseSessionData, DemoSession } from '@/types/timer';
+import { ScheduledTimer, ScheduledTimerTemplate, TimerContextType, NotificationSettings, ParticipantSessionData, SupabaseSessionData, DemoSession } from '@/types/timer';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { DEFAULT_SCHEDULE_TEMPLATES } from '@/lib/default-schedules';
@@ -111,8 +111,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [accumulatedFocusSeconds, setAccumulatedFocusSeconds] = useState(0);
   const [accumulatedBreakSeconds, setAccumulatedBreakSeconds] = useState(0);
   const [activeJoinedSessionCoworkerCount, setActiveJoinedSessionCoworkerCount] = useState(0);
-
-  const [activeAsks, setActiveAsks] = useState<ActiveAskItem[]>([]);
 
   const [currentSessionRole, setCurrentSessionRole] = useState<'host' | 'coworker' | null>(null);
   const [currentSessionHostName, setCurrentSessionHostName] = useState<string | null>(null);
@@ -440,7 +438,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         : null,
       last_heartbeat: new Date().toISOString(),
       host_notes: hostNotes,
-      active_asks: activeAsks,
       is_mock: false,
     };
 
@@ -474,7 +471,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, isPaused, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
-    userJoinCode, selectedHostingOrganisation, hostNotes, activeAsks, session?.access_token, currentSessionRole
+    userJoinCode, selectedHostingOrganisation, hostNotes, session?.access_token, currentSessionRole
   ]);
 
   useEffect(() => {
@@ -488,7 +485,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isRunning, isPaused, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
     focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, user?.id,
-    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation, activeAsks
+    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation
   ]);
 
   useEffect(() => {
@@ -550,7 +547,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             const updatedParticipants = (updatedSession.participants_data || []) as ParticipantSessionData[];
             setCurrentSessionParticipantsData(updatedParticipants);
             setActiveJoinedSessionCoworkerCount(updatedParticipants.filter(p => p.role === 'coworker').length);
-            setActiveAsks(updatedSession.active_asks || []);
             setHostNotes(updatedSession.host_notes || "");
             setSelectedHostingOrganisation(updatedSession.organisation?.[0] || null);
           }
@@ -564,7 +560,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         supabase.removeChannel(subscription);
       }
     };
-  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setActiveAsks, setHostNotes, setSelectedHostingOrganisation]);
+  }, [activeSessionRecordId, setCurrentSessionParticipantsData, setActiveJoinedSessionCoworkerCount, setHostNotes, setSelectedHostingOrganisation]);
 
   const resetSessionStates = useCallback(() => {
     setIsScheduleActive(false);
@@ -593,13 +589,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setAccumulatedBreakSeconds(0);
     _setSeshTitle(getDefaultSeshTitle());
     setIsSeshTitleCustomized(false);
+    console.log("TimerContext: resetSessionStates called. activeAsks cleared.");
+
     setTimerColors({});
     setActiveSchedule([]);
     setActiveTimerColors({});
     setActiveScheduleDisplayTitleInternal(getDefaultSeshTitle());
     setPreparedSchedules([]);
-    setActiveAsks([]);
-    console.log("TimerContext: resetSessionStates called. activeAsks cleared.");
 
     setCurrentSessionRole(null);
     setCurrentSessionHostName(null);
@@ -806,7 +802,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         totalSessionSeconds,
         activeJoinedSessionCoworkerCount,
         sessionStartTime || Date.now(),
-        activeAsks,
+        undefined, // activeAsks removed
         allParticipantsToDisplay,
         areToastsEnabled
       );
@@ -819,7 +815,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     currentSessionRole, accumulatedFocusSeconds, accumulatedBreakSeconds,
     isRunning, currentPhaseStartTime, timerType, user?.id, _seshTitle, notes, hostNotes,
-    activeJoinedSessionCoworkerCount, sessionStartTime, activeAsks, allParticipantsToDisplay,
+    activeJoinedSessionCoworkerCount, sessionStartTime, allParticipantsToDisplay,
     areToastsEnabled, resetSessionStates, playSound, triggerVibration, transferHostRole, leaveSession
   ]);
 
@@ -868,7 +864,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             setAccumulatedBreakSeconds(0);
             _setSeshTitle(getDefaultSeshTitle());
             setIsSeshTitleCustomized(false);
-            setActiveAsks([]);
             console.log("TimerContext: Manual timer reset during session start. activeAsks cleared.");
             setHasWonPrize(false);
             setIsHomepageFocusCustomized(false);
@@ -926,7 +921,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             : null,
           last_heartbeat: new Date().toISOString(),
           host_notes: hostNotes,
-          active_asks: activeAsks,
           is_mock: false,
         })
         .select('id')
@@ -993,10 +987,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     return true;
   }, [
     isScheduleActive, isRunning, isPaused, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
-    setIsSeshTitleCustomized, setActiveAsks, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
+    setIsSeshTitleCustomized, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
     areToastsEnabled, playSound, triggerVibration, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
-    sessionVisibility, selectedHostingOrganisation, hostNotes, activeAsks,
+    sessionVisibility, selectedHostingOrganisation, hostNotes,
     _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
   ]);
 
@@ -1172,7 +1166,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setSeshTitle(getDefaultSeshTitle());
-      setActiveAsks([]);
       setHasWonPrize(false);
       setIsHomepageFocusCustomized(false);
       setIsHomepageBreakCustomized(false);
@@ -1291,7 +1284,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     user?.id, areToastsEnabled, isRunning, isPaused, isScheduleActive, isSchedulePrepared,
     resetSchedule, setIsRunning, setIsPaused, setIsFlashing, setAccumulatedFocusSeconds,
-    setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setHasWonPrize,
+    setAccumulatedBreakSeconds, setSeshTitle, setHasWonPrize,
     setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setActiveSessionRecordId,
     setActiveSchedule, setActiveScheduleDisplayTitleInternal, setTimerType,
     setIsTimeLeftManagedBySession, setTimeLeft, setSessionStartTime, setCurrentPhaseStartTime,
@@ -1380,7 +1373,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             const finalBreakSeconds = accumulatedBreakSeconds;
             const totalSession = finalFocusSeconds + finalBreakSeconds;
 
-            console.log("TimerContext: activeAsks before saving (schedule completion):", activeAsks);
+            console.log("TimerContext: activeAsks before saving (schedule completion):", "No active asks to save.");
             saveSessionToDatabase(
               user?.id,
               _seshTitle,
@@ -1391,7 +1384,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
               totalSession,
               activeJoinedSessionCoworkerCount,
               sessionStartTime || Date.now(),
-              activeAsks,
+              undefined, // activeAsks removed
               allParticipantsToDisplay,
               areToastsEnabled
             );
@@ -1435,7 +1428,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isFlashing, playSound, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle,
     setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldShowEndToast, user?.id, _seshTitle, notes, hostNotes,
     accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition,
-    focusMinutes, breakMinutes, areToastsEnabled, activeAsks, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration,
+    focusMinutes, breakMinutes, areToastsEnabled, allParticipantsToDisplay, breakNotificationsVibrate, triggerVibration,
     isRecurring, setCurrentScheduleIndex, setTimerType, setIsRunning, setIsFlashing, setCurrentPhaseStartTime, setTimeLeft,
     _defaultFocusMinutes, _defaultBreakMinutes, setHomepageFocusMinutes, setHomepageBreakMinutes, getDefaultSeshTitle,
     setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setHasWonPrize, shouldPlayEndSound
@@ -1479,87 +1472,17 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [profileLoading, getDefaultSeshTitle, activeScheduleDisplayTitle, isRunning, isPaused, isScheduleActive, isSchedulePending]);
 
 
-  const addAsk = useCallback(async (ask: ActiveAskItem) => {
-    if (!user?.id || !activeSessionRecordId) {
-      setActiveAsks((prev) => [...prev, ask]);
-      return;
-    }
+  const addAsk = useCallback(async (ask: any) => { // Type changed to any as ActiveAskItem is removed
+    // This function is no longer needed as 'Asks' feature is removed.
+    // Keeping a placeholder to avoid immediate compilation errors, but it will be removed.
+    console.warn("addAsk function called, but 'Asks' feature has been removed.");
+  }, []);
 
-    try {
-      console.log(`Invoking Edge Function 'update-session-data' (add_ask). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
-      const response = await supabase.functions.invoke('update-session-data', {
-        body: JSON.stringify({
-          sessionId: activeSessionRecordId,
-          actionType: 'add_ask',
-          payload: {
-            ask: { ...ask, creatorId: user.id },
-          },
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-      });
-
-      if (response.error) throw response.error;
-      if (response.data.error) throw new Error(response.data.error);
-
-      if (areToastsEnabled) {
-        toast.success("Ask Created!", {
-          description: "Your ask has been added to the session.",
-        });
-      }
-    } catch (error: any) {
-      console.error("Error adding ask via Edge Function:", error);
-      if (areToastsEnabled) {
-        toast.error("Failed to Create Ask", {
-          description: `Could not add your ask: ${await getEdgeFunctionErrorMessage(error)}`,
-        });
-      }
-    }
-  }, [user?.id, activeSessionRecordId, areToastsEnabled, setActiveAsks, session?.access_token]);
-
-  const updateAsk = useCallback(async (updatedAsk: ActiveAskItem) => {
-    if (!user?.id || !activeSessionRecordId) {
-      setActiveAsks((prev) =>
-        prev.map((ask) => (ask.id === updatedAsk.id ? updatedAsk : ask))
-      );
-      return;
-    }
-
-    try {
-      console.log(`Invoking Edge Function 'update-session-data' (update_ask). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
-      const response = await supabase.functions.invoke('update-session-data', {
-        body: JSON.stringify({
-          sessionId: activeSessionRecordId,
-          actionType: 'update_ask',
-          payload: {
-            ask: { ...updatedAsk, creatorId: user.id },
-          },
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-      });
-
-      if (response.error) throw response.error;
-      if (response.data.error) throw new Error(response.data.error);
-
-      if (areToastsEnabled) {
-        toast.success("Ask Updated!", {
-          description: "Your vote/update has been recorded.",
-        });
-      }
-    } catch (error: any) {
-      console.error("Error updating ask via Edge Function:", error);
-      if (areToastsEnabled) {
-        toast.error("Failed to Update Ask", {
-          description: `Could not update ask: ${await getEdgeFunctionErrorMessage(error)}`,
-        });
-      }
-    }
-  }, [user?.id, activeSessionRecordId, areToastsEnabled, setActiveAsks, session?.access_token]);
+  const updateAsk = useCallback(async (updatedAsk: any) => { // Type changed to any as ActiveAskItem is removed
+    // This function is no longer needed as 'Asks' feature is removed.
+    // Keeping a placeholder to avoid immediate compilation errors, but it will be removed.
+    console.warn("updateAsk function called, but 'Asks' feature has been removed.");
+  }, []);
 
   useEffect(() => {
     const checkAndCommenceSchedules = () => {
@@ -1675,7 +1598,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(intervalId);
       }
     };
-  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, activeAsks, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]);
+  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, playSound, breakNotificationsVibrate, triggerVibration, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]);
 
   useEffect(() => {
     if (isRunning || isPaused || isFlashing || isScheduleActive || isSchedulePending) {
@@ -1694,7 +1617,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
       sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors, sessionStartTime,
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
-      activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption,
+      activeJoinedSessionCoworkerCount, isSchedulePending, scheduleStartOption,
       isTimeLeftManagedBySession,
       shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
@@ -1724,7 +1647,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex, isSchedulingMode,
     isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
     savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
-    activeJoinedSessionCoworkerCount, activeAsks, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
+    activeJoinedSessionCoworkerCount, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
     askNotifications, joinNotifications, sessionInvites, friendActivity, breakNotificationsVibrate, verificationStandard,
@@ -1785,7 +1708,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setAccumulatedFocusSeconds(data.accumulatedFocusSeconds ?? 0);
         setAccumulatedBreakSeconds(data.accumulatedBreakSeconds ?? 0);
         setActiveJoinedSessionCoworkerCount(data.activeJoinedSessionCoworkerCount ?? 0);
-        setActiveAsks(data.activeAsks ?? []);
         setIsSchedulePending(loadedIsSchedulePending);
         setIsTimeLeftManagedBySession(data.isTimeLeftManagedBySession ?? false);
         setShouldPlayEndSound(data.shouldPlayEndSound ?? false);
@@ -1890,7 +1812,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
     isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
     sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors,
-    activeJoinedSessionCoworkerCount, activeAsks, isSeshTitleCustomized, scheduleStartOption,
+    activeJoinedSessionCoworkerCount, isSeshTitleCustomized, scheduleStartOption,
     isTimeLeftManagedBySession,
     shouldPlayEndSound, shouldShowEndToast, isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
@@ -2016,10 +1938,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
 
-    activeAsks,
-    addAsk,
-    updateAsk,
-    setActiveAsks,
+    // activeAsks, // Removed
+    addAsk, // Placeholder
+    updateAsk, // Placeholder
+    // setActiveAsks, // Removed
 
     currentSessionRole,
     setCurrentSessionRole,

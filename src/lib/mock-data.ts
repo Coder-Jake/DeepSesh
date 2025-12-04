@@ -1,5 +1,5 @@
 import { Profile, ProfileDataField, ProfileDataJsonb } from "@/contexts/ProfileContext";
-import { DemoSession, ScheduledTimer, ParticipantSessionData, ActiveAskItem } from "@/types/timer";
+import { DemoSession, ScheduledTimer, ParticipantSessionData } from "@/types/timer";
 import { colors, animals } from '@/lib/constants';
 
 // Helper to generate a random join code
@@ -256,7 +256,6 @@ export const MOCK_SESSIONS: DemoSession[] = [
     ],
     location_lat: -37.8136, // Melbourne latitude
     location_long: 144.9631, // Melbourne longitude
-    active_asks: [],
     visibility: 'public',
     fullSchedule: [
       { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 45 },
@@ -283,7 +282,6 @@ export const MOCK_SESSIONS: DemoSession[] = [
     ],
     location_lat: -37.7965, // University of Melbourne latitude
     location_long: 144.9613, // University of Melbourne longitude
-    active_asks: [],
     visibility: 'private',
     fullSchedule: [
       { id: crypto.randomUUID(), title: "Reading Chapter 5", type: "focus", durationMinutes: 60 },

@@ -13,8 +13,6 @@ import { useProfile } from "@/contexts/ProfileContext";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import SessionCard from "@/components/SessionCard";
 import { cn, getSociabilityGradientColor } from "@/lib/utils";
-import AskMenu from "@/components/AskMenu";
-import ActiveAskSection from "@/components/ActiveAskSection";
 import ScheduleForm from "@/components/ScheduleForm";
 import Timeline from "@/components/Timeline";
 import {
@@ -54,35 +52,6 @@ import MarkdownEditor from "@/components/MarkdownEditor";
 import { getEdgeFunctionErrorMessage } from '@/utils/error-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // NEW: Import Select components
 
-interface ExtendSuggestion {
-  id: string;
-  minutes: number;
-  creator: string;
-  creatorId: string;
-  votes: { userId: string; vote: 'yes' | 'no' | 'neutral' }[];
-  status: 'pending' | 'accepted' | 'rejected';
-}
-
-interface PollOption {
-  id: string;
-  text: string;
-  votes: { userId: string }[];
-}
-
-interface Poll {
-  id: string;
-  question: string;
-  type: 'closed' | 'choice' | 'selection';
-  creator: string;
-  creatorId: string;
-  options: PollOption[];
-  status: 'active' | 'closed';
-  allowCustomResponses: boolean;
-}
-
-type ActiveAskItem = ExtendSuggestion | Poll;
-type PollType = 'closed' | 'choice' | 'selection';
-
 interface SupabaseSessionData {
   id: string;
   session_title: string;
@@ -106,7 +75,6 @@ interface SupabaseSessionData {
   join_code: string | null;
   organisation: string[] | null; // MODIFIED: Changed to string[] | null
   host_notes: string | null;
-  active_asks: ActiveAskItem[];
   is_mock: boolean;
 }
 
@@ -186,7 +154,6 @@ const fetchSupabaseSessions = async (
       location_lat: session.location_lat,
       location_long: session.location_long,
       distance: distance,
-      active_asks: (session.active_asks || []) as ActiveAskItem[],
       visibility: session.visibility,
       user_id: session.user_id,
       join_code: session.join_code,
@@ -298,10 +265,10 @@ const Index = () => {
     activeJoinedSessionCoworkerCount,
     setActiveJoinedSessionCoworkerCount,
 
-    activeAsks,
-    addAsk,
-    updateAsk,
-    setActiveAsks,
+    // activeAsks, // Removed
+    // addAsk, // Removed
+    // updateAsk, // Removed
+    // setActiveAsks, // Removed
 
     isSchedulePending,
     setIsSchedulePending,
@@ -410,10 +377,10 @@ const Index = () => {
   useEffect(() => {
     if (userOrganisations.length > 0 && !selectedHostingOrganisation) {
       setSelectedHostingOrganisation(userOrganisations[0]);
-    } else if (userOrganisations.length === 0 && selectedHostingOrganisation) {
+    } else if (!profile?.organisation || profile.organisation.length === 0) {
       setSelectedHostingOrganisation(null);
     }
-  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation]);
+  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation, profile?.organisation]);
 
   useEffect(() => {
     if (isDiscoverySetupOpen) {
@@ -627,7 +594,6 @@ const Index = () => {
       setAccumulatedFocusSeconds(0);
       setAccumulatedBreakSeconds(0);
       setSeshTitle(getDefaultSeshTitle());
-      setActiveAsks([]);
       setNotes("");
       setHostNotes("");
     }
@@ -690,7 +656,6 @@ const Index = () => {
             join_code: joinCode,
             organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MODIFIED: Use selectedHostingOrganisation as an array
             host_notes: hostNotes,
-            active_asks: [],
             is_mock: false, // NEW: Set is_mock to false for user-created sessions
           })
           .select('id')
@@ -709,7 +674,7 @@ const Index = () => {
       }
     }
   }, [
-    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setActiveAsks, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, selectedHostingOrganisation, hostNotes
+    isRunning, isPaused, isScheduleActive, isSchedulePrepared, resetSchedule, focusMinutes, breakMinutes, playSound, triggerVibration, setSessionStartTime, setCurrentPhaseStartTime, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, setSeshTitle, setIsTimeLeftManagedBySession, user?.id, localFirstName, focusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, joinCode, setCurrentSessionRole, setCurrentSessionHostName, setCurrentSessionOtherParticipants, setActiveJoinedSessionCoworkerCount, setCurrentSessionParticipantsData, setCurrentPhaseDurationSeconds, setTimeLeft, areToastsEnabled, timerType, seshTitle, getDefaultSeshTitle, sessionVisibility, selectedHostingOrganisation, hostNotes
   ]);
 
   const resumeTimer = () => {
@@ -929,7 +894,6 @@ const Index = () => {
           fullSchedule: (joinedSession.schedule_data || []) as ScheduledTimer[],
           location_lat: joinedSession.location_lat,
           location_long: joinedSession.location_long,
-          active_asks: (joinedSession.active_asks || []) as ActiveAskItem[],
           visibility: joinedSession.visibility,
           user_id: joinedSession.user_id,
           join_code: joinedSession.join_code,
@@ -966,177 +930,6 @@ const Index = () => {
     }
     return timerType === 'focus' ? focusMinutes : breakMinutes;
   }, [isScheduleActive, activeSchedule, currentScheduleIndex, timerType, focusMinutes, breakMinutes]);
-
-  const handleExtendSubmit = async (minutes: number) => {
-    if (!user?.id || !activeSessionRecordId) {
-      if (areToastsEnabled) {
-        toast.error("Not in a session", {
-          description: "You must be in an active session to suggest an extension.",
-        });
-      }
-      return;
-    }
-
-    const newSuggestion: ExtendSuggestion = {
-      id: `extend-${Date.now()}`,
-      minutes,
-      creator: currentUserName,
-      creatorId: user.id,
-      votes: [],
-      status: 'pending',
-    };
-    await addAsk(newSuggestion);
-  };
-
-  const handlePollSubmit = async (question: string, pollType: PollType, options: string[], allowCustomResponses: boolean) => {
-    if (!user?.id || !activeSessionRecordId) {
-      if (areToastsEnabled) {
-        toast.error("Not in a session", {
-          description: "You must be in an active session to create a poll.",
-        });
-      }
-      return;
-    }
-
-    const pollOptions: PollOption[] = options.map((text, index) => ({
-      id: `option-${index}-${Date.now()}`,
-      text: text,
-      votes: [],
-    }));
-
-    if (pollType === 'closed') {
-      pollOptions.push(
-        { id: 'closed-yes', text: 'Yes', votes: [] },
-        { id: 'closed-no', text: 'No', votes: [] },
-        { id: 'closed-dont-mind', text: "Don't Mind", votes: [] }
-      );
-    }
-
-    const newPoll: Poll = {
-      id: `poll-${Date.now()}`,
-      question,
-      type: pollType,
-      creator: currentUserName,
-      creatorId: user.id,
-      options: pollOptions,
-      status: 'active',
-      allowCustomResponses,
-    };
-    await addAsk(newPoll);
-  };
-
-  const handleVoteExtend = async (id: string, newVote: 'yes' | 'no' | 'neutral' | null) => {
-    if (!user?.id || !activeSessionRecordId) {
-      if (areToastsEnabled) {
-        toast.error("Not in a session", {
-          description: "You must be in an active session to vote.",
-        });
-      }
-      return;
-    }
-
-    const currentAsk = activeAsks.find(ask => ask.id === id);
-    if (!currentAsk || !('minutes' in currentAsk)) return;
-
-    let updatedVotes = currentAsk.votes.filter(v => v.userId === user.id && v.vote === newVote)
-      ? currentAsk.votes.filter(v => v.userId !== user.id)
-      : currentAsk.votes;
-
-    if (newVote !== null) {
-      updatedVotes.push({ userId: user.id, vote: newVote });
-    }
-
-    const yesVotes = updatedVotes.filter(v => v.vote === 'yes').length;
-    const noVotes = updatedVotes.filter(v => v.vote === 'no').length;
-
-    const totalParticipants = (activeJoinedSessionCoworkerCount || 0) + (currentSessionRole === 'host' ? 1 : 0);
-    const threshold = Math.ceil(totalParticipants / 2);
-
-    let newStatus = currentAsk.status;
-    if (yesVotes >= threshold) {
-      newStatus = 'accepted';
-    } else if (noVotes >= threshold) {
-      newStatus = 'rejected';
-    } else {
-      if (currentAsk.status !== 'pending' && yesVotes < threshold && noVotes < threshold) {
-        newStatus = 'pending';
-      }
-    }
-
-    await updateAsk({
-      ...currentAsk,
-      votes: updatedVotes,
-      status: newStatus,
-    });
-  };
-
-  const handleVoteOnExistingPoll = async (pollId: string, optionIds: string[], customOptionText?: string, isCustomOptionSelected?: boolean) => {
-    if (!user?.id || !activeSessionRecordId) {
-      if (areToastsEnabled) {
-        toast.error("Not in a session", {
-          description: "You must be in an active session to vote.",
-        });
-      }
-      return;
-    }
-
-    const currentAsk = activeAsks.find(ask => ask.id === pollId);
-    if (!currentAsk || !('options' in currentAsk)) return;
-
-    let currentPoll = currentAsk as Poll;
-    let finalOptionIdsToVote: string[] = [...optionIds];
-
-    const existingUserCustomOption = currentPoll.options.find(
-      opt => opt.id.startsWith('custom-') && opt.votes.some(vote => vote.userId === user.id)
-    );
-
-    const trimmedCustomText = customOptionText?.trim();
-    let userCustomOptionId: string | null = null;
-
-    if (trimmedCustomText && isCustomOptionSelected) {
-      if (existingUserCustomOption) {
-        if (existingUserCustomOption.text !== trimmedCustomText) {
-          currentPoll = {
-            ...currentPoll,
-            options: currentPoll.options.map(opt =>
-              opt.id === existingUserCustomOption.id ? { ...opt, text: trimmedCustomText } : opt
-            )
-          };
-        }
-        userCustomOptionId = existingUserCustomOption.id;
-      } else {
-        const newCustomOption: PollOption = {
-          id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-          text: trimmedCustomText,
-          votes: [],
-        };
-        currentPoll = { ...currentPoll, options: [...currentPoll.options, newCustomOption] };
-        userCustomOptionId = newCustomOption.id;
-      }
-      if (userCustomOptionId && !finalOptionIdsToVote.includes(userCustomOptionId)) {
-        finalOptionIdsToVote.push(userCustomOptionId);
-      }
-    } else {
-      if (existingUserCustomOption) {
-        finalOptionIdsToVote = finalOptionIdsToVote.filter(id => id !== existingUserCustomOption.id);
-      }
-    }
-
-    let updatedOptions = currentPoll.options.map(option => {
-      let newVotes = option.votes.filter(v => v.userId !== user.id);
-
-      if (finalOptionIdsToVote.includes(option.id)) {
-        newVotes.push({ userId: user.id });
-      }
-      return { ...option, votes: newVotes };
-    });
-
-    updatedOptions = updatedOptions.filter(option =>
-      !option.id.startsWith('custom-') || option.votes.length > 0 || (option.id === userCustomOptionId && isCustomOptionSelected)
-    );
-
-    await updateAsk({ ...currentPoll, options: updatedOptions });
-  };
 
   const handleCountdownEnd = useCallback(() => {
     setIsSchedulePending(false);
@@ -1991,7 +1784,7 @@ const Index = () => {
                           <Square size={16} fill="currentColor" />
                         </Button>
                       </div>
-                      <AskMenu onExtendSubmit={handleExtendSubmit} onPollSubmit={handlePollSubmit} />
+                      {/* AskMenu removed */}
                     </div>
                   )}
 
@@ -2083,12 +1876,7 @@ const Index = () => {
               )}
             </div>
 
-            <ActiveAskSection
-              activeAsks={activeAsks}
-              onVoteExtend={handleVoteExtend}
-              onVotePoll={handleVoteOnExistingPoll}
-              currentUserId={currentUserId}
-            />
+            {/* ActiveAskSection removed */}
           </div>
 
           <div className="space-y-6">

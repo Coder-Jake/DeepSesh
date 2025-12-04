@@ -77,7 +77,6 @@ serve(async (req) => {
         join_code: session.join_code,
         organisation: session.organisation,
         host_notes: session.host_notes,
-        active_asks: session.active_asks,
         is_mock: true, // Mark as mock session
         last_heartbeat: new Date().toISOString(),
       };

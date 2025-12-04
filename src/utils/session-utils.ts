@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import { ActiveAskItem } from "@/types/timer";
+// import { ActiveAskItem } from "@/types/timer"; // Removed import
 
 const LOCAL_STORAGE_SESSIONS_KEY = 'deepsesh_local_sessions';
 
@@ -13,17 +13,16 @@ export const saveSessionToDatabase = async (
   totalSessionSeconds: number,
   activeJoinedSessionCoworkerCount: number,
   sessionStartTime: number,
-  activeAsks: ActiveAskItem[] | undefined,
-  allParticipantNames: string[] | undefined,
+  // activeAsks: ActiveAskItem[] | undefined, // Removed
   areToastsEnabled: boolean
 ) => {
-  console.log("saveSessionToDatabase: received activeAsks:", activeAsks);
+  console.log("saveSessionToDatabase: received activeAsks:", "No active asks to save.");
 
   const newSessionDate = new Date(sessionStartTime);
   const sessionEndTime = new Date(sessionStartTime + totalSessionSeconds * 1000);
 
-  const currentActiveAsks = activeAsks ?? [];
-  console.log("saveSessionToDatabase: currentActiveAsks for new session:", currentActiveAsks);
+  // const currentActiveAsks = activeAsks ?? []; // Removed
+  console.log("saveSessionToDatabase: currentActiveAsks for new session:", "No active asks to save.");
 
   const sessionData = {
     id: crypto.randomUUID(),
@@ -35,7 +34,7 @@ export const saveSessionToDatabase = async (
     coworker_count: activeJoinedSessionCoworkerCount,
     session_start_time: newSessionDate.toISOString(),
     session_end_time: sessionEndTime.toISOString(),
-    active_asks: currentActiveAsks,
+    // active_asks: currentActiveAsks, // Removed
     notes: notes,
     host_notes: hostNotes, // NEW: Save hostNotes
   };
