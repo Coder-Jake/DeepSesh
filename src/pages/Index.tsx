@@ -43,7 +43,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Slider } from "@/components/ui/slider";
-import { Profile as ProfileType, ProfileUpdate } from '@/contexts/Profile/ProfileContext';
+import { Profile as ProfileType, ProfileUpdate } from '@/contexts/ProfileContext';
 import { calculateDistance } from '@/utils/location-utils';
 import { MOCK_PROFILES } from '@/lib/mock-data';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
