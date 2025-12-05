@@ -16,7 +16,7 @@ interface SessionCardProps {
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => {
-  const { formatTime, isRunning, isPaused, isScheduleActive, isSchedulePending } = useTimer();
+  const { formatTime, isRunning, isScheduleActive, isSchedulePending } = useTimer();
   const { toggleProfilePopUp } = useProfilePopUp();
   const { getPublicProfile, profile } = useProfile(); // Get profile from useProfile
 
@@ -29,7 +29,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onJoinSession }) => 
   }, [session.participants, currentUserId]);
 
   // Determine if any timer/schedule is active for the current user
-  const isAnySessionActive = isRunning || isPaused || isScheduleActive || isSchedulePending;
+  const isAnySessionActive = isRunning || isScheduleActive || isSchedulePending;
 
   // Calculate total duration from fullSchedule
   const totalDurationMinutes = useMemo(() => {

@@ -96,7 +96,6 @@ export interface SupabaseSessionData {
   schedule_id: string | null;
   schedule_data: ScheduledTimer[];
   // Removed 'is_active: boolean;' as the column no longer exists
-  is_paused: boolean;
   current_schedule_index: number;
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
@@ -118,8 +117,6 @@ export type TimerContextType = {
   setDefaultBreakMinutes: React.Dispatch<React.SetStateAction<number>>;
   isRunning: boolean;
   setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
-  isPaused: boolean;
-  setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
   timeLeft: number;
   setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
   timerType: 'focus' | 'break';
