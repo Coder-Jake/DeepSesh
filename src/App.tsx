@@ -31,7 +31,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Router>
+        <Router future={{ v7_startTransition: true }}>
           <ThemeProvider>
             <AuthProvider>
               {/* useAuth must be called inside AuthProvider, so we get the session here */}
