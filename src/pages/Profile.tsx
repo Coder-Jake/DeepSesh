@@ -922,6 +922,7 @@ const Profile = () => {
                     {focusPreferenceInput > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
+              </div>
             </CardContent>
           </Card>
 
