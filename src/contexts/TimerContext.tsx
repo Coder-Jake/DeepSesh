@@ -370,8 +370,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [isDiscoveryActivated, geolocationPermissionStatus, sessionVisibility, areToastsEnabled]);
 
   const syncSessionToSupabase = useCallback(async () => {
-    if (!user?.id || !activeSessionRecordId) {
-      console.log("syncSessionToSupabase: Skipping sync. User ID or activeSessionRecordId missing.");
+    if (!activeSessionRecordId) { // Removed user?.id check
+      console.log("syncSessionToSupabase: Skipping sync. ActiveSessionRecordId missing.");
       return;
     }
 
@@ -430,14 +430,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
     }
   }, [
-    user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
+    activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle, // Removed user?.id
     timerType, isRunning, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
     userJoinCode, selectedHostingOrganisation, hostNotes, session?.access_token, currentSessionRole
   ]);
 
   useEffect(() => {
-    if (activeSessionRecordId && user?.id) {
+    if (activeSessionRecordId) { // Removed user?.id check
       const handler = setTimeout(() => {
         syncSessionToSupabase();
       }, 500);
@@ -446,14 +446,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
   }, [
     isRunning, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
-    focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, user?.id,
+    focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, // Removed user?.id
     currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation
   ]);
 
   useEffect(() => {
     let heartbeatInterval: NodeJS.Timeout | null = null;
 
-    if (user?.id && activeSessionRecordId) {
+    if (activeSessionRecordId) { // Removed user?.id check
       heartbeatInterval = setInterval(async () => {
         try {
           console.log(`Invoking Edge Function 'update-session-data' (heartbeat). Token present: ${!!session?.access_token}. Token start: ${session?.access_token?.substring(0, 10)}`);
@@ -462,7 +462,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
               sessionId: activeSessionRecordId,
               actionType: 'heartbeat',
               payload: {
-                participantId: user.id,
+                participantId: user?.id || 'anonymous', // Pass anonymous ID if user is null
               },
             }),
             headers: {
@@ -485,7 +485,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(heartbeatInterval);
       }
     };
-  }, [user?.id, activeSessionRecordId, session?.access_token]);
+  }, [activeSessionRecordId, session?.access_token, user?.id]); // Added user?.id to dependencies
 
 
   useEffect(() => {
@@ -575,14 +575,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   ]);
 
   const resetSchedule = useCallback(async () => {
-    if (activeSessionRecordId && user?.id && currentSessionRole === 'host') {
+    if (activeSessionRecordId && currentSessionRole === 'host') { // Removed user?.id check
       console.log("resetSchedule: Attempting to delete active session from Supabase:", activeSessionRecordId);
       try {
         const { error } = await supabase
           .from('active_sessions')
           .delete()
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id);
+          .eq('user_id', user?.id || null); // Match user_id or null
 
         if (error) {
           console.error("Error deleting active session from Supabase:", error);
@@ -604,12 +604,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [activeSessionRecordId, user?.id, currentSessionRole, areToastsEnabled, resetSessionStates]);
 
   const transferHostRole = useCallback(async (): Promise<boolean> => {
-    if (!user?.id || !activeSessionRecordId || currentSessionRole !== 'host') {
+    if (!activeSessionRecordId || currentSessionRole !== 'host') { // Removed user?.id check
       console.warn("Attempted to transfer host role without being the host or having an active session.");
       return false;
     }
 
-    const currentHostId = user.id;
+    const currentHostId = user?.id || null; // Get current host ID, can be null
     const otherCoworkers = currentSessionParticipantsData
       .filter(p => p.role === 'coworker')
       .sort((a, b) => a.joinTime - b.joinTime);
@@ -661,7 +661,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           .from('active_sessions')
           .delete()
           .eq('id', activeSessionRecordId)
-          .eq('user_id', user.id);
+          .eq('user_id', currentHostId); // Match current host ID or null
 
         if (deleteError) throw deleteError;
 
@@ -685,8 +685,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [user?.id, activeSessionRecordId, currentSessionRole, currentSessionParticipantsData, localFirstName, areToastsEnabled, session?.access_token]);
 
   const leaveSession = useCallback(async (): Promise<boolean> => {
-    if (!user?.id || !activeSessionRecordId) {
-      console.warn("Attempted to leave session without active session or user ID.");
+    if (!activeSessionRecordId) { // Removed user?.id check
+      console.warn("Attempted to leave session without active session.");
       return false;
     }
 
@@ -697,7 +697,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           sessionId: activeSessionRecordId,
           actionType: 'leave_session',
           payload: {
-            participantId: user.id,
+            participantId: user?.id || 'anonymous', // Pass anonymous ID if user is null
           },
         }),
         headers: {
@@ -753,7 +753,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     } else {
       console.log("stopTimer: Handling local-only session stop (no activeSessionRecordId).");
       await saveSessionToDatabase(
-        user?.id,
+        user?.id, // Pass user?.id, which can be null
         _seshTitle,
         notes,
         hostNotes,
@@ -790,15 +790,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     simulatedCurrentPhaseIndex: number = 0,
     simulatedTimeLeftInPhase: number | null = null
   ): Promise<boolean> => {
-    if (!user?.id) {
-      if (areToastsEnabled) {
-        toast.error("Authentication Required", {
-          description: "You must be logged in to start a session.",
-        });
-      }
-      console.error("startSessionCommonLogic: User ID is null, cannot start session.");
-      return false;
-    }
+    // Removed the `if (!user?.id)` check to allow unauthenticated users to host.
 
     let needsOverrideConfirmation = false;
     let confirmationMessageParts: string[] = [];
@@ -839,7 +831,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     const hostParticipant: ParticipantSessionData = {
-      userId: user.id,
+      userId: user?.id || null, // Allow userId to be null for anonymous users
       userName: localFirstName,
       joinTime: Date.now(),
       role: 'host',
@@ -863,7 +855,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       const { data, error } = await supabase
         .from('active_sessions')
         .insert({
-          user_id: hostParticipant.userId,
+          user_id: hostParticipant.userId, // This can now be null
           host_name: hostParticipant.userName,
           session_title: initialScheduleTitle,
           visibility: sessionVisibility,
@@ -949,7 +941,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   }, [
     isScheduleActive, isRunning, resetSchedule, setAccumulatedFocusSeconds, setAccumulatedBreakSeconds,
     setIsSeshTitleCustomized, setHasWonPrize, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized,
-    areToastsEnabled, user?.id, localFirstName,
+    areToastsEnabled, user?.id, localFirstName, // user?.id is now optional for hostParticipant
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
     sessionVisibility, selectedHostingOrganisation, hostNotes,
     _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
@@ -1110,14 +1102,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentPhaseDurationMinutes: number,
     remainingSecondsInPhase: number
   ): Promise<boolean> => {
-    if (!user?.id) {
-      if (areToastsEnabled) {
-        toast.error("Join Session Failed", {
-          description: "You must be logged in to join a session.",
-        });
-      }
-      return false;
-    }
+    // Removed user?.id check to allow unauthenticated users to join.
 
     if (isRunning || isScheduleActive || isSchedulePrepared) {
       if (isScheduleActive || isSchedulePrepared) await resetSchedule();
@@ -1165,11 +1150,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     setCurrentSessionRole('coworker');
     setCurrentSessionHostName(hostName);
-    setCurrentSessionOtherParticipants(participants.filter(p => p.userId !== user.id));
+    setCurrentSessionOtherParticipants(participants.filter(p => p.userId !== user?.id)); // Filter out current user if authenticated
     setHostNotes(sessionToJoin.host_notes || "");
 
     const newCoworker: ParticipantSessionData = {
-      userId: user.id,
+      userId: user?.id || null, // Allow userId to be null for anonymous users
       userName: localFirstName,
       joinTime: Date.now(),
       role: 'coworker',
@@ -1237,7 +1222,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return false;
     }
   }, [
-    user?.id, areToastsEnabled, isRunning, isScheduleActive, isSchedulePrepared,
+    user?.id, areToastsEnabled, isRunning, isScheduleActive, isSchedulePrepared, // user?.id is now optional for newCoworker
     resetSchedule, setIsRunning, setIsFlashing, setAccumulatedFocusSeconds,
     setAccumulatedBreakSeconds, setSeshTitle, setHasWonPrize,
     setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setActiveSessionRecordId,
