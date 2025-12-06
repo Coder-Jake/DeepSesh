@@ -23,7 +23,7 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user, session } = useAuth();
-  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode, loading: profileLoading, organisation: userOrganisations } = useProfile(); // NEW: Get userOrganisations from profile context
+  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode, loading: profileLoading, organisation: userOrganisations } = useProfile(); // MODIFIED: Get userOrganisations as OrganisationEntry[]
 
   const getDefaultSeshTitle = useCallback(() => {
     const profileFirstName = profile?.first_name;
@@ -143,7 +143,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [isSchedulePending, setIsSchedulePending] = useState(false);
   const [isTimeLeftManagedBySession, setIsTimeLeftManagedBySession] = useState(false);
 
-  const [shouldShowEndToast, setShouldShowEndToast] = useState(false); // NEW: Initialize shouldShowEndToast
+  const [shouldShowEndToast, setShouldShowEndToast] = useState(false);
   const [isBatchNotificationsEnabled, setIsBatchNotificationsEnabled] = useState(false);
   const [batchNotificationPreference, setBatchNotificationPreference] = useState<'break' | 'sesh_end' | 'custom'>('break');
   const [customBatchMinutes, setCustomBatchMinutes] = useState(timerIncrement);
@@ -175,7 +175,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [showDemoSessions, setShowDemoSessions] = useState(true);
 
   const [currentPhaseDurationSeconds, setCurrentPhaseDurationSeconds] = useState(0);
-  // Removed: const [remainingTimeAtPause, setRemainingTimeAtPause] = useState(0);
 
   const [limitDiscoveryRadius, setLimitDiscoveryRadius] = useState<boolean>(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
@@ -390,14 +389,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       session_title: activeScheduleDisplayTitle,
       current_phase_type: timerType,
       current_phase_end_time: currentPhaseEndTime,
-      // Removed 'is_active: isRunning,' as the column no longer exists
       current_schedule_index: isScheduleActive ? currentScheduleIndex : 0,
       schedule_data: activeSchedule,
       visibility: sessionVisibility,
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
       join_code: userJoinCode,
-      organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation && userOrganisations && userOrganisations.includes(selectedHostingOrganisation)
+      // MODIFIED: Use selectedHostingOrganisation directly as an array of names
+      organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation
         ? [selectedHostingOrganisation]
         : null,
       last_heartbeat: new Date().toISOString(),
@@ -434,7 +433,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
-    userJoinCode, selectedHostingOrganisation, hostNotes, session?.access_token, currentSessionRole, userOrganisations
+    userJoinCode, selectedHostingOrganisation, hostNotes, session?.access_token, currentSessionRole
   ]);
 
   useEffect(() => {
@@ -570,7 +569,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setActiveSessionRecordId(null);
     setLastActivityTime(null);
     setCurrentPhaseDurationSeconds(0);
-    // Removed: setRemainingTimeAtPause(0);
     setSelectedHostingOrganisation(null);
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
@@ -769,8 +767,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     }
 
     resetSessionStates();
-    // playSound(); // Removed
-    // triggerVibration(); // Removed
 
   }, [
     currentSessionRole, accumulatedFocusSeconds, accumulatedBreakSeconds,
@@ -813,7 +809,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         confirmationMessageParts.push("An active schedule is running.");
         shouldResetExistingActiveSchedule = true;
     }
-    if (isRunning) { // Removed isPaused check
+    if (isRunning) {
         confirmationMessageParts.push("A manual timer is also active.");
         shouldResetManualTimer = true;
     }
@@ -883,7 +879,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           location_long: longitude,
           participants_data: [hostParticipant],
           join_code: userJoinCode,
-          organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation && userOrganisations && userOrganisations.includes(selectedHostingOrganisation)
+          // MODIFIED: Use selectedHostingOrganisation directly as an array of names
+          organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation
             ? [selectedHostingOrganisation]
             : null,
           last_heartbeat: new Date().toISOString(),
@@ -939,8 +936,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
             description: `"${initialScheduleTitle}" has begun.`,
         });
     }
-    // playSound(); // Removed
-    // triggerVibration(); // Removed
 
     setCurrentSessionParticipantsData([hostParticipant]);
     setCurrentSessionRole('host');
@@ -957,7 +952,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     areToastsEnabled, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
     sessionVisibility, selectedHostingOrganisation, hostNotes,
-    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode, userOrganisations
+    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1124,7 +1119,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return false;
     }
 
-    if (isRunning || isScheduleActive || isSchedulePrepared) { // Removed isPaused check
+    if (isRunning || isScheduleActive || isSchedulePrepared) {
       if (isScheduleActive || isSchedulePrepared) await resetSchedule();
       setIsRunning(false);
       setIsFlashing(false);
@@ -1195,8 +1190,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `You've joined "${sessionTitle}" (mock session).`,
         });
       }
-      // playSound(); // Removed
-      // triggerVibration(); // Removed
       return true;
     }
 
@@ -1232,8 +1225,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           description: `You've joined "${sessionTitle}".`,
         });
       }
-      // playSound(); // Removed
-      // triggerVibration(); // Removed
       return true;
     } catch (error: any) {
       console.error("Unexpected error during joinSessionAsCoworker:", error);
@@ -1246,7 +1237,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       return false;
     }
   }, [
-    user?.id, areToastsEnabled, isRunning, isScheduleActive, isSchedulePrepared, // Removed isPaused
+    user?.id, areToastsEnabled, isRunning, isScheduleActive, isSchedulePrepared,
     resetSchedule, setIsRunning, setIsFlashing, setAccumulatedFocusSeconds,
     setAccumulatedBreakSeconds, setSeshTitle, setHasWonPrize,
     setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, setActiveSessionRecordId,
@@ -1263,7 +1254,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       clearInterval(timerRef.current);
     }
 
-    if (isRunning && currentPhaseStartTime !== null && currentPhaseDurationSeconds > 0) { // Removed isPaused check
+    if (isRunning && currentPhaseStartTime !== null && currentPhaseDurationSeconds > 0) {
       timerRef.current = setInterval(() => {
         const elapsedSeconds = (Date.now() - currentPhaseStartTime) / 1000;
         const secondsPassed = Math.floor(elapsedSeconds);
@@ -1276,7 +1267,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, currentPhaseStartTime, currentPhaseDurationSeconds]); // Removed isPaused
+  }, [isRunning, currentPhaseStartTime, currentPhaseDurationSeconds]);
 
   useEffect(() => {
     if (timeLeft === 0 && isRunning && currentPhaseStartTime !== null) {
@@ -1292,9 +1283,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           setAccumulatedBreakSeconds((prev: number) => prev + elapsed);
         }
       }
-
-      // if (shouldPlayEndSound) playSound(); // Removed
-      // if (breakNotificationsVibrate && navigator.vibrate) navigator.vibrate(200); // Removed
 
       if (isScheduleActive) {
         const nextIndex = currentScheduleIndex + 1;
@@ -1386,7 +1374,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       }
     }
   }, [
-    timeLeft, isRunning, currentPhaseStartTime, currentPhaseDurationSeconds, // Removed isPaused
+    timeLeft, isRunning, currentPhaseStartTime, currentPhaseDurationSeconds,
     isFlashing, isScheduleActive, activeSchedule, currentScheduleIndex, timerType, resetSchedule, scheduleTitle,
     setAccumulatedFocusSeconds, setAccumulatedBreakSeconds, shouldShowEndToast, user?.id, _seshTitle, notes, hostNotes,
     accumulatedFocusSeconds, accumulatedBreakSeconds, activeJoinedSessionCoworkerCount, sessionStartTime, manualTransition,
@@ -1397,52 +1385,48 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   ]);
 
   useEffect(() => {
-    if (!isTimeLeftManagedBySession && !isRunning && !isScheduleActive && !isSchedulePending) { // Removed isPaused
+    if (!isTimeLeftManagedBySession && !isRunning && !isScheduleActive && !isSchedulePending) {
       const expectedTime = (timerType === 'focus' ? focusMinutes : breakMinutes) * 60;
       if (timeLeft !== expectedTime) {
         setTimeLeft(expectedTime);
         setCurrentPhaseDurationSeconds(expectedTime);
       }
     }
-  }, [focusMinutes, breakMinutes, timerType, isRunning, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, timeLeft, setCurrentPhaseDurationSeconds]); // Removed isPaused
+  }, [focusMinutes, breakMinutes, timerType, isRunning, isScheduleActive, isSchedulePending, isTimeLeftManagedBySession, timeLeft, setCurrentPhaseDurationSeconds]);
 
   useEffect(() => {
-    if (!isRunning && !isScheduleActive && !isSchedulePending && !profileLoading) { // Removed isPaused
+    if (!isRunning && !isScheduleActive && !isSchedulePending && !profileLoading) {
       const defaultTitle = getDefaultSeshTitle();
       if (!isSeshTitleCustomized && _seshTitle !== defaultTitle) {
         _setSeshTitle(defaultTitle);
       }
     }
-  }, [profileLoading, getDefaultSeshTitle, isSeshTitleCustomized, _seshTitle, isRunning, isScheduleActive, isSchedulePending]); // Removed isPaused
+  }, [profileLoading, getDefaultSeshTitle, isSeshTitleCustomized, _seshTitle, isRunning, isScheduleActive, isSchedulePending]);
 
   useEffect(() => {
-    if (!isRunning && !isScheduleActive && !isSchedulePending && !profileLoading) { // Removed isPaused
+    if (!isRunning && !isScheduleActive && !isSchedulePending && !profileLoading) {
       const defaultTitle = getDefaultSeshTitle();
       if (scheduleTitle === "Coworker's DeepSesh") {
         setScheduleTitle(defaultTitle);
       }
     }
-  }, [profileLoading, getDefaultSeshTitle, scheduleTitle, isRunning, isScheduleActive, isSchedulePending]); // Removed isPaused
+  }, [profileLoading, getDefaultSeshTitle, scheduleTitle, isRunning, isScheduleActive, isSchedulePending]);
 
   useEffect(() => {
-    if (!isRunning && !isScheduleActive && !isSchedulePending && !profileLoading) { // Removed isPaused
+    if (!isRunning && !isScheduleActive && !isSchedulePending && !profileLoading) {
       const defaultTitle = getDefaultSeshTitle();
       if (activeScheduleDisplayTitle === "Coworker's DeepSesh") {
         setActiveScheduleDisplayTitleInternal(defaultTitle);
       }
     }
-  }, [profileLoading, getDefaultSeshTitle, activeScheduleDisplayTitle, isRunning, isScheduleActive, isSchedulePending]); // Removed isPaused
+  }, [profileLoading, getDefaultSeshTitle, activeScheduleDisplayTitle, isRunning, isScheduleActive, isSchedulePending]);
 
 
-  const addAsk = useCallback(async (ask: any) => { // Type changed to any as ActiveAskItem is removed
-    // This function is no longer needed as 'Asks' feature is removed.
-    // Keeping a placeholder to avoid immediate compilation errors, but it will be removed.
+  const addAsk = useCallback(async (ask: any) => {
     console.warn("addAsk function called, but 'Asks' feature has been removed.");
   }, []);
 
-  const updateAsk = useCallback(async (updatedAsk: any) => { // Type changed to any as ActiveAskItem is removed
-    // This function is no longer needed as 'Asks' feature is removed.
-    // Keeping a placeholder to avoid immediate compilation errors, but it will be removed.
+  const updateAsk = useCallback(async (updatedAsk: any) => {
     console.warn("updateAsk function called, but 'Asks' feature has been removed.");
   }, []);
 
@@ -1486,7 +1470,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
                 const phaseDurationSeconds = template.schedule[i].durationMinutes * 60;
                 if (elapsedSecondsSinceScheduledStart < accumulatedDuration + phaseDurationSeconds) {
                   currentPhaseIndex = i;
-                  timeLeftInPhase = (accumulatedDuration + phaseDurationSeconds) - elapsedSecondsSinceScheduledStart;
+                  timeLeftInPhase = (accumulatedDuration + phaseDurationSeconds) - elapsedSecondsSinceSessionStart;
                   break;
                 }
                 accumulatedDuration += phaseDurationSeconds;
@@ -1526,7 +1510,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
           const timeDifference = targetDate.getTime() - now.getTime();
           if (timeDifference <= 60 * 1000 && timeDifference >= -1000) {
-            if (!isScheduleActive && !isSchedulePending) { // Removed isPaused
+            if (!isScheduleActive && !isSchedulePending) {
               commenceSpecificPreparedSchedule(template.id);
               if (template.isRecurring) {
                 const nextCommenceDate = new Date(targetDate);
@@ -1560,15 +1544,15 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         clearInterval(intervalId);
       }
     };
-  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]); // Removed isPaused
+  }, [preparedSchedules, isScheduleActive, isSchedulePending, commenceSpecificPreparedSchedule, discardPreparedSchedule, isRecurring, scheduleTitle, activeSchedule, currentScheduleIndex, timerType, timeLeft, accumulatedFocusSeconds, accumulatedBreakSeconds, sessionStartTime, activeJoinedSessionCoworkerCount, allParticipantsToDisplay, areToastsEnabled, user?.id, _seshTitle, notes, hostNotes, manualTransition, focusMinutes, _defaultFocusMinutes, breakMinutes, _defaultBreakMinutes, currentPhaseDurationSeconds]);
 
   useEffect(() => {
-    if (isRunning || isFlashing || isScheduleActive || isSchedulePending) { // Removed isPaused
+    if (isRunning || isFlashing || isScheduleActive || isSchedulePending) {
       setLastActivityTime(Date.now());
     } else {
       setLastActivityTime(null);
     }
-  }, [isRunning, isFlashing, isScheduleActive, isSchedulePending]); // Removed isPaused
+  }, [isRunning, isFlashing, isScheduleActive, isSchedulePending]);
 
   const getTimerContextDataToSave = useCallback(() => {
     return {
@@ -1581,7 +1565,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
       activeJoinedSessionCoworkerCount, isSchedulePending, scheduleStartOption,
       isTimeLeftManagedBySession,
-      shouldShowEndToast, // NEW
+      shouldShowEndToast,
       isBatchNotificationsEnabled, batchNotificationPreference,
       customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
       intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
@@ -1601,7 +1585,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       lastActivityTime,
       showDemoSessions,
       currentPhaseDurationSeconds,
-      // Removed: remainingTimeAtPause,
       limitDiscoveryRadius,
       selectedHostingOrganisation,
     };
@@ -1611,7 +1594,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isScheduleActive, scheduleTitle, commenceTime, commenceDay, sessionVisibility, isRecurring, recurrenceFrequency,
     savedSchedules, timerColors, sessionStartTime, currentPhaseStartTime, accumulatedFocusSeconds, accumulatedBreakSeconds,
     activeJoinedSessionCoworkerCount, isSchedulePending, scheduleStartOption, isTimeLeftManagedBySession,
-    shouldShowEndToast, // NEW
+    shouldShowEndToast,
     isBatchNotificationsEnabled, batchNotificationPreference, customBatchMinutes,
     lock, exemptionsEnabled, phoneCalls, favourites, workApps, intentionalBreaches, manualTransition, maxDistance,
     askNotifications, joinNotifications, sessionInvites, friendActivity, verificationStandard,
@@ -1619,7 +1602,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     preparedSchedules, timerIncrement, startStopNotifications, hasWonPrize, currentSessionRole, currentSessionHostName,
     currentSessionOtherParticipants, isHomepageFocusCustomized, isHomepageBreakCustomized, activeSessionRecordId,
     isDiscoveryActivated, geolocationPermissionStatus, currentSessionParticipantsData, lastActivityTime, showDemoSessions,
-    currentPhaseDurationSeconds, // Removed: remainingTimeAtPause,
+    currentPhaseDurationSeconds,
     limitDiscoveryRadius, selectedHostingOrganisation,
   ]);
 
@@ -1638,7 +1621,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       loadedIsScheduleActive = data.isScheduleActive ?? false;
       loadedIsSchedulePending = data.isSchedulePending ?? false;
 
-      if (loadedIsRunning || loadedIsScheduleActive || loadedIsSchedulePending) { // Removed loadedIsPaused
+      if (loadedIsRunning || loadedIsScheduleActive || loadedIsSchedulePending) {
         _setFocusMinutes(data.focusMinutes ?? _defaultFocusMinutes);
         _setBreakMinutes(data.breakMinutes ?? _defaultBreakMinutes);
         setIsRunning(loadedIsRunning);
@@ -1672,7 +1655,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setActiveJoinedSessionCoworkerCount(data.activeJoinedSessionCoworkerCount ?? 0);
         setIsSchedulePending(loadedIsSchedulePending);
         setIsTimeLeftManagedBySession(data.isTimeLeftManagedBySession ?? false);
-        setShouldShowEndToast(data.shouldShowEndToast ?? false); // NEW
+        setShouldShowEndToast(data.shouldShowEndToast ?? false);
         setIsBatchNotificationsEnabled(data.isBatchNotificationsEnabled ?? false);
         setBatchNotificationPreference(data.batchNotificationPreference ?? 'break');
         setCustomBatchMinutes(data.customBatchMinutes ?? timerIncrement);
@@ -1707,7 +1690,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setLastActivityTime(data.lastActivityTime ?? null);
         setShowDemoSessions(data.showDemoSessions ?? true);
         setCurrentPhaseDurationSeconds(data.currentPhaseDurationSeconds ?? 0);
-        // Removed: setRemainingTimeAtPause(data.remainingTimeAtPause ?? 0);
         setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null);
       }
 
@@ -1726,7 +1708,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     const finalSavedSchedules = Array.from(mergedSchedulesMap.values());
     setSavedSchedules(finalSavedSchedules);
 
-    if (!(loadedIsRunning || loadedIsScheduleActive || loadedIsSchedulePending)) { // Removed loadedIsPaused
+    if (!(loadedIsRunning || loadedIsScheduleActive || loadedIsSchedulePending)) {
       const initialScheduleToLoad = finalSavedSchedules.find(
         (template) => template.id === "b2c3d4e5-f6a7-4890-8123-4567890abcdef0"
       );
@@ -1773,7 +1755,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors,
     activeJoinedSessionCoworkerCount, isSeshTitleCustomized, scheduleStartOption,
     isTimeLeftManagedBySession,
-    shouldShowEndToast, // NEW
+    shouldShowEndToast,
     isBatchNotificationsEnabled, batchNotificationPreference,
     customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
     intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
@@ -1792,19 +1774,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentSessionParticipantsData,
     lastActivityTime,
     showDemoSessions,
-    // Removed: remainingTimeAtPause,
     limitDiscoveryRadius,
     selectedHostingOrganisation,
     getTimerContextDataToSave,
   ]);
 
   useEffect(() => {
-    if (isRunning || isScheduleActive || isSchedulePending) { // Removed isPaused
+    if (isRunning || isScheduleActive || isSchedulePending) {
       const dataToSave = getTimerContextDataToSave();
       localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
       console.log("TimerContext: Immediate state saved to local storage (isRunning/isPaused change).");
     }
-  }, [isRunning, isScheduleActive, isSchedulePending, getTimerContextDataToSave]); // Removed isPaused
+  }, [isRunning, isScheduleActive, isSchedulePending, getTimerContextDataToSave]);
 
 
   const value: TimerContextType = {
@@ -1911,8 +1892,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     isTimeLeftManagedBySession,
     setIsTimeLeftManagedBySession,
 
-    shouldShowEndToast, // NEW
-    setShouldShowEndToast, // NEW
+    shouldShowEndToast,
+    setShouldShowEndToast,
     isBatchNotificationsEnabled,
     setIsBatchNotificationsEnabled,
     batchNotificationPreference,
@@ -1976,7 +1957,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setShowDemoSessions,
     currentPhaseDurationSeconds,
     setCurrentPhaseDurationSeconds,
-    // Removed: remainingTimeAtPause,
     limitDiscoveryRadius,
     setLimitDiscoveryRadius,
     selectedHostingOrganisation,

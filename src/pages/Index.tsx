@@ -50,7 +50,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { getEdgeFunctionErrorMessage } from '@/utils/error-utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // NEW: Import Select components
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SupabaseSessionData {
   id: string;
@@ -71,7 +71,7 @@ interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null;
-  organisation: string[] | null; // MOVED: Changed to string[] | null
+  organisation: string[] | null;
   host_notes: string | null;
   is_mock: boolean;
 }
@@ -84,7 +84,7 @@ const fetchSupabaseSessions = async (
   limitDiscoveryRadius: boolean,
   maxDistance: number,
   showDemoSessions: boolean,
-  userOrganisations: string[] | null // MOVED: Pass userOrganisations
+  userOrganisationNames: string[] | null // MODIFIED: Pass userOrganisationNames
 ): Promise<DemoSession[]> => {
   if (!userId) {
     console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
@@ -93,7 +93,7 @@ const fetchSupabaseSessions = async (
 
   const { data, error } = await supabase
     .from('active_sessions')
-    .select('*'); // MOVED: Select all directly, organisation is a direct column
+    .select('*');
 
   if (error) {
     console.error("Error fetching active sessions from Supabase:", error);
@@ -102,7 +102,7 @@ const fetchSupabaseSessions = async (
 
   console.log("fetchSupabaseSessions: Raw data from Supabase:", data); // Log raw data
 
-  return data.map((session: SupabaseSessionData) => { // NEW: Type for profiles
+  return data.map((session: SupabaseSessionData) => {
     const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
     const participants: ParticipantSessionData[] = rawParticipantsData.map(p => ({
       userId: p.userId,
@@ -157,7 +157,7 @@ const fetchSupabaseSessions = async (
       join_code: session.join_code,
       host_notes: session.host_notes,
       organisation: session.organisation,
-      is_mock: session.is_mock, // NEW: Include is_mock
+      is_mock: session.is_mock,
     };
   }).filter(session => {
     console.log(`fetchSupabaseSessions: Filtering session '${session.title}' (is_mock: ${session.is_mock}, showDemoSessions: ${showDemoSessions})`);
@@ -279,9 +279,6 @@ const Index = () => {
     currentSessionParticipantsData,
     setCurrentSessionParticipantsData,
 
-    // startStopNotifications, // Removed
-    // playSound, // Removed
-    // triggerVibration, // Removed
     areToastsEnabled,
     getLocation,
     geolocationPermissionStatus,
@@ -296,16 +293,16 @@ const Index = () => {
     resetSessionStates,
     showDemoSessions,
     currentPhaseDurationSeconds,
-    setCurrentPhaseDurationSeconds, // ADDED: setCurrentPhaseDurationSeconds
-    // Removed: remainingTimeAtPause,
+    setCurrentPhaseDurationSeconds,
     limitDiscoveryRadius,
     maxDistance,
-    selectedHostingOrganisation, // NEW: Get selectedHostingOrganisation
-    setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
+    selectedHostingOrganisation,
+    setSelectedHostingOrganisation,
   } = useTimer();
 
   const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses } = useProfile();
-  const userOrganisations = profile?.profile_data?.organisation?.value as string[] || null; // NEW: Get userOrganisations from profile_data
+  // MODIFIED: Get userOrganisations as an array of names from profile_data.organisation
+  const userOrganisationNames = profile?.profile_data?.organisation?.map(org => org.name) || null;
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleProfilePopUp } = useProfilePopUp();
@@ -364,12 +361,12 @@ const Index = () => {
 
   // NEW: Set default selected hosting organisation if user has organisations
   useEffect(() => {
-    if (userOrganisations && userOrganisations.length > 0 && !selectedHostingOrganisation) {
-      setSelectedHostingOrganisation(userOrganisations[0]);
-    } else if (!userOrganisations || userOrganisations.length === 0) {
+    if (userOrganisationNames && userOrganisationNames.length > 0 && !selectedHostingOrganisation) {
+      setSelectedHostingOrganisation(userOrganisationNames[0]);
+    } else if (!userOrganisationNames || userOrganisationNames.length === 0) {
       setSelectedHostingOrganisation(null);
     }
-  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation]);
+  }, [userOrganisationNames, selectedHostingOrganisation, setSelectedHostingOrganisation]);
 
   useEffect(() => {
     if (isDiscoverySetupOpen) {
@@ -379,7 +376,7 @@ const Index = () => {
 
   const handleSessionVisibilityToggle = useCallback(() => {
     const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
-    if (userOrganisations && userOrganisations.length > 0) { // MOVED: Check userOrganisations
+    if (userOrganisationNames && userOrganisationNames.length > 0) { // MODIFIED: Check userOrganisationNames
       modes.push('organisation');
     }
     const currentIndex = modes.indexOf(sessionVisibility);
@@ -391,7 +388,7 @@ const Index = () => {
         description: `Your sessions are now ${newVisibility}.`,
       });
     }
-  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, userOrganisations]); // MOVED: userOrganisations
+  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, userOrganisationNames]); // MODIFIED: userOrganisationNames
 
   const mockProfiles = MOCK_PROFILES;
   const isLoadingMockProfiles = false;
@@ -411,17 +408,17 @@ const Index = () => {
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganisationSessions = useMemo(() => {
-    const result = isDiscoveryActivated && userOrganisations && userOrganisations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MOVED: Check userOrganisations
-    console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisations:", userOrganisations, "sessionVisibility:", sessionVisibility); // MOVED: userOrganisations
+    const result = isDiscoveryActivated && userOrganisationNames && userOrganisationNames.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganisationNames
+    console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisationNames:", userOrganisationNames, "sessionVisibility:", sessionVisibility); // MODIFIED: userOrganisationNames
     return result;
-  }, [userOrganisations, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
+  }, [userOrganisationNames, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisations], // MOVED: Add userOrganisations to queryKey
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisationNames], // MODIFIED: Add userOrganisationNames to queryKey
     queryFn: async () => {
       try {
-        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisations); // MOVED: Pass userOrganisations
+        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisationNames); // MODIFIED: Pass userOrganisationNames
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message);
         if (areToastsEnabled) {
@@ -433,7 +430,7 @@ const Index = () => {
       }
     },
     refetchInterval: 5000,
-    enabled: isDiscoveryActivated && !!user?.id, // MODIFIED: Simplified enabled condition
+    enabled: isDiscoveryActivated && !!user?.id,
   });
 
   const allSessions = useMemo(() => {
@@ -458,11 +455,11 @@ const Index = () => {
   }, [allSessions, shouldShowFriendsSessions, profile?.id, friendStatuses]);
 
   const organisationSessions = useMemo(() => {
-    if (!shouldShowOrganisationSessions || !userOrganisations || userOrganisations.length === 0) return [];
+    if (!shouldShowOrganisationSessions || !userOrganisationNames || userOrganisationNames.length === 0) return [];
     return allSessions.filter(session => {
-      return session.organisation && userOrganisations.some(userOrg => session.organisation?.includes(userOrg));
+      return session.organisation && userOrganisationNames.some(userOrg => session.organisation?.includes(userOrg));
     });
-  }, [allSessions, shouldShowOrganisationSessions, userOrganisations]);
+  }, [allSessions, shouldShowOrganisationSessions, userOrganisationNames]);
 
 
   useEffect(() => {
@@ -491,8 +488,8 @@ const Index = () => {
         userId: p.userId,
         userName: p.userName,
         focusPreference: p.focusPreference || 50,
-        intention: p.intention || null, // MODIFIED: Allow null
-        bio: p.bio || null, // MODIFIED: Allow null
+        intention: p.intention || null,
+        bio: p.bio || null,
         role: role,
       };
     }).sort((a, b) => {
@@ -581,7 +578,7 @@ const Index = () => {
       return;
     }
 
-    if (isRunning || isScheduleActive || isSchedulePrepared) { // Removed isPaused
+    if (isRunning || isScheduleActive || isSchedulePrepared) {
       if (!confirm("A timer or schedule is already active. Do you want to override it and start a new manual timer?")) {
         return;
       }
@@ -598,8 +595,6 @@ const Index = () => {
     const currentFocusDuration = focusMinutes;
     const currentBreakDuration = breakMinutes;
 
-    // playSound(); // Removed
-    // triggerVibration(); // Removed
     setIsRunning(true);
     setIsFlashing(false);
     setSessionStartTime(Date.now());
@@ -649,9 +644,9 @@ const Index = () => {
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: joinCode,
-            organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MOVED: Use selectedHostingOrganisation as an array
+            organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null,
             host_notes: hostNotes,
-            is_mock: false, // NEW: Set is_mock to false for user-created sessions
+            is_mock: false,
           })
           .select('id')
           .single();
@@ -673,9 +668,6 @@ const Index = () => {
   ]);
 
   const resumeTimer = () => {
-    // This function is now effectively a 'start' for a pending schedule or a 'continue' for a manual transition
-    // playSound(); // Removed
-    // triggerVibration(); // Removed
     setIsRunning(true);
     if (isScheduleActive && isSchedulePending) {
       setIsSchedulePending(false);
@@ -689,17 +681,11 @@ const Index = () => {
       setCurrentPhaseStartTime(Date.now());
       setCurrentPhaseDurationSeconds(timeLeft);
     } else {
-      // This branch is for when manualTransition is true and timer was stopped (not paused)
-      // It effectively restarts the timer from the remainingTimeAtPause
-      // Removed: setCurrentPhaseStartTime(Date.now() - (currentPhaseDurationSeconds - remainingTimeAtPause) * 1000);
     }
     setIsTimeLeftManagedBySession(true);
   };
 
   const pauseTimer = () => {
-    // This function is now effectively a 'start' for a pending schedule or a 'continue' for a manual transition
-    // playSound(); // Removed
-    // triggerVibration(); // Removed
     setIsRunning(true);
     if (isScheduleActive && isSchedulePending) {
       setIsSchedulePending(false);
@@ -713,9 +699,6 @@ const Index = () => {
       setCurrentPhaseStartTime(Date.now());
       setCurrentPhaseDurationSeconds(timeLeft);
     } else {
-      // This branch is for when manualTransition is true and timer was stopped (not paused)
-      // It effectively restarts the timer from the remainingTimeAtPause
-      // Removed: setCurrentPhaseStartTime(Date.now() - (currentPhaseDurationSeconds - remainingTimeAtPause) * 1000);
     }
     setIsTimeLeftManagedBySession(true);
   };
@@ -737,8 +720,6 @@ const Index = () => {
 
     setIsFlashing(false);
     setIsRunning(true);
-    // playSound(); // Removed
-    // triggerVibration(); // Removed
     setIsTimeLeftManagedBySession(true);
   };
 
@@ -755,13 +736,11 @@ const Index = () => {
 
     setIsFlashing(false);
     setIsRunning(true);
-    // playSound(); // Removed
-    // triggerVibration(); // Removed
     setIsTimeLeftManagedBySession(true);
   };
 
   const handleModeToggle = (mode: 'focus' | 'break') => {
-    if (isRunning || isScheduleActive || isSchedulePrepared) return; // Removed isPaused
+    if (isRunning || isScheduleActive || isSchedulePrepared) return;
 
     if (mode === 'focus') {
       setTimerType('focus');
@@ -869,7 +848,7 @@ const Index = () => {
         body: JSON.stringify({
           sessionCode: trimmedCode,
           participantData: {
-            userId: user?.id, // Ensure user.id is passed
+            userId: user?.id,
             userName: localFirstName,
             focusPreference: focusPreference || 50,
             intention: profile?.profile_data?.intention?.value as string || null,
@@ -903,7 +882,7 @@ const Index = () => {
           join_code: joinedSession.join_code,
           host_notes: joinedSession.host_notes,
           organisation: joinedSession.organisation,
-          is_mock: joinedSession.is_mock, // NEW: Include is_mock
+          is_mock: joinedSession.is_mock,
         };
         await handleJoinSession(demoSession);
         setShowJoinInput(false);
@@ -926,7 +905,7 @@ const Index = () => {
     }
   };
 
-  const isActiveTimer = isRunning || isFlashing || isScheduleActive || isSchedulePending; // Removed isPaused
+  const isActiveTimer = isRunning || isFlashing || isScheduleActive || isSchedulePending;
 
   const currentItemDuration = useMemo(() => {
     if (isScheduleActive && activeSchedule[currentScheduleIndex]) {
@@ -960,7 +939,7 @@ const Index = () => {
     let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
 
     const currentDay = now.getDay();
-    const templateDay = template.commenceDay === null ? currentDay : currentDay; // Changed to currentDay if null
+    const templateDay = template.commenceDay === null ? currentDay : currentDay;
     
     let daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
@@ -1158,7 +1137,7 @@ const Index = () => {
     console.log("  sessionVisibility:", sessionVisibility);
     console.log("  showSessionsWhileActive:", showSessionsWhileActive);
     console.log("  profile?.id:", profile?.id);
-    console.log("  userOrganisations:", userOrganisations); // MOVED: userOrganisations
+    console.log("  userOrganisationNames:", userOrganisationNames); // MODIFIED: userOrganisationNames
     console.log("  allSessions (from Supabase):", allSessions);
     console.log("  nearbySessions (memo):", nearbySessions);
     console.log("  friendsSessions (memo):", friendsSessions);
@@ -1166,7 +1145,7 @@ const Index = () => {
     console.groupEnd();
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
-    sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisations, // MOVED: userOrganisations
+    sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisationNames, // MODIFIED: userOrganisationNames
     allSessions,
     shouldShowNearbySessions, nearbySessions.length,
     shouldShowFriendsSessions, friendsSessions.length,
@@ -1467,7 +1446,7 @@ const Index = () => {
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm text-center py-4">
-                  {isDiscoveryActivated && userOrganisations && userOrganisations.length > 0 ? "No organisation sessions found." : "Join an organisation to see Organisation sessions."}
+                  {isDiscoveryActivated && userOrganisationNames && userOrganisationNames.length > 0 ? "No organisation sessions found." : "Join an organisation to see Organisation sessions."}
                   </p>
               )
             )}
@@ -1479,25 +1458,25 @@ const Index = () => {
   };
 
   // NEW: Logic for Host as selector
-  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisations && userOrganisations.length > 0 && !isActiveTimer;
-  const useToggleButton = userOrganisations && userOrganisations.length <= 4;
+  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisationNames && userOrganisationNames.length > 0 && !isActiveTimer;
+  const useToggleButton = userOrganisationNames && userOrganisationNames.length <= 4;
 
   const handleCycleOrganisation = useCallback(() => {
-    if (!userOrganisations || userOrganisations.length === 0) return;
+    if (!userOrganisationNames || userOrganisationNames.length === 0) return;
 
     const currentIndex = selectedHostingOrganisation
-      ? userOrganisations.indexOf(selectedHostingOrganisation)
+      ? userOrganisationNames.indexOf(selectedHostingOrganisation)
       : -1;
 
-    const nextIndex = (currentIndex + 1) % userOrganisations.length;
-    setSelectedHostingOrganisation(userOrganisations[nextIndex]);
+    const nextIndex = (currentIndex + 1) % userOrganisationNames.length;
+    setSelectedHostingOrganisation(userOrganisationNames[nextIndex]);
 
     if (areToastsEnabled) {
       toast.info("Hosting Organisation", {
-        description: `Now hosting as '${userOrganisations[nextIndex]}'.`,
+        description: `Now hosting as '${userOrganisationNames[nextIndex]}'.`,
       });
     }
-  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation, areToastsEnabled]);
+  }, [userOrganisationNames, selectedHostingOrganisation, setSelectedHostingOrganisation, areToastsEnabled]);
 
 
   return (
@@ -1610,7 +1589,7 @@ const Index = () => {
                               onClick={handleCycleOrganisation}
                               className="h-8 px-3 text-sm ml-auto"
                             >
-                              {selectedHostingOrganisation || (userOrganisations && userOrganisations.length > 0 ? userOrganisations[0] : "None")}
+                              {selectedHostingOrganisation || (userOrganisationNames && userOrganisationNames.length > 0 ? userOrganisationNames[0] : "None")}
                             </Button>
                           ) : (
                             <Select
@@ -1625,7 +1604,7 @@ const Index = () => {
                                 <SelectValue placeholder="Select Organisation" />
                               </SelectTrigger>
                               <SelectContent>
-                                {userOrganisations && userOrganisations.map(org => (
+                                {userOrganisationNames && userOrganisationNames.map(org => (
                                   <SelectItem key={org} value={org}>{org}</SelectItem>
                                 ))}
                               </SelectContent>
@@ -1732,11 +1711,11 @@ const Index = () => {
                       isRunning ? (
                         <Button
                           size="lg"
-                          variant="ghost" // Use ghost variant to remove background/border
-                          className="w-28 invisible pointer-events-none" // Make it invisible and non-interactive
+                          variant="ghost"
+                          className="w-28 invisible pointer-events-none"
                           aria-hidden="true"
                         >
-                          &nbsp; {/* Non-breaking space to ensure content exists for sizing */}
+                          &nbsp;
                         </Button>
                       ) : (
                         <Button
@@ -1745,11 +1724,11 @@ const Index = () => {
                           onClick={() => {
                             if (isSchedulePrepared) {
                               startNewManualTimer();
-                            } else { // Removed isPaused check
+                            } else {
                               startNewManualTimer();
                             }
                           }}
-                          data-name={`${isSchedulePrepared ? 'Start' : 'Start'} Timer Button`} // Simplified button text
+                          data-name={`${isSchedulePrepared ? 'Start' : 'Start'} Timer Button`}
                         >
                           Start
                         </Button>
@@ -1757,7 +1736,7 @@ const Index = () => {
                     )}
                   </div>
 
-                  {(isRunning || isScheduleActive || isSchedulePending) && ( // Removed isPaused
+                  {(isRunning || isScheduleActive || isSchedulePending) && (
                     <div className="flex items-end justify-between px-4 mt-4">
                       <div className={cn(
                         "shape-octagon w-10 h-10 bg-secondary text-secondary-foreground transition-colors flex items-center justify-center",
@@ -1783,7 +1762,6 @@ const Index = () => {
                           <Square size={16} fill="currentColor" />
                         </Button>
                       </div>
-                      {/* AskMenu removed */}
                     </div>
                   )}
 
@@ -1874,8 +1852,6 @@ const Index = () => {
                 </>
               )}
             </div>
-
-            {/* ActiveAskSection removed */}
           </div>
 
           <div className="space-y-6">
@@ -1906,8 +1882,8 @@ const Index = () => {
 
             <Card>
               <Tabs defaultValue="my-notes" className="w-full">
-                <CardHeader className="p-0"> {/* Changed pb-2 to p-0 */}
-                  <div className="flex items-center justify-between px-6 pt-6"> {/* Added px-6 pt-6 */}
+                <CardHeader className="p-0">
+                  <div className="flex items-center justify-between px-6 pt-6">
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="my-notes">My Notes</TabsTrigger>
                       <TabsTrigger value="host-notes" disabled={currentSessionRole !== 'host' && currentSessionRole !== 'coworker' && isActiveTimer}>Host Notes</TabsTrigger>
@@ -1920,9 +1896,8 @@ const Index = () => {
                       value={notes}
                       onChange={setNotes}
                       placeholder="Thoughts, to-do items, or reflections..."
-                      // rows={5} // Removed fixed rows
-                      initialRows={3} // Set initial rows
-                      maxRows={10} // Set max rows
+                      initialRows={3}
+                      maxRows={10}
                     />
                   </TabsContent>
                   <TabsContent value="host-notes">
@@ -1935,9 +1910,8 @@ const Index = () => {
                             ? "Location details, plan, etc."
                             : "No host notes available."
                         }
-                        // rows={5} // Removed fixed rows
-                        initialRows={3} // Set initial rows
-                        maxRows={10} // Set max rows
+                        initialRows={3}
+                        maxRows={10}
                         readOnly={isActiveTimer && currentSessionRole !== 'host'}
                         isCoworkerView={currentSessionRole === 'coworker'}
                       />

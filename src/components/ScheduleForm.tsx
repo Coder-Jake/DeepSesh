@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Play, X, Clock, Save, Repeat, Building2 } from "lucide-react"; // Added Building2 icon
+import { Plus, Trash2, Play, X, Clock, Save, Repeat, Building2 } from "lucide-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { ScheduledTimer } from "@/types/timer";
 import { toast } from 'sonner';
@@ -47,14 +47,15 @@ const ScheduleForm: React.FC = () => {
     formatTime, 
     is24HourFormat, 
     getDefaultSeshTitle,
-    sessionVisibility, // ADDED: sessionVisibility
-    selectedHostingOrganisation, // NEW: Get selectedHostingOrganisation
-    setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
+    sessionVisibility,
+    selectedHostingOrganisation,
+    setSelectedHostingOrganisation,
   } = useTimer();
 
   const { isDarkMode } = useTheme();
-  const { profile } = useProfile(); // NEW: Get profile from useProfile
-  const userOrganisations = profile?.profile_data?.organisation?.value as string[] || []; // NEW: Get userOrganisations from profile_data
+  const { profile } = useProfile();
+  // MODIFIED: Get userOrganisations as an array of names from profile_data.organisation
+  const userOrganisations = profile?.profile_data?.organisation?.map(org => org.name) || [];
 
   // Local state for scheduleTitle, initialized from context or default
   const [scheduleTitle, setScheduleTitle] = useState(contextScheduleTitle || getDefaultSeshTitle());
@@ -269,7 +270,7 @@ const ScheduleForm: React.FC = () => {
       }
       return;
     }
-    if (sessionVisibility === 'organisation' && !selectedHostingOrganisation) { // NEW: Check if organisation is selected
+    if (sessionVisibility === 'organisation' && !selectedHostingOrganisation) {
       if (areToastsEnabled) {
         toast.error("Organisation Not Selected", {
           description: "Please select an organisation to host this session.",
@@ -470,7 +471,7 @@ const ScheduleForm: React.FC = () => {
           </Button>
         </CardHeader>
         <TabsContent value="plan" className="pt-0 pb-6 space-y-4 px-4 lg:px-6" id="plan-tab-content">
-          {shouldShowOrgSelector && ( // NEW: Organisation selection
+          {shouldShowOrgSelector && (
             <div className="flex items-center gap-2">
               {useToggleButton ? (
                 <Button
