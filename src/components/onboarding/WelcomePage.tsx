@@ -11,6 +11,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { cn, getSociabilityGradientColor } from '@/lib/utils';
 import { Users, Building2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { OrganisationEntry } from '@/contexts/ProfileContext'; // NEW: Import OrganisationEntry
 
 interface WelcomePageProps {
   nextStep?: () => void; // Made optional
@@ -49,10 +50,10 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     
     // MODIFIED: Convert organisation input string to array of OrganisationEntry with default public visibility
     const trimmedOrganisationString = organisationInput?.trim() || "";
-    const organisationEntries = trimmedOrganisationString.split(';')
+    const organisationEntries: OrganisationEntry[] = trimmedOrganisationString.split(';')
       .map(org => org.trim())
       .filter(org => org.length > 0)
-      .map(orgName => ({ name: orgName, visibility: ['public'] })); // Default to public visibility
+      .map(orgName => ({ name: orgName, visibility: ['public'] as ("public" | "friends" | "organisation" | "private")[] })); // Default to public visibility
 
     try {
       await updateProfile({

@@ -207,7 +207,7 @@ const ProfilePopUpCard: React.FC = () => {
     // isCurrentUserProfile is now defined at the component level
     const currentFriendStatus = currentUserProfile?.id && friendStatuses[targetProfile.id] ? friendStatuses[targetProfile.id] : 'none';
 
-    const isFieldVisible = (field: ProfileDataField | OrganisationEntry[] | null | undefined, isOrgEntry: boolean = false) => {
+    const isFieldVisible = (field: ProfileDataField | OrganisationEntry, isOrgEntry: boolean = false) => {
       if (isCurrentUserProfile) return true;
       if (!field) return false;
 

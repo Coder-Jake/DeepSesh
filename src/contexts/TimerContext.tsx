@@ -1017,7 +1017,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       templateToCommence.timerColors || {},
       templateToCommence.commenceTime,
       templateToCommence.commenceDay,
-      templateToCommence.scheduleStartOption,
+      templateToCommence.isRecurring ? 'custom_time' : templateToCommence.scheduleStartOption, // Ensure custom_time for recurring
       templateToCommence.isRecurring,
       templateToCommence.recurrenceFrequency,
       simulatedStartTime,
@@ -1470,7 +1470,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
                 const phaseDurationSeconds = template.schedule[i].durationMinutes * 60;
                 if (elapsedSecondsSinceScheduledStart < accumulatedDuration + phaseDurationSeconds) {
                   currentPhaseIndex = i;
-                  timeLeftInPhase = (accumulatedDuration + phaseDurationSeconds) - elapsedSecondsSinceSessionStart;
+                  timeLeftInPhase = (accumulatedDuration + phaseDurationSeconds) - elapsedSecondsSinceScheduledStart;
                   break;
                 }
                 accumulatedDuration += phaseDurationSeconds;

@@ -287,22 +287,24 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...getDefaultProfileDataJsonb(), // Start with all defaults
           ...(restOfParsedProfile.profile_data || {}), // Overlay existing profile_data
         };
-        // Ensure each sub-field of profile_data has value and visibility
-        for (const key in defaultedProfileData) {
-          if (defaultedProfileData.hasOwnProperty(key)) {
-            if (key === 'organisation') { // MODIFIED: Handle organisation specifically
-              defaultedProfileData.organisation = Array.isArray(defaultedProfileData.organisation) ? defaultedProfileData.organisation : [];
-            } else {
-              const field = defaultedProfileData[key as keyof ProfileDataJsonb];
-              if (field && typeof field === 'object' && !Array.isArray(field)) { // Ensure it's a ProfileDataField
-                defaultedProfileData[key as keyof ProfileDataJsonb] = {
-                  value: (field as ProfileDataField).value !== undefined ? (field as ProfileDataField).value : getDefaultProfileDataJsonb()[key as keyof ProfileDataJsonb].value,
-                  visibility: (field as ProfileDataField).visibility || getDefaultProfileDataJsonb()[key as keyof ProfileDataJsonb].visibility,
-                } as ProfileDataField;
-              }
-            }
-          }
-        }
+
+        // Now, explicitly ensure each sub-field has the correct structure and defaults
+        // For ProfileDataField types
+        (['bio', 'intention', 'linkedin_url', 'can_help_with', 'need_help_with', 'pronouns'] as Array<keyof Omit<ProfileDataJsonb, 'organisation'>>).forEach(fieldKey => {
+          const existingField = defaultedProfileData[fieldKey];
+          defaultedProfileData[fieldKey] = {
+            value: (existingField as ProfileDataField)?.value !== undefined ? (existingField as ProfileDataField)?.value : getDefaultProfileDataJsonb()[fieldKey].value,
+            visibility: (existingField as ProfileDataField)?.visibility || getDefaultProfileDataJsonb()[fieldKey].visibility,
+          };
+        });
+
+        // For OrganisationEntry[] type
+        defaultedProfileData.organisation = Array.isArray(defaultedProfileData.organisation)
+          ? defaultedProfileData.organisation.map(org => ({
+              name: org.name || '',
+              visibility: org.visibility || ['public']
+            }))
+          : [];
 
         const defaultedProfile: Profile = {
           ...restOfParsedProfile, // Use restOfParsedProfile

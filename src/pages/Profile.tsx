@@ -384,7 +384,7 @@ const Profile = () => {
     const originalEffectiveFirstName = originalValues.firstName;
 
     // MODIFIED: Compare organisation arrays
-    const organisationValueChanged = JSON.stringify(organisationInput.sort((a,b) => a.name.localeCompare(b.name))) !== JSON.stringify(originalValues.organisation.sort((a,b) => a.name.localeCompare(b.name)));
+    const organisationValueChanged = JSON.stringify(organisationInput.sort((a,b) => a.name.localeCompare(b.name))) !== JSON.stringify(originalValues.organisation.sort((a,b) => b.name.localeCompare(a.name)));
 
     const changed = currentEffectiveFirstName !== originalEffectiveFirstName ||
                    (bioInput || "") !== originalValues.bio ||
@@ -905,10 +905,10 @@ const Profile = () => {
                   </div>
                   <div
                     className="text-center mt-3 text-sm text-muted-foreground select-none"
-                    onMouseDown={() => handleLongPressStart(handleFocusPreferenceLongPress)} {/* MODIFIED: Changed to handleLongPressStart */}
+                    onMouseDown={() => handleLongPressStart(handleFocusPreferenceLongPress)}
+                    onTouchStart={() => handleLongPressStart(handleFocusPreferenceLongPress)}
                     onMouseUp={handleLongPressEnd}
                     onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handleLongPressStart(handleFocusPreferenceLongPress)} {/* MODIFIED: Changed to handleLongPressStart */}
                     onTouchEnd={handleLongPressEnd}
                     onClick={() => {
                       if (!isLongPress.current) {
@@ -922,7 +922,6 @@ const Profile = () => {
                     {focusPreferenceInput > 80 && "Minimal interaction even during breaks"}
                   </div>
                 </div>
-              </div>
             </CardContent>
           </Card>
 
