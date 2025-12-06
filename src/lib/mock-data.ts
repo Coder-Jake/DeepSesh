@@ -219,3 +219,105 @@ export const MOCK_PROFILES: Profile[] = [
     },
   },
 ];
+
+export const MOCK_SESSIONS: DemoSession[] = [
+  {
+    id: "mock-session-1",
+    title: "Deep Work Session",
+    startTime: Date.now() - 30 * 60 * 1000, // Started 30 minutes ago
+    location: "Virtual",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "A quiet session for focused work.",
+    participants: [
+      { userId: MOCK_PROFILES[0].id, userName: MOCK_PROFILES[0].first_name || "Sam Altman", joinTime: Date.now() - 30 * 60 * 1000, role: 'host', focusPreference: MOCK_PROFILES[0].focus_preference },
+      { userId: MOCK_PROFILES[1].id, userName: MOCK_PROFILES[1].first_name || "Musk", joinTime: Date.now() - 20 * 60 * 1000, role: 'coworker', focusPreference: MOCK_PROFILES[1].focus_preference },
+    ],
+    fullSchedule: [
+      { id: "s1-t1", title: "Focus", type: "focus", durationMinutes: 45 },
+      { id: "s1-t2", title: "Break", type: "break", durationMinutes: 15 },
+      { id: "s1-t3", title: "Focus", type: "focus", durationMinutes: 45 },
+    ],
+    location_lat: -37.8136, // Melbourne CBD
+    location_long: 144.9631,
+    distance: 500, // Example distance in meters
+    visibility: 'public',
+    user_id: MOCK_PROFILES[0].id,
+    join_code: "DEEPSESH1",
+    organisation: ["OpenAI"],
+    host_notes: "Working on AI safety research. Join if you're into that!",
+    is_mock: true,
+  },
+  {
+    id: "mock-session-2",
+    title: "Brainstorming & Banter",
+    startTime: Date.now() - 10 * 60 * 1000, // Started 10 minutes ago
+    location: "Cafe",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Open for creative ideas and light chat.",
+    participants: [
+      { userId: MOCK_PROFILES[2].id, userName: MOCK_PROFILES[2].first_name || "Freud", joinTime: Date.now() - 10 * 60 * 1000, role: 'host', focusPreference: MOCK_PROFILES[2].focus_preference },
+    ],
+    fullSchedule: [
+      { id: "s2-t1", title: "Brainstorm", type: "focus", durationMinutes: 20 },
+      { id: "s2-t2", title: "Chat", type: "break", durationMinutes: 10 },
+    ],
+    location_lat: -37.8150,
+    location_long: 144.9650,
+    distance: 1200,
+    visibility: 'public',
+    user_id: MOCK_PROFILES[2].id,
+    join_code: "BANTERBUDDIES",
+    organisation: ["Psychology Dept."],
+    host_notes: "Discussing new psychological theories. All welcome!",
+    is_mock: true,
+  },
+  {
+    id: "mock-session-3",
+    title: "Organisation Sync",
+    startTime: Date.now() - 5 * 60 * 1000, // Started 5 minutes ago
+    location: "Office",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Internal team meeting.",
+    participants: [
+      { userId: MOCK_PROFILES[3].id, userName: MOCK_PROFILES[3].first_name || "Aristotle", joinTime: Date.now() - 5 * 60 * 1000, role: 'host', focusPreference: MOCK_PROFILES[3].focus_preference },
+      { userId: MOCK_PROFILES[4].id, userName: MOCK_PROFILES[4].first_name || "Plato", joinTime: Date.now() - 3 * 60 * 1000, role: 'coworker', focusPreference: MOCK_PROFILES[4].focus_preference },
+    ],
+    fullSchedule: [
+      { id: "s3-t1", title: "Project Review", type: "focus", durationMinutes: 30 },
+      { id: "s3-t2", title: "Team Discussion", type: "break", durationMinutes: 10 },
+    ],
+    location_lat: -37.8100,
+    location_long: 144.9600,
+    distance: 800,
+    visibility: 'organisation',
+    user_id: MOCK_PROFILES[3].id,
+    join_code: "PHILOSOPHY",
+    organisation: ["Ancient Philosophy Guild"],
+    host_notes: "Weekly philosophy guild meeting. Bring your latest thoughts!",
+    is_mock: true,
+  },
+  {
+    id: "mock-session-4",
+    title: "Private Study",
+    startTime: Date.now() - 15 * 60 * 1000, // Started 15 minutes ago
+    location: "Library",
+    workspaceImage: "/api/placeholder/200/120",
+    workspaceDescription: "Heads-down study time.",
+    participants: [
+      { userId: MOCK_PROFILES[5].id, userName: MOCK_PROFILES[5].first_name || "Socrates", joinTime: Date.now() - 15 * 60 * 1000, role: 'host', focusPreference: MOCK_PROFILES[5].focus_preference },
+    ],
+    fullSchedule: [
+      { id: "s4-t1", title: "Reading", type: "focus", durationMinutes: 60 },
+      { id: "s4-t2", title: "Short Break", type: "break", durationMinutes: 5 },
+    ],
+    location_lat: -37.8180,
+    location_long: 144.9700,
+    distance: 2000,
+    visibility: 'private',
+    user_id: MOCK_PROFILES[5].id,
+    join_code: "SOLOSTUDY",
+    organisation: null,
+    host_notes: "Working on my own. Please do not disturb.",
+    is_mock: true,
+  },
+];
