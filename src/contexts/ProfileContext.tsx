@@ -152,7 +152,7 @@ interface ProfileProviderProps {
 }
 
 export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areToastsEnabled, session }) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, previousUserId } = useAuth(); // Get previousUserId
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -247,108 +247,188 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     }
   }, [user, profile, areToastsEnabled, session]);
 
-  // --- Initial Load Effect (Local-First) ---
+  // --- Effect to handle user changes (anonymous to authenticated, or initial load) ---
   useEffect(() => {
     let isMounted = true;
-    const loadProfile = async () => {
+    const handleUserChange = async () => {
+      if (authLoading) return; // Wait for auth to finish loading
+
       setLoading(true);
-      const storedProfile = localStorage.getItem(LOCAL_STORAGE_PROFILE_KEY);
-      const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
-      const storedBlockedUsers = localStorage.getItem(LOCAL_STORAGE_BLOCKED_USERS_KEY);
-      const storedRecentCoworkers = localStorage.getItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY);
 
-      let currentFriendStatuses: Record<string, 'friends' | 'pending' | 'none'> = storedFriendStatuses ? JSON.parse(storedFriendStatuses) : {};
-      let currentBlockedUsers: string[] = storedBlockedUsers ? JSON.parse(storedBlockedUsers) : [];
-      let currentRecentCoworkers: string[] = storedRecentCoworkers ? JSON.parse(storedRecentCoworkers) : [];
+      const currentAuthUserId = user?.id || null;
+      const oldAuthUserId = previousUserId; // This is the ID before the current user state
 
-      // NEW: Add Jake as a default demo friend
-      const jakeProfile = MOCK_PROFILES.find(p => p.first_name === 'Jake');
-      if (jakeProfile) {
-        if (!currentFriendStatuses[jakeProfile.id]) {
-          currentFriendStatuses[jakeProfile.id] = 'friends';
-        }
-        if (!currentRecentCoworkers.includes(jakeProfile.first_name || '')) {
-          currentRecentCoworkers.unshift(jakeProfile.first_name || ''); // Add to front
-          currentRecentCoworkers = currentRecentCoworkers.slice(0, 10); // Keep max 10
+      console.log("ProfileContext: handleUserChange triggered.");
+      console.log(`  currentAuthUserId: ${currentAuthUserId}`);
+      console.log(`  oldAuthUserId: ${oldAuthUserId}`);
+      console.log(`  profile (local state): ${profile?.id}`);
+
+      let profileToLoad: Profile | null = null;
+
+      // 1. Try to fetch profile for the current authenticated user ID
+      if (currentAuthUserId) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentAuthUserId)
+            .single();
+
+          if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
+            console.error("ProfileContext: Error fetching profile for current user:", error.message);
+            // Don't throw, try other options
+          } else if (data) {
+            profileToLoad = {
+              ...data,
+              profile_data: data.profile_data || getDefaultProfileDataJsonb(),
+              visibility: data.visibility || ['public'],
+            };
+            if (!profileToLoad.profile_data.organisation || !Array.isArray(profileToLoad.profile_data.organisation)) {
+              profileToLoad.profile_data.organisation = [];
+            }
+            console.log(`ProfileContext: Found profile for current user ${currentAuthUserId}.`);
+          }
+        } catch (err) {
+          console.error("ProfileContext: Unexpected error fetching profile for current user:", err);
         }
       }
 
-      if (storedProfile) {
-        const parsedProfile: Profile = JSON.parse(storedProfile);
-        if ((parsedProfile as any).host_code !== undefined) {
-          (parsedProfile as any).join_code = (parsedProfile as any).host_code;
-          delete (parsedProfile as any).host_code;
-        }
-        // Explicitly remove onboarding_complete if it exists in local storage
-        const { onboarding_complete, ...restOfParsedProfile } = parsedProfile as any;
+      // 2. If no profile found for current user, and there was a previous user (anonymous), attempt migration
+      if (!profileToLoad && oldAuthUserId && currentAuthUserId && oldAuthUserId !== currentAuthUserId) {
+        console.log(`ProfileContext: No profile for new user ${currentAuthUserId}. Checking for old profile ${oldAuthUserId} to migrate.`);
+        try {
+          const response = await supabase.functions.invoke('migrate-profile-id', {
+            body: JSON.stringify({ oldUserId: oldAuthUserId, newUserId: currentAuthUserId }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`, // Use the new session token
+            },
+          });
 
-        // Ensure profile_data and its sub-fields are defaulted
-        const defaultedProfileData: ProfileDataJsonb = {
-          ...getDefaultProfileDataJsonb(), // Start with all defaults
-          ...(restOfParsedProfile.profile_data || {}), // Overlay existing profile_data
-        };
+          if (response.error) throw response.error;
+          if (response.data.error) throw new Error(response.data.error);
 
-        // Now, explicitly ensure each sub-field has the correct structure and defaults
-        // For ProfileDataField types
-        (['bio', 'intention', 'linkedin_url', 'can_help_with', 'need_help_with', 'pronouns'] as Array<keyof Omit<ProfileDataJsonb, 'organisation'>>).forEach(fieldKey => {
-          const existingField = defaultedProfileData[fieldKey];
-          defaultedProfileData[fieldKey] = {
-            value: (existingField as ProfileDataField)?.value !== undefined ? (existingField as ProfileDataField)?.value : getDefaultProfileDataJsonb()[fieldKey].value,
-            visibility: (existingField as ProfileDataField)?.visibility || getDefaultProfileDataJsonb()[fieldKey].visibility,
-          };
-        });
-
-        // For OrganisationEntry[] type
-        defaultedProfileData.organisation = Array.isArray(defaultedProfileData.organisation)
-          ? defaultedProfileData.organisation.map(org => ({
-              name: org.name || '',
-              visibility: org.visibility || ['public']
-            }))
-          : [];
-
-        const defaultedProfile: Profile = {
-          ...restOfParsedProfile, // Use restOfParsedProfile
-          profile_data: defaultedProfileData,
-          visibility: restOfParsedProfile.visibility || ['public'],
-        };
-        if (isMounted) {
-          setProfile(defaultedProfile);
-        }
-      } else {
-        if (!authLoading && user) {
-          const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
-          const defaultProfile: Profile = {
-            id: user.id,
-            first_name: null,
-            last_name: null, avatar_url: null, 
-            focus_preference: 50, updated_at: new Date().toISOString(),
-            join_code: generateRandomJoinCode(),
-            profile_data: defaultProfileData,
-            visibility: ['public'],
-          };
-          if (isMounted) {
-            setProfile(defaultProfile);
-            localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(defaultProfile));
+          console.log("ProfileContext: Profile migration successful:", response.data.message);
+          if (response.data.profile) {
+            profileToLoad = {
+              ...response.data.profile,
+              profile_data: response.data.profile.profile_data || getDefaultProfileDataJsonb(),
+              visibility: response.data.profile.visibility || ['public'],
+            };
+            if (!profileToLoad.profile_data.organisation || !Array.isArray(profileToLoad.profile_data.organisation)) {
+              profileToLoad.profile_data.organisation = [];
+            }
+          } else {
+            // If migration happened but no profile returned (e.g., old profile was deleted because new one existed)
+            // Re-fetch for the new user ID to ensure we have the correct profile
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentAuthUserId)
+              .single();
+            if (error && error.code !== 'PGRST116') {
+              console.error("ProfileContext: Error re-fetching profile after migration:", error.message);
+            } else if (data) {
+              profileToLoad = {
+                ...data,
+                profile_data: data.profile_data || getDefaultProfileDataJsonb(),
+                visibility: data.visibility || ['public'],
+              };
+              if (!profileToLoad.profile_data.organisation || !Array.isArray(profileToLoad.profile_data.organisation)) {
+                profileToLoad.profile_data.organisation = [];
+              }
+            }
+          }
+        } catch (err: any) {
+          console.error("ProfileContext: Error invoking migrate-profile-id Edge Function:", err);
+          if (areToastsEnabled) {
+            toast.error("Profile Migration Failed", {
+              description: `Failed to migrate profile: ${err.message || String(err)}.`,
+            });
           }
         }
       }
 
-      setFriendStatuses(currentFriendStatuses);
-      setBlockedUsers(currentBlockedUsers);
-      setRecentCoworkers(currentRecentCoworkers);
+      // 3. If still no profile, create a new one for the current user ID
+      if (!profileToLoad && currentAuthUserId) {
+        console.log(`ProfileContext: No profile found for ${currentAuthUserId}, creating a new one.`);
+        const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
+        profileToLoad = {
+          id: currentAuthUserId,
+          first_name: null,
+          last_name: null, avatar_url: null,
+          focus_preference: 50, updated_at: new Date().toISOString(),
+          join_code: generateRandomJoinCode(),
+          profile_data: defaultProfileData,
+          visibility: ['public'],
+        };
+        // Attempt to insert the new profile immediately
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .insert(profileToLoad);
+          if (error) {
+            console.error("ProfileContext: Error inserting new profile:", error.message);
+            // If insert fails, it might be due to a race condition where another client created it.
+            // Try to fetch again.
+            const { data, error: fetchErrorAfterInsert } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentAuthUserId)
+              .single();
+            if (fetchErrorAfterInsert && fetchErrorAfterInsert.code !== 'PGRST116') {
+              console.error("ProfileContext: Error re-fetching profile after failed insert:", fetchErrorAfterInsert.message);
+            } else if (data) {
+              profileToLoad = {
+                ...data,
+                profile_data: data.profile_data || getDefaultProfileDataJsonb(),
+                visibility: data.visibility || ['public'],
+              };
+              if (!profileToLoad.profile_data.organisation || !Array.isArray(profileToLoad.profile_data.organisation)) {
+                profileToLoad.profile_data.organisation = [];
+              }
+            }
+          }
+        } catch (err) {
+          console.error("ProfileContext: Unexpected error during new profile insert:", err);
+        }
+      }
 
-      localStorage.setItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY, JSON.stringify(currentFriendStatuses));
-      localStorage.setItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY, JSON.stringify(currentRecentCoworkers));
-
-      setLoading(false);
+      if (isMounted) {
+        setProfile(profileToLoad);
+        // Always save the fetched/created profile to local storage
+        if (profileToLoad) {
+          localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(profileToLoad));
+        } else {
+          localStorage.removeItem(LOCAL_STORAGE_PROFILE_KEY);
+        }
+        setLoading(false);
+      }
     };
 
-    loadProfile();
+    // Only run this effect if auth is not loading and user is available (or becomes null)
+    // And if the user ID has actually changed or it's the initial load.
+    // We need to be careful not to trigger this too often.
+    // The `user` dependency is key.
+    if (!authLoading && (user?.id !== profile?.id || (user === null && profile !== null) || (user !== null && profile === null))) {
+      handleUserChange();
+    } else if (!authLoading && user && !profile) { // Case where user is present but profile hasn't been loaded yet
+      handleUserChange();
+    } else if (!authLoading && !user && profile) { // Case where user logs out, clear profile
+      if (isMounted) {
+        setProfile(null);
+        localStorage.removeItem(LOCAL_STORAGE_PROFILE_KEY);
+        setLoading(false);
+      }
+    } else if (!authLoading && !user && !profile) { // Initial anonymous state, no profile yet
+      handleUserChange();
+    }
+
 
     return () => {
       isMounted = false;
     };
-  }, [authLoading, user]);
+  }, [authLoading, user, previousUserId, session?.access_token, areToastsEnabled, profile?.id]); // Added profile?.id to dependencies
 
   // --- Effect to sync individual states from the main 'profile' object ---
   useEffect(() => {
