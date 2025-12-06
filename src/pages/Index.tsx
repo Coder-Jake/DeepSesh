@@ -350,7 +350,7 @@ const Index = () => {
     const stored = localStorage.getItem(LOCAL_STORAGE_NEARBY_OPEN_KEY);
     return stored ? JSON.parse(stored) : false;
   });
-  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] => useState(() => {
+  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY);
     return stored ? JSON.parse(stored) : false;
   });
