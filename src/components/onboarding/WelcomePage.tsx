@@ -18,7 +18,7 @@ interface WelcomePageProps {
 }
 
 const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled }) => {
-  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organisation, setFocusPreference, setOrganisation } = useProfile();
+  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organisationValue, organisationVisibility, setFocusPreference, setOrganisationValue, setOrganisationVisibility } = useProfile();
 
   const [firstNameInput, setFirstNameInput] = useState("");
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
@@ -32,7 +32,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     if (!profileLoading && profile) {
       setFirstNameInput(profile.first_name || profile.join_code || "Coworker");
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganisationInput(profile.organisation?.join('; ') || null); // MODIFIED: Join array for input display
+      setOrganisationInput((profile.profile_data?.organisation?.value as string[] || [])?.join('; ') || null); // MODIFIED: Join array for input display
     }
   }, [profileLoading, profile]);
 
@@ -53,7 +53,10 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
       await updateProfile({
         first_name: nameToSave,
         focus_preference: focusPreferenceInput,
-        organisation: organisationArray.length > 0 ? organisationArray : null, // MODIFIED: Pass array
+        organisation: { // NEW: Update organisation as a ProfileDataField
+          value: organisationArray.length > 0 ? organisationArray : null,
+          visibility: ['public'], // Default to public visibility for onboarding
+        },
       }, "Profile details saved!");
       nextStep?.();
     } catch (error: any) {

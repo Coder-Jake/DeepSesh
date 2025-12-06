@@ -11,7 +11,7 @@ const generateRandomJoinCode = () => {
 };
 
 // Helper to generate a default ProfileDataField
-const getDefaultProfileDataField = (value: string | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
+const getDefaultProfileDataField = (value: string | string[] | null = null, visibility: ("public" | "friends" | "organisation" | "private")[] = ['public']): ProfileDataField => ({
   value,
   visibility,
 });
@@ -24,6 +24,7 @@ const getDefaultProfileDataJsonb = (): ProfileDataJsonb => ({
   can_help_with: getDefaultProfileDataField(null, ['public']),
   need_help_with: getDefaultProfileDataField(null, ['public']),
   pronouns: getDefaultProfileDataField(null, ['public']),
+  organisation: getDefaultProfileDataField([], ['public']), // NEW: Default for organisation
 });
 
 export const MOCK_PROFILES: Profile[] = [
@@ -34,7 +35,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 20,
     updated_at: new Date().toISOString(),
-    organisation: ["OpenAI"],
+    // REMOVED: organisation: ["OpenAI"],
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -44,6 +45,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("AI strategy", ['public']),
       need_help_with: getDefaultProfileDataField("AI safety", ['private']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["OpenAI"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -53,7 +55,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 10,
     updated_at: new Date().toISOString(),
-    organisation: ["SpaceX"],
+    // REMOVED: organisation: ["SpaceX"],
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -63,6 +65,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Rocket engineering", ['public']),
       need_help_with: getDefaultProfileDataField("Mars colonization", ['private']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["SpaceX"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -72,7 +75,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 60,
     updated_at: new Date().toISOString(),
-    organisation: ["Psychology Dept."],
+    // REMOVED: organisation: ["Psychology Dept."],
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -82,6 +85,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Psychoanalysis", ['friends']),
       need_help_with: getDefaultProfileDataField("Modern neuroscience", ['friends']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Psychology Dept."], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -91,7 +95,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 50,
     updated_at: new Date().toISOString(),
-    organisation: ["Ancient Philosophy Guild"],
+    // REMOVED: organisation: ["Ancient Philosophy Guild"],
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -101,6 +105,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Logic", ['organisation']),
       need_help_with: getDefaultProfileDataField("Modern science", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['organisation']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -110,7 +115,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 40,
     updated_at: new Date().toISOString(),
-    organisation: ["Ancient Philosophy Guild"],
+    // REMOVED: organisation: ["Ancient Philosophy Guild"],
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -120,6 +125,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Metaphysics", ['organisation']),
       need_help_with: getDefaultProfileDataField("Political theory", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['organisation']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -129,7 +135,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 70,
     updated_at: new Date().toISOString(),
-    organisation: ["Ancient Philosophy Guild"],
+    // REMOVED: organisation: ["Ancient Philosophy Guild"],
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -139,6 +145,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Critical thinking", ['organisation']),
       need_help_with: getDefaultProfileDataField("Self-knowledge", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['organisation']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -148,7 +155,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 85,
     updated_at: new Date().toISOString(),
-    organisation: ["DeepSesh", "StartSpace"],
+    // REMOVED: organisation: ["DeepSesh", "StartSpace"],
     join_code: "DeepSeshJake",
     visibility: ['public'],
     profile_data: {
@@ -158,6 +165,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("building community with attention-respecting algorithms.", ['public']),
       need_help_with: getDefaultProfileDataField("creating a win-win culture among all coworkers", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["DeepSesh", "StartSpace"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -167,7 +175,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 75,
     updated_at: new Date().toISOString(),
-    organisation: ["Humanistic Psychology"],
+    // REMOVED: organisation: ["Humanistic Psychology"],
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -177,6 +185,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Empathy, unconditional positive regard", ['public']),
       need_help_with: getDefaultProfileDataField("Existential philosophy", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Humanistic Psychology"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -186,7 +195,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 80,
     updated_at: new Date().toISOString(),
-    organisation: ["Humanistic Psychology"],
+    // REMOVED: organisation: ["Humanistic Psychology"],
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -196,6 +205,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Motivation theory, peak experiences", ['public']),
       need_help_with: getDefaultProfileDataField("Transpersonal psychology", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Humanistic Psychology"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -205,7 +215,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 90,
     updated_at: new Date().toISOString(),
-    organisation: ["Relationship Therapy"],
+    // REMOVED: organisation: ["Relationship Therapy"],
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -215,6 +225,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Relationship dynamics, infidelity", ['public']),
       need_help_with: getDefaultProfileDataField("Cultural anthropology", ['public']),
       pronouns: getDefaultProfileDataField("She/Her", ['public']),
+      organisation: getDefaultProfileDataField(["Relationship Therapy"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
 ];
@@ -231,8 +242,8 @@ const createParticipantData = (profile: Profile, role: 'host' | 'coworker'): Par
   joinTime: Date.now(),
   role: role,
   focusPreference: profile.focus_preference || 50,
-  intention: profile.profile_data?.intention?.value || null,
-  bio: profile.profile_data?.bio?.value || null,
+  intention: profile.profile_data?.intention?.value as string || null,
+  bio: profile.profile_data?.bio?.value as string || null,
 });
 
 // Define mock sessions

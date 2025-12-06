@@ -65,12 +65,12 @@ const ScheduleForm: React.FC = () => {
 
   // NEW: Sync selectedHostingOrganisation with the first organisation from profile if available
   useEffect(() => {
-    if (profile?.organisation && profile.organisation.length > 0 && !selectedHostingOrganisation) {
-      setSelectedHostingOrganisation(profile.organisation[0]);
-    } else if (!profile?.organisation || profile.organisation.length === 0) {
+    if (profile?.profile_data?.organisation?.value && (profile.profile_data.organisation.value as string[]).length > 0 && !selectedHostingOrganisation) {
+      setSelectedHostingOrganisation((profile.profile_data.organisation.value as string[])[0]);
+    } else if (!profile?.profile_data?.organisation?.value || (profile.profile_data.organisation.value as string[]).length === 0) {
       setSelectedHostingOrganisation(null);
     }
-  }, [profile?.organisation, selectedHostingOrganisation, setSelectedHostingOrganisation]);
+  }, [profile?.profile_data?.organisation?.value, selectedHostingOrganisation, setSelectedHostingOrganisation]);
 
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
@@ -341,7 +341,7 @@ const ScheduleForm: React.FC = () => {
       targetDate.setDate(targetDate.getDate() + 7);
     }
     return targetDate;
-  }, [scheduleStartOption, commenceTime, commenceDay]);
+  }, [commenceTime, commenceDay, scheduleStartOption]);
 
   const itemStartTimes = useMemo(() => {
     const startTimes: Record<string, string> = {};
@@ -408,7 +408,7 @@ const ScheduleForm: React.FC = () => {
   };
 
   // NEW: Logic for Host as selector
-  const userOrganisations = useMemo(() => profile?.organisation || [], [profile?.organisation]);
+  const userOrganisations = useMemo(() => profile?.profile_data?.organisation?.value as string[] || [], [profile?.profile_data?.organisation?.value]);
   const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisations.length > 0;
   const useToggleButton = userOrganisations.length <= 4;
 

@@ -83,7 +83,8 @@ const fetchSupabaseSessions = async (
   userLongitude: number | null,
   limitDiscoveryRadius: boolean,
   maxDistance: number,
-  showDemoSessions: boolean // NEW: Pass showDemoSessions
+  showDemoSessions: boolean,
+  userOrganisations: string[] // NEW: Pass userOrganisations
 ): Promise<DemoSession[]> => {
   if (!userId) {
     console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
@@ -92,7 +93,7 @@ const fetchSupabaseSessions = async (
 
   const { data, error } = await supabase
     .from('active_sessions')
-    .select('*, profiles(organisation)'); // Removed .eq('is_active', true)
+    .select('*, profiles(profile_data)'); // MODIFIED: Select profile_data instead of organisation
 
   if (error) {
     console.error("Error fetching active sessions from Supabase:", error);
@@ -101,7 +102,7 @@ const fetchSupabaseSessions = async (
 
   console.log("fetchSupabaseSessions: Raw data from Supabase:", data); // Log raw data
 
-  return data.map((session: SupabaseSessionData & { profiles: { organisation: string[] | null } | null }) => { // NEW: Type for profiles
+  return data.map((session: SupabaseSessionData & { profiles: { profile_data: { organisation: { value: string[] | null } } | null } | null }) => { // NEW: Type for profiles
     const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
     const participants: ParticipantSessionData[] = rawParticipantsData.map(p => ({
       userId: p.userId,
@@ -303,7 +304,7 @@ const Index = () => {
     setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses } = useProfile();
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses, organisationValue: userOrganisations } = useProfile(); // MODIFIED: Get userOrganisations from profile context
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleProfilePopUp } = useProfilePopUp();
@@ -360,17 +361,14 @@ const Index = () => {
   // NEW: State to track if initial auto-minimization has run
   const [initialMinimizationRun, setInitialMinimizationRun] = useState(false);
 
-  // NEW: Get user's organisations from profile
-  const userOrganisations = useMemo(() => profile?.organisation || [], [profile?.organisation]);
-
   // NEW: Set default selected hosting organisation if user has organisations
   useEffect(() => {
-    if (userOrganisations.length > 0 && !selectedHostingOrganisation) {
+    if (userOrganisations && userOrganisations.length > 0 && !selectedHostingOrganisation) {
       setSelectedHostingOrganisation(userOrganisations[0]);
-    } else if (!profile?.organisation || profile.organisation.length === 0) {
+    } else if (!userOrganisations || userOrganisations.length === 0) {
       setSelectedHostingOrganisation(null);
     }
-  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation, profile?.organisation]);
+  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation]);
 
   useEffect(() => {
     if (isDiscoverySetupOpen) {
@@ -380,7 +378,7 @@ const Index = () => {
 
   const handleSessionVisibilityToggle = useCallback(() => {
     const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
-    if (userOrganisations.length > 0) { // MODIFIED: Check userOrganisations
+    if (userOrganisations && userOrganisations.length > 0) { // MODIFIED: Check userOrganisations
       modes.push('organisation');
     }
     const currentIndex = modes.indexOf(sessionVisibility);
@@ -412,17 +410,17 @@ const Index = () => {
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganisationSessions = useMemo(() => {
-    const result = isDiscoveryActivated && userOrganisations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganisations
+    const result = isDiscoveryActivated && userOrganisations && userOrganisations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganisations
     console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisations:", userOrganisations, "sessionVisibility:", sessionVisibility); // MODIFIED: userOrganisations
     return result;
   }, [userOrganisations, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions], // NEW: Add showDemoSessions to queryKey
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisations], // NEW: Add userOrganisations to queryKey
     queryFn: async () => {
       try {
-        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions); // NEW: Pass showDemoSessions
+        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisations); // NEW: Pass userOrganisations
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message);
         if (areToastsEnabled) {
@@ -459,7 +457,7 @@ const Index = () => {
   }, [allSessions, shouldShowFriendsSessions, profile?.id, friendStatuses]);
 
   const organisationSessions = useMemo(() => {
-    if (!shouldShowOrganisationSessions || userOrganisations.length === 0) return [];
+    if (!shouldShowOrganisationSessions || !userOrganisations || userOrganisations.length === 0) return [];
     return allSessions.filter(session => {
       return session.organisation && userOrganisations.some(userOrg => session.organisation?.includes(userOrg));
     });
@@ -618,8 +616,8 @@ const Index = () => {
       joinTime: Date.now(),
       role: 'host',
       focusPreference: focusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || null,
-      bio: profile?.profile_data?.bio?.value || null,
+      intention: profile?.profile_data?.intention?.value as string || null,
+      bio: profile?.profile_data?.bio?.value as string || null,
     };
 
     setCurrentSessionRole('host');
@@ -856,8 +854,8 @@ const Index = () => {
             userId: user?.id, // Ensure user.id is passed
             userName: localFirstName,
             focusPreference: focusPreference || 50,
-            intention: profile?.profile_data?.intention?.value || null,
-            bio: profile?.profile_data?.bio?.value || null,
+            intention: profile?.profile_data?.intention?.value as string || null,
+            bio: profile?.profile_data?.bio?.value as string || null,
           },
         }),
         headers: {
@@ -1452,7 +1450,7 @@ const Index = () => {
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm text-center py-4">
-                  {isDiscoveryActivated && userOrganisations.length > 0 ? "No organisation sessions found." : "Join an organisation to see Organisation sessions."}
+                  {isDiscoveryActivated && userOrganisations && userOrganisations.length > 0 ? "No organisation sessions found." : "Join an organisation to see Organisation sessions."}
                   </p>
               )
             )}
@@ -1464,8 +1462,8 @@ const Index = () => {
   };
 
   // NEW: Logic for Host as selector
-  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisations.length > 0 && !isActiveTimer;
-  const useToggleButton = userOrganisations.length <= 4;
+  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisations && userOrganisations.length > 0 && !isActiveTimer;
+  const useToggleButton = userOrganisations && userOrganisations.length <= 4;
 
   const handleCycleOrganisation = useCallback(() => {
     if (!userOrganisations || userOrganisations.length === 0) return;
@@ -1595,7 +1593,7 @@ const Index = () => {
                               onClick={handleCycleOrganisation}
                               className="h-8 px-3 text-sm ml-auto"
                             >
-                              {selectedHostingOrganisation || (userOrganisations.length > 0 ? userOrganisations[0] : "None")}
+                              {selectedHostingOrganisation || (userOrganisations && userOrganisations.length > 0 ? userOrganisations[0] : "None")}
                             </Button>
                           ) : (
                             <Select
@@ -1610,7 +1608,7 @@ const Index = () => {
                                 <SelectValue placeholder="Select Organisation" />
                               </SelectTrigger>
                               <SelectContent>
-                                {userOrganisations.map(org => (
+                                {userOrganisations && userOrganisations.map(org => (
                                   <SelectItem key={org} value={org}>{org}</SelectItem>
                                 ))}
                               </SelectContent>
@@ -1883,7 +1881,7 @@ const Index = () => {
                     }}
                     data-name="My Intention Text"
                   >
-                    {profile.profile_data.intention.value}
+                    {profile.profile_data.intention.value as string}
                   </p>
                 </CardContent>
               </Card>

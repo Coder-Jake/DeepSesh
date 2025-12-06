@@ -23,7 +23,7 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user, session } = useAuth();
-  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode, loading: profileLoading } = useProfile();
+  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode, loading: profileLoading, organisationValue: userOrganisations } = useProfile(); // MODIFIED: Get userOrganisations from profile context
 
   const getDefaultSeshTitle = useCallback(() => {
     const profileFirstName = profile?.first_name;
@@ -397,7 +397,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       participants_data: currentSessionParticipantsData,
       user_id: currentSessionParticipantsData.find(p => p.role === 'host')?.userId || null,
       join_code: userJoinCode,
-      organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation
+      organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation && userOrganisations && userOrganisations.includes(selectedHostingOrganisation)
         ? [selectedHostingOrganisation]
         : null,
       last_heartbeat: new Date().toISOString(),
@@ -426,16 +426,15 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     } catch (error: any) {
       console.error("Error updating active session via Edge Function:", error);
       if (areToastsEnabled) {
-        toast.error("Supabase Sync Error", {
-          description: `Failed to update active session: ${await getEdgeFunctionErrorMessage(error)}`,
-        });
+        toast.error("Supabase Sync Error",
+          { description: `Failed to update active session: ${await getEdgeFunctionErrorMessage(error)}` });
       }
     }
   }, [
     user?.id, activeSessionRecordId, currentSessionHostName, activeScheduleDisplayTitle,
     timerType, isRunning, focusMinutes, breakMinutes, isScheduleActive, activeSchedule,
     currentScheduleIndex, timeLeft, sessionVisibility, currentSessionParticipantsData, areToastsEnabled,
-    userJoinCode, selectedHostingOrganisation, hostNotes, session?.access_token, currentSessionRole
+    userJoinCode, selectedHostingOrganisation, hostNotes, session?.access_token, currentSessionRole, userOrganisations
   ]);
 
   useEffect(() => {
@@ -849,8 +848,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       joinTime: Date.now(),
       role: 'host',
       focusPreference: userFocusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || null,
-      bio: profile?.profile_data?.bio?.value || null,
+      intention: profile?.profile_data?.intention?.value as string || null,
+      bio: profile?.profile_data?.bio?.value as string || null,
     };
 
     let newActiveSessionRecordId: string | null = null;
@@ -884,7 +883,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
           location_long: longitude,
           participants_data: [hostParticipant],
           join_code: userJoinCode,
-          organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation
+          organisation: sessionVisibility === 'organisation' && selectedHostingOrganisation && userOrganisations && userOrganisations.includes(selectedHostingOrganisation)
             ? [selectedHostingOrganisation]
             : null,
           last_heartbeat: new Date().toISOString(),
@@ -958,7 +957,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     areToastsEnabled, user?.id, localFirstName,
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
     sessionVisibility, selectedHostingOrganisation, hostNotes,
-    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
+    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode, userOrganisations
   ]);
 
   const startSchedule = useCallback(async () => {
@@ -1180,8 +1179,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       joinTime: Date.now(),
       role: 'coworker',
       focusPreference: userFocusPreference || 50,
-      intention: profile?.profile_data?.intention?.value || null,
-      bio: profile?.profile_data?.bio?.value || null,
+      intention: profile?.profile_data?.intention?.value as string || null,
+      bio: profile?.profile_data?.bio?.value as string || null,
     };
 
     setIsScheduleActive(true);
