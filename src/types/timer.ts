@@ -273,8 +273,6 @@ export type TimerContextType = {
   setShowDemoSessions: React.Dispatch<React.SetStateAction<boolean>>;
   currentPhaseDurationSeconds: number;
   setCurrentPhaseDurationSeconds: React.Dispatch<React.SetStateAction<number>>;
-  remainingTimeAtPause: number;
-  setRemainingTimeAtPause: React.Dispatch<React.SetStateAction<number>>;
   limitDiscoveryRadius: boolean;
   setLimitDiscoveryRadius: React.Dispatch<React.SetStateAction<boolean>>;
   selectedHostingOrganisation: string | null; // NEW: Add selectedHostingOrganisation

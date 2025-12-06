@@ -295,8 +295,7 @@ const Index = () => {
     resetSessionStates,
     showDemoSessions,
     currentPhaseDurationSeconds,
-    setCurrentPhaseDurationSeconds,
-    remainingTimeAtPause,
+    // Removed: remainingTimeAtPause,
     limitDiscoveryRadius,
     maxDistance,
     selectedHostingOrganisation, // NEW: Get selectedHostingOrganisation
@@ -692,7 +691,7 @@ const Index = () => {
     } else {
       // This branch is for when manualTransition is true and timer was stopped (not paused)
       // It effectively restarts the timer from the remainingTimeAtPause
-      setCurrentPhaseStartTime(Date.now() - (currentPhaseDurationSeconds - remainingTimeAtPause) * 1000);
+      // Removed: setCurrentPhaseStartTime(Date.now() - (currentPhaseDurationSeconds - remainingTimeAtPause) * 1000);
     }
     setIsTimeLeftManagedBySession(true);
   };

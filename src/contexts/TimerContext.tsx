@@ -175,7 +175,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   const [showDemoSessions, setShowDemoSessions] = useState(true);
 
   const [currentPhaseDurationSeconds, setCurrentPhaseDurationSeconds] = useState(0);
-  const [remainingTimeAtPause, setRemainingTimeAtPause] = useState(0);
+  // Removed: const [remainingTimeAtPause, setRemainingTimeAtPause] = useState(0);
 
   const [limitDiscoveryRadius, setLimitDiscoveryRadius] = useState<boolean>(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
@@ -571,7 +571,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setActiveSessionRecordId(null);
     setLastActivityTime(null);
     setCurrentPhaseDurationSeconds(0);
-    setRemainingTimeAtPause(0);
+    // Removed: setRemainingTimeAtPause(0);
     setSelectedHostingOrganisation(null);
   }, [
     _defaultFocusMinutes, _defaultBreakMinutes, getDefaultSeshTitle, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized
@@ -1602,7 +1602,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       lastActivityTime,
       showDemoSessions,
       currentPhaseDurationSeconds,
-      remainingTimeAtPause,
+      // Removed: remainingTimeAtPause,
       limitDiscoveryRadius,
       selectedHostingOrganisation,
     };
@@ -1620,7 +1620,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     preparedSchedules, timerIncrement, startStopNotifications, hasWonPrize, currentSessionRole, currentSessionHostName,
     currentSessionOtherParticipants, isHomepageFocusCustomized, isHomepageBreakCustomized, activeSessionRecordId,
     isDiscoveryActivated, geolocationPermissionStatus, currentSessionParticipantsData, lastActivityTime, showDemoSessions,
-    currentPhaseDurationSeconds, remainingTimeAtPause, limitDiscoveryRadius, selectedHostingOrganisation,
+    currentPhaseDurationSeconds, // Removed: remainingTimeAtPause,
+    limitDiscoveryRadius, selectedHostingOrganisation,
   ]);
 
   useEffect(() => {
@@ -1707,7 +1708,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setLastActivityTime(data.lastActivityTime ?? null);
         setShowDemoSessions(data.showDemoSessions ?? true);
         setCurrentPhaseDurationSeconds(data.currentPhaseDurationSeconds ?? 0);
-        setRemainingTimeAtPause(data.remainingTimeAtPause ?? 0);
+        // Removed: setRemainingTimeAtPause(data.remainingTimeAtPause ?? 0);
         setLimitDiscoveryRadius(data.limitDiscoveryRadius ?? false);
         setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null);
       }
@@ -1793,7 +1794,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     currentSessionParticipantsData,
     lastActivityTime,
     showDemoSessions,
-    remainingTimeAtPause,
+    // Removed: remainingTimeAtPause,
     limitDiscoveryRadius,
     selectedHostingOrganisation,
     getTimerContextDataToSave,
@@ -1977,8 +1978,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     setShowDemoSessions,
     currentPhaseDurationSeconds,
     setCurrentPhaseDurationSeconds,
-    remainingTimeAtPause,
-    setRemainingTimeAtPause,
+    // Removed: remainingTimeAtPause,
     limitDiscoveryRadius,
     setLimitDiscoveryRadius,
     selectedHostingOrganisation,
