@@ -25,6 +25,7 @@ export type ProfileDataJsonb = {
 
 // Define the main Profile type reflecting the database schema
 export type Profile = {
+  id: string; // ADDED THIS LINE
   avatar_url: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -302,7 +303,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         if (!authLoading && user) {
           const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
           const defaultProfile: Profile = {
-            id: user.id,
+            id: user.id, // ADDED THIS LINE
             first_name: null,
             last_name: null, avatar_url: null, 
             focus_preference: 50, updated_at: new Date().toISOString(),
@@ -413,7 +414,18 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       return;
     }
 
-    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'], organisation: [] } as Profile;
+    const currentProfile = profile || { 
+      id: user.id, // ADDED THIS LINE
+      first_name: null, 
+      last_name: null, // ADDED
+      avatar_url: null, // ADDED
+      focus_preference: 50, 
+      updated_at: null, // ADDED
+      join_code: generateRandomJoinCode(), 
+      profile_data: getDefaultProfileDataJsonb(), 
+      visibility: ['public'], 
+      organisation: [] 
+    } as Profile;
 
     const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
 
@@ -490,7 +502,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
     const defaultProfileData: ProfileDataJsonb = getDefaultProfileDataJsonb();
     return {
-      id: userId,
+      id: userId, // ADDED THIS LINE
       first_name: userName,
       last_name: null,
       avatar_url: null,
