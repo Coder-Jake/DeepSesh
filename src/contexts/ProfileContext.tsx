@@ -293,7 +293,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...restOfParsedProfile, // Use restOfParsedProfile
           profile_data: defaultedProfileData,
           visibility: restOfParsedProfile.visibility || ['public'],
-          organisation: restOfParsedProfile.organisation || [], // MOVED: Organisation is now a direct column
+          organisation: Array.isArray(restOfParsedProfile.organisation) ? restOfParsedProfile.organisation : [], // MOVED: Organisation is now a direct column
         };
         if (isMounted) {
           setProfile(defaultedProfile);
@@ -360,7 +360,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setNeedHelpWith(pd.need_help_with?.value as string || null);
       setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
       setPronouns(pd.pronouns?.value as string || null);
-      setOrganisation(profile.organisation || null); // MOVED: Set organisation directly
+      setOrganisation(Array.isArray(profile.organisation) ? profile.organisation : null); // MOVED: Set organisation directly
     } else {
       setLocalFirstName("Loading...");
       setFocusPreference(50);
@@ -435,7 +435,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       updated_at: new Date().toISOString(),
       id: user.id,
       visibility: restOfUpdates.visibility || currentProfile.visibility || ['public'],
-      organisation: updatedOrganisation !== undefined ? updatedOrganisation : currentProfile.organisation || [], // MOVED: Organisation is now a direct column
+      organisation: updatedOrganisation !== undefined ? updatedOrganisation : (Array.isArray(currentProfile.organisation) ? currentProfile.organisation : []), // MOVED: Organisation is now a direct column
     };
 
     setProfile(newProfile);
@@ -476,7 +476,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...data,
           profile_data: data.profile_data || getDefaultProfileDataJsonb(),
           visibility: data.visibility || ['public'],
-          organisation: data.organisation || [], // MOVED: Organisation is now a direct column
+          organisation: Array.isArray(data.organisation) ? data.organisation : [], // MOVED: Organisation is now a direct column
         };
         // REMOVED: Ensure profile_data.organisation is properly defaulted if missing
         // if (!fetchedProfile.profile_data.organisation) {

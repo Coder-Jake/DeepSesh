@@ -32,7 +32,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     if (!profileLoading && profile) {
       setFirstNameInput(profile.first_name || profile.join_code || "Coworker");
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganisationInput((profile.organisation || [])?.join('; ') || null); // MOVED: Join direct array for input display
+      setOrganisationInput(Array.isArray(profile.organisation) ? profile.organisation.join('; ') : null); // MOVED: Join direct array for input display
     }
   }, [profileLoading, profile]);
 

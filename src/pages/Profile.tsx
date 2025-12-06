@@ -22,7 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
-import { ProfileUpdate, ProfileDataJsonb, Profile as ProfileType } from "@/contexts/ProfileContext";
+import { ProfileUpdate, ProfileDataJsonb, Profile as ProfileType } from '@/contexts/ProfileContext';
 
 const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"];
 
@@ -299,7 +299,7 @@ const Profile = () => {
         canHelpWith: profile.profile_data?.can_help_with?.value as string || "",
         needHelpWith: profile.profile_data?.need_help_with?.value as string || "",
         focusPreference: profile.focus_preference || 50,
-        organisation: profile.organisation || [], // MOVED: Use direct organisation
+        organisation: Array.isArray(profile.organisation) ? profile.organisation : [], // Ensure it's an array
         linkedinUrl: currentLinkedinUsername,
         joinCode: profile.join_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
@@ -317,7 +317,7 @@ const Profile = () => {
       setCanHelpWithInput(profile.profile_data?.can_help_with?.value as string || null);
       setNeedHelpWithInput(profile.profile_data?.need_help_with?.value as string || null);
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganisationInput((profile.organisation || [])?.join('; ') || null); // MOVED: Join direct array for input display
+      setOrganisationInput(Array.isArray(profile.organisation) ? profile.organisation.join('; ') : null); // MOVED: Join direct array for input display
       setLinkedinUrlInput(currentLinkedinUsername === "" ? null : currentLinkedinUsername);
       setJoinCodeInput(profile.join_code);
       setPronounsInput(profile.profile_data?.pronouns?.value as string || null);
