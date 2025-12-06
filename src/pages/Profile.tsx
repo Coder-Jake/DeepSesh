@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Linkedin, Clipboard, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, MessageSquare, Lightbulb } from "lucide-react"; // MODIFIED: Removed Globe, UserStar, Building2, HeartHandshake, Lock
+import { Linkedin, Clipboard, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, MessageSquare, Lightbulb, Building2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor, getPrivacyIcon } from "@/lib/utils"; // MODIFIED: Import getPrivacyIcon
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor, getPrivacyIcon } from "@/lib/utils";
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { ProfileUpdate, ProfileDataJsonb, Profile as ProfileType, ProfileDataField, OrganisationEntry } from '@/contexts/ProfileContext';
@@ -209,7 +209,7 @@ const Profile = () => {
     }
   }, []);
 
-  const handleLongPressStart = (callback: () => void) => { // MODIFIED: Renamed from handlePressStart
+  const handleLongPressStart = (callback: () => void) => {
     isLongPress.current = false;
     longPressRef.current = setTimeout(() => {
       isLongPress.current = true;

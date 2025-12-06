@@ -18,11 +18,11 @@ interface WelcomePageProps {
 }
 
 const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled }) => {
-  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organisation: contextOrganisation, organisationVisibility: contextOrganisationVisibility, setFocusPreference, setOrganisation, setOrganisationVisibility } = useProfile(); // NEW: Get organisation and its visibility from context
+  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organisation: contextOrganisation, setFocusPreference, setOrganisation } = useProfile(); // MODIFIED: Removed organisationVisibility and setOrganisationVisibility
 
   const [firstNameInput, setFirstNameInput] = useState("");
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
-  const [organisationInput, setOrganisationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
+  const [organisationInput, setOrganisationInput] = useState<string | null>(null); // Keep as string for input
   // REMOVED: isOrganisationDialogOpen state as it's no longer needed
   // const [isOrganisationDialogOpen, setIsOrganisationDialogOpen] = useState(false);
 
@@ -33,7 +33,8 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     if (!profileLoading && profile) {
       setFirstNameInput(profile.first_name || profile.join_code || "Coworker");
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganisationInput((profile.profile_data?.organisation?.value as string[] || []).join('; ')); // NEW: Join direct array for input display
+      // MODIFIED: Join organisation names for input display
+      setOrganisationInput(profile.profile_data?.organisation?.map(org => org.name).join('; ') || null);
     }
   }, [profileLoading, profile]);
 
@@ -46,15 +47,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     const trimmedFirstName = firstNameInput.trim();
     const nameToSave = (trimmedFirstName === (profile.join_code || "Coworker")) ? null : trimmedFirstName;
     
-    // MODIFIED: Convert organisation input string to array
+    // MODIFIED: Convert organisation input string to array of OrganisationEntry with default public visibility
     const trimmedOrganisationString = organisationInput?.trim() || "";
-    const organisationArray = trimmedOrganisationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
+    const organisationEntries = trimmedOrganisationString.split(';')
+      .map(org => org.trim())
+      .filter(org => org.length > 0)
+      .map(orgName => ({ name: orgName, visibility: ['public'] })); // Default to public visibility
 
     try {
       await updateProfile({
         first_name: nameToSave,
         focus_preference: focusPreferenceInput,
-        organisation: { value: organisationArray.length > 0 ? organisationArray : null, visibility: contextOrganisationVisibility }, // NEW: Update organisation as a ProfileDataField
+        organisation: organisationEntries, // MODIFIED: Update organisation as OrganisationEntry[]
       }, "Profile details saved!");
       nextStep?.();
     } catch (error: any) {
