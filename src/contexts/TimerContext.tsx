@@ -437,20 +437,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
   ]);
 
   useEffect(() => {
-    if (activeSessionRecordId) { // Removed user?.id check
-      const handler = setTimeout(() => {
-        syncSessionToSupabase();
-      }, 500);
-
-      return () => clearTimeout(handler);
-    }
-  }, [
-    isRunning, timeLeft, timerType, currentScheduleIndex, activeScheduleDisplayTitle,
-    focusMinutes, breakMinutes, isScheduleActive, sessionVisibility, activeSessionRecordId, // Removed user?.id
-    currentSessionParticipantsData, syncSessionToSupabase, hostNotes, selectedHostingOrganisation
-  ]);
-
-  useEffect(() => {
     let heartbeatInterval: NodeJS.Timeout | null = null;
 
     if (activeSessionRecordId) { // Removed user?.id check
@@ -1591,6 +1577,44 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     limitDiscoveryRadius, selectedHostingOrganisation,
   ]);
 
+  // NEW: Merged state saving logic
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const saveStateToLocalStorage = useCallback(() => {
+    const dataToSave = getTimerContextDataToSave();
+    localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
+    console.log("TimerContext: State saved to local storage.");
+  }, [getTimerContextDataToSave]);
+
+  useEffect(() => {
+    // Clear any existing debounced save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Conditions for immediate save
+    const shouldSaveImmediately = isRunning || isScheduleActive || isSchedulePending;
+
+    if (shouldSaveImmediately) {
+      saveStateToLocalStorage(); // Immediate save
+    } else {
+      // Debounced save for other changes
+      saveTimeoutRef.current = setTimeout(() => {
+        saveStateToLocalStorage();
+      }, 500);
+    }
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [
+    getTimerContextDataToSave, // This dependency will trigger for all state changes
+    isRunning, isScheduleActive, isSchedulePending, // These are also dependencies to check for immediate save conditions
+    saveStateToLocalStorage // The memoized save function
+  ]);
+
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY_TIMER);
     let initialSavedSchedules: ScheduledTimerTemplate[] = [];
@@ -1722,56 +1746,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
       setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null);
     }
   }, [getDefaultSeshTitle, _defaultFocusMinutes, _defaultBreakMinutes, areToastsEnabled, setAreToastsEnabled, timerIncrement, resetSessionStates, setIsDiscoveryActivated, setGeolocationPermissionStatus, setSessionVisibility, _setFocusMinutes, _setBreakMinutes, setIsHomepageFocusCustomized, setIsHomepageBreakCustomized, _setSeshTitle, setIsSeshTitleCustomized, setSchedule, setScheduleTitle, setCommenceTime, setCommenceDay, setScheduleStartOption, setIsRecurring, setRecurrenceFrequency, setTimerColors, setTimerType, setTimeLeft, setCurrentPhaseDurationSeconds, setSavedSchedules, setPreparedSchedules, setNotes, setHostNotes, setSelectedHostingOrganisation]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      const dataToSave = getTimerContextDataToSave();
-      localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
-      console.log("TimerContext: Debounced state saved to local storage.");
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [
-    _defaultFocusMinutes, _defaultBreakMinutes, focusMinutes, breakMinutes, isRunning, timeLeft, timerType, isFlashing,
-    notes, hostNotes, _seshTitle, isSeshTitleCustomized, showSessionsWhileActive, schedule, currentScheduleIndex,
-    isSchedulingMode, isScheduleActive, scheduleTitle, commenceTime, commenceDay,
-    sessionVisibility, isRecurring, recurrenceFrequency, savedSchedules, timerColors,
-    activeJoinedSessionCoworkerCount, isSeshTitleCustomized, scheduleStartOption,
-    isTimeLeftManagedBySession,
-    shouldShowEndToast,
-    isBatchNotificationsEnabled, batchNotificationPreference,
-    customBatchMinutes, lock, exemptionsEnabled, phoneCalls, favourites, workApps,
-    intentionalBreaches, manualTransition, maxDistance, askNotifications, joinNotifications, sessionInvites,
-    friendActivity, verificationStandard,
-    locationSharing, openSettingsAccordions, activeSchedule, activeTimerColors, activeScheduleDisplayTitle,
-    is24HourFormat,
-    preparedSchedules,
-    timerIncrement,
-    startStopNotifications,
-    hasWonPrize,
-    currentSessionRole, currentSessionHostName, currentSessionOtherParticipants,
-    isHomepageFocusCustomized, isHomepageBreakCustomized,
-    activeSessionRecordId,
-    isDiscoveryActivated,
-    geolocationPermissionStatus,
-    currentSessionParticipantsData,
-    lastActivityTime,
-    showDemoSessions,
-    limitDiscoveryRadius,
-    selectedHostingOrganisation,
-    getTimerContextDataToSave,
-  ]);
-
-  useEffect(() => {
-    if (isRunning || isScheduleActive || isSchedulePending) {
-      const dataToSave = getTimerContextDataToSave();
-      localStorage.setItem(LOCAL_STORAGE_KEY_TIMER, JSON.stringify(dataToSave));
-      console.log("TimerContext: Immediate state saved to local storage (isRunning/isPaused change).");
-    }
-  }, [isRunning, isScheduleActive, isSchedulePending, getTimerContextDataToSave]);
-
 
   const value: TimerContextType = {
     focusMinutes,
