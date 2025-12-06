@@ -397,19 +397,16 @@ const Index = () => {
   // Define these memoized values *before* they are used in other memoized values' dependency arrays.
   const shouldShowNearbySessions = useMemo(() => {
     const result = isDiscoveryActivated && sessionVisibility !== 'private' && (showSessionsWhileActive === 'nearby' || showSessionsWhileActive === 'all');
-    console.log("shouldShowNearbySessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "sessionVisibility:", sessionVisibility, "showSessionsWhileActive:", showSessionsWhileActive);
     return result;
   }, [isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
   const shouldShowFriendsSessions = useMemo(() => {
     const result = isDiscoveryActivated && (showSessionsWhileActive === 'friends' || showSessionsWhileActive === 'all');
-    console.log("shouldShowFriendsSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "showSessionsWhileActive:", showSessionsWhileActive);
     return result;
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganisationSessions = useMemo(() => {
     const result = isDiscoveryActivated && userOrganisationNames && userOrganisationNames.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganisationNames
-    console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisationNames:", userOrganisationNames, "sessionVisibility:", sessionVisibility); // MODIFIED: userOrganisationNames
     return result;
   }, [userOrganisationNames, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
@@ -951,6 +948,7 @@ const Index = () => {
           totalScheduleDurationSeconds += item.durationMinutes * 60;
         });
         const elapsedSecondsSinceScheduledStart = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
+
         if (elapsedSecondsSinceScheduledStart >= totalScheduleDurationSeconds) {
           return Number.POSITIVE_INFINITY;
         } else {
@@ -1128,30 +1126,31 @@ const Index = () => {
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
-  useEffect(() => {
-    console.group("Index.tsx Debugging Session Visibility");
-    console.log("  showDemoSessions:", showDemoSessions);
-    console.log("  isDiscoveryActivated:", isDiscoveryActivated);
-    console.log("  geolocationPermissionStatus:", geolocationPermissionStatus);
-    console.log("  userLocation:", userLocation);
-    console.log("  sessionVisibility:", sessionVisibility);
-    console.log("  showSessionsWhileActive:", showSessionsWhileActive);
-    console.log("  profile?.id:", profile?.id);
-    console.log("  userOrganisationNames:", userOrganisationNames); // MODIFIED: userOrganisationNames
-    console.log("  allSessions (from Supabase):", allSessions);
-    console.log("  nearbySessions (memo):", nearbySessions);
-    console.log("  friendsSessions (memo):", friendsSessions);
-    console.log("  organisationSessions (memo):", organisationSessions);
-    console.groupEnd();
-  }, [
-    showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
-    sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisationNames, // MODIFIED: userOrganisationNames
-    allSessions,
-    shouldShowNearbySessions, nearbySessions.length,
-    shouldShowFriendsSessions, friendsSessions.length,
-    shouldShowOrganisationSessions, organisationSessions.length,
-    limitDiscoveryRadius, maxDistance
-  ]);
+  // REMOVED: useEffect for session visibility debugging
+  // useEffect(() => {
+  //   console.group("Index.tsx Debugging Session Visibility");
+  //   console.log("  showDemoSessions:", showDemoSessions);
+  //   console.log("  isDiscoveryActivated:", isDiscoveryActivated);
+  //   console.log("  geolocationPermissionStatus:", geolocationPermissionStatus);
+  //   console.log("  userLocation:", userLocation);
+  //   console.log("  sessionVisibility:", sessionVisibility);
+  //   console.log("  showSessionsWhileActive:", showSessionsWhileActive);
+  //   console.log("  profile?.id:", profile?.id);
+  //   console.log("  userOrganisationNames:", userOrganisationNames); // MODIFIED: userOrganisationNames
+  //   console.log("  allSessions (from Supabase):", allSessions);
+  //   console.log("  nearbySessions (memo):", nearbySessions);
+  //   console.log("  friendsSessions (memo):", friendsSessions);
+  //   console.log("  organisationSessions (memo):", organisationSessions);
+  //   console.groupEnd();
+  // }, [
+  //   showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
+  //   sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisationNames, // MODIFIED: userOrganisationNames
+  //   allSessions,
+  //   shouldShowNearbySessions, nearbySessions.length,
+  //   shouldShowFriendsSessions, friendsSessions.length,
+  //   shouldShowOrganisationSessions, organisationSessions.length,
+  //   limitDiscoveryRadius, maxDistance
+  // ]);
 
   const formatDistance = (distance: number | null) => {
     if (distance === null || distance === undefined) return null;
