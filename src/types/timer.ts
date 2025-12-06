@@ -74,7 +74,7 @@ export interface DemoSession {
   fullSchedule: ScheduledTimer[];
   user_id?: string | null;
   join_code?: string | null;
-  organisation?: string[] | null; // MOVED: Changed to string[] | null
+  organisation?: string[] | null; // NEW: Organisation is a direct column in active_sessions
   host_notes?: string | null;
   is_mock?: boolean; // NEW: Added is_mock property
 }
@@ -100,7 +100,7 @@ export interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null;
-  organisation: string[] | null; // MOVED: Changed to string[] | null
+  organisation: string[] | null; // NEW: Organisation is a direct column in active_sessions
   host_notes: string | null;
   is_mock: boolean; // NEW: Added is_mock property
 }

@@ -18,12 +18,13 @@ interface WelcomePageProps {
 }
 
 const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled }) => {
-  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organisation, setFocusPreference, setOrganisation } = useProfile(); // MOVED: Get organisation from context
+  const { profile, loading: profileLoading, updateProfile, joinCode, localFirstName, focusPreference, organisation: contextOrganisation, organisationVisibility: contextOrganisationVisibility, setFocusPreference, setOrganisation, setOrganisationVisibility } = useProfile(); // NEW: Get organisation and its visibility from context
 
   const [firstNameInput, setFirstNameInput] = useState("");
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
   const [organisationInput, setOrganisationInput] = useState<string | null>(null); // MODIFIED: Keep as string for input
-  const [isOrganisationDialogOpen, setIsOrganisationDialogOpen] = useState(false);
+  // REMOVED: isOrganisationDialogOpen state as it's no longer needed
+  // const [isOrganisationDialogOpen, setIsOrganisationDialogOpen] = useState(false);
 
   const sliderContainerRef = useRef<HTMLDivElement>(null);
   const [isDraggingSlider, setIsDraggingSlider] = useState(false);
@@ -32,7 +33,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     if (!profileLoading && profile) {
       setFirstNameInput(profile.first_name || profile.join_code || "Coworker");
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganisationInput(Array.isArray(profile.organisation) ? profile.organisation.join('; ') : null); // MOVED: Join direct array for input display
+      setOrganisationInput((profile.profile_data?.organisation?.value as string[] || []).join('; ')); // NEW: Join direct array for input display
     }
   }, [profileLoading, profile]);
 
@@ -53,7 +54,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
       await updateProfile({
         first_name: nameToSave,
         focus_preference: focusPreferenceInput,
-        organisation: organisationArray.length > 0 ? organisationArray : null, // MOVED: Update organisation as a direct property
+        organisation: { value: organisationArray.length > 0 ? organisationArray : null, visibility: contextOrganisationVisibility }, // NEW: Update organisation as a ProfileDataField
       }, "Profile details saved!");
       nextStep?.();
     } catch (error: any) {
@@ -62,10 +63,11 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
     }
   };
 
-  const handleSaveOrganisation = () => {
-    // This function is now only for closing the dialog, actual saving happens in handleSaveAndNext
-    setIsOrganisationDialogOpen(false);
-  };
+  // REMOVED: handleSaveOrganisation as it's no longer needed
+  // const handleSaveOrganisation = () => {
+  //   // This function is now only for closing the dialog, actual saving happens in handleSaveAndNext
+  //   setIsOrganisationDialogOpen(false);
+  // };
 
   const handleSliderDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     if (!sliderContainerRef.current) return;
@@ -178,9 +180,8 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             placeholder="e.g. Unimelb; StartSpace"
             value={organisationInput || ""}
             onChange={(e) => setOrganisationInput(e.target.value)}
-            readOnly
-            onClick={() => setIsOrganisationDialogOpen(true)}
-            className="flex-grow cursor-pointer"
+            // REMOVED: readOnly and onClick to make it directly editable
+            className="flex-grow"
           />
           {organisationsList.length > 0 && (
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm mt-2">
@@ -198,7 +199,8 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
         Next <ChevronRight className="ml-2 h-4 w-4" />
       </Button>
 
-      <Dialog open={isOrganisationDialogOpen} onOpenChange={setIsOrganisationDialogOpen}>
+      {/* REMOVED: Organisation Dialog as it's no longer needed */}
+      {/* <Dialog open={isOrganisationDialogOpen} onOpenChange={setIsOrganisationDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{organisationInput ? "Edit Organisation Name(s)" : "Add Organisation Name(s)"}</DialogTitle>
@@ -220,7 +222,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ nextStep, areToastsEnabled })
             <Button onClick={handleSaveOrganisation}>Save</Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

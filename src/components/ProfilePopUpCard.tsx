@@ -24,7 +24,8 @@ const ProfilePopUpCard: React.FC = () => {
     canHelpWith,
     needHelpWith,
     focusPreference: currentUserFocusPreference,
-    organisation: currentUserOrganisation, // MOVED: Use direct organisation
+    organisation: currentUserOrganisation, // NEW: Use direct organisation from context
+    organisationVisibility: currentUserOrganisationVisibility, // NEW: Use organisation visibility from context
     pronouns: currentUserPronouns,
     // Visibility states from context
     bioVisibility,
@@ -71,7 +72,7 @@ const ProfilePopUpCard: React.FC = () => {
       case 'can_help_with': return 'Can Help With';
       case 'need_help_with': return 'Need Help With';
       case 'pronouns': return 'Pronouns';
-      // REMOVED: Organisation display name
+      case 'organisation': return 'Organisation'; // NEW: Organisation display name
       default: return '';
     }
   }, []);
@@ -105,7 +106,7 @@ const ProfilePopUpCard: React.FC = () => {
     isPopUpOpen, targetUserId, targetUserName, getPublicProfile, currentUserProfile,
     bio, intention, linkedinUrl, canHelpWith, needHelpWith, currentUserPronouns,
     bioVisibility, intentionVisibility, linkedinVisibility, canHelpWithVisibility, needHelpWithVisibility,
-    currentUserFocusPreference, currentUserOrganisation, currentUserProfileVisibility // MOVED: organisation
+    currentUserFocusPreference, currentUserOrganisation, currentUserOrganisationVisibility, currentUserProfileVisibility // NEW: organisation and its visibility
   ]);
 
   useLayoutEffect(() => {
@@ -212,8 +213,9 @@ const ProfilePopUpCard: React.FC = () => {
       if (!field || !field.value || field.visibility.includes('private')) return false;
 
       const isFriend = currentFriendStatus === 'friends';
-      // MOVED: Check if current user's organisation value includes any of the target profile's organisation values
-      const isOrgMember = (currentUserOrganisation || []).some(userOrg => (targetProfile.organisation || []).includes(userOrg));
+      // NEW: Check if current user's organisation value includes any of the target profile's organisation values
+      const targetOrganisationValue = targetProfile.profile_data?.organisation?.value as string[] || [];
+      const isOrgMember = (currentUserOrganisation || []).some(userOrg => targetOrganisationValue.includes(userOrg));
 
       return (
         field.visibility.includes('public') ||
@@ -229,8 +231,9 @@ const ProfilePopUpCard: React.FC = () => {
     const isProfileFriendsOnly = targetProfile.visibility.includes('friends');
 
     const isFriend = currentFriendStatus === 'friends';
-    // MOVED: Check if current user's organisation value includes any of the target profile's organisation values
-    const isOrgMember = (currentUserOrganisation || []).some(userOrg => (targetProfile.organisation || []).includes(userOrg));
+    // NEW: Check if current user's organisation value includes any of the target profile's organisation values
+    const targetOrganisationValue = targetProfile.profile_data?.organisation?.value as string[] || [];
+    const isOrgMember = (currentUserOrganisation || []).some(userOrg => targetOrganisationValue.includes(userOrg));
 
     const canViewProfile = isCurrentUserProfile || isProfilePublic || (isProfileOrgOnly && isOrgMember) || (isProfileFriendsOnly && isFriend);
 
@@ -250,8 +253,7 @@ const ProfilePopUpCard: React.FC = () => {
     const targetNeedHelpWith = targetProfile.profile_data?.need_help_with;
     const targetLinkedinUrl = targetProfile.profile_data?.linkedin_url;
     const targetPronouns = targetProfile.profile_data?.pronouns;
-    // REMOVED: targetOrganisation as it's no longer a ProfileDataField
-    // const targetOrganisation = targetProfile.profile_data?.organisation;
+    const targetOrganisation = targetProfile.profile_data?.organisation; // NEW: Get organisation from profile_data
 
     const allFieldsPrivate =
       (!targetBio?.value || !isFieldVisible(targetBio)) &&
@@ -259,7 +261,7 @@ const ProfilePopUpCard: React.FC = () => {
       (!targetCanHelpWith?.value || !isFieldVisible(targetCanHelpWith)) &&
       (!targetNeedHelpWith?.value || !isFieldVisible(targetNeedHelpWith)) &&
       (!targetLinkedinUrl?.value || !isFieldVisible(targetLinkedinUrl)) &&
-      (!targetProfile.organisation || targetProfile.organisation.length === 0 || !isOrgMember); // MOVED: Check direct organisation
+      (!targetOrganisation?.value || (targetOrganisation.value as string[]).length === 0 || !isFieldVisible(targetOrganisation)); // NEW: Check organisation visibility
 
     if (!isCurrentUserProfile && allFieldsPrivate && targetProfile.focus_preference === null) {
       return (
@@ -385,17 +387,17 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetProfile.organisation && targetProfile.organisation.length > 0 && isOrgMember && ( // MOVED: Check direct organisation
+        {targetOrganisation?.value && (targetOrganisation.value as string[]).length > 0 && isFieldVisible(targetOrganisation) && ( // NEW: Check organisation visibility
           <div>
             <h4
               className={cn(
                 "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetProfile.visibility)) // Use overall profile visibility for organisation display
+                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetOrganisation.visibility)) // NEW: Use organisation's specific visibility
               )}
             >
               <Building2 size={16} /> Organisation
             </h4>
-            <p className="text-sm text-foreground mt-1">{targetProfile.organisation.join('; ')}</p>
+            <p className="text-sm text-foreground mt-1">{(targetOrganisation.value as string[]).join('; ')}</p>
           </div>
         )}
 

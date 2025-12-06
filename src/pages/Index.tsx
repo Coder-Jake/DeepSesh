@@ -37,7 +37,7 @@ import { Accordion
 import UpcomingScheduleAccordionItem from "@/components/UpcomingScheduleAccordionItem";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/contexts/Theme/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -304,7 +304,8 @@ const Index = () => {
     setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses, organisation: userOrganisations } = useProfile(); // MOVED: Get userOrganisations from profile context
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses } = useProfile();
+  const userOrganisations = profile?.profile_data?.organisation?.value as string[] || null; // NEW: Get userOrganisations from profile_data
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleProfilePopUp } = useProfilePopUp();
@@ -349,7 +350,7 @@ const Index = () => {
     const stored = localStorage.getItem(LOCAL_STORAGE_NEARBY_OPEN_KEY);
     return stored ? JSON.parse(stored) : false;
   });
-  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] = useState(() => {
+  const [isFriendsSessionsOpen, setIsFriendsSessionsOpen] => useState(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_FRIENDS_OPEN_KEY);
     return stored ? JSON.parse(stored) : false;
   });
@@ -696,10 +697,27 @@ const Index = () => {
   };
 
   const pauseTimer = () => {
-    // This function is now a no-op as per user request to remove pause functionality.
-    // All 'pause' actions should now lead to a 'stop'.
-    console.log("pauseTimer called, but pause functionality is removed. Calling stopTimer instead.");
-    stopTimer(true, false);
+    // This function is now effectively a 'start' for a pending schedule or a 'continue' for a manual transition
+    // playSound(); // Removed
+    // triggerVibration(); // Removed
+    setIsRunning(true);
+    if (isScheduleActive && isSchedulePending) {
+      setIsSchedulePending(false);
+      setCurrentPhaseStartTime(Date.now());
+      if (areToastsEnabled) {
+        toast.success("Schedule Resumed!", {
+          description: `"${activeScheduleDisplayTitle}" has resumed.`,
+        });
+      }
+    } else if (currentPhaseStartTime === null) {
+      setCurrentPhaseStartTime(Date.now());
+      setCurrentPhaseDurationSeconds(timeLeft);
+    } else {
+      // This branch is for when manualTransition is true and timer was stopped (not paused)
+      // It effectively restarts the timer from the remainingTimeAtPause
+      // Removed: setCurrentPhaseStartTime(Date.now() - (currentPhaseDurationSeconds - remainingTimeAtPause) * 1000);
+    }
+    setIsTimeLeftManagedBySession(true);
   };
 
   const resetTimer = async () => {
@@ -947,13 +965,12 @@ const Index = () => {
     let daysToAdd = (templateDay - currentDay + 7) % 7;
     targetDate.setDate(now.getDate() + daysToAdd);
 
-    let totalScheduleDurationSeconds = 0;
-    template.schedule.forEach(item => {
-      totalScheduleDurationSeconds += item.durationMinutes * 60;
-    });
-
     if (targetDate.getTime() < now.getTime()) {
       if (!template.isRecurring) {
+        let totalScheduleDurationSeconds = 0;
+        template.schedule.forEach(item => {
+          totalScheduleDurationSeconds += item.durationMinutes * 60;
+        });
         const elapsedSecondsSinceScheduledStart = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
         if (elapsedSecondsSinceScheduledStart >= totalScheduleDurationSeconds) {
           return Number.POSITIVE_INFINITY;
@@ -1049,7 +1066,7 @@ const Index = () => {
       console.error("Failed to copy link:", err);
       if (areToastsEnabled) {
         toast.error("Failed to Copy Link", {
-          description: "Please try again or copy manually.",
+          description: "Could not copy link. Please try again or copy manually.",
         });
       }
     }

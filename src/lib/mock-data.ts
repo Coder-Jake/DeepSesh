@@ -24,7 +24,7 @@ const getDefaultProfileDataJsonb = (): ProfileDataJsonb => ({
   can_help_with: getDefaultProfileDataField(null, ['public']),
   need_help_with: getDefaultProfileDataField(null, ['public']),
   pronouns: getDefaultProfileDataField(null, ['public']),
-  // REMOVED: organisation: getDefaultProfileDataField([], ['public']), // Default for organisation
+  organisation: getDefaultProfileDataField([], ['public']), // NEW: Default for organisation
 });
 
 export const MOCK_PROFILES: Profile[] = [
@@ -35,7 +35,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 20,
     updated_at: new Date().toISOString(),
-    organisation: ["OpenAI"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["OpenAI"], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -45,6 +45,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("AI strategy", ['public']),
       need_help_with: getDefaultProfileDataField("AI safety", ['private']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["OpenAI"], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -54,7 +55,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 10,
     updated_at: new Date().toISOString(),
-    organisation: ["SpaceX"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["SpaceX"], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -64,6 +65,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Rocket engineering", ['public']),
       need_help_with: getDefaultProfileDataField("Mars colonization", ['private']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["SpaceX"], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -73,7 +75,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 60,
     updated_at: new Date().toISOString(),
-    organisation: ["Psychology Dept."], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["Psychology Dept."], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -83,6 +85,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Psychoanalysis", ['friends']),
       need_help_with: getDefaultProfileDataField("Modern neuroscience", ['friends']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Psychology Dept."], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -92,7 +95,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 50,
     updated_at: new Date().toISOString(),
-    organisation: ["Ancient Philosophy Guild"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["Ancient Philosophy Guild"], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -102,6 +105,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Logic", ['organisation']),
       need_help_with: getDefaultProfileDataField("Modern science", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -111,7 +115,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 40,
     updated_at: new Date().toISOString(),
-    organisation: ["Ancient Philosophy Guild"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["Ancient Philosophy Guild"], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -121,6 +125,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Metaphysics", ['organisation']),
       need_help_with: getDefaultProfileDataField("Political theory", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -130,7 +135,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 70,
     updated_at: new Date().toISOString(),
-    organisation: ["Ancient Philosophy Guild"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["Ancient Philosophy Guild"], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -140,6 +145,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Critical thinking", ['organisation']),
       need_help_with: getDefaultProfileDataField("Self-knowledge", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -149,7 +155,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 85,
     updated_at: new Date().toISOString(),
-    organisation: ["DeepSesh", "StartSpace"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["DeepSesh", "StartSpace"], // Organisation is now inside profile_data
     join_code: "DeepSeshJake",
     visibility: ['public'],
     profile_data: {
@@ -159,6 +165,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("building community with attention-respecting algorithms.", ['public']),
       need_help_with: getDefaultProfileDataField("creating a win-win culture among all coworkers", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["DeepSesh", "StartSpace"], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -168,7 +175,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 75,
     updated_at: new Date().toISOString(),
-    organisation: ["Humanistic Psychology"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["Humanistic Psychology"], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -178,6 +185,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Empathy, unconditional positive regard", ['public']),
       need_help_with: getDefaultProfileDataField("Existential philosophy", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Humanistic Psychology"], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -187,7 +195,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 80,
     updated_at: new Date().toISOString(),
-    organisation: ["Humanistic Psychology"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["Humanistic Psychology"], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -197,6 +205,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Motivation theory, peak experiences", ['public']),
       need_help_with: getDefaultProfileDataField("Transpersonal psychology", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
+      organisation: getDefaultProfileDataField(["Humanistic Psychology"], ['public']), // NEW: Organisation inside profile_data
     },
   },
   {
@@ -206,7 +215,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 90,
     updated_at: new Date().toISOString(),
-    organisation: ["Relationship Therapy"], // MOVED: Organisation is now a direct column
+    // REMOVED: organisation: ["Relationship Therapy"], // Organisation is now inside profile_data
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -216,6 +225,7 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Relationship dynamics, infidelity", ['public']),
       need_help_with: getDefaultProfileDataField("Cultural anthropology", ['public']),
       pronouns: getDefaultProfileDataField("She/Her", ['public']),
+      organisation: getDefaultProfileDataField(["Relationship Therapy"], ['public']), // NEW: Organisation inside profile_data
     },
   },
 ];

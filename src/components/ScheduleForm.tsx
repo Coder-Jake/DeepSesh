@@ -53,7 +53,8 @@ const ScheduleForm: React.FC = () => {
   } = useTimer();
 
   const { isDarkMode } = useTheme();
-  const { profile, organisation: userOrganisations } = useProfile(); // MOVED: Get userOrganisations from useProfile
+  const { profile } = useProfile(); // NEW: Get profile from useProfile
+  const userOrganisations = profile?.profile_data?.organisation?.value as string[] || []; // NEW: Get userOrganisations from profile_data
 
   // Local state for scheduleTitle, initialized from context or default
   const [scheduleTitle, setScheduleTitle] = useState(contextScheduleTitle || getDefaultSeshTitle());
