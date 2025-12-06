@@ -1992,4 +1992,4 @@ export const useTimer = () => {
     throw new Error('useTimer must be used within a TimerProvider');
   }
   return context;
-;
+};
