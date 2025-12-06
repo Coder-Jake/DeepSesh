@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { Globe, UserStar, Building2, HeartHandshake, Lock } from 'lucide-react'; // NEW: Import Lucide icons
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -33,6 +34,18 @@ export const getIndexFromVisibility = (visibility: ('public' | 'friends' | 'orga
 export const getPrivacyColorClassFromIndex = (index: number): string => {
   const labelColors = ["text-green-700", "text-blue-500", "text-red-500", "text-purple-500", "text-gray-500"];
   return labelColors[index % labelColors.length];
+};
+
+// NEW: Helper function to get the appropriate privacy icon based on index
+export const getPrivacyIcon = (index: number) => {
+  switch (index) {
+    case 0: return Globe;
+    case 1: return UserStar;
+    case 2: return Building2;
+    case 3: return HeartHandshake;
+    case 4: return Lock;
+    default: return Globe;
+  }
 };
 
 // NEW: Helper function to calculate dynamic focusPreference gradient colors

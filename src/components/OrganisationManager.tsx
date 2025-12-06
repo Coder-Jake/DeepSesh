@@ -4,7 +4,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, Info } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, Info, Check, X, Edit } from 'lucide-react'; // MODIFIED: Import Check, X, Edit
 import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex } from '@/lib/utils';
 import { OrganisationEntry } from '@/contexts/ProfileContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';

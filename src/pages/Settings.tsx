@@ -473,7 +473,7 @@ const Settings = () => {
 
   const handleGlobalSessionVisibilityToggle = () => {
     const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
-    if (profile?.profile_data?.organisation?.value && (profile.profile_data.organisation.value as string[]).length > 0) {
+    if (profile?.profile_data?.organisation && profile.profile_data.organisation.length > 0) { // MODIFIED: Access organisation directly
       modes.push('organisation');
     }
     const currentIndex = modes.indexOf(sessionVisibility);

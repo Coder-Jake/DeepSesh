@@ -17,13 +17,13 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Linkedin, Clipboard, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, Globe, UserStar, Building2, HeartHandshake, Lock, MessageSquare, Lightbulb } from "lucide-react";
+import { Linkedin, Clipboard, Users, UserMinus, HelpCircle, Handshake, ChevronDown, ChevronUp, MessageSquare, Lightbulb } from "lucide-react"; // MODIFIED: Removed Globe, UserStar, Building2, HeartHandshake, Lock
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from "@/lib/utils";
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor, getPrivacyIcon } from "@/lib/utils"; // MODIFIED: Import getPrivacyIcon
 import { useTimer } from "@/contexts/TimerContext";
 import { useProfilePopUp } from "@/contexts/ProfilePopUpContext";
-import { ProfileUpdate, ProfileDataJsonb, Profile as ProfileType, ProfileDataField, OrganisationEntry } from '@/contexts/ProfileContext'; // MODIFIED: Import OrganisationEntry
-import OrganisationManager from '@/components/OrganisationManager'; // NEW: Import OrganisationManager
+import { ProfileUpdate, ProfileDataJsonb, Profile as ProfileType, ProfileDataField, OrganisationEntry } from '@/contexts/ProfileContext';
+import OrganisationManager from '@/components/OrganisationManager';
 
 const PRONOUN_OPTIONS = ["", "They/Them", "She/Her", "He/Him"];
 
@@ -35,7 +35,7 @@ type OriginalValuesType = {
   canHelpWith: string;
   needHelpWith: string;
   focusPreference: number;
-  organisation: OrganisationEntry[]; // MODIFIED: Organisation is now OrganisationEntry[]
+  organisation: OrganisationEntry[];
   linkedinUrl: string;
   joinCode: string;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -53,8 +53,8 @@ const Profile = () => {
     friendStatuses,
     joinCode: contextJoinCode,
     profileVisibility: contextProfileVisibility,
-    organisation: contextOrganisation, // MODIFIED: Get organisation as OrganisationEntry[]
-    setOrganisation: setContextOrganisation, // MODIFIED: Get setter for OrganisationEntry[]
+    organisation: contextOrganisation,
+    setOrganisation: setContextOrganisation,
   } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -68,7 +68,7 @@ const Profile = () => {
   const [canHelpWithInput, setCanHelpWithInput] = useState<string | null>(null);
   const [needHelpWithInput, setNeedHelpWithInput] = useState<string | null>(null);
   const [focusPreferenceInput, setFocusPreferenceInput] = useState(50);
-  const [organisationInput, setOrganisationInput] = useState<OrganisationEntry[]>([]); // MODIFIED: Organisation is now OrganisationEntry[]
+  const [organisationInput, setOrganisationInput] = useState<OrganisationEntry[]>([]);
   const [linkedinUrlInput, setLinkedinUrlInput] = useState<string | null>(null);
   const [joinCodeInput, setJoinCodeInput] = useState<string | null>(null);
   const [pronounsInput, setPronounsInput] = useState<string | null>(null);
@@ -209,7 +209,7 @@ const Profile = () => {
     }
   }, []);
 
-  const handleLongPressStart = (callback: () => void) => {
+  const handleLongPressStart = (callback: () => void) => { // MODIFIED: Renamed from handlePressStart
     isLongPress.current = false;
     longPressRef.current = setTimeout(() => {
       isLongPress.current = true;
@@ -296,7 +296,7 @@ const Profile = () => {
         canHelpWith: profile.profile_data?.can_help_with?.value as string || "",
         needHelpWith: profile.profile_data?.need_help_with?.value as string || "",
         focusPreference: profile.focus_preference || 50,
-        organisation: profile.profile_data?.organisation || [], // MODIFIED: Get organisation as OrganisationEntry[]
+        organisation: profile.profile_data?.organisation || [],
         linkedinUrl: currentLinkedinUsername,
         joinCode: profile.join_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
@@ -314,7 +314,7 @@ const Profile = () => {
       setCanHelpWithInput(profile.profile_data?.can_help_with?.value as string || null);
       setNeedHelpWithInput(profile.profile_data?.need_help_with?.value as string || null);
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganisationInput(profile.profile_data?.organisation || []); // MODIFIED: Set organisation as OrganisationEntry[]
+      setOrganisationInput(profile.profile_data?.organisation || []);
       setLinkedinUrlInput(currentLinkedinUsername === "" ? null : currentLinkedinUsername);
       setJoinCodeInput(profile.join_code);
       setPronounsInput(profile.profile_data?.pronouns?.value as string || null);
@@ -392,7 +392,7 @@ const Profile = () => {
                    (canHelpWithInput || "") !== originalValues.canHelpWith ||
                    (needHelpWithInput || "") !== originalValues.needHelpWith ||
                    focusPreferenceInput !== originalValues.focusPreference ||
-                   organisationValueChanged || // MODIFIED: Check organisation value change
+                   organisationValueChanged ||
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
                    (joinCodeInput || "") !== originalValues.joinCode ||
                    JSON.stringify(bioVisibilityInput) !== JSON.stringify(originalValues.bioVisibility) ||
@@ -471,7 +471,7 @@ const Profile = () => {
       can_help_with: { value: canHelpWithInput?.trim() === "" ? null : canHelpWithInput, visibility: canHelpWithVisibilityInput },
       need_help_with: { value: needHelpWithInput?.trim() === "" ? null : needHelpWithInput, visibility: needHelpWithVisibilityInput },
       pronouns: { value: pronounsInput?.trim() === "" ? null : pronounsInput, visibility: ['public'] },
-      organisation: organisationInput, // MODIFIED: Organisation is now OrganisationEntry[]
+      organisation: organisationInput,
     };
 
     await updateProfile(dataToUpdate);
@@ -505,7 +505,7 @@ const Profile = () => {
       setCanHelpWithInput(originalValues.canHelpWith === "" ? null : originalValues.canHelpWith);
       setNeedHelpWithInput(originalValues.needHelpWith === "" ? null : originalValues.needHelpWith);
       setFocusPreferenceInput(originalValues.focusPreference);
-      setOrganisationInput(originalValues.organisation || []); // MODIFIED: Use OrganisationEntry[]
+      setOrganisationInput(originalValues.organisation || []);
       setLinkedinUrlInput(originalValues.linkedinUrl === "" ? null : originalValues.linkedinUrl);
       setJoinCodeInput(originalValues.joinCode === "" ? null : originalValues.joinCode);
       setPronounsInput(originalValues.pronouns);
@@ -591,16 +591,7 @@ const Profile = () => {
     };
   }, [hasChanges, loading, handleSave]);
 
-  const getPrivacyIcon = (index: number) => {
-    switch (index) {
-      case 0: return Globe;
-      case 1: return UserStar;
-      case 2: return Building2;
-      case 3: return HeartHandshake;
-      case 4: return Lock;
-      default: return Globe;
-    }
-  };
+  // REMOVED: getPrivacyIcon as it's now imported from utils
 
   if (loading) {
     return (
@@ -914,10 +905,10 @@ const Profile = () => {
                   </div>
                   <div
                     className="text-center mt-3 text-sm text-muted-foreground select-none"
-                    onMouseDown={() => handlePressStart(handleFocusPreferenceLongPress)}
+                    onMouseDown={() => handleLongPressStart(handleFocusPreferenceLongPress)} {/* MODIFIED: Changed to handleLongPressStart */}
                     onMouseUp={handleLongPressEnd}
                     onMouseLeave={handleLongPressEnd}
-                    onTouchStart={() => handlePressStart(handleFocusPreferenceLongPress)}
+                    onTouchStart={() => handleLongPressStart(handleFocusPreferenceLongPress)} {/* MODIFIED: Changed to handleLongPressStart */}
                     onTouchEnd={handleLongPressEnd}
                     onClick={() => {
                       if (!isLongPress.current) {

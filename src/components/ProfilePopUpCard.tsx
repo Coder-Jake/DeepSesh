@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus, UserCheck, UserMinus, Handshake, HelpCircle } from 'lucide-react';
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
-import { Profile, ProfileDataJsonb, ProfileDataField, OrganisationEntry } from '@/contexts/ProfileContext'; // MODIFIED: Import OrganisationEntry
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor } from '@/lib/utils';
+import { Profile, ProfileDataJsonb, ProfileDataField, OrganisationEntry } from '@/contexts/ProfileContext';
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor, getPrivacyIcon } from '@/lib/utils'; // MODIFIED: Import getPrivacyIcon
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
 import { useIsMobile } from '@/hooks/use-mobile';

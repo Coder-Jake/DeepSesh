@@ -89,7 +89,7 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
               <span className="ml-auto text-sm text-muted-foreground">Open to all</span>
             </Button>
 
-            {userOrganisations && userOrganisations.length > 0 && ( // MOVED: Check userOrganisations directly
+            {userOrganisations && userOrganisations.length > 0 && (
               <Button
                 variant="outline"
                 className={cn(
