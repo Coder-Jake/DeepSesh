@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { verify } from 'https://deno.land/x/djwt@v2.8/mod.ts';
 
 const corsHeaders = {
@@ -16,6 +16,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
+    console.log('UPDATE_SESSION_DATA_EDGE_FUNCTION: Received Authorization header:', authHeader ? authHeader.substring(0, 30) + '...' : 'None'); // Log partial header
     if (!authHeader) {
       console.error('UPDATE_SESSION_DATA_EDGE_FUNCTION: Error: Missing Authorization header. Status: 401');
       return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
@@ -25,7 +26,9 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('UPDATE_SESSION_DATA_EDGE_FUNCTION: Extracted token (first 30 chars):', token.substring(0, 30) + '...'); // Log partial token
     const jwtSecret = Deno.env.get('JWT_SECRET');
+    console.log('UPDATE_SESSION_DATA_EDGE_FUNCTION: JWT_SECRET is set:', !!jwtSecret); // Log if secret is present
     if (!jwtSecret) {
       console.error('UPDATE_SESSION_DATA_EDGE_FUNCTION: Error: JWT_SECRET is not set.');
       throw new Error('JWT_SECRET is not set in environment variables.');
