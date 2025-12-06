@@ -253,6 +253,10 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     const loadProfile = async () => {
       setLoading(true);
       const storedProfile = localStorage.getItem(LOCAL_STORAGE_PROFILE_KEY);
+      const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
+      const storedBlockedUsers = localStorage.getItem(LOCAL_STORAGE_BLOCKED_USERS_KEY);
+      const storedRecentCoworkers = localStorage.getItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY);
+
       let currentFriendStatuses: Record<string, 'friends' | 'pending' | 'none'> = storedFriendStatuses ? JSON.parse(storedFriendStatuses) : {};
       let currentBlockedUsers: string[] = storedBlockedUsers ? JSON.parse(storedBlockedUsers) : [];
       let currentRecentCoworkers: string[] = storedRecentCoworkers ? JSON.parse(storedRecentCoworkers) : [];
@@ -286,14 +290,16 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
         // Ensure each sub-field of profile_data has value and visibility
         for (const key in defaultedProfileData) {
           if (defaultedProfileData.hasOwnProperty(key)) {
-            const field = defaultedProfileData[key as keyof ProfileDataJsonb];
             if (key === 'organisation') { // MODIFIED: Handle organisation specifically
-              defaultedProfileData.organisation = Array.isArray(field) ? field : [];
-            } else if (field && typeof field === 'object' && !Array.isArray(field)) { // Ensure it's a ProfileDataField
-              defaultedProfileData[key as keyof ProfileDataJsonb] = {
-                value: (field as ProfileDataField).value !== undefined ? (field as ProfileDataField).value : getDefaultProfileDataJsonb()[key as keyof ProfileDataJsonb].value,
-                visibility: (field as ProfileDataField).visibility || getDefaultProfileDataJsonb()[key as keyof ProfileDataJsonb].visibility,
-              } as ProfileDataField;
+              defaultedProfileData.organisation = Array.isArray(defaultedProfileData.organisation) ? defaultedProfileData.organisation : [];
+            } else {
+              const field = defaultedProfileData[key as keyof ProfileDataJsonb];
+              if (field && typeof field === 'object' && !Array.isArray(field)) { // Ensure it's a ProfileDataField
+                defaultedProfileData[key as keyof ProfileDataJsonb] = {
+                  value: (field as ProfileDataField).value !== undefined ? (field as ProfileDataField).value : getDefaultProfileDataJsonb()[key as keyof ProfileDataJsonb].value,
+                  visibility: (field as ProfileDataField).visibility || getDefaultProfileDataJsonb()[key as keyof ProfileDataJsonb].visibility,
+                } as ProfileDataField;
+              }
             }
           }
         }
@@ -334,10 +340,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
 
       setLoading(false);
     };
-
-    const storedFriendStatuses = localStorage.getItem(LOCAL_STORAGE_FRIEND_STATUSES_KEY);
-    const storedBlockedUsers = localStorage.getItem(LOCAL_STORAGE_BLOCKED_USERS_KEY);
-    const storedRecentCoworkers = localStorage.getItem(LOCAL_STORAGE_RECENT_COWORKERS_KEY);
 
     loadProfile();
 
