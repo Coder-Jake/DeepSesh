@@ -295,6 +295,7 @@ const Index = () => {
     resetSessionStates,
     showDemoSessions,
     currentPhaseDurationSeconds,
+    setCurrentPhaseDurationSeconds, // ADDED: setCurrentPhaseDurationSeconds
     // Removed: remainingTimeAtPause,
     limitDiscoveryRadius,
     maxDistance,
@@ -2146,7 +2147,7 @@ const Index = () => {
                   <div className="text-center mt-3 text-sm text-muted-foreground select-none">
                     {focusPreference <= 20 && "Looking to collaborate/brainstorm"}
                     {focusPreference > 20 && focusPreference <= 40 && "Happy to chat while we work"}
-                    {focusPreference > 40 && focusPreference <= 60 && "I don't mind"}
+                    {focusPreference > 40 && focusPreference > 60 && "I don't mind"}
                     {focusPreference > 60 && focusPreference <= 80 && "Socialise only during breaks"}
                     {focusPreference > 80 && "Minimal interaction even during breaks"}
                   </div>
