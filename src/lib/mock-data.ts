@@ -24,7 +24,7 @@ const getDefaultProfileDataJsonb = (): ProfileDataJsonb => ({
   can_help_with: getDefaultProfileDataField(null, ['public']),
   need_help_with: getDefaultProfileDataField(null, ['public']),
   pronouns: getDefaultProfileDataField(null, ['public']),
-  organisation: getDefaultProfileDataField([], ['public']), // NEW: Default for organisation
+  // REMOVED: organisation: getDefaultProfileDataField([], ['public']), // Default for organisation
 });
 
 export const MOCK_PROFILES: Profile[] = [
@@ -35,7 +35,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 20,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["OpenAI"],
+    organisation: ["OpenAI"], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -45,7 +45,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("AI strategy", ['public']),
       need_help_with: getDefaultProfileDataField("AI safety", ['private']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["OpenAI"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -55,7 +54,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 10,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["SpaceX"],
+    organisation: ["SpaceX"], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -65,7 +64,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Rocket engineering", ['public']),
       need_help_with: getDefaultProfileDataField("Mars colonization", ['private']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["SpaceX"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -75,7 +73,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 60,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["Psychology Dept."],
+    organisation: ["Psychology Dept."], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -85,7 +83,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Psychoanalysis", ['friends']),
       need_help_with: getDefaultProfileDataField("Modern neuroscience", ['friends']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["Psychology Dept."], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -95,7 +92,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 50,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["Ancient Philosophy Guild"],
+    organisation: ["Ancient Philosophy Guild"], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -105,7 +102,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Logic", ['organisation']),
       need_help_with: getDefaultProfileDataField("Modern science", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['organisation']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -115,7 +111,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 40,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["Ancient Philosophy Guild"],
+    organisation: ["Ancient Philosophy Guild"], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -125,7 +121,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Metaphysics", ['organisation']),
       need_help_with: getDefaultProfileDataField("Political theory", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['organisation']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -135,7 +130,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 70,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["Ancient Philosophy Guild"],
+    organisation: ["Ancient Philosophy Guild"], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['organisation'],
     profile_data: {
@@ -145,7 +140,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Critical thinking", ['organisation']),
       need_help_with: getDefaultProfileDataField("Self-knowledge", ['organisation']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["Ancient Philosophy Guild"], ['organisation']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -155,7 +149,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 85,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["DeepSesh", "StartSpace"],
+    organisation: ["DeepSesh", "StartSpace"], // MOVED: Organisation is now a direct column
     join_code: "DeepSeshJake",
     visibility: ['public'],
     profile_data: {
@@ -165,7 +159,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("building community with attention-respecting algorithms.", ['public']),
       need_help_with: getDefaultProfileDataField("creating a win-win culture among all coworkers", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["DeepSesh", "StartSpace"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -175,7 +168,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 75,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["Humanistic Psychology"],
+    organisation: ["Humanistic Psychology"], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -185,7 +178,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Empathy, unconditional positive regard", ['public']),
       need_help_with: getDefaultProfileDataField("Existential philosophy", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["Humanistic Psychology"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -195,7 +187,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 80,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["Humanistic Psychology"],
+    organisation: ["Humanistic Psychology"], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -205,7 +197,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Motivation theory, peak experiences", ['public']),
       need_help_with: getDefaultProfileDataField("Transpersonal psychology", ['public']),
       pronouns: getDefaultProfileDataField("He/Him", ['public']),
-      organisation: getDefaultProfileDataField(["Humanistic Psychology"], ['public']), // NEW: Organisation as ProfileDataField
     },
   },
   {
@@ -215,7 +206,7 @@ export const MOCK_PROFILES: Profile[] = [
     avatar_url: null,
     focus_preference: 90,
     updated_at: new Date().toISOString(),
-    // REMOVED: organisation: ["Relationship Therapy"],
+    organisation: ["Relationship Therapy"], // MOVED: Organisation is now a direct column
     join_code: generateRandomJoinCode(),
     visibility: ['public'],
     profile_data: {
@@ -225,84 +216,6 @@ export const MOCK_PROFILES: Profile[] = [
       can_help_with: getDefaultProfileDataField("Relationship dynamics, infidelity", ['public']),
       need_help_with: getDefaultProfileDataField("Cultural anthropology", ['public']),
       pronouns: getDefaultProfileDataField("She/Her", ['public']),
-      organisation: getDefaultProfileDataField(["Relationship Therapy"], ['public']), // NEW: Organisation as ProfileDataField
     },
-  },
-];
-
-// Helper to find a mock profile by first name
-const findMockProfile = (firstName: string): Profile | undefined => {
-  return MOCK_PROFILES.find(p => p.first_name === firstName);
-};
-
-// Helper to create a ParticipantSessionData from a mock profile
-const createParticipantData = (profile: Profile, role: 'host' | 'coworker'): ParticipantSessionData => ({
-  userId: profile.id,
-  userName: profile.first_name || "Unknown",
-  joinTime: Date.now(),
-  role: role,
-  focusPreference: profile.focus_preference || 50,
-  intention: profile.profile_data?.intention?.value as string || null,
-  bio: profile.profile_data?.bio?.value as string || null,
-});
-
-// Define mock sessions
-const altman = findMockProfile("Sam Altman");
-const musk = findMockProfile("Musk");
-const freud = findMockProfile("Freud");
-const rogers = findMockProfile("Rogers");
-const jake = findMockProfile("Jake");
-
-export const MOCK_SESSIONS: DemoSession[] = [
-  {
-    id: crypto.randomUUID(), // Use crypto.randomUUID()
-    title: "Deep Work @ StartSpace",
-    startTime: Date.now() - 30 * 60 * 1000, // Started 30 minutes ago
-    location: "StartSpace, Melbourne",
-    workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "A quiet corner for focused work.",
-    participants: [
-      altman ? createParticipantData(altman, 'host') : { userId: "mock-altman", userName: "Sam Altman", joinTime: Date.now(), role: 'host', focusPreference: 20 },
-      musk ? createParticipantData(musk, 'coworker') : { userId: "mock-musk", userName: "Musk", joinTime: Date.now(), role: 'coworker', focusPreference: 10 },
-    ],
-    location_lat: -37.8136, // Melbourne latitude
-    location_long: 144.9631, // Melbourne longitude
-    visibility: 'public',
-    fullSchedule: [
-      { id: crypto.randomUUID(), title: "Deep Focus", type: "focus", durationMinutes: 45 },
-      { id: crypto.randomUUID(), title: "Quick Break", type: "break", durationMinutes: 15 },
-      { id: crypto.randomUUID(), title: "Coding Sprint", type: "focus", durationMinutes: 60 },
-    ],
-    user_id: altman?.id || "mock-altman",
-    join_code: "StartSpaceDeep",
-    organisation: ["StartSpace", "OpenAI", "SpaceX"],
-    host_notes: "Working on a new AI model. Feel free to join for a focused session!",
-    is_mock: true,
-  },
-  {
-    id: crypto.randomUUID(), // Use crypto.randomUUID()
-    title: "Psych101 Study Sesh",
-    startTime: Date.now() - 15 * 60 * 1000, // Started 15 minutes ago
-    location: "University Library, Level 3",
-    workspaceImage: "/api/placeholder/200/120",
-    workspaceDescription: "Reviewing theories of personality.",
-    participants: [
-      freud ? createParticipantData(freud, 'host') : { userId: "mock-freud", userName: "Freud", joinTime: Date.now(), role: 'host', focusPreference: 60 },
-      rogers ? createParticipantData(rogers, 'coworker') : { userId: "mock-rogers", userName: "Rogers", joinTime: Date.now(), role: 'coworker', focusPreference: 75 },
-      jake ? createParticipantData(jake, 'coworker') : { userId: "mock-jake", userName: "Jake", joinTime: Date.now(), role: 'coworker', focusPreference: 85 },
-    ],
-    location_lat: -37.7965, // University of Melbourne latitude
-    location_long: 144.9613, // University of Melbourne longitude
-    visibility: 'private',
-    fullSchedule: [
-      { id: crypto.randomUUID(), title: "Reading Chapter 5", type: "focus", durationMinutes: 60 },
-      { id: crypto.randomUUID(), title: "Concept Discussion", type: "break", durationMinutes: 20 },
-      { id: crypto.randomUUID(), title: "Essay Outline", type: "focus", durationMinutes: 90 },
-    ],
-    user_id: freud?.id || "mock-freud",
-    join_code: "PsychStudy",
-    organisation: ["Psychology Dept.", "Humanistic Psychology", "DeepSesh"],
-    host_notes: "Reviewing classic psychological theories. Quiet study preferred.",
-    is_mock: true,
   },
 ];

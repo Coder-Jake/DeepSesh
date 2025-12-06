@@ -71,7 +71,7 @@ interface SupabaseSessionData {
   visibility: 'public' | 'friends' | 'organisation' | 'private';
   participants_data: ParticipantSessionData[];
   join_code: string | null;
-  organisation: string[] | null; // MODIFIED: Changed to string[] | null
+  organisation: string[] | null; // MOVED: Changed to string[] | null
   host_notes: string | null;
   is_mock: boolean;
 }
@@ -84,7 +84,7 @@ const fetchSupabaseSessions = async (
   limitDiscoveryRadius: boolean,
   maxDistance: number,
   showDemoSessions: boolean,
-  userOrganisations: string[] // NEW: Pass userOrganisations
+  userOrganisations: string[] | null // MOVED: Pass userOrganisations
 ): Promise<DemoSession[]> => {
   if (!userId) {
     console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
@@ -93,7 +93,7 @@ const fetchSupabaseSessions = async (
 
   const { data, error } = await supabase
     .from('active_sessions')
-    .select('*, profiles(profile_data)'); // MODIFIED: Select profile_data instead of organisation
+    .select('*'); // MOVED: Select all directly, organisation is a direct column
 
   if (error) {
     console.error("Error fetching active sessions from Supabase:", error);
@@ -102,7 +102,7 @@ const fetchSupabaseSessions = async (
 
   console.log("fetchSupabaseSessions: Raw data from Supabase:", data); // Log raw data
 
-  return data.map((session: SupabaseSessionData & { profiles: { profile_data: { organisation: { value: string[] | null } } | null } | null }) => { // NEW: Type for profiles
+  return data.map((session: SupabaseSessionData) => { // NEW: Type for profiles
     const rawParticipantsData = (session.participants_data || []) as ParticipantSessionData[];
     const participants: ParticipantSessionData[] = rawParticipantsData.map(p => ({
       userId: p.userId,
@@ -304,7 +304,7 @@ const Index = () => {
     setSelectedHostingOrganisation, // NEW: Get setSelectedHostingOrganisation
   } = useTimer();
 
-  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses, organisationValue: userOrganisations } = useProfile(); // MODIFIED: Get userOrganisations from profile context
+  const { profile, loading: profileLoading, localFirstName, getPublicProfile, joinCode, setLocalFirstName, focusPreference, setFocusPreference, updateProfile, profileVisibility, friendStatuses, organisation: userOrganisations } = useProfile(); // MOVED: Get userOrganisations from profile context
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleProfilePopUp } = useProfilePopUp();
@@ -378,7 +378,7 @@ const Index = () => {
 
   const handleSessionVisibilityToggle = useCallback(() => {
     const modes: ('public' | 'private' | 'organisation')[] = ['public', 'private'];
-    if (userOrganisations && userOrganisations.length > 0) { // MODIFIED: Check userOrganisations
+    if (userOrganisations && userOrganisations.length > 0) { // MOVED: Check userOrganisations
       modes.push('organisation');
     }
     const currentIndex = modes.indexOf(sessionVisibility);
@@ -390,7 +390,7 @@ const Index = () => {
         description: `Your sessions are now ${newVisibility}.`,
       });
     }
-  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, userOrganisations]); // MODIFIED: userOrganisations
+  }, [setSessionVisibility, sessionVisibility, areToastsEnabled, userOrganisations]); // MOVED: userOrganisations
 
   const mockProfiles = MOCK_PROFILES;
   const isLoadingMockProfiles = false;
@@ -410,17 +410,17 @@ const Index = () => {
   }, [isDiscoveryActivated, showSessionsWhileActive]);
 
   const shouldShowOrganisationSessions = useMemo(() => {
-    const result = isDiscoveryActivated && userOrganisations && userOrganisations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MODIFIED: Check userOrganisations
-    console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisations:", userOrganisations, "sessionVisibility:", sessionVisibility); // MODIFIED: userOrganisations
+    const result = isDiscoveryActivated && userOrganisations && userOrganisations.length > 0 && (sessionVisibility === 'organisation' || showSessionsWhileActive === 'all'); // MOVED: Check userOrganisations
+    console.log("shouldShowOrganisationSessions (memo):", result, "isDiscoveryActivated:", isDiscoveryActivated, "userOrganisations:", userOrganisations, "sessionVisibility:", sessionVisibility); // MOVED: userOrganisations
     return result;
   }, [userOrganisations, isDiscoveryActivated, sessionVisibility, showSessionsWhileActive]);
 
 
   const { data: supabaseActiveSessions, isLoading: isLoadingSupabaseSessions, error: supabaseError } = useQuery<DemoSession[]>({
-    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisations], // NEW: Add userOrganisations to queryKey
+    queryKey: ['supabaseActiveSessions', user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisations], // MOVED: Add userOrganisations to queryKey
     queryFn: async () => {
       try {
-        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisations); // NEW: Pass userOrganisations
+        return await fetchSupabaseSessions(user?.id, userLocation.latitude, userLocation.longitude, limitDiscoveryRadius, maxDistance, showDemoSessions, userOrganisations); // MOVED: Pass userOrganisations
       } catch (err: any) {
         console.error("Error fetching active sessions from Supabase:", err.message);
         if (areToastsEnabled) {
@@ -648,7 +648,7 @@ const Index = () => {
             location_long: longitude,
             participants_data: [hostParticipant],
             join_code: joinCode,
-            organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MODIFIED: Use selectedHostingOrganisation as an array
+            organisation: selectedHostingOrganisation ? [selectedHostingOrganisation] : null, // MOVED: Use selectedHostingOrganisation as an array
             host_notes: hostNotes,
             is_mock: false, // NEW: Set is_mock to false for user-created sessions
           })
@@ -978,7 +978,7 @@ const Index = () => {
     }
 
     return targetDate.getTime();
-  }, []);
+  }, [commenceTime, commenceDay, scheduleStartOption]);
 
   const sortedPreparedSchedules = useMemo(() => {
     const now = new Date();
@@ -1141,7 +1141,7 @@ const Index = () => {
     console.log("  sessionVisibility:", sessionVisibility);
     console.log("  showSessionsWhileActive:", showSessionsWhileActive);
     console.log("  profile?.id:", profile?.id);
-    console.log("  userOrganisations:", userOrganisations); // MODIFIED: userOrganisations
+    console.log("  userOrganisations:", userOrganisations); // MOVED: userOrganisations
     console.log("  allSessions (from Supabase):", allSessions);
     console.log("  nearbySessions (memo):", nearbySessions);
     console.log("  friendsSessions (memo):", friendsSessions);
@@ -1149,7 +1149,7 @@ const Index = () => {
     console.groupEnd();
   }, [
     showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
-    sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisations, // MODIFIED: userOrganisations
+    sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisations, // MOVED: userOrganisations
     allSessions,
     shouldShowNearbySessions, nearbySessions.length,
     shouldShowFriendsSessions, friendsSessions.length,

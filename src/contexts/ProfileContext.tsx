@@ -8,7 +8,7 @@ import { Session } from '@supabase/supabase-js'; // Import Session
 
 // Define the structure for a single field within profile_data
 export type ProfileDataField = {
-  value: string | string[] | null; // MODIFIED: value can now be string or string[]
+  value: string | string[] | null;
   visibility: ("public" | "friends" | "organisation" | "private")[];
 };
 
@@ -20,16 +20,15 @@ export type ProfileDataJsonb = {
   can_help_with: ProfileDataField;
   need_help_with: ProfileDataField;
   pronouns: ProfileDataField;
-  organisation: ProfileDataField; // NEW: Organisation is now part of profile_data
+  // REMOVED: organisation: ProfileDataField; // Organisation is now a direct column
 };
 
 // Define the main Profile type reflecting the database schema
 export type Profile = {
   avatar_url: string | null;
   first_name: string | null;
-  id: string;
   last_name: string | null;
-  // REMOVED: organisation: string[] | null; // Organisation is now inside profile_data
+  organisation: string[] | null; // MOVED: Organisation is now a direct column
   focus_preference: number | null;
   updated_at: string | null;
   join_code: string | null;
@@ -46,7 +45,7 @@ export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'updated_at' | 'profile
   can_help_with?: ProfileDataField;
   need_help_with?: ProfileDataField;
   pronouns?: ProfileDataField;
-  organisation?: ProfileDataField; // NEW: Allow updating organisation as a ProfileDataField
+  // REMOVED: organisation?: ProfileDataField; // Organisation is now a direct column
 };
 
 // ProfileInsert type: for creating a new profile (used internally for default creation)
@@ -57,7 +56,7 @@ export type ProfileInsert = {
   focus_preference: number | null;
   join_code: string | null;
   profile_data: ProfileDataJsonb;
-  // REMOVED: organisation?: string[] | null; // Organisation is now inside profile_data
+  organisation?: string[] | null; // MOVED: Organisation is now a direct column
   avatar_url?: string | null;
   visibility: ("public" | "friends" | "organisation" | "private")[];
 };
@@ -84,7 +83,7 @@ const getDefaultProfileDataJsonb = (): ProfileDataJsonb => ({
   can_help_with: getDefaultProfileDataField(null, ['public']),
   need_help_with: getDefaultProfileDataField(null, ['public']),
   pronouns: getDefaultProfileDataField(null, ['public']),
-  organisation: getDefaultProfileDataField([], ['public']), // NEW: Default for organisation
+  // REMOVED: organisation: getDefaultProfileDataField([], ['public']), // Default for organisation
 });
 
 interface ProfileContextType {
@@ -105,10 +104,8 @@ interface ProfileContextType {
   setNeedHelpWith: React.Dispatch<React.SetStateAction<string | null>>;
   focusPreference: number;
   setFocusPreference: React.Dispatch<React.SetStateAction<number>>;
-  organisationValue: string[] | null; // MODIFIED: Renamed to organisationValue
-  setOrganisationValue: React.Dispatch<React.SetStateAction<string[] | null>>; // MODIFIED: Renamed
-  organisationVisibility: ("public" | "friends" | "organisation" | "private")[]; // NEW: Organisation visibility
-  setOrganisationVisibility: React.Dispatch<React.SetStateAction<("public" | "friends" | "organisation" | "private")[]>>; // NEW: Setter
+  organisation: string[] | null; // MOVED: Organisation is now a direct column
+  setOrganisation: React.Dispatch<React.SetStateAction<string[] | null>>; // MOVED: Setter
   linkedinUrl: string | null;
   setLinkedinUrl: React.Dispatch<React.SetStateAction<string | null>>;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -161,8 +158,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   const [canHelpWith, setCanHelpWith] = useState<string | null>(null);
   const [needHelpWith, setNeedHelpWith] = useState<string | null>(null);
   const [focusPreference, setFocusPreference] = useState(50);
-  const [organisationValue, setOrganisationValue] = useState<string[] | null>(null); // MODIFIED: Renamed
-  const [organisationVisibility, setOrganisationVisibility] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']); // NEW: Organisation visibility
+  const [organisation, setOrganisation] = useState<string[] | null>(null); // MOVED: Organisation is now a direct column
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [pronouns, setPronouns] = useState<string | null>(null);
@@ -197,7 +193,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       ...profile,
       profile_data: profile.profile_data || getDefaultProfileDataJsonb(),
       visibility: profile.visibility || ['public'],
-      // REMOVED: organisation: profile.organisation || [], // Organisation is now inside profile_data
+      organisation: profile.organisation || [], // MOVED: Organisation is now a direct column
     };
 
     // Explicitly remove any 'onboarding_complete' property if it somehow exists
@@ -297,7 +293,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...restOfParsedProfile, // Use restOfParsedProfile
           profile_data: defaultedProfileData,
           visibility: restOfParsedProfile.visibility || ['public'],
-          // REMOVED: organisation: restOfParsedProfile.organisation || [], // Organisation is now inside profile_data
+          organisation: restOfParsedProfile.organisation || [], // MOVED: Organisation is now a direct column
         };
         if (isMounted) {
           setProfile(defaultedProfile);
@@ -313,6 +309,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
             join_code: generateRandomJoinCode(),
             profile_data: defaultProfileData,
             visibility: ['public'],
+            organisation: [], // MOVED: Organisation is now a direct column
           };
           if (isMounted) {
             setProfile(defaultProfile);
@@ -363,8 +360,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setNeedHelpWith(pd.need_help_with?.value as string || null);
       setNeedHelpWithVisibility(pd.need_help_with?.visibility || ['public']);
       setPronouns(pd.pronouns?.value as string || null);
-      setOrganisationValue(pd.organisation?.value as string[] || null); // NEW: Set organisationValue
-      setOrganisationVisibility(pd.organisation?.visibility || ['public']); // NEW: Set organisationVisibility
+      setOrganisation(profile.organisation || null); // MOVED: Set organisation directly
     } else {
       setLocalFirstName("Loading...");
       setFocusPreference(50);
@@ -381,8 +377,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       setNeedHelpWith(null);
       setNeedHelpWithVisibility(['public']);
       setPronouns(null);
-      setOrganisationValue(null); // NEW: Reset organisationValue
-      setOrganisationVisibility(['public']); // NEW: Reset organisationVisibility
+      setOrganisation(null); // MOVED: Reset organisation directly
     }
   }, [profile]);
 
@@ -418,12 +413,12 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       return;
     }
 
-    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'] } as Profile;
+    const currentProfile = profile || { id: user.id, first_name: null, focus_preference: 50, join_code: generateRandomJoinCode(), profile_data: getDefaultProfileDataJsonb(), visibility: ['public'], organisation: [] } as Profile;
 
     const updatedProfileData: ProfileDataJsonb = { ...currentProfile.profile_data };
 
     // Filter out onboarding_complete from updates before applying to profile_data
-    const { onboarding_complete, ...restOfUpdates } = updates as any; // Cast to any to allow destructuring non-existent prop
+    const { onboarding_complete, organisation: updatedOrganisation, ...restOfUpdates } = updates as any; // Cast to any to allow destructuring non-existent prop
 
     if (restOfUpdates.bio !== undefined) updatedProfileData.bio = restOfUpdates.bio;
     if (restOfUpdates.intention !== undefined) updatedProfileData.intention = restOfUpdates.intention;
@@ -431,7 +426,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     if (restOfUpdates.can_help_with !== undefined) updatedProfileData.can_help_with = restOfUpdates.can_help_with;
     if (restOfUpdates.need_help_with !== undefined) updatedProfileData.need_help_with = restOfUpdates.need_help_with;
     if (restOfUpdates.pronouns !== undefined) updatedProfileData.pronouns = restOfUpdates.pronouns;
-    if (restOfUpdates.organisation !== undefined) updatedProfileData.organisation = restOfUpdates.organisation; // NEW: Handle organisation update
+    // REMOVED: if (restOfUpdates.organisation !== undefined) updatedProfileData.organisation = restOfUpdates.organisation; // NEW: Handle organisation update
 
     const newProfile: Profile = {
       ...currentProfile,
@@ -440,7 +435,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       updated_at: new Date().toISOString(),
       id: user.id,
       visibility: restOfUpdates.visibility || currentProfile.visibility || ['public'],
-      // REMOVED: organisation: restOfUpdates.organisation || currentProfile.organisation || [], // Organisation is now inside profile_data
+      organisation: updatedOrganisation !== undefined ? updatedOrganisation : currentProfile.organisation || [], // MOVED: Organisation is now a direct column
     };
 
     setProfile(newProfile);
@@ -481,12 +476,12 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
           ...data,
           profile_data: data.profile_data || getDefaultProfileDataJsonb(),
           visibility: data.visibility || ['public'],
-          // REMOVED: organisation: data.organisation || [], // Organisation is now inside profile_data
+          organisation: data.organisation || [], // MOVED: Organisation is now a direct column
         };
-        // Ensure profile_data.organisation is properly defaulted if missing
-        if (!fetchedProfile.profile_data.organisation) {
-          fetchedProfile.profile_data.organisation = getDefaultProfileDataJsonb().organisation;
-        }
+        // REMOVED: Ensure profile_data.organisation is properly defaulted if missing
+        // if (!fetchedProfile.profile_data.organisation) {
+        //   fetchedProfile.profile_data.organisation = getDefaultProfileDataJsonb().organisation;
+        // }
         return fetchedProfile;
       }
     } catch (error: any) {
@@ -499,7 +494,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
       first_name: userName,
       last_name: null,
       avatar_url: null,
-      // REMOVED: organisation: [], // Organisation is now inside profile_data
+      organisation: [], // MOVED: Organisation is now a direct column
       focus_preference: 50,
       updated_at: new Date().toISOString(),
       join_code: null,
@@ -585,10 +580,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
     setNeedHelpWith,
     focusPreference,
     setFocusPreference,
-    organisationValue, // MODIFIED: Renamed
-    setOrganisationValue, // MODIFIED: Renamed
-    organisationVisibility, // NEW: Organisation visibility
-    setOrganisationVisibility, // NEW: Setter
+    organisation, // MOVED: Organisation is now a direct column
+    setOrganisation, // MOVED: Setter
     linkedinUrl,
     setLinkedinUrl,
     bioVisibility,
@@ -616,7 +609,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, areT
   }), [
     profile, loading, authLoading, updateProfile, localFirstName, setLocalFirstName, joinCode, setJoinCode,
     bio, setBio, intention, setIntention, canHelpWith, setCanHelpWith, needHelpWith, setNeedHelpWith,
-    focusPreference, setFocusPreference, organisationValue, setOrganisationValue, organisationVisibility, setOrganisationVisibility, // NEW: organisationValue and organisationVisibility
+    focusPreference, setFocusPreference, organisation, setOrganisation, // MOVED: organisation
     linkedinUrl, setLinkedinUrl,
     bioVisibility, setBioVisibility, intentionVisibility, setIntentionVisibility, linkedinVisibility, setLinkedinVisibility,
     canHelpWithVisibility, setCanHelpWithVisibility, needHelpWithVisibility, setNeedHelpWithVisibility,

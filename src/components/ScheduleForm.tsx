@@ -53,7 +53,7 @@ const ScheduleForm: React.FC = () => {
   } = useTimer();
 
   const { isDarkMode } = useTheme();
-  const { profile } = useProfile(); // NEW: Get profile from useProfile
+  const { profile, organisation: userOrganisations } = useProfile(); // MOVED: Get userOrganisations from useProfile
 
   // Local state for scheduleTitle, initialized from context or default
   const [scheduleTitle, setScheduleTitle] = useState(contextScheduleTitle || getDefaultSeshTitle());
@@ -65,12 +65,12 @@ const ScheduleForm: React.FC = () => {
 
   // NEW: Sync selectedHostingOrganisation with the first organisation from profile if available
   useEffect(() => {
-    if (profile?.profile_data?.organisation?.value && (profile.profile_data.organisation.value as string[]).length > 0 && !selectedHostingOrganisation) {
-      setSelectedHostingOrganisation((profile.profile_data.organisation.value as string[])[0]);
-    } else if (!profile?.profile_data?.organisation?.value || (profile.profile_data.organisation.value as string[]).length === 0) {
+    if (userOrganisations && userOrganisations.length > 0 && !selectedHostingOrganisation) {
+      setSelectedHostingOrganisation(userOrganisations[0]);
+    } else if (!userOrganisations || userOrganisations.length === 0) {
       setSelectedHostingOrganisation(null);
     }
-  }, [profile?.profile_data?.organisation?.value, selectedHostingOrganisation, setSelectedHostingOrganisation]);
+  }, [userOrganisations, selectedHostingOrganisation, setSelectedHostingOrganisation]);
 
   useEffect(() => {
     if (!commenceTime && scheduleStartOption === 'custom_time') {
@@ -408,9 +408,8 @@ const ScheduleForm: React.FC = () => {
   };
 
   // NEW: Logic for Host as selector
-  const userOrganisations = useMemo(() => profile?.profile_data?.organisation?.value as string[] || [], [profile?.profile_data?.organisation?.value]);
-  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisations.length > 0;
-  const useToggleButton = userOrganisations.length <= 4;
+  const shouldShowOrgSelector = sessionVisibility === 'organisation' && userOrganisations && userOrganisations.length > 0;
+  const useToggleButton = userOrganisations && userOrganisations.length <= 4;
 
   const handleCycleOrganisation = useCallback(() => {
     if (!userOrganisations || userOrganisations.length === 0) return;

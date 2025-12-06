@@ -23,7 +23,7 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToastsEnabled, setAreToastsEnabled }) => {
   const { user, session } = useAuth();
-  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode, loading: profileLoading, organisationValue: userOrganisations } = useProfile(); // MODIFIED: Get userOrganisations from profile context
+  const { localFirstName, profile, focusPreference: userFocusPreference, joinCode: userJoinCode, loading: profileLoading, organisation: userOrganisations } = useProfile(); // MOVED: Get userOrganisations from profile context
 
   const getDefaultSeshTitle = useCallback(() => {
     const profileFirstName = profile?.first_name;
@@ -1708,7 +1708,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         setShowDemoSessions(data.showDemoSessions ?? true);
         setCurrentPhaseDurationSeconds(data.currentPhaseDurationSeconds ?? 0);
         // Removed: setRemainingTimeAtPause(data.remainingTimeAtPause ?? 0);
-        setLimitDiscoveryRadius(data.limitDiscoveryRadius ?? false);
         setSelectedHostingOrganisation(data.selectedHostingOrganisation ?? null);
       }
 

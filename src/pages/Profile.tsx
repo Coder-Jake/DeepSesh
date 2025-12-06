@@ -34,8 +34,7 @@ type OriginalValuesType = {
   canHelpWith: string;
   needHelpWith: string;
   focusPreference: number;
-  organisationValue: string[] | null; // MODIFIED: Renamed to organisationValue
-  organisationVisibility: ("public" | "friends" | "organisation" | "private")[]; // NEW: Organisation visibility
+  organisation: string[] | null; // MOVED: Organisation is now a direct column
   linkedinUrl: string;
   joinCode: string;
   bioVisibility: ("public" | "friends" | "organisation" | "private")[];
@@ -53,8 +52,8 @@ const Profile = () => {
     friendStatuses,
     joinCode: contextJoinCode,
     profileVisibility: contextProfileVisibility,
-    organisationValue: contextOrganisationValue, // NEW: Get organisationValue from context
-    organisationVisibility: contextOrganisationVisibility, // NEW: Get organisationVisibility from context
+    organisation: contextOrganisation, // MOVED: Get organisation from context
+    setOrganisation: setContextOrganisation, // MOVED: Get setter for organisation
   } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -79,7 +78,6 @@ const Profile = () => {
   const [linkedinVisibilityInput, setLinkedinVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
   const [canHelpWithVisibilityInput, setCanHelpWithVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
   const [needHelpWithVisibilityInput, setNeedHelpWithVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
-  const [organisationVisibilityInput, setOrganisationVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']); // NEW: Organisation visibility input
   const [profileVisibilityInput, setProfileVisibilityInput] = useState<("public" | "friends" | "organisation" | "private")[]>(['public']);
 
   const [currentPronounIndex, setCurrentPronounIndex] = useState(0);
@@ -122,8 +120,9 @@ const Profile = () => {
   const canHelpWithIconHoverTooltipRef = useRef<NodeJS.Timeout | null>(null);
   const [isNeedHelpWithIconHoverTooltipOpen, setIsNeedHelpWithIconHoverTooltipOpen] = useState(false);
   const needHelpWithIconHoverTooltipRef = useRef<NodeJS.Timeout | null>(null);
-  const [isOrganisationIconHoverTooltipOpen, setIsOrganisationIconHoverTooltipOpen] = useState(false); // NEW: Organisation icon hover tooltip
-  const organisationIconHoverTooltipRef = useRef<NodeJS.Timeout | null>(null); // NEW: Organisation icon hover tooltip ref
+  // REMOVED: Organisation icon hover tooltip states as organisation is no longer a ProfileDataField
+  // const [isOrganisationIconHoverTooltipOpen, setIsOrganisationIconHoverTooltipOpen] = useState(false);
+  // const organisationIconHoverTooltipRef = useRef<NodeJS.Timeout | null>(null);
 
 
   const [longPressedFriendId, setLongPressedFriendId] = useState<string | null>(null);
@@ -154,7 +153,7 @@ const Profile = () => {
       case 'can_help_with': return 'Can Help With';
       case 'need_help_with': return 'Need Help With';
       case 'pronouns': return 'Pronouns';
-      case 'organisation': return 'Organisation'; // NEW: Organisation display name
+      // REMOVED: Organisation display name
       default: return '';
     }
   }, []);
@@ -300,8 +299,7 @@ const Profile = () => {
         canHelpWith: profile.profile_data?.can_help_with?.value as string || "",
         needHelpWith: profile.profile_data?.need_help_with?.value as string || "",
         focusPreference: profile.focus_preference || 50,
-        organisationValue: profile.profile_data?.organisation?.value as string[] || [], // MODIFIED: Use organisationValue
-        organisationVisibility: profile.profile_data?.organisation?.visibility || ['public'], // NEW: Organisation visibility
+        organisation: profile.organisation || [], // MOVED: Use direct organisation
         linkedinUrl: currentLinkedinUsername,
         joinCode: profile.join_code || "",
         bioVisibility: profile.profile_data?.bio?.visibility || ['public'],
@@ -319,7 +317,7 @@ const Profile = () => {
       setCanHelpWithInput(profile.profile_data?.can_help_with?.value as string || null);
       setNeedHelpWithInput(profile.profile_data?.need_help_with?.value as string || null);
       setFocusPreferenceInput(profile.focus_preference || 50);
-      setOrganisationInput((profile.profile_data?.organisation?.value as string[] || [])?.join('; ') || null); // MODIFIED: Join array for input display
+      setOrganisationInput((profile.organisation || [])?.join('; ') || null); // MOVED: Join direct array for input display
       setLinkedinUrlInput(currentLinkedinUsername === "" ? null : currentLinkedinUsername);
       setJoinCodeInput(profile.join_code);
       setPronounsInput(profile.profile_data?.pronouns?.value as string || null);
@@ -329,7 +327,6 @@ const Profile = () => {
       setLinkedinVisibilityInput(profile.profile_data?.linkedin_url?.visibility || ['public']);
       setCanHelpWithVisibilityInput(profile.profile_data?.can_help_with?.visibility || ['public']);
       setNeedHelpWithVisibilityInput(profile.profile_data?.need_help_with?.visibility || ['public']);
-      setOrganisationVisibilityInput(profile.profile_data?.organisation?.visibility || ['public']); // NEW: Set organisation visibility input
       setProfileVisibilityInput(profile.visibility || ['public']);
 
       setHasChanges(false);
@@ -391,7 +388,7 @@ const Profile = () => {
 
     // MODIFIED: Compare organisation arrays
     const currentOrganisationArray = organisationInput?.split(';').map(org => org.trim()).filter(org => org.length > 0) || [];
-    const originalOrganisationArray = originalValues.organisationValue || []; // MODIFIED: Use organisationValue
+    const originalOrganisationArray = originalValues.organisation || []; // MOVED: Use direct organisation
     const organisationValueChanged = JSON.stringify(currentOrganisationArray.sort()) !== JSON.stringify(originalOrganisationArray.sort());
 
     const changed = currentEffectiveFirstName !== originalEffectiveFirstName ||
@@ -400,8 +397,7 @@ const Profile = () => {
                    (canHelpWithInput || "") !== originalValues.canHelpWith ||
                    (needHelpWithInput || "") !== originalValues.needHelpWith ||
                    focusPreferenceInput !== originalValues.focusPreference ||
-                   organisationValueChanged || // MODIFIED: Check organisation value change
-                   JSON.stringify(organisationVisibilityInput) !== JSON.stringify(originalValues.organisationVisibility) || // NEW: Check organisation visibility change
+                   organisationValueChanged || // MOVED: Check organisation value change
                    currentLinkedinUsername !== originalValues.linkedinUrl ||
                    (joinCodeInput || "") !== originalValues.joinCode ||
                    JSON.stringify(bioVisibilityInput) !== JSON.stringify(originalValues.bioVisibility) ||
@@ -414,8 +410,7 @@ const Profile = () => {
     setHasChanges(changed);
   }, [
     originalValues, firstNameInput, bioInput, intentionInput, canHelpWithInput, needHelpWithInput, focusPreferenceInput, organisationInput, linkedinUrlInput, joinCodeInput,
-    bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput, profileVisibilityInput, profile,
-    organisationVisibilityInput // NEW: Add organisationVisibilityInput to dependencies
+    bioVisibilityInput, intentionVisibilityInput, linkedinVisibilityInput, canHelpWithVisibilityInput, needHelpWithVisibilityInput, pronounsInput, profileVisibilityInput, profile
   ]);
 
   useEffect(() => {
@@ -457,10 +452,7 @@ const Profile = () => {
     const organisationArray = trimmedOrganisationString.split(';').map(org => org.trim()).filter(org => org.length > 0);
     
     await updateProfile({ 
-      organisation: { 
-        value: organisationArray.length > 0 ? organisationArray : null, 
-        visibility: organisationVisibilityInput 
-      } 
+      organisation: organisationArray.length > 0 ? organisationArray : null, 
     }, "Organisation Saved!");
     setIsOrganisationDialogOpen(false);
   };
@@ -496,7 +488,7 @@ const Profile = () => {
       can_help_with: { value: canHelpWithInput?.trim() === "" ? null : canHelpWithInput, visibility: canHelpWithVisibilityInput },
       need_help_with: { value: needHelpWithInput?.trim() === "" ? null : needHelpWithInput, visibility: needHelpWithVisibilityInput },
       pronouns: { value: pronounsInput?.trim() === "" ? null : pronounsInput, visibility: ['public'] },
-      organisation: { value: organisationArray.length > 0 ? organisationArray : null, visibility: organisationVisibilityInput }, // NEW: Organisation as ProfileDataField
+      organisation: organisationArray.length > 0 ? organisationArray : null, // MOVED: Organisation as direct property
     };
 
     await updateProfile(dataToUpdate);
@@ -530,8 +522,7 @@ const Profile = () => {
       setCanHelpWithInput(originalValues.canHelpWith === "" ? null : originalValues.canHelpWith);
       setNeedHelpWithInput(originalValues.needHelpWith === "" ? null : originalValues.needHelpWith);
       setFocusPreferenceInput(originalValues.focusPreference);
-      setOrganisationInput(originalValues.organisationValue?.join('; ') || null); // MODIFIED: Use organisationValue
-      setOrganisationVisibilityInput(originalValues.organisationVisibility); // NEW: Reset organisation visibility
+      setOrganisationInput(originalValues.organisation?.join('; ') || null); // MOVED: Use direct organisation
       setLinkedinUrlInput(originalValues.linkedinUrl === "" ? null : originalValues.linkedinUrl);
       setJoinCodeInput(originalValues.joinCode === "" ? null : originalValues.joinCode);
       setPronounsInput(originalValues.pronouns);
@@ -964,35 +955,21 @@ const Profile = () => {
           <Card>
             <CardHeader>
               <CardTitle>
-                <Tooltip
-                  open={isOrganisationClickTooltipOpen || isOrganisationIconHoverTooltipOpen}
-                  onOpenChange={(isOpen) => handleIconHoverTooltip(isOpen, setIsOrganisationIconHoverTooltipOpen, organisationIconHoverTooltipRef)}
-                  delayDuration={0}
-                >
-                  <TooltipTrigger asChild>
-                    <Label
-                      htmlFor="organisation-name"
-                      onClick={() => handleLabelClick(organisationVisibilityInput, setOrganisationVisibilityInput, 'organisation', setIsOrganisationClickTooltipOpen)}
-                      className={cn("cursor-pointer select-none inline-flex items-center gap-2 text-lg font-semibold", getPrivacyColorClassFromIndex(getIndexFromVisibility(organisationVisibilityInput)))}
-                    >
-                      {React.createElement(getPrivacyIcon(getIndexFromVisibility(organisationVisibilityInput)), { size: 20 })}
-                      <span>Organisation</span>
-                    </Label>
-                  </TooltipTrigger>
-                  <TooltipContent className="select-none text-xs w-fit" side="right" align="center" sideOffset={4}>
-                    {getDisplayVisibilityStatus(organisationVisibilityInput)}
-                  </TooltipContent>
-                </Tooltip>
+                {/* REMOVED: Tooltip and Label for organisation visibility as it's now a direct column */}
+                <span className="flex items-center gap-2 text-lg font-semibold">
+                  <Building2 size={20} />
+                  <span>Organisation</span>
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {profile?.profile_data?.organisation?.value && (profile.profile_data.organisation.value as string[]).length > 0 ? (
+              {profile?.organisation && profile.organisation.length > 0 ? ( // MOVED: Check direct organisation
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
                     Currently affiliated with:
                   </p>
                   <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm">
-                    {(profile.profile_data.organisation.value as string[]).map((org, index) => (
+                    {profile.organisation.map((org, index) => ( // MOVED: Map direct organisation
                       <span key={index} className="font-medium text-foreground">
                         {org}
                       </span>
@@ -1005,7 +982,7 @@ const Profile = () => {
                 </p>
               )}
               <Button onClick={() => setIsOrganisationDialogOpen(true)}>
-                {profile?.profile_data?.organisation?.value && (profile.profile_data.organisation.value as string[]).length > 0 ? "Edit Organisations" : "Add Organisations"}
+                {profile?.organisation && profile.organisation.length > 0 ? "Edit Organisations" : "Add Organisations"}
               </Button>
             </CardContent>
           </Card>
@@ -1084,7 +1061,7 @@ const Profile = () => {
       <Dialog open={isOrganisationDialogOpen} onOpenChange={setIsOrganisationDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{profile?.profile_data?.organisation?.value && (profile.profile_data.organisation.value as string[]).length > 0 ? "Edit Organisations" : "Add Organisations"}</DialogTitle>
+            <DialogTitle>{profile?.organisation && profile.organisation.length > 0 ? "Edit Organisations" : "Add Organisations"}</DialogTitle>
             <DialogDescription>
               Enter the names of your organisations, separated by semicolons (e.g., OrgA; OrgB).
             </DialogDescription>

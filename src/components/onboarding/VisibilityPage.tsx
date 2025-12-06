@@ -18,7 +18,7 @@ interface VisibilityPageProps {
 }
 
 const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, areToastsEnabled }) => {
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, organisation: userOrganisations } = useProfile(); // MOVED: Get userOrganisations from profile context
   const {
     sessionVisibility, setSessionVisibility,
     getLocation, geolocationPermissionStatus,
@@ -89,7 +89,7 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
               <span className="ml-auto text-sm text-muted-foreground">Open to all</span>
             </Button>
 
-            {profile?.profile_data?.organisation?.value && (profile.profile_data.organisation.value as string[]).length > 0 && ( // MODIFIED: Check profile.profile_data.organisation.value
+            {userOrganisations && userOrganisations.length > 0 && ( // MOVED: Check userOrganisations directly
               <Button
                 variant="outline"
                 className={cn(
