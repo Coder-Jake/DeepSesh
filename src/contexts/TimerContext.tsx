@@ -597,7 +597,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
 
     const currentHostId = user?.id || null; // Get current host ID, can be null
     const otherCoworkers = currentSessionParticipantsData
-      .filter(p => p.role === 'coworker')
+      .filter(p => p.role === 'coworker' && p.userId !== currentHostId) // Filter out current host
       .sort((a, b) => a.joinTime - b.joinTime);
 
     if (otherCoworkers.length > 0) {
@@ -816,6 +816,62 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
         }
     }
 
+    // NEW: Check for existing sessions with the same join_code and clean them up
+    if (userJoinCode) {
+      try {
+        const { data: existingSessions, error: fetchExistingError } = await supabase
+          .from('active_sessions')
+          .select('id, session_title, user_id, participants_data')
+          .eq('join_code', userJoinCode);
+
+        if (fetchExistingError) {
+          console.error("Error checking for existing sessions with join_code:", fetchExistingError.message);
+          if (areToastsEnabled) {
+            toast.error("Session Check Error", {
+              description: `Failed to check for existing sessions: ${fetchExistingError.message}`,
+            });
+          }
+        } else if (existingSessions && existingSessions.length > 0) {
+          console.log(`Found ${existingSessions.length} existing sessions with join_code '${userJoinCode}'. Initiating cleanup.`);
+          for (const existingSession of existingSessions) {
+            console.log(`Invoking Edge Function 'cleanup-stale-session' for session ID: ${existingSession.id}`);
+            const response = await supabase.functions.invoke('cleanup-stale-session', {
+              body: JSON.stringify({ sessionId: existingSession.id }),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session?.access_token}`,
+              },
+            });
+
+            if (response.error) {
+              console.error(`Error cleaning up stale session ${existingSession.id}:`, response.error);
+              if (areToastsEnabled) {
+                toast.error("Cleanup Failed", {
+                  description: `Failed to clean up stale session '${existingSession.session_title}': ${await getEdgeFunctionErrorMessage(response.error)}.`,
+                });
+              }
+            } else if (response.data.error) {
+              console.error(`Edge Function 'cleanup-stale-session' returned error for session ${existingSession.id}:`, response.data.error);
+              if (areToastsEnabled) {
+                toast.error("Cleanup Failed", {
+                  description: `Failed to clean up stale session '${existingSession.session_title}': ${response.data.error}.`,
+                });
+              }
+            } else {
+              console.log(`Successfully initiated cleanup for stale session ${existingSession.id}: ${response.data.message}`);
+            }
+          }
+        }
+      } catch (error: any) {
+        console.error("Unexpected error during join_code conflict check:", error);
+        if (areToastsEnabled) {
+          toast.error("Session Check Error", {
+            description: `An unexpected error occurred during session conflict check: ${await getEdgeFunctionErrorMessage(error)}.`,
+          });
+        }
+      }
+    }
+
     const hostParticipant: ParticipantSessionData = {
       userId: user?.id || null, // Allow userId to be null for anonymous users
       userName: localFirstName,
@@ -930,7 +986,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children, areToast
     areToastsEnabled, user?.id, localFirstName, // user?.id is now optional for hostParticipant
     userFocusPreference, profile?.profile_data?.intention?.value, profile?.profile_data?.bio?.value, getLocation, getDefaultSeshTitle,
     sessionVisibility, selectedHostingOrganisation, hostNotes,
-    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode
+    _setSeshTitle, setActiveScheduleDisplayTitleInternal, userJoinCode, session?.access_token
   ]);
 
   const startSchedule = useCallback(async () => {
