@@ -7,7 +7,7 @@ import { X, User, MessageSquare, Lightbulb, Users, Building2, Linkedin, UserPlus
 import { useProfilePopUp } from '@/contexts/ProfilePopUpContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { Profile, ProfileDataJsonb, ProfileDataField, OrganisationEntry } from '@/contexts/ProfileContext';
-import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor, getPrivacyIcon } from '@/lib/utils'; // MODIFIED: Import getPrivacyIcon
+import { cn, VISIBILITY_OPTIONS_MAP, getIndexFromVisibility, getPrivacyColorClassFromIndex, getSociabilityGradientColor, getPrivacyIcon } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTimer } from '@/contexts/TimerContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -204,27 +204,29 @@ const ProfilePopUpCard: React.FC = () => {
     }
 
     const displayName = targetProfile.first_name || targetUserName || "Unknown User";
-    // isCurrentUserProfile is now defined at the component level
     const currentFriendStatus = currentUserProfile?.id && friendStatuses[targetProfile.id] ? friendStatuses[targetProfile.id] : 'none';
+    const isCurrentUserProfile = currentUserProfile && targetProfile && targetProfile.id === currentUserProfile.id;
 
+    // NEW: Check if current user's organisation value includes any of the target profile's organisation values
+    const currentUserOrgNames = (currentUserOrganisations || []).map(org => org.name);
+    const targetOrgNames = (targetProfile.profile_data?.organisation || []).map(org => org.name);
+    const hasSharedOrganisation = currentUserOrgNames.some(userOrg => targetOrgNames.includes(userOrg));
+
+    // Helper for field visibility (already exists, but needs to be aware of the new structure)
     const isFieldVisible = (field: ProfileDataField | OrganisationEntry, isOrgEntry: boolean = false) => {
       if (isCurrentUserProfile) return true;
       if (!field) return false;
 
       const isFriend = currentFriendStatus === 'friends';
-      // NEW: Check if current user's organisation value includes any of the target profile's organisation values
-      const currentUserOrgNames = (currentUserOrganisations || []).map(org => org.name);
-      const targetOrgNames = (targetProfile.profile_data?.organisation || []).map(org => org.name);
-      const hasSharedOrganisation = currentUserOrgNames.some(userOrg => targetOrgNames.includes(userOrg));
 
-      if (isOrgEntry) { // For individual OrganisationEntry visibility
+      if (isOrgEntry) {
         const orgEntry = field as OrganisationEntry;
         return (
           orgEntry.visibility.includes('public') ||
           (orgEntry.visibility.includes('friends') && isFriend) ||
           (orgEntry.visibility.includes('organisation') && hasSharedOrganisation)
         );
-      } else { // For other ProfileDataField visibility
+      } else {
         const profileDataField = field as ProfileDataField;
         if (!profileDataField.value) return false;
         return (
@@ -235,63 +237,14 @@ const ProfilePopUpCard: React.FC = () => {
       }
     };
 
-    // NEW: Check overall profile visibility
-    const isProfileGloballyPrivate = targetProfile.visibility.includes('private');
-    const isProfilePublic = targetProfile.visibility.includes('public');
-    const isProfileOrgOnly = targetProfile.visibility.includes('organisation');
-    const isProfileFriendsOnly = targetProfile.visibility.includes('friends');
-
-    const isFriend = currentFriendStatus === 'friends';
-    // NEW: Check if current user's organisation value includes any of the target profile's organisation values
-    const currentUserOrgNames = (currentUserOrganisations || []).map(org => org.name);
-    const targetOrgNames = (targetProfile.profile_data?.organisation || []).map(org => org.name);
-    const hasSharedOrganisation = currentUserOrgNames.some(userOrg => targetOrgNames.includes(userOrg));
-
-    const canViewProfile = isCurrentUserProfile || isProfilePublic || (isProfileOrgOnly && hasSharedOrganisation) || (isProfileFriendsOnly && isFriend);
-
-    if (!canViewProfile) {
-      return (
-        <div className="text-center space-y-2">
-          <User className="h-8 w-8 text-muted-foreground mx-auto" />
-          <p className="font-bold text-lg">{displayName}</p>
-          <p className="text-sm text-muted-foreground">This profile is private or not visible to you.</p>
-        </div>
-      );
-    }
-
-    const targetBio = targetProfile.profile_data?.bio;
-    const targetIntention = targetProfile.profile_data?.intention;
-    const targetCanHelpWith = targetProfile.profile_data?.can_help_with;
-    const targetNeedHelpWith = targetProfile.profile_data?.need_help_with;
-    const targetLinkedinUrl = targetProfile.profile_data?.linkedin_url;
-    const targetPronouns = targetProfile.profile_data?.pronouns;
-    const targetOrganisations = targetProfile.profile_data?.organisation; // MODIFIED: Get organisation as OrganisationEntry[]
-
-    const allFieldsPrivate =
-      (!targetBio?.value || !isFieldVisible(targetBio)) &&
-      (!targetIntention?.value || !isFieldVisible(targetIntention)) &&
-      (!targetCanHelpWith?.value || !isFieldVisible(targetCanHelpWith)) &&
-      (!targetNeedHelpWith?.value || !isFieldVisible(targetNeedHelpWith)) &&
-      (!targetLinkedinUrl?.value || !isFieldVisible(targetLinkedinUrl)) &&
-      (!(targetOrganisations && targetOrganisations.length > 0) || !targetOrganisations.some(org => isFieldVisible(org, true))); // MODIFIED: Check each org entry
-
-    if (!isCurrentUserProfile && allFieldsPrivate && targetProfile.focus_preference === null) {
-      return (
-        <div className="text-center space-y-2">
-          <User className="h-8 w-8 text-muted-foreground mx-auto" />
-          <p className="font-bold text-lg">{displayName}</p>
-          <p className="text-sm text-muted-foreground">This profile is private.</p>
-        </div>
-      );
-    }
-
+    // Always render the basic header and friend button
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <User className="h-6 w-6 text-primary" />
           <h3 className="font-bold text-xl">{displayName}</h3>
-          {targetPronouns?.value && isFieldVisible(targetPronouns) && (
-            <span className="text-sm text-muted-foreground ml-1">({targetPronouns.value as string})</span>
+          {targetProfile.profile_data?.pronouns?.value && ( // Pronouns should also be visible
+            <span className="text-sm text-muted-foreground ml-1">({targetProfile.profile_data.pronouns.value as string})</span>
           )}
 
           {!isCurrentUserProfile && (
@@ -328,62 +281,7 @@ const ProfilePopUpCard: React.FC = () => {
           )}
         </div>
 
-        {targetBio?.value && isFieldVisible(targetBio) && (
-          <div>
-            <h4
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetBio.visibility))
-              )}
-            >
-              <MessageSquare size={16} /> Bio
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetBio.value as string}</p>
-          </div>
-        )}
-
-        {targetIntention?.value && isFieldVisible(targetIntention) && (
-          <div>
-            <h4
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetIntention.visibility))
-              )}
-            >
-              <Lightbulb size={16} /> Intention
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetIntention.value as string}</p>
-          </div>
-        )}
-
-        {targetCanHelpWith?.value && isFieldVisible(targetCanHelpWith) && (
-          <div>
-            <h4
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetCanHelpWith.visibility))
-              )}
-            >
-              <Handshake size={16} /> Can Help With
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetCanHelpWith.value as string}</p>
-          </div>
-        )}
-
-        {targetNeedHelpWith?.value && isFieldVisible(targetNeedHelpWith) && (
-          <div>
-            <h4
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetNeedHelpWith.visibility))
-              )}
-            >
-              <HelpCircle size={16} /> Need Help With
-            </h4>
-            <p className="text-sm text-foreground mt-1">{targetNeedHelpWith.value as string}</p>
-          </div>
-        )}
-
+        {/* Always display Focus Preference */}
         {targetProfile.focus_preference !== null && (
           <div>
             <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
@@ -399,44 +297,130 @@ const ProfilePopUpCard: React.FC = () => {
           </div>
         )}
 
-        {targetOrganisations && targetOrganisations.length > 0 && ( // MODIFIED: Check if there are any organisations
-          <div>
-            <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
-              <Building2 size={16} /> Organisation
-            </h4>
-            <ul className="space-y-1 mt-1">
-              {targetOrganisations.map((org, index) => (
-                isFieldVisible(org, true) && ( // MODIFIED: Check visibility for each org entry
-                  <li key={index} className={cn("text-sm text-foreground flex items-center gap-1", getPrivacyColorClassFromIndex(getIndexFromVisibility(org.visibility)))}>
-                    {React.createElement(getPrivacyIcon(getIndexFromVisibility(org.visibility)), { size: 14 })}
-                    {org.name}
-                  </li>
-                )
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Now, apply the canViewProfile check for the rest of the sensitive data */}
+        {(() => { // Use an IIFE to encapsulate conditional rendering
+          const isProfileGloballyPrivate = targetProfile.visibility.includes('private');
+          const isProfilePublic = targetProfile.visibility.includes('public');
+          const isProfileOrgOnly = targetProfile.visibility.includes('organisation');
+          const isProfileFriendsOnly = targetProfile.visibility.includes('friends');
+          const isFriend = currentFriendStatus === 'friends';
 
-        {targetLinkedinUrl?.value && isFieldVisible(targetLinkedinUrl) && (
-          <div>
-            <h4
-              className={cn(
-                "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
-                getPrivacyColorClassFromIndex(getIndexFromVisibility(targetLinkedinUrl.visibility))
+          const canViewSensitiveProfileData = isCurrentUserProfile || isProfilePublic || (isProfileOrgOnly && hasSharedOrganisation) || (isProfileFriendsOnly && isFriend);
+
+          if (!canViewSensitiveProfileData) {
+            return (
+              <div className="text-center space-y-2 mt-4">
+                <p className="text-sm text-muted-foreground">The rest of this profile is private or not visible to you.</p>
+              </div>
+            );
+          }
+
+          const targetBio = targetProfile.profile_data?.bio;
+          const targetIntention = targetProfile.profile_data?.intention;
+          const targetCanHelpWith = targetProfile.profile_data?.can_help_with;
+          const targetNeedHelpWith = targetProfile.profile_data?.need_help_with;
+          const targetLinkedinUrl = targetProfile.profile_data?.linkedin_url;
+          const targetOrganisations = targetProfile.profile_data?.organisation;
+
+          return (
+            <>
+              {targetBio?.value && isFieldVisible(targetBio) && (
+                <div>
+                  <h4
+                    className={cn(
+                      "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
+                      getPrivacyColorClassFromIndex(getIndexFromVisibility(targetBio.visibility))
+                    )}
+                  >
+                    <MessageSquare size={16} /> Bio
+                  </h4>
+                  <p className="text-sm text-foreground mt-1">{targetBio.value as string}</p>
+                </div>
               )}
-            >
-              <Linkedin size={16} /> LinkedIn
-            </h4>
-            <a
-              href={targetLinkedinUrl.value as string}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 text-sm mt-1 block"
-            >
-              {(targetLinkedinUrl.value as string).replace('https://www.linkedin.com/in/', '')}
-            </a>
-          </div>
-        )}
+
+              {targetIntention?.value && isFieldVisible(targetIntention) && (
+                <div>
+                  <h4
+                    className={cn(
+                      "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
+                      getPrivacyColorClassFromIndex(getIndexFromVisibility(targetIntention.visibility))
+                    )}
+                  >
+                    <Lightbulb size={16} /> Intention
+                  </h4>
+                  <p className="text-sm text-foreground mt-1">{targetIntention.value as string}</p>
+                </div>
+              )}
+
+              {targetCanHelpWith?.value && isFieldVisible(targetCanHelpWith) && (
+                <div>
+                  <h4
+                    className={cn(
+                      "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
+                      getPrivacyColorClassFromIndex(getIndexFromVisibility(targetCanHelpWith.visibility))
+                    )}
+                  >
+                    <Handshake size={16} /> Can Help With
+                  </h4>
+                  <p className="text-sm text-foreground mt-1">{targetCanHelpWith.value as string}</p>
+                </div>
+              )}
+
+              {targetNeedHelpWith?.value && isFieldVisible(targetNeedHelpWith) && (
+                <div>
+                  <h4
+                    className={cn(
+                      "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
+                      getPrivacyColorClassFromIndex(getIndexFromVisibility(targetNeedHelpWith.visibility))
+                    )}
+                  >
+                    <HelpCircle size={16} /> Need Help With
+                  </h4>
+                  <p className="text-sm text-foreground mt-1">{targetNeedHelpWith.value as string}</p>
+                </div>
+              )}
+
+              {targetOrganisations && targetOrganisations.length > 0 && ( // MODIFIED: Check if there are any organisations
+                <div>
+                  <h4 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground">
+                    <Building2 size={16} /> Organisation
+                  </h4>
+                  <ul className="space-y-1 mt-1">
+                    {targetOrganisations.map((org, index) => (
+                      isFieldVisible(org, true) && ( // MODIFIED: Check visibility for each org entry
+                        <li key={index} className={cn("text-sm text-foreground flex items-center gap-1", getPrivacyColorClassFromIndex(getIndexFromVisibility(org.visibility)))}>
+                          {React.createElement(getPrivacyIcon(getIndexFromVisibility(org.visibility)), { size: 14 })}
+                          {org.name}
+                        </li>
+                      )
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {targetLinkedinUrl?.value && isFieldVisible(targetLinkedinUrl) && (
+                <div>
+                  <h4
+                    className={cn(
+                      "font-semibold flex items-center gap-2 text-sm text-muted-foreground",
+                      getPrivacyColorClassFromIndex(getIndexFromVisibility(targetLinkedinUrl.visibility))
+                    )}
+                  >
+                    <Linkedin size={16} /> LinkedIn
+                  </h4>
+                  <a
+                    href={targetLinkedinUrl.value as string}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 text-sm mt-1 block"
+                  >
+                    {(targetLinkedinUrl.value as string).replace('https://www.linkedin.com/in/', '')}
+                  </a>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
     );
   };
