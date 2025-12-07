@@ -202,13 +202,14 @@ serve(async (req) => {
             newHostName = newHost.userName;
             console.log(`LEAVE_SESSION: Host ${authenticatedUserId} left session ${sessionId}. Host role transferred to ${newHostId}.`);
           } else {
-            const { error: deleteError } = await supabaseServiceRoleClient
+            console.log(`LEAVE_SESSION: Host ${authenticatedUserId} left session ${sessionId} and no other participants. Deleting session.`);
+            const { error: deleteError } = await supabaseServiceRoleClient // Use service role client for deletion
               .from('active_sessions')
               .delete()
               .eq('id', sessionId);
             if (deleteError) {
-              console.warn(`LEAVE_SESSION: Error deleting session ${sessionId} after host ${authenticatedUserId} left and no other participants. Message:`, deleteError.message, 'Status: 500.');
-              throw deleteError;
+              console.error(`LEAVE_SESSION: Error deleting session ${sessionId} after host ${authenticatedUserId} left and no other participants. Message:`, deleteError.message, 'Status: 500.');
+              throw deleteError; // Re-throw to be caught by outer catch
             }
             console.log(`LEAVE_SESSION: Session ${sessionId} ended as host ${authenticatedUserId} left and no other participants.`);
             return new Response(JSON.stringify({ message: 'Session ended as host left and no other participants' }), {
@@ -247,7 +248,7 @@ serve(async (req) => {
           .single();
 
         if (updateError) {
-          console.warn('UPDATE_FULL_SESSION_STATE: Error updating full session state. Message:', updateError.message, 'Status: 500. Session ID:', sessionId);
+          console.error('UPDATE_FULL_SESSION_STATE: Error updating full session state. Message:', updateError.message, 'Status: 500. Session ID:', sessionId);
           return new Response(JSON.stringify({ error: updateError.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,
@@ -283,7 +284,7 @@ serve(async (req) => {
       .single();
 
     if (updateError) {
-      console.warn('UPDATE_SESSION_DATA_EDGE_FUNCTION: Error updating session data. Message:', updateError.message, 'Status: 500. Session ID:', sessionId);
+      console.error('UPDATE_SESSION_DATA_EDGE_FUNCTION: Error updating session data. Message:', updateError.message, 'Status: 500. Session ID:', sessionId);
       return new Response(JSON.stringify({ error: updateError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
