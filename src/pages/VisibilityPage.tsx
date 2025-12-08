@@ -26,12 +26,29 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
   } = useTimer();
 
   const [selectedVisibility, setSelectedVisibility] = useState<'public' | 'private' | 'organisation'>(sessionVisibility);
-  const [isLocationEnabled, setIsLocationEnabled] = useState(geolocationPermissionStatus === 'granted');
+  // Removed isLocationEnabled state as geolocationPermissionStatus is directly used
 
   useEffect(() => {
+    // Initialize selectedVisibility from sessionVisibility
     setSelectedVisibility(sessionVisibility);
-    setIsLocationEnabled(geolocationPermissionStatus === 'granted');
-  }, [sessionVisibility, geolocationPermissionStatus]);
+  }, [sessionVisibility]);
+
+  useEffect(() => {
+    // Set default visibility based on location permission
+    if (geolocationPermissionStatus === 'granted') {
+      // If location is granted, default to public if not already set to organisation or private
+      if (selectedVisibility !== 'organisation' && selectedVisibility !== 'private') {
+        setSelectedVisibility('public');
+        setSessionVisibility('public'); // Also update context
+      }
+    } else {
+      // If location is not granted, ensure public is not selected. Default to private.
+      if (selectedVisibility === 'public') {
+        setSelectedVisibility('private');
+        setSessionVisibility('private'); // Also update context
+      }
+    }
+  }, [geolocationPermissionStatus, selectedVisibility, setSessionVisibility]);
 
   const handleLocationButtonClick = async () => {
     await getLocation();
@@ -63,6 +80,8 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
     return <div className="text-center text-muted-foreground">Loading profile...</div>;
   }
 
+  const isPublicDisabled = geolocationPermissionStatus !== 'granted';
+
   return (
     <div className="space-y-6 flex flex-col flex-grow">
       <CardTitle className="text-2xl font-bold text-center">Default Session Visibility</CardTitle>
@@ -78,11 +97,21 @@ const VisibilityPage: React.FC<VisibilityPageProps> = ({ nextStep, prevStep, are
               variant="outline"
               className={cn(
                 "h-auto py-3 flex items-center justify-start gap-3 text-lg",
-                selectedVisibility === 'public' && "bg-public-bg text-public-bg-foreground border-public-bg-hover hover:bg-public-bg-hover"
+                selectedVisibility === 'public' && "bg-public-bg text-public-bg-foreground border-public-bg-hover hover:bg-public-bg-hover",
+                isPublicDisabled && "opacity-50 cursor-not-allowed" // Grey out if disabled
               )}
-              onClick={() => setSelectedVisibility('public')}
+              onClick={() => {
+                if (!isPublicDisabled) {
+                  setSelectedVisibility('public');
+                } else if (areToastsEnabled) {
+                  toast.error("Location Required", {
+                    description: "Public sessions require location access. Please enable it.",
+                  });
+                }
+              }}
               name="visibilityPublic"
               id="visibility-public"
+              disabled={isPublicDisabled} // Disable the button
             >
               <Globe size={20} />
               Public

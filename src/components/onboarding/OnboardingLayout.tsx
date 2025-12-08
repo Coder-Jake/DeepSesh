@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, ReactNode, useCallback } from 'react';
+import React, { useState, ReactNode, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,28 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ children, onComplet
       setCurrentStep(prev => prev - 1);
     }
   }, [currentStep]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        const activeElement = document.activeElement;
+        const isTyping = 
+          activeElement instanceof HTMLInputElement ||
+          activeElement instanceof HTMLTextAreaElement ||
+          activeElement?.hasAttribute('contenteditable');
+
+        if (!isTyping) {
+          event.preventDefault(); // Prevent default form submission if any
+          nextStep();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [nextStep]); // Depend on nextStep
 
   const progressValue = ((currentStep + 1) / totalSteps) * 100;
 
