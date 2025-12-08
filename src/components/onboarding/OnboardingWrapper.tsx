@@ -37,17 +37,8 @@ const OnboardingWrapper: React.FC<OnboardingWrapperProps> = ({ areToastsEnabled,
     return false;
   });
 
-  useEffect(() => {
-    // If profile is loaded and onboarding is not yet marked complete locally,
-    // but the profile has a first name or join code, consider it implicitly onboarded.
-    // This handles cases where a user might have an existing profile but no local onboarding flag.
-    if (!profileLoading && profile && !isOnboardingComplete) {
-      if (profile.first_name || profile.join_code) {
-        setIsOnboardingComplete(true);
-        localStorage.setItem(LOCAL_STORAGE_ONBOARDING_COMPLETE_KEY, 'true');
-      }
-    }
-  }, [profile, profileLoading, isOnboardingComplete]);
+  // Removed the useEffect that implicitly marked onboarding complete based on profile data.
+  // Onboarding will now only be marked complete when handleOnboardingComplete is explicitly called.
 
   const handleOnboardingComplete = () => {
     // Update local state and local storage directly
