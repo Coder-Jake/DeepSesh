@@ -1477,6 +1477,15 @@ const Index = () => {
     }
   }, [userOrganisationNames, selectedHostingOrganisation, setSelectedHostingOrganisation, areToastsEnabled]);
 
+  // NEW: Effect to open Discovery Setup dialog if not activated
+  useEffect(() => {
+    if (!isDiscoveryActivated && !profileLoading) {
+      setIsDiscoverySetupOpen(true);
+    } else {
+      setIsDiscoverySetupOpen(false);
+    }
+  }, [isDiscoveryActivated, profileLoading]);
+
 
   return (
     <TooltipProvider>
