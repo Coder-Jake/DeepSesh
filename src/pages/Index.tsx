@@ -427,7 +427,7 @@ const Index = () => {
         throw err;
       }
     },
-    refetchInterval: 5000,
+    refetchInterval: 2000, // Changed from 5000 to 2000
     enabled: isDiscoveryActivated && !!user?.id,
   });
 
