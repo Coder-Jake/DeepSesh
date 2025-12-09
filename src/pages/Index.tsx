@@ -86,6 +86,7 @@ const fetchSupabaseSessions = async (
   showDemoSessions: boolean,
   userOrganisationNames: string[] | null // MODIFIED: Pass userOrganisationNames
 ): Promise<DemoSession[]> => {
+  console.log("fetchSupabaseSessions: userId:", userId); // DIAGNOSTIC LOG
   if (!userId) {
     console.log("fetchSupabaseSessions: User ID is not available, skipping fetch.");
     return [];
@@ -435,27 +436,51 @@ const Index = () => {
   }, [supabaseActiveSessions]);
 
   const nearbySessions = useMemo(() => {
+    console.log("Calculating nearbySessions. Conditions:", {
+      shouldShowNearbySessions,
+      userLatitude: userLocation.latitude,
+      userLongitude: userLocation.longitude
+    });
     if (!shouldShowNearbySessions || !userLocation.latitude || !userLocation.longitude) return [];
-    return allSessions.filter(session => {
+    const filtered = allSessions.filter(session => {
       const isPublic = session.visibility === 'public';
       const isNearbyByDistance = (session.location_lat && session.location_long && session.distance !== null && session.distance <= maxDistance);
-      return isPublic && (limitDiscoveryRadius ? isNearbyByDistance : true);
+      const passesDistanceFilter = (limitDiscoveryRadius ? isNearbyByDistance : true);
+      console.log(`  Nearby filter for '${session.title}': isPublic=${isPublic}, passesDistanceFilter=${passesDistanceFilter}, result=${isPublic && passesDistanceFilter}`);
+      return isPublic && passesDistanceFilter;
     });
+    console.log("  Nearby sessions count:", filtered.length);
+    return filtered;
   }, [allSessions, shouldShowNearbySessions, userLocation.latitude, userLocation.longitude, maxDistance, limitDiscoveryRadius]);
 
   const friendsSessions = useMemo(() => {
+    console.log("Calculating friendsSessions. Conditions:", {
+      shouldShowFriendsSessions,
+      profileId: profile?.id
+    });
     if (!shouldShowFriendsSessions || !profile?.id) return [];
-    return allSessions.filter(session => {
+    const filtered = allSessions.filter(session => {
       const isFriendSession = session.participants.some(p => friendStatuses[p.userId] === 'friends');
+      console.log(`  Friends filter for '${session.title}': isFriendSession=${isFriendSession}`);
       return isFriendSession;
     });
+    console.log("  Friends sessions count:", filtered.length);
+    return filtered;
   }, [allSessions, shouldShowFriendsSessions, profile?.id, friendStatuses]);
 
   const organisationSessions = useMemo(() => {
-    if (!shouldShowOrganisationSessions || !userOrganisationNames || userOrganisationNames.length === 0) return [];
-    return allSessions.filter(session => {
-      return session.organisation && userOrganisationNames.some(userOrg => session.organisation?.includes(userOrg));
+    console.log("Calculating organisationSessions. Conditions:", {
+      shouldShowOrganisationSessions,
+      userOrganisationNames
     });
+    if (!shouldShowOrganisationSessions || !userOrganisationNames || userOrganisationNames.length === 0) return [];
+    const filtered = allSessions.filter(session => {
+      const isOrgSession = session.organisation && userOrganisationNames.some(userOrg => session.organisation?.includes(userOrg));
+      console.log(`  Organisation filter for '${session.title}': isOrgSession=${isOrgSession}`);
+      return isOrgSession;
+    });
+    console.log("  Organisation sessions count:", filtered.length);
+    return filtered;
   }, [allSessions, shouldShowOrganisationSessions, userOrganisationNames]);
 
 
@@ -1127,30 +1152,22 @@ const Index = () => {
   }, []);
 
   // REMOVED: useEffect for session visibility debugging
-  // useEffect(() => {
-  //   console.group("Index.tsx Debugging Session Visibility");
-  //   console.log("  showDemoSessions:", showDemoSessions);
-  //   console.log("  isDiscoveryActivated:", isDiscoveryActivated);
-  //   console.log("  geolocationPermissionStatus:", geolocationPermissionStatus);
-  //   console.log("  userLocation:", userLocation);
-  //   console.log("  sessionVisibility:", sessionVisibility);
-  //   console.log("  showSessionsWhileActive:", showSessionsWhileActive);
-  //   console.log("  profile?.id:", profile?.id);
-  //   console.log("  userOrganisationNames:", userOrganisationNames); // MODIFIED: userOrganisationNames
-  //   console.log("  allSessions (from Supabase):", allSessions);
-  //   console.log("  nearbySessions (memo):", nearbySessions);
-  //   console.log("  friendsSessions (memo):", friendsSessions);
-  //   console.log("  organisationSessions (memo):", organisationSessions);
-  //   console.groupEnd();
-  // }, [
-  //   showDemoSessions, isDiscoveryActivated, geolocationPermissionStatus, userLocation,
-  //   sessionVisibility, showSessionsWhileActive, profile?.id, userOrganisationNames, // MODIFIED: userOrganisationNames
-  //   allSessions,
-  //   shouldShowNearbySessions, nearbySessions.length,
-  //   shouldShowFriendsSessions, friendsSessions.length,
-  //   shouldShowOrganisationSessions, organisationSessions.length,
-  //   limitDiscoveryRadius, maxDistance
-  // ]);
+  useEffect(() => {
+    console.log("Index Component State for Session Fetching:");
+    console.log("  isDiscoveryActivated:", isDiscoveryActivated);
+    console.log("  user?.id:", user?.id);
+    console.log("  userLocation:", userLocation);
+    console.log("  limitDiscoveryRadius:", limitDiscoveryRadius);
+    console.log("  maxDistance:", maxDistance);
+    console.log("  showDemoSessions:", showDemoSessions);
+    console.log("  userOrganisationNames:", userOrganisationNames);
+    console.log("  isLoadingSupabaseSessions:", isLoadingSupabaseSessions);
+    console.log("  supabaseError:", supabaseError);
+    console.log("  allSessions (derived from query):", allSessions);
+  }, [
+    isDiscoveryActivated, user?.id, userLocation, limitDiscoveryRadius, maxDistance,
+    showDemoSessions, userOrganisationNames, isLoadingSupabaseSessions, supabaseError, allSessions
+  ]);
 
   const formatDistance = (distance: number | null) => {
     if (distance === null || distance === undefined) return null;
